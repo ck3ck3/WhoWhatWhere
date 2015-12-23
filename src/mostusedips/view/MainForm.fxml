@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<SplitPane fx:id="splitPaneRoot" dividerPositions="0.36" orientation="VERTICAL" prefHeight="768.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mostusedips.controller.GUIController">
+   <items>
+      <SplitPane dividerPositions="0.5" prefHeight="190.0" prefWidth="1024.0">
+         <items>
+            <ScrollPane fx:id="scrollPane">
+               <content>
+                  <VBox fx:id="vboxNICs" fillWidth="false" maxHeight="190.0" maxWidth="500.0" minHeight="190.0" minWidth="500.0" prefHeight="190.0" prefWidth="500.0">
+                     <children>
+                        <Label text="Choose your network adapter:">
+                           <padding>
+                              <Insets left="10.0" top="10.0" />
+                           </padding>
+                        </Label>
+                     </children>
+                  </VBox>
+               </content>
+            </ScrollPane>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="670.0" prefWidth="508.0">
+               <children>
+                  <AnchorPane fx:id="paneCaptureOptions" layoutX="7.0" layoutY="14.0" prefHeight="190.0" prefWidth="303.0">
+                     <children>
+                        <Label text="Count packets of these protocols:" />
+                        <CheckBox fx:id="chkboxAnyProtocol" disable="true" layoutX="7.0" layoutY="30.0" mnemonicParsing="false" text="Any protocol" />
+                        <CheckBox fx:id="chkboxUDP" layoutX="106.0" layoutY="30.0" mnemonicParsing="false" text="UDP" />
+                        <CheckBox fx:id="chkboxTCP" layoutX="157.0" layoutY="30.0" mnemonicParsing="false" text="TCP" />
+                        <CheckBox fx:id="chkboxICMP" layoutX="207.0" layoutY="30.0" mnemonicParsing="false" text="ICMP" />
+                        <CheckBox fx:id="chkboxHTTP" layoutX="266.0" layoutY="30.0" mnemonicParsing="false" text="HTTP" />
+                        <Label layoutX="260.0" layoutY="70.0" text="seconds" />
+                        <CheckBox fx:id="chkboxGetLocation" layoutY="127.0" mnemonicParsing="false" selected="true" text="Get location info for each IP address" />
+                        <RadioButton fx:id="radioManual" layoutY="95.0" mnemonicParsing="false" text="Manual capture" />
+                        <RadioButton fx:id="radioTimedCapture" layoutY="70.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="203.0" text="Automatically stop capturing after" />
+                        <CheckBox fx:id="chkboxPing" layoutY="155.0" mnemonicParsing="false" selected="true" text="Ping each IP address" />
+                        <Label layoutX="139.0" layoutY="155.0" text="Ping timeout:" />
+                        <Label layoutX="268.0" layoutY="155.0" text="milliseconds" />
+                     </children>
+                  </AnchorPane>
+                  <Button fx:id="btnStart" layoutX="7.0" layoutY="204.0" mnemonicParsing="false" text="Start capturing" />
+                  <Button fx:id="btnStop" layoutX="108.0" layoutY="204.0" mnemonicParsing="false" text="Stop capturing" />
+                  <Label fx:id="labelStatus" layoutX="7.0" layoutY="249.0" text="Status: Idle" />
+               </children>
+            </AnchorPane>
+         </items>
+      </SplitPane>
+      <AnchorPane minHeight="0.0" minWidth="0.0" prefWidth="1022.0">
+         <children>
+            <Label layoutX="14.0" layoutY="14.0" text="Results:" />
+            <TableView fx:id="tableResults" layoutX="14.0" layoutY="43.0" prefHeight="251.0" prefWidth="990.0" stylesheets="mostusedips/view/tableResults.css" AnchorPane.bottomAnchor="193.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="43.0">
+               <columns>
+                  <TableColumn fx:id="columnPacketCount" editable="false" prefWidth="94.0" sortType="DESCENDING" text="Packet Count" />
+                  <TableColumn fx:id="columnIP" minWidth="8.0" prefWidth="122.0" text="IP Address" />
+                  <TableColumn fx:id="columnOwner" editable="false" minWidth="1.0" prefWidth="188.0" text="Owner" />
+                  <TableColumn fx:id="columnPing" prefWidth="128.0" text="Ping" />
+                  <TableColumn fx:id="columnCountry" editable="false" minWidth="0.0" prefWidth="166.0" text="Country" />
+                  <TableColumn fx:id="columnRegion" editable="false" minWidth="0.0" prefWidth="119.0" text="Region" />
+                  <TableColumn fx:id="columnCity" editable="false" prefWidth="155.0" text="City" />
+               </columns>
+            </TableView>
+            <Button fx:id="btnExit" layoutX="929.0" layoutY="471.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="75.0" text="Exit" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="18.0" />
+            <AnchorPane fx:id="paneEnableHotkey" layoutX="35.0" layoutY="317.0" prefHeight="159.0" prefWidth="876.0" AnchorPane.bottomAnchor="11.0" AnchorPane.leftAnchor="35.0">
+               <children>
+                  <Button fx:id="btnConfigHotkey" layoutX="82.0" mnemonicParsing="false" text="Configure hotkey" />
+                  <Label fx:id="labelCurrHotkey" layoutX="199.0" layoutY="4.0" text="Current hotkey: " />
+                  <CheckBox fx:id="chkboxUseTTS" layoutY="32.0" mnemonicParsing="false" selected="true" text="Use text-to-speech when hotkey is used" />
+                  <AnchorPane fx:id="paneUseTTS" layoutX="20.0" layoutY="61.0" prefHeight="94.0" prefWidth="856.0">
+                     <children>
+                        <Label layoutY="60.0" text="Read values of these columns:" />
+                        <HBox fx:id="hboxColumnNames" layoutX="165.0" layoutY="60.0" prefHeight="25.0" prefWidth="691.0" spacing="10.0" />
+                        <Label fx:id="labelReadFirstRows" text="Read the first" />
+                        <Label layoutX="118.0" text="rows of the table" />
+                        <CheckBox fx:id="chkboxFilterResults" layoutY="28.0" mnemonicParsing="false" text="Only read rows where column" />
+                        <Pane fx:id="paneFilterResults" layoutX="190.0" layoutY="24.0">
+                           <children>
+                              <ComboBox fx:id="comboColumns" prefWidth="150.0" />
+                              <Label layoutX="157.0" layoutY="4.0" text="contains" />
+                              <TextField fx:id="textColumnContains" layoutX="207.0" />
+                           </children>
+                        </Pane>
+                     </children>
+                  </AnchorPane>
+               </children>
+            </AnchorPane>
+            <CheckBox fx:id="chkboxUseHotkey" layoutX="14.0" layoutY="321.0" mnemonicParsing="false" selected="true" text="Enable hotkey" AnchorPane.bottomAnchor="149.0" AnchorPane.leftAnchor="14.0" />
+         </children>
+      </AnchorPane>
+   </items>
+</SplitPane>
