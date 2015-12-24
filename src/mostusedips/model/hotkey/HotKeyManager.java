@@ -14,108 +14,108 @@ import mostusedips.Main;
 
 public class HotKeyManager implements NativeKeyListener
 {
-    private HotKeyExecuter executer;
-    private Integer hotkey;
-    private Integer modifiers;
-    private boolean isKeySelection = false;
-    private int lastKeycode;
-    
-    private final static Logger logger = Logger.getLogger(Main.getAppName());
+	private HotKeyExecuter executer;
+	private Integer hotkey;
+	private Integer modifiers;
+	private boolean isKeySelection = false;
+	private int lastKeycode;
 
-    public HotKeyManager(HotKeyExecuter executer)
-    {
-	this(executer, null, null);
-    }
+	private final static Logger logger = Logger.getLogger(Main.getAppName());
 
-    public HotKeyManager(HotKeyExecuter executer, Integer modifiers, Integer hotkey)
-    {
-	this.executer = executer;
-	this.modifiers = modifiers;
-	this.hotkey = hotkey;
-
-	registerNativeHook();
-    }
-
-    public void registerNativeHook()
-    {
-	try
+	public HotKeyManager(HotKeyExecuter executer)
 	{
-	    GlobalScreen.registerNativeHook();
-	}
-	catch (NativeHookException ex)
-	{
-	    logger.log(Level.SEVERE, "There was a problem registering the native hook.", ex);
+		this(executer, null, null);
 	}
 
-	Logger libLogger = LogManager.getLogManager().getLogger("org.jnativehook");
-	libLogger.setLevel(Level.WARNING);
-	Handler[] handlers = Logger.getLogger(Main.getAppName()).getHandlers();
-	libLogger.addHandler(handlers[0]);
-	
-	GlobalScreen.addNativeKeyListener(this);
-    }
-
-    @Override
-    public void nativeKeyTyped(NativeKeyEvent e)
-    {
-	if (hotkey == null && !isKeySelection) //not for us
-	    return;
-
-	if (isKeySelection || (hotkey.equals(lastKeycode) && modifiers.equals(e.getModifiers())))
-	    executer.keyPressed(e.getModifiers(), lastKeycode, isKeySelection);
-    }
-
-    @Override
-    public void nativeKeyPressed(NativeKeyEvent e)
-    {
-	lastKeycode = e.getKeyCode();
-    }
-
-    @Override
-    public void nativeKeyReleased(NativeKeyEvent e)
-    {
-    }
-
-    public void unregisterNativeHook()
-    {
-	try
+	public HotKeyManager(HotKeyExecuter executer, Integer modifiers, Integer hotkey)
 	{
-	    GlobalScreen.removeNativeKeyListener(this);
-	    GlobalScreen.unregisterNativeHook();
+		this.executer = executer;
+		this.modifiers = modifiers;
+		this.hotkey = hotkey;
+
+		registerNativeHook();
 	}
-	catch (NativeHookException ex)
+
+	public void registerNativeHook()
 	{
-	    logger.log(Level.SEVERE, "There was a problem unregistering the native hook.", ex);
+		try
+		{
+			GlobalScreen.registerNativeHook();
+		}
+		catch (NativeHookException ex)
+		{
+			logger.log(Level.SEVERE, "There was a problem registering the native hook.", ex);
+		}
+
+		Logger libLogger = LogManager.getLogManager().getLogger("org.jnativehook");
+		libLogger.setLevel(Level.WARNING);
+		Handler[] handlers = Logger.getLogger(Main.getAppName()).getHandlers();
+		libLogger.addHandler(handlers[0]);
+
+		GlobalScreen.addNativeKeyListener(this);
 	}
-    }
 
-    public Integer getHotkeyToCatch()
-    {
-	return hotkey;
-    }
+	@Override
+	public void nativeKeyTyped(NativeKeyEvent e)
+	{
+		if (hotkey == null && !isKeySelection) //not for us
+			return;
 
-    public void setHotkeyToCatch(Integer hotkeyToCatch)
-    {
-	this.hotkey = hotkeyToCatch;
-    }
+		if (isKeySelection || (hotkey.equals(lastKeycode) && modifiers.equals(e.getModifiers())))
+			executer.keyPressed(e.getModifiers(), lastKeycode, isKeySelection);
+	}
 
-    public boolean isKeySelection()
-    {
-	return isKeySelection;
-    }
+	@Override
+	public void nativeKeyPressed(NativeKeyEvent e)
+	{
+		lastKeycode = e.getKeyCode();
+	}
 
-    public void setKeySelection(boolean isKeySelection)
-    {
-	this.isKeySelection = isKeySelection;
-    }
+	@Override
+	public void nativeKeyReleased(NativeKeyEvent e)
+	{
+	}
 
-    public Integer getModifiers()
-    {
-	return modifiers;
-    }
+	public void unregisterNativeHook()
+	{
+		try
+		{
+			GlobalScreen.removeNativeKeyListener(this);
+			GlobalScreen.unregisterNativeHook();
+		}
+		catch (NativeHookException ex)
+		{
+			logger.log(Level.SEVERE, "There was a problem unregistering the native hook.", ex);
+		}
+	}
 
-    public void setModifiers(Integer modifiers)
-    {
-	this.modifiers = modifiers;
-    }
+	public Integer getHotkeyToCatch()
+	{
+		return hotkey;
+	}
+
+	public void setHotkeyToCatch(Integer hotkeyToCatch)
+	{
+		this.hotkey = hotkeyToCatch;
+	}
+
+	public boolean isKeySelection()
+	{
+		return isKeySelection;
+	}
+
+	public void setKeySelection(boolean isKeySelection)
+	{
+		this.isKeySelection = isKeySelection;
+	}
+
+	public Integer getModifiers()
+	{
+		return modifiers;
+	}
+
+	public void setModifiers(Integer modifiers)
+	{
+		this.modifiers = modifiers;
+	}
 }

@@ -16,100 +16,99 @@ import mostusedips.Main;
 
 public class IpSniffer
 {
-    private FilteredCounterPacketHandler packetHandler;
-    private Pcap pcap;
-    private CaptureStartListener captureStartListener = null;
-    
-    private static int snaplen = 64 * 1024; // Capture all packets, no truncation
-    private static int flags = Pcap.MODE_PROMISCUOUS; // capture all packets
-    private static int timeout = 10 * 1000; // 10 seconds in milliseconds
-    
-    private static final Logger logger = Logger.getLogger(Main.getAppName());
+	private FilteredCounterPacketHandler packetHandler;
+	private Pcap pcap;
+	private CaptureStartListener captureStartListener = null;
 
+	private static int snaplen = 64 * 1024; // Capture all packets, no truncation
+	private static int flags = Pcap.MODE_PROMISCUOUS; // capture all packets
+	private static int timeout = 10 * 1000; // 10 seconds in milliseconds
 
-    public List<PcapIf> getListOfDevices(StringBuilder errbuf)
-    {
-	List<PcapIf> alldevs = new ArrayList<PcapIf>();
+	private static final Logger logger = Logger.getLogger(Main.getAppName());
 
-	int r = Pcap.findAllDevs(alldevs, errbuf);
-	
-	if (r == Pcap.NOT_OK || alldevs.isEmpty())
+	public List<PcapIf> getListOfDevices(StringBuilder errbuf)
 	{
-	    logger.log(Level.SEVERE, "Can't read list of devices, error is " + errbuf.toString());
-	    return null;
+		List<PcapIf> alldevs = new ArrayList<PcapIf>();
+
+		int r = Pcap.findAllDevs(alldevs, errbuf);
+
+		if (r == Pcap.NOT_OK || alldevs.isEmpty())
+		{
+			logger.log(Level.SEVERE, "Can't read list of devices, error is " + errbuf.toString());
+			return null;
+		}
+
+		return alldevs;
 	}
 
-	return alldevs;
-    }
-    
-    public static String intToIpString(int intIp) throws UnknownHostException
-    {
-	byte[] bytes = BigInteger.valueOf(intIp).toByteArray();
-
-	return InetAddress.getByAddress(bytes).getHostAddress();
-    }
-
-    public static int stringToIntIp(String str) throws UnknownHostException
-    {
-	InetAddress bar = InetAddress.getByName(str);
-	return ByteBuffer.wrap(bar.getAddress()).getInt();
-    }
-
-    public void startCapture(PcapIf device, ArrayList<Integer> protocolsToCapture, StringBuilder errbuf)
-    {
-	pcap = Pcap.openLive(device.getName(), snaplen, flags, timeout, errbuf);
-
-	if (pcap == null)
+	public static String intToIpString(int intIp) throws UnknownHostException
 	{
-	    logger.log(Level.SEVERE, "Error while opening device for capture: " + errbuf.toString());
-	    return;
+		byte[] bytes = BigInteger.valueOf(intIp).toByteArray();
+
+		return InetAddress.getByAddress(bytes).getHostAddress();
 	}
 
-	String ownAddress = device.getAddresses().get(0).getAddr().toString();
-	ownAddress = ownAddress.substring(7, ownAddress.length() - 1);
-
-	int ownIpInt;
-	
-	try
+	public static int stringToIntIp(String str) throws UnknownHostException
 	{
-	    ownIpInt = stringToIntIp(ownAddress);
+		InetAddress bar = InetAddress.getByName(str);
+		return ByteBuffer.wrap(bar.getAddress()).getInt();
 	}
-	catch(UnknownHostException uhe)
+
+	public void startCapture(PcapIf device, ArrayList<Integer> protocolsToCapture, StringBuilder errbuf)
 	{
-	    logger.log(Level.SEVERE, "Unable convert own IP address " + ownAddress + " to integer. Debug info: " + device.getAddresses().get(0).getAddr() + "\nUnable to capture");
-	    return;
+		pcap = Pcap.openLive(device.getName(), snaplen, flags, timeout, errbuf);
+
+		if (pcap == null)
+		{
+			logger.log(Level.SEVERE, "Error while opening device for capture: " + errbuf.toString());
+			return;
+		}
+
+		String ownAddress = device.getAddresses().get(0).getAddr().toString();
+		ownAddress = ownAddress.substring(7, ownAddress.length() - 1);
+
+		int ownIpInt;
+
+		try
+		{
+			ownIpInt = stringToIntIp(ownAddress);
+		}
+		catch (UnknownHostException uhe)
+		{
+			logger.log(Level.SEVERE, "Unable convert own IP address " + ownAddress + " to integer. Debug info: " + device.getAddresses().get(0).getAddr() + "\nUnable to capture");
+			return;
+		}
+
+		packetHandler = new FilteredCounterPacketHandler(ownIpInt, protocolsToCapture);
+
+		if (captureStartListener != null)
+			packetHandler.setCaptureStartListener(captureStartListener);
+
+		pcap.loop(Pcap.LOOP_INFINITE, packetHandler, null);
+
 	}
-	
-	packetHandler = new FilteredCounterPacketHandler(ownIpInt, protocolsToCapture);
-	
-	if (captureStartListener != null)
-	    packetHandler.setCaptureStartListener(captureStartListener);
 
-	pcap.loop(Pcap.LOOP_INFINITE, packetHandler, null);
-
-    }
-    
-    public void stopCapture()
-    {
-	pcap.breakloop();
-    }
-
-    public ArrayList<IpAppearancesCounter> getResults()
-    {
-	return packetHandler.getListOfIpAppearances();
-    }
-    
-    public void cleanup()
-    {
-	if (pcap != null)
+	public void stopCapture()
 	{
-	    stopCapture();
-	    pcap.close();	    
+		pcap.breakloop();
 	}
-    }
-    
-    public void setCapureStartListener(CaptureStartListener listener)
-    {
-	captureStartListener = listener;
-    }
+
+	public ArrayList<IpAppearancesCounter> getResults()
+	{
+		return packetHandler.getListOfIpAppearances();
+	}
+
+	public void cleanup()
+	{
+		if (pcap != null)
+		{
+			stopCapture();
+			pcap.close();
+		}
+	}
+
+	public void setCapureStartListener(CaptureStartListener listener)
+	{
+		captureStartListener = listener;
+	}
 }

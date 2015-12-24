@@ -10,40 +10,40 @@ import javafx.scene.layout.VBox;
 public class VisualTraceController
 {
 
-    @FXML
-    private ScrollPane scrollerChkboxes;
-    @FXML
-    private ImageView imgView;
-    @FXML
-    private Button btnClose;
-    @FXML
-    private VBox vboxChkboxes;
-    @FXML
-    Label labelLoading;
+	@FXML
+	private ScrollPane scrollerChkboxes;
+	@FXML
+	private ImageView imgView;
+	@FXML
+	private Button btnClose;
+	@FXML
+	private VBox vboxChkboxes;
+	@FXML
+	Label labelLoading;
 
-    public ScrollPane getScrollerChkboxes()
-    {
-	return scrollerChkboxes;
-    }
+	public ScrollPane getScrollerChkboxes()
+	{
+		return scrollerChkboxes;
+	}
 
-    public ImageView getImgView()
-    {
-	return imgView;
-    }
+	public ImageView getImgView()
+	{
+		return imgView;
+	}
 
-    public Button getBtnClose()
-    {
-	return btnClose;
-    }
+	public Button getBtnClose()
+	{
+		return btnClose;
+	}
 
-    public VBox getVboxChkboxes()
-    {
-	return vboxChkboxes;
-    }
-    
-    public Label getLoadingLabel()
-    {
-	return labelLoading;
-    }
+	public VBox getVboxChkboxes()
+	{
+		return vboxChkboxes;
+	}
+
+	public Label getLoadingLabel()
+	{
+		return labelLoading;
+	}
 
 }

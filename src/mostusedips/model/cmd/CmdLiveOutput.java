@@ -10,79 +10,81 @@ import mostusedips.Main;
 
 public class CmdLiveOutput
 {
-    private String command;
-    private LiveOutputListener outputListener;
-    private static final Logger logger = Logger.getLogger(Main.getAppName());
+	private String command;
+	private LiveOutputListener outputListener;
+	private static final Logger logger = Logger.getLogger(Main.getAppName());
 
-    public CmdLiveOutput()
-    {
-    }
+	public CmdLiveOutput()
+	{
+	}
 
-    public CmdLiveOutput(String command)
-    {
-	this(command, null);
-    }
+	public CmdLiveOutput(String command)
+	{
+		this(command, null);
+	}
 
-    public CmdLiveOutput(String command, LiveOutputListener listener)
-    {
-	this.command = command;
-	outputListener = listener;
-    }
+	public CmdLiveOutput(String command, LiveOutputListener listener)
+	{
+		this.command = command;
+		outputListener = listener;
+	}
 
-    public void runCommand()
-    {
-	if (command == null)
-	    return;
-	
-	new Thread(new Runnable(){
+	public void runCommand()
+	{
+		if (command == null)
+			return;
 
-	    @Override
-	    public void run()
-	    {
-		Process process;
-		try
+		new Thread(new Runnable()
 		{
-		    process = Runtime.getRuntime().exec(command);
-		    BufferedReader inputStream = new BufferedReader(new InputStreamReader(process.getInputStream()));
-		    String line = "";
-		    
-		    while ((line = inputStream.readLine()) != null)
-			if (outputListener != null)
-			    outputListener.lineReady(line);
-		    
-		}
-		catch (IOException e)
-		{
-		    logger.log(Level.SEVERE, "Unable to execute command " + command , e);
-		}
-		finally
-		{
-		    if (outputListener != null)
-			outputListener.endOfOutput();
-		}
-		
-	    }}).start();
 
-    }
+			@Override
+			public void run()
+			{
+				Process process;
+				try
+				{
+					process = Runtime.getRuntime().exec(command);
+					BufferedReader inputStream = new BufferedReader(new InputStreamReader(process.getInputStream()));
+					String line = "";
 
-    public LiveOutputListener getOutputListener()
-    {
-	return outputListener;
-    }
+					while ((line = inputStream.readLine()) != null)
+						if (outputListener != null)
+							outputListener.lineReady(line);
 
-    public void setOutputListener(LiveOutputListener outputListener)
-    {
-	this.outputListener = outputListener;
-    }
+				}
+				catch (IOException e)
+				{
+					logger.log(Level.SEVERE, "Unable to execute command " + command, e);
+				}
+				finally
+				{
+					if (outputListener != null)
+						outputListener.endOfOutput();
+				}
 
-    public String getCommand()
-    {
-	return command;
-    }
+			}
+		}).start();
 
-    public void setCommand(String command)
-    {
-	this.command = command;
-    }
+	}
+
+	public LiveOutputListener getOutputListener()
+	{
+		return outputListener;
+	}
+
+	public void setOutputListener(LiveOutputListener outputListener)
+	{
+		this.outputListener = outputListener;
+	}
+
+	public String getCommand()
+	{
+		return command;
+	}
+
+	public void setCommand(String command)
+	{
+		this.command = command;
+	}
 
 }

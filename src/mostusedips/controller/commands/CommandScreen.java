@@ -18,139 +18,138 @@ import mostusedips.model.cmd.LiveOutputListener;
 
 public abstract class CommandScreen implements LiveOutputListener
 {
-    protected final static String commandFormLocation = "/mostusedips/view/CommandForm.fxml";
-    protected final static Logger logger = Logger.getLogger(Main.getAppName());
-    
-    private Scene postCloseScene;
-    private Stage stage;
-    private String commandStr;
-    
-    private Parent loadedFXML;
-    private CmdGUIController cmdController;
-    private CmdLiveOutput cmdLiveOutput;
-    
-    private StringBuilder output = new StringBuilder();
-    private boolean outputReady = false;
-    
-    public CommandScreen(Stage stage, Scene scene)
-    {
-	this(stage, scene, "");
-    }
-    
-    public CommandScreen(Stage stage, Scene scene, String commandStr)
-    {
-	this.setCommandStr(commandStr);
-	setPostCloseScene(stage, scene);
-	initScreen();
-    }
-    
-    protected void initScreen()
-    {
-	FXMLLoader loader;
+	protected final static String commandFormLocation = "/mostusedips/view/CommandForm.fxml";
+	protected final static Logger logger = Logger.getLogger(Main.getAppName());
 
-	try
-	{
-	    loader = new FXMLLoader(getClass().getResource(commandFormLocation));
-	    setLoadedFXML(loader.load());
+	private Scene postCloseScene;
+	private Stage stage;
+	private String commandStr;
 
-	}
-	catch (IOException e)
+	private Parent loadedFXML;
+	private CmdGUIController cmdController;
+	private CmdLiveOutput cmdLiveOutput;
+
+	private StringBuilder output = new StringBuilder();
+	private boolean outputReady = false;
+
+	public CommandScreen(Stage stage, Scene scene)
 	{
-	    logger.log(Level.SEVERE, "Unable to load resource " + commandFormLocation, e);
-	    return;
+		this(stage, scene, "");
 	}
 
-	cmdController = loader.<CmdGUIController> getController();
-	
-	cmdController.setCloseButtonStageAndScene(cmdController.getBtnClose(), stage, postCloseScene);
-    }
-    
-    public void showScreen()
-    {
-	Scene scene = new Scene(getLoadedFXML());
-	stage.setScene(scene);
-	stage.show();
-    }
-    
-    public void runCommand()
-    {
-	cmdLiveOutput = new CmdLiveOutput(commandStr, this);
-	cmdLiveOutput.runCommand();
-    }
-    
+	public CommandScreen(Stage stage, Scene scene, String commandStr)
+	{
+		this.setCommandStr(commandStr);
+		setPostCloseScene(stage, scene);
+		initScreen();
+	}
 
-    @Override
-    public void lineReady(String line)
-    {
-	cmdController.getTextAreaOutput().appendText(line + "\n");
-	output.append(line + "\n");
-    }
+	protected void initScreen()
+	{
+		FXMLLoader loader;
 
-    @Override
-    public void endOfOutput()
-    {
-	outputReady = true;
-    }
-    
-    public void setPostCloseScene(Stage stage, Scene scene)
-    {
-	this.stage = stage;
-	this.postCloseScene = scene;
-    }
-    
-    public TextArea getTextArea()
-    {
-	return cmdController.getTextAreaOutput();
-    }
-    
-    public HBox getBottomHBox()
-    {
-	return cmdController.getHboxBottom();
-    }
-    
-    public Button getCloseButton()
-    {
-	return cmdController.getBtnClose();
-    }
-    
-    public Scene getPostCloseScene()
-    {
-	return postCloseScene;
-    }
+		try
+		{
+			loader = new FXMLLoader(getClass().getResource(commandFormLocation));
+			setLoadedFXML(loader.load());
 
-    public Stage getStage()
-    {
-	return stage;
-    }
+		}
+		catch (IOException e)
+		{
+			logger.log(Level.SEVERE, "Unable to load resource " + commandFormLocation, e);
+			return;
+		}
 
-    public String getCommandStr()
-    {
-	return commandStr;
-    }
+		cmdController = loader.<CmdGUIController> getController();
 
-    public void setCommandStr(String commandStr)
-    {
-	this.commandStr = commandStr;
-    }
+		cmdController.setCloseButtonStageAndScene(cmdController.getBtnClose(), stage, postCloseScene);
+	}
 
-    public Parent getLoadedFXML()
-    {
-	return loadedFXML;
-    }
+	public void showScreen()
+	{
+		Scene scene = new Scene(getLoadedFXML());
+		stage.setScene(scene);
+		stage.show();
+	}
 
-    public void setLoadedFXML(Parent loadedFXML)
-    {
-	this.loadedFXML = loadedFXML;
-    }
+	public void runCommand()
+	{
+		cmdLiveOutput = new CmdLiveOutput(commandStr, this);
+		cmdLiveOutput.runCommand();
+	}
 
-    public String getOutput()
-    {
-	return output.toString();
-    }
-    
-    public boolean isOutputReady()
-    {
-	return outputReady;
-    }
+	@Override
+	public void lineReady(String line)
+	{
+		cmdController.getTextAreaOutput().appendText(line + "\n");
+		output.append(line + "\n");
+	}
+
+	@Override
+	public void endOfOutput()
+	{
+		outputReady = true;
+	}
+
+	public void setPostCloseScene(Stage stage, Scene scene)
+	{
+		this.stage = stage;
+		this.postCloseScene = scene;
+	}
+
+	public TextArea getTextArea()
+	{
+		return cmdController.getTextAreaOutput();
+	}
+
+	public HBox getBottomHBox()
+	{
+		return cmdController.getHboxBottom();
+	}
+
+	public Button getCloseButton()
+	{
+		return cmdController.getBtnClose();
+	}
+
+	public Scene getPostCloseScene()
+	{
+		return postCloseScene;
+	}
+
+	public Stage getStage()
+	{
+		return stage;
+	}
+
+	public String getCommandStr()
+	{
+		return commandStr;
+	}
+
+	public void setCommandStr(String commandStr)
+	{
+		this.commandStr = commandStr;
+	}
+
+	public Parent getLoadedFXML()
+	{
+		return loadedFXML;
+	}
+
+	public void setLoadedFXML(Parent loadedFXML)
+	{
+		this.loadedFXML = loadedFXML;
+	}
+
+	public String getOutput()
+	{
+		return output.toString();
+	}
+
+	public boolean isOutputReady()
+	{
+		return outputReady;
+	}
 
 }

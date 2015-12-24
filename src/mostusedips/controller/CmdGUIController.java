@@ -9,27 +9,26 @@ import mostusedips.view.SecondaryFXMLScreen;
 public class CmdGUIController extends SecondaryFXMLScreen
 {
 
-    @FXML
-    private TextArea textAreaOutput;
-    @FXML
-    private Button btnClose;
-    @FXML
-    private HBox hboxBottom;
+	@FXML
+	private TextArea textAreaOutput;
+	@FXML
+	private Button btnClose;
+	@FXML
+	private HBox hboxBottom;
 
-    
-    public TextArea getTextAreaOutput()
-    {
-	return textAreaOutput;
-    }
+	public TextArea getTextAreaOutput()
+	{
+		return textAreaOutput;
+	}
 
-    public HBox getHboxBottom()
-    {
-	return hboxBottom;
-    }
+	public HBox getHboxBottom()
+	{
+		return hboxBottom;
+	}
 
-    public Button getBtnClose()
-    {
-	return btnClose;
-    }
+	public Button getBtnClose()
+	{
+		return btnClose;
+	}
 
 }

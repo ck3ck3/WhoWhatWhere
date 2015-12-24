@@ -5,106 +5,106 @@ import javafx.beans.property.SimpleStringProperty;
 
 public class IPInfoRowModel
 {
-    private Integer rowID;
-    
-    private Integer packetCount;
-    private String ipAddress;
-    private String owner;
-    private String ping;
-    private String country;
-    private String region;
-    private String city;
-    
-    public IPInfoRowModel(Integer rowID, Integer packetCount, String ipAddress, String owner, String ping, String country, String region, String city)
-    {
-	this.rowID = rowID;
-	this.setPacketCount(new SimpleIntegerProperty(packetCount));
-	this.setIpAddress(new SimpleStringProperty(ipAddress));
-	this.setOwner(new SimpleStringProperty(owner));
-	this.setPing(new SimpleStringProperty(ping));
-	this.setCountry(new SimpleStringProperty(country));
-	this.setRegion(new SimpleStringProperty(region));
-	this.setCity(new SimpleStringProperty(city));
-    }
+	private Integer rowID;
 
-    public Integer getPacketCount()
-    {
-	return packetCount;
-    }
+	private Integer packetCount;
+	private String ipAddress;
+	private String owner;
+	private String ping;
+	private String country;
+	private String region;
+	private String city;
 
-    public void setPacketCount(SimpleIntegerProperty packetCount)
-    {
-	this.packetCount = packetCount.get();
-    }
+	public IPInfoRowModel(Integer rowID, Integer packetCount, String ipAddress, String owner, String ping, String country, String region, String city)
+	{
+		this.rowID = rowID;
+		this.setPacketCount(new SimpleIntegerProperty(packetCount));
+		this.setIpAddress(new SimpleStringProperty(ipAddress));
+		this.setOwner(new SimpleStringProperty(owner));
+		this.setPing(new SimpleStringProperty(ping));
+		this.setCountry(new SimpleStringProperty(country));
+		this.setRegion(new SimpleStringProperty(region));
+		this.setCity(new SimpleStringProperty(city));
+	}
 
-    public String getIpAddress()
-    {
-	return ipAddress;
-    }
+	public Integer getPacketCount()
+	{
+		return packetCount;
+	}
 
-    public void setIpAddress(SimpleStringProperty ipAddress)
-    {
-	this.ipAddress = ipAddress.get();
-    }
+	public void setPacketCount(SimpleIntegerProperty packetCount)
+	{
+		this.packetCount = packetCount.get();
+	}
 
-    public String getOwner()
-    {
-	return owner;
-    }
+	public String getIpAddress()
+	{
+		return ipAddress;
+	}
 
-    public void setOwner(SimpleStringProperty owner)
-    {
-	this.owner = owner.get();
-    }
+	public void setIpAddress(SimpleStringProperty ipAddress)
+	{
+		this.ipAddress = ipAddress.get();
+	}
 
-    public String getCountry()
-    {
-	return country;
-    }
+	public String getOwner()
+	{
+		return owner;
+	}
 
-    public void setCountry(SimpleStringProperty country)
-    {
-	this.country = country.get();
-    }
+	public void setOwner(SimpleStringProperty owner)
+	{
+		this.owner = owner.get();
+	}
 
-    public String getRegion()
-    {
-	return region;
-    }
+	public String getCountry()
+	{
+		return country;
+	}
 
-    public void setRegion(SimpleStringProperty region)
-    {
-	this.region = region.get();
-    }
+	public void setCountry(SimpleStringProperty country)
+	{
+		this.country = country.get();
+	}
 
-    public String getCity()
-    {
-	return city;
-    }
+	public String getRegion()
+	{
+		return region;
+	}
 
-    public void setCity(SimpleStringProperty city)
-    {
-	this.city = city.get();
-    }
+	public void setRegion(SimpleStringProperty region)
+	{
+		this.region = region.get();
+	}
 
-    public Integer getRowID()
-    {
-	return rowID;
-    }
+	public String getCity()
+	{
+		return city;
+	}
 
-    public void setRowID(Integer rowID)
-    {
-	this.rowID = rowID;
-    }
+	public void setCity(SimpleStringProperty city)
+	{
+		this.city = city.get();
+	}
 
-    public String getPing()
-    {
-	return ping;
-    }
+	public Integer getRowID()
+	{
+		return rowID;
+	}
 
-    public void setPing(SimpleStringProperty ping)
-    {
-	this.ping = ping.get();
-    }
+	public void setRowID(Integer rowID)
+	{
+		this.rowID = rowID;
+	}
+
+	public String getPing()
+	{
+		return ping;
+	}
+
+	public void setPing(SimpleStringProperty ping)
+	{
+		this.ping = ping.get();
+	}
 
 }

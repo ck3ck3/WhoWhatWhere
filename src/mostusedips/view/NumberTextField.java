@@ -8,105 +8,105 @@ import javafx.scene.control.TextField;
 
 public class NumberTextField extends TextField
 {
-    private Integer minValue = null;
-    private Integer maxValue = null;
+	private Integer minValue = null;
+	private Integer maxValue = null;
 
-    public NumberTextField()
-    {
-	this(null, null, null);
-    }
-
-    public NumberTextField(String text)
-    {
-	this(text, null, null);
-    }
-
-    public NumberTextField(String text, Integer minValue)
-    {
-	this(text, minValue, null);
-    }
-
-    public NumberTextField(String text, Integer minValue, Integer maxValue)
-    {
-	super(text);
-	this.setMinValue(minValue);
-	this.setMaxValue(maxValue);
-
-	this.focusedProperty().addListener(new ChangeListener<Boolean>()
+	public NumberTextField()
 	{
-	    @Override
-	    public void changed(ObservableValue<? extends Boolean> arg0, Boolean oldPropertyValue, Boolean newPropertyValue)
-	    {
-		if (!newPropertyValue) //focus out
+		this(null, null, null);
+	}
+
+	public NumberTextField(String text)
+	{
+		this(text, null, null);
+	}
+
+	public NumberTextField(String text, Integer minValue)
+	{
+		this(text, minValue, null);
+	}
+
+	public NumberTextField(String text, Integer minValue, Integer maxValue)
+	{
+		super(text);
+		this.setMinValue(minValue);
+		this.setMaxValue(maxValue);
+
+		this.focusedProperty().addListener(new ChangeListener<Boolean>()
 		{
-		    if (!validate(getText()))
-		    {
-			String validRange = "";
-			
-			if (minValue != null && maxValue != null)
-			    validRange = "between " + minValue + " and " + maxValue;
-			else
-			    if (minValue != null)
-				validRange = ">= " + minValue;
-			    else
-				if (maxValue != null)
-				    validRange = "<= " + maxValue;
-			
-			Alert alert = new Alert(AlertType.ERROR, "Input \"" + getText() + "\" is not a number " + validRange);
-			alert.showAndWait();
-			requestFocus();
-		    }
+			@Override
+			public void changed(ObservableValue<? extends Boolean> arg0, Boolean oldPropertyValue, Boolean newPropertyValue)
+			{
+				if (!newPropertyValue) //focus out
+				{
+					if (!validate(getText()))
+					{
+						String validRange = "";
+
+						if (minValue != null && maxValue != null)
+							validRange = "between " + minValue + " and " + maxValue;
+						else
+							if (minValue != null)
+								validRange = ">= " + minValue;
+							else
+								if (maxValue != null)
+									validRange = "<= " + maxValue;
+
+						Alert alert = new Alert(AlertType.ERROR, "Input \"" + getText() + "\" is not a number " + validRange);
+						alert.showAndWait();
+						requestFocus();
+					}
+				}
+			}
+		});
+	}
+
+	private boolean validate(String text)
+	{
+		if (text.isEmpty())
+			return false;
+
+		int value;
+		try
+		{
+			value = Integer.valueOf(text);
 		}
-	    }
-	});
-    }
+		catch (NumberFormatException nfe) //not a number
+		{
+			return false;
+		}
 
-    private boolean validate(String text)
-    {
-	    if (text.isEmpty())
-		return false;
+		if (getMinValue() != null && value < getMinValue())
+			return false;
 
-	    int value;
-	    try
-	    {
-		value = Integer.valueOf(text);
-	    }
-	    catch(NumberFormatException nfe) //not a number
-	    {
-		return false;
-	    }
+		if (getMaxValue() != null && value > getMaxValue())
+			return false;
 
-	    if (getMinValue() != null && value < getMinValue())
-		return false;
+		return true;
+	}
 
-	    if (getMaxValue() != null && value > getMaxValue())
-		return false;
+	public Integer getValue()
+	{
+		return Integer.valueOf(getText());
+	}
 
-	    return true;
-    }
+	public Integer getMinValue()
+	{
+		return minValue;
+	}
 
-    public Integer getValue()
-    {
-	return Integer.valueOf(getText());
-    }
+	public void setMinValue(Integer minValue)
+	{
+		this.minValue = minValue;
+	}
 
-    public Integer getMinValue()
-    {
-	return minValue;
-    }
+	public Integer getMaxValue()
+	{
+		return maxValue;
+	}
 
-    public void setMinValue(Integer minValue)
-    {
-	this.minValue = minValue;
-    }
-
-    public Integer getMaxValue()
-    {
-	return maxValue;
-    }
-
-    public void setMaxValue(Integer maxValue)
-    {
-	this.maxValue = maxValue;
-    }
+	public void setMaxValue(Integer maxValue)
+	{
+		this.maxValue = maxValue;
+	}
 }
