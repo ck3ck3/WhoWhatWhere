@@ -31,7 +31,7 @@ public class Main extends Application
 {
     private final static String iconResource16 = "/ip16.jpg";
     private final static String iconResource32 = "/ip32.jpg";
-    private final static String appTitle = "Most used IPs";
+    private final static String appTitle = "Most Used IPs";
 
     private Logger logger;
     private TrayIcon trayIcon;
@@ -85,7 +85,7 @@ public class Main extends Application
 		}
 	    });
 
-	    Parent root = FXMLLoader.load(getClass().getResource(GUIController.getMainformlocation()));
+	    Parent root = FXMLLoader.load(getClass().getResource(GUIController.getMainFormlocation()));
 
 	    Scene scene = new Scene(root, 1024, 768);
 	    primaryStage.setTitle(appTitle);

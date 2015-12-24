@@ -1053,9 +1053,7 @@ public class GUIController implements Initializable, CaptureStartListener
 
 	File lastRun = new File(propsFileLocation);
 	Properties props = new Properties();
-	int intVal;
-	boolean boolVal;
-
+	
 	try
 	{
 	    if (lastRun.exists())
@@ -1071,46 +1069,17 @@ public class GUIController implements Initializable, CaptureStartListener
 	    logger.log(Level.SEVERE, "Unable to load properties file: " + e.getMessage(), e);
 	}
 
-	intVal = getIntProperty(props, "Selected NIC index");
-	((RadioButton) (vboxNICs.getChildren().get(intVal))).setSelected(true);
+	int nicIndex = getIntProperty(props, "Selected NIC index");
+	((RadioButton) (vboxNICs.getChildren().get(nicIndex))).setSelected(true);
 
-	protocolBoxesChecked = 0;
+	setProtocolCheckboxes(props);
+	setCaptureOptionsPane(props);
+	setHotkeyAndPane(props);
+	applyGUILogic();
+    }
 
-	boolVal = getBoolProperty(props, "chkboxUDP");
-	if (boolVal)
-	    protocolBoxesChecked++;
-
-	chkboxUDP.setSelected(boolVal);
-
-	boolVal = getBoolProperty(props, "chkboxTCP");
-	if (boolVal)
-	    protocolBoxesChecked++;
-
-	chkboxTCP.setSelected(boolVal);
-
-	boolVal = getBoolProperty(props, "chkboxICMP");
-	if (boolVal)
-	    protocolBoxesChecked++;
-
-	chkboxICMP.setSelected(boolVal);
-
-	boolVal = getBoolProperty(props, "chkboxHTTP");
-	if (boolVal)
-	    protocolBoxesChecked++;
-
-	chkboxHTTP.setSelected(boolVal);
-
-	if (protocolBoxesChecked == 0)
-	    chkboxAnyProtocol.setSelected(true);
-
-	radioTimedCapture.setSelected(getBoolProperty(props, "radioTimedCapture"));
-	numFieldCaptureTimeout.setText(props.getProperty("numFieldCaptureTimeout"));
-	radioManual.setSelected(getBoolProperty(props, "radioManual"));
-	chkboxGetLocation.setSelected(getBoolProperty(props, "chkboxGetLocation"));
-	chkboxPing.setSelected(getBoolProperty(props, "chkboxPing"));
-	numberFieldPingTimeout.setText(props.getProperty("numberFieldPingTimeout"));
-	chkboxUseHotkey.setSelected(getBoolProperty(props, "chkboxUseHotkey"));
-
+    private void setHotkeyAndPane(Properties props)
+    {
 	int modifiers = getIntProperty(props, "hotkey_modifiers");
 	int hotkey = getIntProperty(props, "hotkey_key");
 
@@ -1130,8 +1099,50 @@ public class GUIController implements Initializable, CaptureStartListener
 
 	for (CheckBox box : chkboxListColumns)
 	    box.setSelected(getBoolProperty(props, "TTSCheckBox " + box.getText()));
+    }
 
-	applyGUILogic();
+    private void setCaptureOptionsPane(Properties props)
+    {
+	radioTimedCapture.setSelected(getBoolProperty(props, "radioTimedCapture"));
+	numFieldCaptureTimeout.setText(props.getProperty("numFieldCaptureTimeout"));
+	radioManual.setSelected(getBoolProperty(props, "radioManual"));
+	chkboxGetLocation.setSelected(getBoolProperty(props, "chkboxGetLocation"));
+	chkboxPing.setSelected(getBoolProperty(props, "chkboxPing"));
+	numberFieldPingTimeout.setText(props.getProperty("numberFieldPingTimeout"));
+	chkboxUseHotkey.setSelected(getBoolProperty(props, "chkboxUseHotkey"));
+    }
+
+    private void setProtocolCheckboxes(Properties props)
+    {
+	boolean isChecked;
+	protocolBoxesChecked = 0;
+
+	isChecked = getBoolProperty(props, "chkboxUDP");
+	if (isChecked)
+	    protocolBoxesChecked++;
+
+	chkboxUDP.setSelected(isChecked);
+
+	isChecked = getBoolProperty(props, "chkboxTCP");
+	if (isChecked)
+	    protocolBoxesChecked++;
+
+	chkboxTCP.setSelected(isChecked);
+
+	isChecked = getBoolProperty(props, "chkboxICMP");
+	if (isChecked)
+	    protocolBoxesChecked++;
+
+	chkboxICMP.setSelected(isChecked);
+
+	isChecked = getBoolProperty(props, "chkboxHTTP");
+	if (isChecked)
+	    protocolBoxesChecked++;
+
+	chkboxHTTP.setSelected(isChecked);
+
+	if (protocolBoxesChecked == 0)
+	    chkboxAnyProtocol.setSelected(true);
     }
 
     /**
@@ -1152,13 +1163,11 @@ public class GUIController implements Initializable, CaptureStartListener
 	if (!chkboxFilterResults.isSelected())
 	    paneFilterResults.setDisable(true);
 
-	boolean ttsEnabled = chkboxUseTTS.isSelected();
-	if (!ttsEnabled)
+	if (!chkboxUseTTS.isSelected())
 	{
 	    paneUseTTS.setDisable(true);
 	    tts.setMuted(true);
 	}
-
     }
 
     private boolean getBoolProperty(Properties props, String key)
@@ -1168,7 +1177,7 @@ public class GUIController implements Initializable, CaptureStartListener
 	if (value == null)
 	    throw new IllegalArgumentException("The key \"" + key + "\" doesn't exist");
 
-	return (value.equals("true") ? true : false);
+	return value.equals("true");
 
     }
 
@@ -1207,7 +1216,7 @@ public class GUIController implements Initializable, CaptureStartListener
 
     }
 
-    public static String getMainformlocation()
+    public static String getMainFormlocation()
     {
 	return mainFormLocation;
     }
