@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,7 +32,13 @@ public class Main extends Application
 {
 	private final static String iconResource16 = "/ip16.jpg";
 	private final static String iconResource32 = "/ip32.jpg";
+	private final static String DLLx86Location = "/x86/jnetpcap.dll";
+	private final static String DLLx64Location = "/x64/jnetpcap.dll";
+	private final static String DLLName = "jnetpcap";
+	
 	private final static String appTitle = "Most Used IPs";
+	private final static int windowSizeX = 1024;
+	private final static int windowSizeY = 768;
 
 	private Logger logger;
 	private TrayIcon trayIcon;
@@ -40,12 +47,11 @@ public class Main extends Application
 	@Override
 	public void start(Stage primaryStage)
 	{
-
 		try
 		{
 			initLogger();
 
-			if (!loadJNetPCapDll())
+			if (!loadJnetpcapDll())
 			{
 				System.err.println("Unable to load jnetpcap native dll. See log file for details. Unable to continue, aborting.");
 				return;
@@ -57,37 +63,10 @@ public class Main extends Application
 			if (!initSysTray(primaryStage))
 				logger.log(Level.WARNING, "Unable to initialize system tray");
 
-			primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>()
-			{
-				public void handle(WindowEvent we)
-				{
-					we.consume(); //ignore the application's exit button, instead minimize to systray
-					Platform.runLater(new Runnable()
-					{
+			URL fxmlLocation = Main.class.getResource(GUIController.getMainFormlocation());
+			Parent root = FXMLLoader.load(fxmlLocation);
 
-						@Override
-						public void run()
-						{
-							try
-							{
-								tray.add(trayIcon);
-								trayIcon.displayMessage("Minimized to tray", "Still running in the background, double click this icon to restore the window. Use the \"Exit\" button to exit.",
-										MessageType.INFO);
-								primaryStage.hide();
-							}
-							catch (Exception e)
-							{
-								logger.log(Level.WARNING, "Unable to minimize to tray", e);
-							}
-
-						}
-					});
-				}
-			});
-
-			Parent root = FXMLLoader.load(getClass().getResource(GUIController.getMainFormlocation()));
-
-			Scene scene = new Scene(root, 1024, 768);
+			Scene scene = new Scene(root, windowSizeX, windowSizeY);
 			primaryStage.setTitle(appTitle);
 			primaryStage.setScene(scene);
 			primaryStage.show();
@@ -101,26 +80,25 @@ public class Main extends Application
 	/**
 	 * @return true if successfully loaded, false otherwise
 	 */
-	private boolean loadJNetPCapDll()
+	private boolean loadJnetpcapDll()
 	{
 		try
 		{
-			System.loadLibrary("jnetpcap"); //expected to throw exception on first run only
+			System.loadLibrary(DLLName); //expected to throw exception on first run only
 		}
 		catch (UnsatisfiedLinkError ule)
 		{
 			try
 			{
-				UnsatisfiedLinkError exception32 = tryLoadingDll("/x86/jnetpcap.dll", "jnetpcap");
-
-				if (exception32 != null) //we did get an error, try x64 instead
+				UnsatisfiedLinkError exceptionX86 = tryLoadingDll(DLLx86Location, DLLName);
+				if (exceptionX86 != null) //we did get an error, try x64 instead
 				{
-					UnsatisfiedLinkError exception64 = tryLoadingDll("/x64/jnetpcap.dll", "jnetpcap");
+					UnsatisfiedLinkError exceptionX64 = tryLoadingDll(DLLx64Location, DLLName);
 
-					if (exception64 != null) //we failed again, nothing we can do now
+					if (exceptionX64 != null) //we failed again, nothing we can do now
 					{
-						logger.log(Level.SEVERE, "Unable to load jnetpcap.dll x86 version", exception32);
-						logger.log(Level.SEVERE, "Unable to load jnetpcap.dll x64 version", exception64);
+						logger.log(Level.SEVERE, "Unable to load jnetpcap.dll x86 version", exceptionX86);
+						logger.log(Level.SEVERE, "Unable to load jnetpcap.dll x64 version", exceptionX64);
 						return false;
 					}
 				}
@@ -150,7 +128,7 @@ public class Main extends Application
 		{
 			String currDir = System.getProperty("user.dir");
 			InputStream dll = Main.class.getResourceAsStream(copyDllFrom);
-			FileOutputStream dstFile = new FileOutputStream(currDir + "/jnetpcap.dll");
+			FileOutputStream dstFile = new FileOutputStream(currDir + "/" + libName + ".dll");
 
 			IOUtils.copy(dll, dstFile);
 			IOUtils.closeQuietly(dstFile);
@@ -204,6 +182,34 @@ public class Main extends Application
 			};
 
 			trayIcon.addActionListener(listenerTray);
+			
+			primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>()
+			{
+				public void handle(WindowEvent we)
+				{
+					we.consume(); //ignore the application's exit button, instead minimize to systray
+					Platform.runLater(new Runnable()
+					{
+
+						@Override
+						public void run()
+						{
+							try
+							{
+								tray.add(trayIcon);
+								trayIcon.displayMessage("Minimized to tray", "Still running in the background, double click this icon to restore the window. Use the \"Exit\" button to exit.",
+										MessageType.INFO);
+								primaryStage.hide();
+							}
+							catch (Exception e)
+							{
+								logger.log(Level.WARNING, "Unable to minimize to tray", e);
+							}
+
+						}
+					});
+				}
+			});
 
 			return true;
 		}
