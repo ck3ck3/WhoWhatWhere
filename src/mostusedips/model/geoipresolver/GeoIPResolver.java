@@ -2,6 +2,7 @@ package mostusedips.model.geoipresolver;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -22,6 +23,8 @@ public class GeoIPResolver
 	private static final String failMsg = "fail";
 	private static final Logger logger = Logger.getLogger(Main.getAppName());
 	private static final int maxQueriesPerMin = 200;
+	private static final int connectionTimeout = 1500;
+	private static final int readTimeout = 1500;
 	private static int queryCounter = 0;
 
 	public static GeoIPInfo getIPInfo(String ip)
@@ -36,15 +39,19 @@ public class GeoIPResolver
 
 		try
 		{
-			InputStream is = new URL(serviceBaseURI + ip).openStream();
-			DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-			doc = db.parse(is);
-			is.close();
+			URLConnection serviceURL = new URL(serviceBaseURI + ip).openConnection();
+			serviceURL.setConnectTimeout(connectionTimeout);
+			serviceURL.setReadTimeout(readTimeout);
+			
+			InputStream serviceInputStream = serviceURL.getInputStream();
+			DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			doc = docBuilder.parse(serviceInputStream);
+			serviceInputStream.close();
 		}
 		catch (Exception e)
 		{
 			logger.log(Level.SEVERE, "Unable to get GeoIP info for IP " + ip, e);
-			return null;
+			return parseResponse(null);
 		}
 
 		return parseResponse(doc);
@@ -80,6 +87,13 @@ public class GeoIPResolver
 
 		NodeList elements;
 		String text;
+		
+		if (doc == null) //geoIP connection timed out
+		{
+			ipInfo.setSuccess(false);
+			ipInfo.setMessage("Fail: Connection to GeoIP service timed out");
+			return ipInfo;			
+		}
 
 		elements = doc.getElementsByTagName("status");
 		text = elements.item(0).getTextContent();

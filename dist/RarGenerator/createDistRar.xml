@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_dist_rar" name="Create Runnable Jar for Project Most used IPs with Jar-in-Jar Loader">
+	<!--this file was created by Eclipse Runnable JAR file Export Wizard-->
+	<!--ANT 1.7 is required-->
+	<!--define folder properties-->
+	<property name="dir.buildfile" value="." />
+	<property name="dir.workspace" value="${dir.buildfile}" />
+	<property name="dir.jarfile" value="MostUsedIPs" />
+	<target name="create_dist_rar">
+		<jar destfile="MostUsedIPs/MostUsedIPs.jar">
+			<manifest>
+				<attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader" />
+				<attribute name="Rsrc-Main-Class" value="mostusedips.Main" />
+				<attribute name="Class-Path" value="." />
+				<attribute name="Rsrc-Class-Path" value="./ org.eclipse.fx.ide.css.jfx8_2.1.0.201508240705.jar freetts.jar en_us.jar cmutimelex.jar cmu_time_awb.jar cmulex.jar cmu_us_kal.jar cmudict04.jar commons-io-2.4.jar freetts-jsapi10.jar jnativehook-2.0.2.jar jnetpcap.jar" />
+			</manifest>
+			<zipfileset src="jar-in-jar-loader.zip" />
+			<fileset dir="../../bin" />
+			<zipfileset dir="." includes="org.eclipse.fx.ide.css.jfx8_2.1.0.201508240705.jar" />
+			<zipfileset dir="../../lib" includes="freetts.jar" />
+			<zipfileset dir="../../lib" includes="en_us.jar" />
+			<zipfileset dir="../../lib" includes="cmutimelex.jar" />
+			<zipfileset dir="../../lib" includes="cmu_time_awb.jar" />
+			<zipfileset dir="../../lib" includes="cmulex.jar" />
+			<zipfileset dir="../../lib" includes="cmu_us_kal.jar" />
+			<zipfileset dir="../../lib" includes="cmudict04.jar" />
+			<zipfileset dir="../../lib" includes="commons-io-2.4.jar" />
+			<zipfileset dir="../../lib" includes="freetts-jsapi10.jar" />
+			<zipfileset dir="../../lib" includes="jnativehook-2.0.2.jar" />
+			<zipfileset dir="../../lib" includes="jnetpcap.jar" />
+		</jar>
+		<mkdir dir="MostUsedIPs" />
+		<exec executable="cmd">
+			<arg value="/c" />
+			<arg value="launch4jc" />
+			<arg value="mostUsedIPs-launch4j.xml" />
+		</exec>
+		<delete file="MostUsedIPs/MostUsedIPs.jar" />
+		<exec executable="cmd">
+			<arg value="/c" />
+			<arg value="rar" />
+			<arg value="a" />
+			<arg value="../MostUsedIPs.rar" />
+			<arg value="MostUsedIPs" />
+		</exec>
+		<delete dir="MostUsedIPs" />
+	</target>
+</project>

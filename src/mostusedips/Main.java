@@ -90,18 +90,8 @@ public class Main extends Application
 		{
 			try
 			{
-				UnsatisfiedLinkError exceptionX86 = tryLoadingDll(DLLx86Location, DLLName);
-				if (exceptionX86 != null) //we did get an error, try x64 instead
-				{
-					UnsatisfiedLinkError exceptionX64 = tryLoadingDll(DLLx64Location, DLLName);
-
-					if (exceptionX64 != null) //we failed again, nothing we can do now
-					{
-						logger.log(Level.SEVERE, "Unable to load jnetpcap.dll x86 version", exceptionX86);
-						logger.log(Level.SEVERE, "Unable to load jnetpcap.dll x64 version", exceptionX64);
-						return false;
-					}
-				}
+				if (!tryLoadingDll(DLLx86Location, DLLName, false)) //if loading the x86 version failed, no need to log the error yet. try loading the x64 version
+					return tryLoadingDll(DLLx64Location, DLLName, true); //if this fails, write a log entry
 			}
 			catch (IOException ioe)
 			{
@@ -114,20 +104,21 @@ public class Main extends Application
 	}
 
 	/**
-	 * @param copyDllFrom
-	 *            - name of the dll resource
-	 * @param libName
-	 *            - name of the library
-	 * @return null on success, an UnsatisfiedLinkError otherwise
-	 * @throws IOException
-	 *             if copying the file from resources to current dir fails
+	 * @param copyDllFrom - relative path from the resources dir to the dll to be copied 
+	 * @param libName - the library's name (without the ".dll")
+	 * @param logULE - if true, caught UnsatisfiedLinkError will be logged.
+	 * @return true if successfully loaded, false otherwise
 	 */
-	private UnsatisfiedLinkError tryLoadingDll(String copyDllFrom, String libName) throws IOException
+	private boolean tryLoadingDll(String copyDllFrom, String libName, boolean logULE) throws IOException
 	{
 		try
 		{
 			String currDir = System.getProperty("user.dir");
 			InputStream dll = Main.class.getResourceAsStream(copyDllFrom);
+			
+			if (dll == null)
+				throw new IOException("Unable to find " + copyDllFrom + " in resources");
+			
 			FileOutputStream dstFile = new FileOutputStream(currDir + "/" + libName + ".dll");
 
 			IOUtils.copy(dll, dstFile);
@@ -137,10 +128,13 @@ public class Main extends Application
 		}
 		catch (UnsatisfiedLinkError ule)
 		{
-			return ule;
+			if (logULE)
+				logger.log(Level.SEVERE, "Unable to load " + copyDllFrom, ule);
+			
+			return false;
 		}
 
-		return null;
+		return true;
 	}
 
 	private void initLogger() throws IOException
@@ -190,7 +184,6 @@ public class Main extends Application
 					we.consume(); //ignore the application's exit button, instead minimize to systray
 					Platform.runLater(new Runnable()
 					{
-
 						@Override
 						public void run()
 						{
@@ -205,7 +198,6 @@ public class Main extends Application
 							{
 								logger.log(Level.WARNING, "Unable to minimize to tray", e);
 							}
-
 						}
 					});
 				}
