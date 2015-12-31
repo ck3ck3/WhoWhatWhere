@@ -2,3 +2,4 @@ bin
 Most used IPs.properties
 /jnetpcap.dll
 Most Used IPs.log*
+/target/

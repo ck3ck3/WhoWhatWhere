@@ -32,7 +32,7 @@ public class IpSniffer
 
 		int r = Pcap.findAllDevs(alldevs, errbuf);
 
-		if (r == Pcap.NOT_OK || alldevs.isEmpty())
+		if (r == Pcap.ERROR || alldevs.isEmpty())
 		{
 			logger.log(Level.SEVERE, "Can't read list of devices, error is " + errbuf.toString());
 			return null;

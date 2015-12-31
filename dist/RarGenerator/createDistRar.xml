@@ -5,6 +5,9 @@
 	<!--define folder properties-->
 	<property name="dir.buildfile" value="." />
 	<property name="dir.workspace" value="${dir.buildfile}" />
+	
+	<property name="dir.maven_repo" value="E:/.m2/repository"/> <!-- HARDCODED PATH, MODIFY IF NEEDED -->
+
 	<property name="dir.jarfile" value="MostUsedIPs" />
 	<target name="create_dist_rar">
 		<jar destfile="MostUsedIPs/MostUsedIPs.jar">
@@ -12,22 +15,25 @@
 				<attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader" />
 				<attribute name="Rsrc-Main-Class" value="mostusedips.Main" />
 				<attribute name="Class-Path" value="." />
-				<attribute name="Rsrc-Class-Path" value="./ org.eclipse.fx.ide.css.jfx8_2.1.0.201508240705.jar freetts.jar en_us.jar cmutimelex.jar cmu_time_awb.jar cmulex.jar cmu_us_kal.jar cmudict04.jar commons-io-2.4.jar freetts-jsapi10.jar jnativehook-2.0.2.jar jnetpcap.jar" />
+				<attribute name="Rsrc-Class-Path" value="./ org.eclipse.fx.ide.css.jfx8_2.1.0.201508240705.jar github-api-1.72.jar commons-lang-2.6.jar commons-codec-1.7.jar jackson-databind-2.2.3.jar jackson-annotations-2.2.3.jar jackson-core-2.2.3.jar commons-io-1.4.jar bridge-method-annotation-1.14.jar annotation-indexer-1.4.jar jnativehook-2.0.2.jar freetts-1.2.2.jar jnetpcap-1.4.r1425-1f.jar" />
 			</manifest>
 			<zipfileset src="jar-in-jar-loader.zip" />
-			<fileset dir="../../bin" />
+			<fileset dir="../../target/classes" />
 			<zipfileset dir="." includes="org.eclipse.fx.ide.css.jfx8_2.1.0.201508240705.jar" />
-			<zipfileset dir="../../lib" includes="freetts.jar" />
-			<zipfileset dir="../../lib" includes="en_us.jar" />
-			<zipfileset dir="../../lib" includes="cmutimelex.jar" />
-			<zipfileset dir="../../lib" includes="cmu_time_awb.jar" />
-			<zipfileset dir="../../lib" includes="cmulex.jar" />
-			<zipfileset dir="../../lib" includes="cmu_us_kal.jar" />
-			<zipfileset dir="../../lib" includes="cmudict04.jar" />
-			<zipfileset dir="../../lib" includes="commons-io-2.4.jar" />
-			<zipfileset dir="../../lib" includes="freetts-jsapi10.jar" />
-			<zipfileset dir="../../lib" includes="jnativehook-2.0.2.jar" />
-			<zipfileset dir="../../lib" includes="jnetpcap.jar" />
+            <zipfileset dir="E:/eclipse/plugins" includes="org.eclipse.fx.ide.css.jfx8_2.1.0.201508240705.jar"/>
+            
+			<zipfileset dir="${dir.maven_repo}/org/kohsuke/github-api/1.72" includes="github-api-1.72.jar"/>
+            <zipfileset dir="${dir.maven_repo}/commons-lang/commons-lang/2.6" includes="commons-lang-2.6.jar"/>
+            <zipfileset dir="${dir.maven_repo}/commons-codec/commons-codec/1.7" includes="commons-codec-1.7.jar"/>
+            <zipfileset dir="${dir.maven_repo}/com/fasterxml/jackson/core/jackson-databind/2.2.3" includes="jackson-databind-2.2.3.jar"/>
+            <zipfileset dir="${dir.maven_repo}/com/fasterxml/jackson/core/jackson-annotations/2.2.3" includes="jackson-annotations-2.2.3.jar"/>
+            <zipfileset dir="${dir.maven_repo}/com/fasterxml/jackson/core/jackson-core/2.2.3" includes="jackson-core-2.2.3.jar"/>
+            <zipfileset dir="${dir.maven_repo}/commons-io/commons-io/1.4" includes="commons-io-1.4.jar"/>
+            <zipfileset dir="${dir.maven_repo}/com/infradna/tool/bridge-method-annotation/1.14" includes="bridge-method-annotation-1.14.jar"/>
+            <zipfileset dir="${dir.maven_repo}/org/jenkins-ci/annotation-indexer/1.4" includes="annotation-indexer-1.4.jar"/>
+            <zipfileset dir="${dir.maven_repo}/com/1stleg/jnativehook/2.0.2" includes="jnativehook-2.0.2.jar"/>
+            <zipfileset dir="${dir.maven_repo}/net/sf/sociaal/freetts/1.2.2" includes="freetts-1.2.2.jar"/>
+            <zipfileset dir="${dir.maven_repo}/jnetpcap/jnetpcap/1.4.r1425-1f" includes="jnetpcap-1.4.r1425-1f.jar"/>
 		</jar>
 		<mkdir dir="MostUsedIPs" />
 		<exec executable="cmd">
