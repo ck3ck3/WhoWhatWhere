@@ -5,53 +5,74 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<SplitPane fx:id="splitPaneRoot" dividerPositions="0.36" orientation="VERTICAL" prefHeight="768.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mostusedips.controller.GUIController">
+
+<SplitPane fx:id="splitPaneRoot" dividerPositions="0.4" orientation="VERTICAL" prefHeight="768.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mostusedips.controller.GUIController">
    <items>
-      <SplitPane dividerPositions="0.5" prefHeight="190.0" prefWidth="1024.0">
-         <items>
-            <ScrollPane fx:id="scrollPane">
-               <content>
-                  <VBox fx:id="vboxNICs" fillWidth="false" maxHeight="190.0" maxWidth="500.0" minHeight="190.0" minWidth="500.0" prefHeight="190.0" prefWidth="500.0">
+      <VBox maxHeight="300.0" minHeight="300.0">
+         <children>
+            <MenuBar>
+              <menus>
+                <Menu mnemonicParsing="false" text="File">
+                  <items>
+                        <MenuItem fx:id="menuItemMinimize" mnemonicParsing="false" text="Minimize to tray" />
+                    <MenuItem fx:id="menuItemExit" mnemonicParsing="false" text="Exit" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Help">
+                  <items>
+                        <MenuItem fx:id="menuItemUpdate" mnemonicParsing="false" text="Check for updates" />
+                    <MenuItem fx:id="menuItemAbout" mnemonicParsing="false" text="About" />
+                  </items>
+                </Menu>
+              </menus>
+            </MenuBar>
+            <SplitPane dividerPositions="0.5" prefHeight="275.0" prefWidth="1022.0">
+               <items>
+                  <ScrollPane fx:id="scrollPane">
+                     <content>
+                        <VBox fx:id="vboxNICs" fillWidth="false" maxHeight="190.0" maxWidth="500.0" minHeight="190.0" minWidth="500.0" prefHeight="190.0" prefWidth="500.0">
+                           <children>
+                              <Label text="Choose your network adapter:">
+                                 <padding>
+                                    <Insets left="10.0" top="10.0" />
+                                 </padding>
+                              </Label>
+                           </children>
+                        </VBox>
+                     </content>
+                  </ScrollPane>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="670.0" prefWidth="508.0">
                      <children>
-                        <Label text="Choose your network adapter:">
-                           <padding>
-                              <Insets left="10.0" top="10.0" />
-                           </padding>
-                        </Label>
-                     </children>
-                  </VBox>
-               </content>
-            </ScrollPane>
-            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="670.0" prefWidth="508.0">
-               <children>
-                  <AnchorPane fx:id="paneCaptureOptions" layoutX="7.0" layoutY="14.0" prefHeight="190.0" prefWidth="303.0">
-                     <children>
-                        <Label text="Count packets of these protocols:" />
-                        <CheckBox fx:id="chkboxAnyProtocol" disable="true" layoutX="7.0" layoutY="30.0" mnemonicParsing="false" text="Any protocol" />
-                        <CheckBox fx:id="chkboxUDP" layoutX="106.0" layoutY="30.0" mnemonicParsing="false" text="UDP" />
-                        <CheckBox fx:id="chkboxTCP" layoutX="157.0" layoutY="30.0" mnemonicParsing="false" text="TCP" />
-                        <CheckBox fx:id="chkboxICMP" layoutX="207.0" layoutY="30.0" mnemonicParsing="false" text="ICMP" />
-                        <CheckBox fx:id="chkboxHTTP" layoutX="266.0" layoutY="30.0" mnemonicParsing="false" text="HTTP" />
-                        <Label layoutX="260.0" layoutY="70.0" text="seconds" />
-                        <CheckBox fx:id="chkboxGetLocation" layoutY="127.0" mnemonicParsing="false" selected="true" text="Get location info for each IP address" />
-                        <RadioButton fx:id="radioManual" layoutY="95.0" mnemonicParsing="false" text="Manual capture" />
-                        <RadioButton fx:id="radioTimedCapture" layoutY="70.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="203.0" text="Automatically stop capturing after" />
-                        <CheckBox fx:id="chkboxPing" layoutY="155.0" mnemonicParsing="false" selected="true" text="Ping each IP address" />
-                        <Label layoutX="139.0" layoutY="155.0" text="Ping timeout:" />
-                        <Label layoutX="268.0" layoutY="155.0" text="milliseconds" />
+                        <AnchorPane fx:id="paneCaptureOptions" layoutX="7.0" layoutY="14.0" prefHeight="190.0" prefWidth="303.0">
+                           <children>
+                              <Label text="Count packets of these protocols:" />
+                              <CheckBox fx:id="chkboxAnyProtocol" disable="true" layoutX="7.0" layoutY="30.0" mnemonicParsing="false" text="Any protocol" />
+                              <CheckBox fx:id="chkboxUDP" layoutX="106.0" layoutY="30.0" mnemonicParsing="false" text="UDP" />
+                              <CheckBox fx:id="chkboxTCP" layoutX="157.0" layoutY="30.0" mnemonicParsing="false" text="TCP" />
+                              <CheckBox fx:id="chkboxICMP" layoutX="207.0" layoutY="30.0" mnemonicParsing="false" text="ICMP" />
+                              <CheckBox fx:id="chkboxHTTP" layoutX="266.0" layoutY="30.0" mnemonicParsing="false" text="HTTP" />
+                              <Label layoutX="260.0" layoutY="70.0" text="seconds" />
+                              <CheckBox fx:id="chkboxGetLocation" layoutY="127.0" mnemonicParsing="false" selected="true" text="Get location info for each IP address" />
+                              <RadioButton fx:id="radioManual" layoutY="95.0" mnemonicParsing="false" text="Manual capture" />
+                              <RadioButton fx:id="radioTimedCapture" layoutY="70.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="203.0" text="Automatically stop capturing after" />
+                              <CheckBox fx:id="chkboxPing" layoutY="155.0" mnemonicParsing="false" selected="true" text="Ping each IP address" />
+                              <Label layoutX="139.0" layoutY="155.0" text="Ping timeout:" />
+                              <Label layoutX="268.0" layoutY="155.0" text="milliseconds" />
+                           </children>
+                        </AnchorPane>
+                        <Button fx:id="btnStart" layoutX="7.0" layoutY="204.0" mnemonicParsing="false" text="Start capturing" />
+                        <Button fx:id="btnStop" layoutX="108.0" layoutY="204.0" mnemonicParsing="false" text="Stop capturing" />
+                        <Label fx:id="labelStatus" layoutX="7.0" layoutY="249.0" text="Status: Idle" />
                      </children>
                   </AnchorPane>
-                  <Button fx:id="btnStart" layoutX="7.0" layoutY="204.0" mnemonicParsing="false" text="Start capturing" />
-                  <Button fx:id="btnStop" layoutX="108.0" layoutY="204.0" mnemonicParsing="false" text="Stop capturing" />
-                  <Label fx:id="labelStatus" layoutX="7.0" layoutY="249.0" text="Status: Idle" />
-               </children>
-            </AnchorPane>
-         </items>
-      </SplitPane>
+               </items>
+            </SplitPane>
+         </children>
+      </VBox>
       <AnchorPane minHeight="0.0" minWidth="0.0" prefWidth="1022.0">
          <children>
             <Label layoutX="14.0" layoutY="14.0" text="Results:" />
-            <TableView fx:id="tableResults" layoutX="14.0" layoutY="43.0" prefHeight="251.0" prefWidth="990.0" stylesheets="mostusedips/view/tableResults.css" AnchorPane.bottomAnchor="193.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="43.0">
+            <TableView fx:id="tableResults" layoutX="14.0" layoutY="43.0" prefHeight="251.0" prefWidth="990.0" stylesheets="mostusedips/view/tableResults.css" AnchorPane.bottomAnchor="193.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="16.0">
                <columns>
                   <TableColumn fx:id="columnPacketCount" editable="false" prefWidth="94.0" sortType="DESCENDING" text="Packet Count" />
                   <TableColumn fx:id="columnIP" minWidth="8.0" prefWidth="122.0" text="IP Address" />

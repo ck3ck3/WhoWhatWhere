@@ -37,6 +37,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -47,7 +48,9 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioButton;
@@ -58,14 +61,18 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import mostusedips.Main;
 import mostusedips.controller.commands.ping.PingCommandScreen;
@@ -79,13 +86,9 @@ import mostusedips.model.ipsniffer.IpAppearancesCounter;
 import mostusedips.model.ipsniffer.IpSniffer;
 import mostusedips.model.tts.TextToSpeech;
 import mostusedips.view.NumberTextField;
-import javafx.scene.layout.Pane;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextField;
 
 public class GUIController implements Initializable, CaptureStartListener
 {
-	private final static String mainFormLocation = "/mostusedips/view/MainForm.fxml";
 	private final static String propsFileLocation = Main.getAppName() + ".properties";
 	private final static String defaultPropsResource = "/defaultLastRun.properties";
 	private final static String voiceForTTS = "kevin16";
@@ -211,6 +214,14 @@ public class GUIController implements Initializable, CaptureStartListener
 	ComboBox<String> comboColumns;
 	@FXML
 	TextField textColumnContains;
+	@FXML
+	MenuItem menuItemMinimize;
+	@FXML
+	MenuItem menuItemExit;
+	@FXML
+	MenuItem menuItemUpdate;
+	@FXML
+	MenuItem menuItemAbout;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
@@ -236,6 +247,51 @@ public class GUIController implements Initializable, CaptureStartListener
 
 		loadLastRunConfig();
 		initButtonHandlers();
+		initMenuBar();
+
+		checkForUpdates(true); //only show a message if there is a new version
+	}
+
+	private void initMenuBar()
+	{
+		menuItemMinimize.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				Stage stage = (Stage) splitPaneRoot.getScene().getWindow();
+				Event.fireEvent(stage, new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+			}
+		});
+
+		menuItemExit.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				exitButtonPressed();
+			}
+		});
+
+		menuItemUpdate.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				checkForUpdates(false);
+			}
+
+		});
+
+		menuItemAbout.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				showAboutWindow();
+			}
+		});
+
 	}
 
 	private void initHotkeyChangeAlert()
@@ -1216,11 +1272,6 @@ public class GUIController implements Initializable, CaptureStartListener
 
 	}
 
-	public static String getMainFormlocation()
-	{
-		return mainFormLocation;
-	}
-
 	public static void openInBrowser(String link)
 	{
 
@@ -1245,4 +1296,78 @@ public class GUIController implements Initializable, CaptureStartListener
 	{
 		return secondaryGeoIpPrefix;
 	}
+	
+	private void showAboutWindow()
+	{
+		String appName = Main.getAppName();
+		String version = Main.getReleaseVersion();
+		String website = Main.getWebsite();
+
+		Alert about = generateLabelAndLinkAlert(AlertType.INFORMATION, "About " + appName, appName + " version " + version, "For more information visit ", website);
+
+		about.show();
+	}
+
+	/**
+	 * @param silent
+	 *            - if true, a message will be shown only if there's a new
+	 *            update. if false, a message will be shown regardless.
+	 */
+	private void checkForUpdates(boolean silent)
+	{
+		boolean updateAvailable = false;
+		Alert alert = null;
+
+		try
+		{
+			updateAvailable = Main.isUpdateAvailable();
+
+			if (updateAvailable)
+				alert = generateLabelAndLinkAlert(AlertType.INFORMATION, "Check for updates", "New version available!", "Download the new version at ", Main.getWebsite());
+			else
+			{
+				alert = new Alert(AlertType.INFORMATION);
+				alert.setTitle("Check for updates");
+				alert.setHeaderText("No new updates available.");
+				alert.setContentText("You are running the latest version.");
+			}
+		}
+		catch (Exception e)
+		{
+			alert = new Alert(AlertType.ERROR);
+			alert.setHeaderText("Unable to check for updates");
+			alert.setHeaderText(e.getMessage());
+		}
+		finally
+		{
+			if (updateAvailable || !silent)
+				alert.showAndWait();
+		}
+	}
+
+	private Alert generateLabelAndLinkAlert(AlertType type, String title, String header, String text, String url)
+	{
+		Alert alert = new Alert(type);
+		alert.setTitle(title);
+		alert.setHeaderText(header);
+
+		FlowPane fp = new FlowPane();
+		Label lbl = new Label(text);
+		Hyperlink link = new Hyperlink(url);
+		link.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				openInBrowser(link.getText());
+				alert.close();
+			}
+		});
+		fp.getChildren().addAll(lbl, link);
+
+		alert.getDialogPane().contentProperty().set(fp);
+
+		return alert;
+	}
+
 }
