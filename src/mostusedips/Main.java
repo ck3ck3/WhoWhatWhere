@@ -1,6 +1,5 @@
 package mostusedips;
 
-import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
@@ -159,18 +158,17 @@ public class Main extends Application
 		TrayIcon trayIcon;
 		SystemTray tray;
 
-		primaryStage.getIcons().add(new Image(Main.class.getResourceAsStream(iconResource16)));
-		primaryStage.getIcons().add(new Image(Main.class.getResourceAsStream(iconResource32)));
-
 		if (SystemTray.isSupported())
 		{
+			primaryStage.getIcons().add(new Image(Main.class.getResourceAsStream(iconResource16)));
+			primaryStage.getIcons().add(new Image(Main.class.getResourceAsStream(iconResource32)));
+			
 			tray = SystemTray.getSystemTray();
 			java.awt.Image image = Toolkit.getDefaultToolkit().getImage(Main.class.getResource(iconResource16));
-			PopupMenu popup = new PopupMenu();
 
 			Platform.setImplicitExit(false); //needed to keep the app running while minimized to tray
 
-			trayIcon = new TrayIcon(image, appTitle, popup);
+			trayIcon = new TrayIcon(image, appTitle);
 
 			ActionListener listenerTray = new ActionListener()
 			{

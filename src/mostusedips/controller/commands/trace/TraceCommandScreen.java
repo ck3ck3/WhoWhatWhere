@@ -155,8 +155,8 @@ public class TraceCommandScreen extends CommandScreen
 
 		for (int i = 3; i < lines.length - 2; i++) //first few lines and last line are not relevant
 		{
-			String temp[] = lines[i].split(" ");
-			String ip = temp[temp.length - 1];
+			String spaceSeparated[] = lines[i].split(" ");
+			String ip = spaceSeparated[spaceSeparated.length - 1];
 			String hostname = "";
 			IPHostAndLabel ipInfo = new IPHostAndLabel();
 
@@ -166,7 +166,7 @@ public class TraceCommandScreen extends CommandScreen
 			if (ip.startsWith("[")) //then we have a hostname, not just an ip
 			{
 				ip = ip.substring(1, ip.length() - 1);
-				hostname = temp[temp.length - 2];
+				hostname = spaceSeparated[spaceSeparated.length - 2];
 			}
 
 			ipInfo.setIp(ip);
