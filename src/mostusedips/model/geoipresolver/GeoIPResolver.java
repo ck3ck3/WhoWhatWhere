@@ -22,7 +22,7 @@ public class GeoIPResolver
 	private static final String serviceBaseURI = "http://ip-api.com/xml/";
 	private static final String failMsg = "fail";
 	private static final Logger logger = Logger.getLogger(Main.getAppName());
-	private static final int maxQueriesPerMin = 200;
+	private static final int maxQueriesPerMin = 120;
 	private static final int connectionTimeout = 1500;
 	private static final int readTimeout = 1500;
 	private static int queryCounter = 0;
