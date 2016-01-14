@@ -137,7 +137,7 @@ public class TraceCommandScreen extends CommandScreen
 
 	private void openVisualTrace()
 	{
-		ArrayList<IPHostAndLabel> listOfIPs = getListOfIPs();
+		ArrayList<String> listOfIPs = getListOfIPs();
 		VisualTraceScreen visualTraceScreen = new VisualTraceScreen(listOfIPs);
 
 		Stage stage = getStage();
@@ -147,41 +147,34 @@ public class TraceCommandScreen extends CommandScreen
 		visualTraceScreen.showScreen();
 	}
 
-	private ArrayList<IPHostAndLabel> getListOfIPs()
+	private ArrayList<String> getListOfIPs()
 	{
-		ArrayList<IPHostAndLabel> listOfIPs = new ArrayList<IPHostAndLabel>();
+		ArrayList<String> listOfIPs = new ArrayList<String>();
 		String lines[] = getTextArea().getText().split(introMarker)[1].split("\n"); //get actual command output, after our intro string
-		char label = 'A';
 
 		for (int i = 3; i < lines.length - 2; i++) //first few lines and last line are not relevant
 		{
-			String spaceSeparated[] = lines[i].split(" ");
-			String ip = spaceSeparated[spaceSeparated.length - 1];
-			String hostname = "";
-			IPHostAndLabel ipInfo = new IPHostAndLabel();
-
+			String ip = extractIPFromLine(lines[i]);
+			
 			if (ip.equals("out.")) //"request timed out"
 				continue;
 
-			if (ip.startsWith("[")) //then we have a hostname, not just an ip
-			{
-				ip = ip.substring(1, ip.length() - 1);
-				hostname = spaceSeparated[spaceSeparated.length - 2];
-			}
-
-			ipInfo.setIp(ip);
-			ipInfo.setHostname(hostname);
-			ipInfo.setLabel(label);
-
-			listOfIPs.add(ipInfo);
-
-			if (label != 'Z')
-				label++; //trace is limited to 30 hops, so no need to worry about '9'
-			else
-				label = '0';
+			if (!lines[i].isEmpty())
+				listOfIPs.add(lines[i]);
 		}
 
 		return listOfIPs;
+	}
+	
+	static String extractIPFromLine(String ipInfo)
+	{
+		String spaceSeparated[] = ipInfo.split(" ");
+		String tempIP = spaceSeparated[spaceSeparated.length - 1];
+		
+		if (tempIP.startsWith("[")) //then we have a hostname, not just an ip
+			tempIP = tempIP.substring(1, tempIP.length() - 1);
+		
+		return tempIP;
 	}
 
 }

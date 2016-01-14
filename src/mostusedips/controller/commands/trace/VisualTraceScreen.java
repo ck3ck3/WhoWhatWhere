@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,15 +41,24 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 	private final static Logger logger = Logger.getLogger(Main.getAppName());
 
 	private VisualTraceController visualTraceController;
-	private ArrayList<IPHostAndLabel> listOfIPs;
+	private ArrayList<String> listOfIPs;
+	private HashMap<String, GeoIPInfo> geoIPResults = new HashMap<String, GeoIPInfo>();
 	private ArrayList<CheckBox> listOfChkBoxes = new ArrayList<CheckBox>();
 	private GenerateImageFromURLService imgService;
 
-	public VisualTraceScreen(ArrayList<IPHostAndLabel> listOfIPs)
+	public VisualTraceScreen(ArrayList<String> listOfIPs)
 	{
 		this.listOfIPs = listOfIPs;
 
 		imgService = new GenerateImageFromURLService(this);
+
+		for (String line : listOfIPs)
+		{
+			String ip = TraceCommandScreen.extractIPFromLine(line);
+			GeoIPInfo ipInfo = GeoIPResolver.getIPInfo(ip);
+
+			geoIPResults.put(ip, ipInfo);
+		}
 
 		initScreen();
 
@@ -95,9 +105,10 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 
 		VBox vbox = getVisualTraceController().getVboxChkboxes();
 
-		for (IPHostAndLabel ipInfo : listOfIPs)
+		char label = 'A';
+		for (String ipInfo : listOfIPs)
 		{
-			String text = ipInfo.getLabel() + ": " + ipInfo.getIp() + " (" + ipInfo.getHostname() + ")";
+			String text = label + ": " + ipInfo;//+ ipInfo.getIp() + " (" + ipInfo.getHostname() + ")";
 			CheckBox box = new CheckBox(text);
 
 			box.setSelected(true);
@@ -114,19 +125,38 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			listOfChkBoxes.add(box);
 			vbox.getChildren().add(box);
 
+			String tempIP = TraceCommandScreen.extractIPFromLine(ipInfo);
+
+			final String ip = tempIP;
+
 			Hyperlink geoIPLink = new Hyperlink("GeoIP info");
 			geoIPLink.setOnAction(new EventHandler<ActionEvent>()
 			{
-
 				@Override
 				public void handle(ActionEvent event)
 				{
-					GUIController.openInBrowser(GUIController.getSecondaryGeoIpPrefix() + ipInfo.getIp());
+					GUIController.openInBrowser(GUIController.getSecondaryGeoIpPrefix() + ip);
 				}
 			});
 
-			HBox hbox = new HBox(box, geoIPLink);
+			Hyperlink focusMapLink = new Hyperlink("Focus map here");
+			focusMapLink.setOnAction(new EventHandler<ActionEvent>()
+			{
+				@Override
+				public void handle(ActionEvent event)
+				{
+					imgService.setCenterOnIP(ip);
+					generateAndShowImage();
+				}
+			});
+
+			HBox hbox = new HBox(box, focusMapLink, geoIPLink);
 			vbox.getChildren().add(hbox);
+
+			if (label != 'Z')
+				label++; //trace is limited to 30 hops, so no need to worry about '9'
+			else
+				label = '0';
 		}
 
 		generateAndShowImage();
@@ -146,25 +176,41 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			}
 		});
 	}
-
-	private String generateURL()
+	
+	private String generateURL(String centerOnIP)
 	{
 		String url = new String(baseUrl);
 		final String pathInit = "&path=";
 		String path = pathInit;
 		boolean isFirstMarker = true;
+		
+		if (centerOnIP != null)
+		{
+			GeoIPInfo ipInfo = geoIPResults.get(centerOnIP);
+			String location = ipInfo.getCountry() + "," + ipInfo.getCity();
+			try
+			{
+				location = URLEncoder.encode(location, "UTF-8");
+			}
+			catch (UnsupportedEncodingException e)
+			{
+				logger.log(Level.SEVERE, "Unable to encode this URL: " + location, e);
+			}
+			
+			return url + "&center=" + location + "&zoom=10";
+		}
 
 		for (CheckBox checkBox : listOfChkBoxes)
 		{
 			String text = checkBox.getText();
-			String ip = text.split(" ")[1];
+			String ip = TraceCommandScreen.extractIPFromLine(text);
 
 			if (checkBox.isSelected())
 			{
 				char label = text.charAt(0);
 
-				ip = text.split(" ")[1];
-				GeoIPInfo ipInfo = GeoIPResolver.getIPInfo(ip);
+				ip = TraceCommandScreen.extractIPFromLine(text);
+				GeoIPInfo ipInfo = geoIPResults.get(ip);
 
 				if (!isPublicIP(ip) || ipInfo == null || !ipInfo.getSuccess()) //not a public ip with a location, skip it
 				{
@@ -231,10 +277,12 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 	private static class GenerateImageFromURLService extends Service<Image>
 	{
 		private VisualTraceScreen traceScreen;
+		private String centerOnIP; //IP location to center on, only relevant ONCE for the next use. Ignored when null.
 
 		public GenerateImageFromURLService(VisualTraceScreen traceScreen)
 		{
 			this.traceScreen = traceScreen;
+			this.centerOnIP = null;
 		}
 
 		@Override
@@ -245,11 +293,16 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 				@Override
 				protected Image call() throws Exception
 				{
-					String url = traceScreen.generateURL();
-					Image image = new Image(url);
-					return image;
+					String url = traceScreen.generateURL(centerOnIP);
+					centerOnIP = null; //reset for next use
+					return new Image(url);
 				}
 			};
+		}
+
+		public void setCenterOnIP(String centerOnIP)
+		{
+			this.centerOnIP = centerOnIP;
 		}
 
 	}
