@@ -1,5 +1,6 @@
 bin
 Most used IPs.properties
+ptsHistory
 /jnetpcap.dll
 Most Used IPs.log*
 /target/

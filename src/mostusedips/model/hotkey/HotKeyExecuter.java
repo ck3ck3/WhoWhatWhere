@@ -11,5 +11,5 @@ public interface HotKeyExecuter
 	 *            - when true, means that the key was pressed during
 	 *            hotkey-selection. when false, the actual hotkey was pressed
 	 */
-	public void keyPressed(Integer modifiers, Integer keyCode, boolean isNewKey);
+	public void keyPressed(int modifiers, int keyCode, boolean isNewKey);
 }
