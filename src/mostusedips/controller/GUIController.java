@@ -1220,8 +1220,8 @@ public class GUIController implements Initializable, CaptureStartListener
 		
 		props.put("PTSHotkey", Integer.toString(hotKeyManager.getHotkeyKeycode(ptsHotkeyID)));
 		props.put("PTSModifiers", Integer.toString(hotKeyManager.getHotkeyModifiers(ptsHotkeyID)));
+		props.put("PTSComboValue", comboPTSipToPing.getEditor().getText());
 		
-
 		StringBuilder ptsHistoryBuilder = new StringBuilder();
 		for (String item : comboPTSipToPing.getItems())
 			ptsHistoryBuilder.append(item + "\n");
@@ -1278,6 +1278,8 @@ public class GUIController implements Initializable, CaptureStartListener
 		{
 		}
 
+		
+		comboPTSipToPing.getEditor().setText((String)props.get("PTSComboValue"));
 		int nicIndex = getIntProperty(props, "Selected NIC index");
 		((RadioButton) (vboxNICs.getChildren().get(nicIndex))).setSelected(true);
 
