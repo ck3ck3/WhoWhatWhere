@@ -14,14 +14,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
-import mostusedips.Main;
-
 public class GeoIPResolver
 {
 
 	private static final String serviceBaseURI = "http://ip-api.com/xml/";
 	private static final String failMsg = "fail";
-	private static final Logger logger = Logger.getLogger(Main.getAppName());
+	private static final Logger logger = Logger.getLogger(GeoIPResolver.class.getPackage().getName());
 	private static final int maxQueriesPerMin = 120;
 	private static final int connectionTimeout = 1500;
 	private static final int readTimeout = 1500;

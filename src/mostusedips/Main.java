@@ -6,9 +6,7 @@ import java.awt.TrayIcon;
 import java.awt.TrayIcon.MessageType;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
@@ -17,7 +15,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 
 import javafx.application.Application;
@@ -32,7 +29,7 @@ import javafx.stage.WindowEvent;
 
 public class Main extends Application
 {
-	private final static String releaseVersion = "0.01";
+	private final static String releaseVersion = "1.00";
 	private final static String urlForLatestRelease = "https://api.github.com/repos/ck3ck3/MostUsedIPs/releases/latest";
 	private static final int connectionTimeout = 5000;
 	private static final int readTimeout = 5000;
@@ -41,9 +38,8 @@ public class Main extends Application
 
 	private final static String iconResource16 = "/ip16.jpg";
 	private final static String iconResource32 = "/ip32.jpg";
-	private final static String DLLx86Location = "/native/windows/x86/jnetpcap.dll";
-	private final static String DLLx64Location = "/native/windows/x86_64/jnetpcap.dll";
-	private final static String DLLName = "jnetpcap";
+	public final static String DLLx86Location = "/native/windows/x86/jnetpcap.dll";
+	public final static String DLLx64Location = "/native/windows/x86_64/jnetpcap.dll";
 
 	private final static String appTitle = "Most Used IPs";
 	private final static String mainFormLocation = "/mostusedips/view/MainForm.fxml";
@@ -58,12 +54,6 @@ public class Main extends Application
 		try
 		{
 			initLogger();
-
-			if (!loadJnetpcapDll())
-			{
-				System.err.println("Unable to load jnetpcap native dll. See log file for details. Unable to continue, aborting.");
-				return;
-			}
 
 			if (!initSysTray(primaryStage))
 				logger.log(Level.WARNING, "Unable to initialize system tray");
@@ -82,72 +72,9 @@ public class Main extends Application
 		}
 	}
 
-	/**
-	 * @return true if successfully loaded, false otherwise
-	 */
-	private boolean loadJnetpcapDll()
-	{
-		try
-		{
-			System.loadLibrary(DLLName); //expected to throw exception on first run only
-		}
-		catch (UnsatisfiedLinkError ule)
-		{
-			try
-			{
-				if (!tryLoadingDll(DLLx86Location, DLLName, false)) //if loading the x86 version failed, no need to log the error yet. try loading the x64 version
-					return tryLoadingDll(DLLx64Location, DLLName, true); //if this fails, write a log entry
-			}
-			catch (IOException ioe)
-			{
-				logger.log(Level.SEVERE, "Unable to copy dll from resources", ioe);
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * @param copyDllFrom
-	 *            - relative path from the resources dir to the dll to be copied
-	 * @param libName
-	 *            - the library's name (without the ".dll")
-	 * @param logULE
-	 *            - if true, caught UnsatisfiedLinkError will be logged.
-	 * @return true if successfully loaded, false otherwise
-	 */
-	private boolean tryLoadingDll(String copyDllFrom, String libName, boolean logULE) throws IOException
-	{
-		try
-		{
-			String currDir = System.getProperty("user.dir");
-			InputStream dll = Main.class.getResourceAsStream(copyDllFrom);
-
-			if (dll == null)
-				throw new IOException("Unable to find " + copyDllFrom + " in resources");
-
-			FileOutputStream dstFile = new FileOutputStream(currDir + "/" + libName + ".dll");
-
-			IOUtils.copy(dll, dstFile);
-			IOUtils.closeQuietly(dstFile);
-
-			System.loadLibrary(libName);
-		}
-		catch (UnsatisfiedLinkError ule)
-		{
-			if (logULE)
-				logger.log(Level.SEVERE, "Unable to load " + copyDllFrom, ule);
-
-			return false;
-		}
-
-		return true;
-	}
-
 	private void initLogger() throws IOException
 	{
-		logger = Logger.getLogger(getAppName());
+		logger = Logger.getLogger(this.getClass().getPackage().getName());
 		FileHandler fh = new FileHandler(getAppName() + ".log");
 		fh.setFormatter(new SimpleFormatter());
 		logger.addHandler(fh);

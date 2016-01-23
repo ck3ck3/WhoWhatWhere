@@ -21,13 +21,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
-import org.jnativehook.GlobalScreen;
-import org.jnetpcap.PcapAddr;
-import org.jnetpcap.PcapIf;
-import org.jnetpcap.protocol.network.Icmp;
-import org.jnetpcap.protocol.tcpip.Http;
-import org.jnetpcap.protocol.tcpip.Tcp;
-import org.jnetpcap.protocol.tcpip.Udp;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -80,9 +73,10 @@ import mostusedips.controller.commands.ping.PingCommandScreen;
 import mostusedips.controller.commands.trace.TraceCommandScreen;
 import mostusedips.model.geoipresolver.GeoIPInfo;
 import mostusedips.model.geoipresolver.GeoIPResolver;
-import mostusedips.model.hotkey.HotKeyExecuter;
-import mostusedips.model.hotkey.HotKeyManager;
+import mostusedips.model.hotkey.HotkeyExecuter;
+import mostusedips.model.hotkey.HotkeyManager;
 import mostusedips.model.ipsniffer.CaptureStartListener;
+import mostusedips.model.ipsniffer.DeviceIPAndDescription;
 import mostusedips.model.ipsniffer.IpAppearancesCounter;
 import mostusedips.model.ipsniffer.IpSniffer;
 import mostusedips.model.tts.TextToSpeech;
@@ -93,7 +87,6 @@ public class GUIController implements Initializable, CaptureStartListener
 	private final static String propsFileLocation = Main.getAppName() + ".properties";
 	private final static String defaultPropsResource = "/defaultLastRun.properties";
 	private final static String voiceForTTS = "kevin16";
-	private final static String Ipv4Prefix = "INET4:";
 	private final static int defaultCaptureTimeout = 10;
 	private final static int defaultPingTimeout = 300;
 	private final static String statusIdle = "Status: Idle";
@@ -106,7 +99,7 @@ public class GUIController implements Initializable, CaptureStartListener
 	private final static String msgTimerExpired = "Timer expired, stopping capture";
 	private final static String ptsHistoryFile = "ptsHistory";
 
-	private final static Logger logger = Logger.getLogger(Main.getAppName());
+	private final static Logger logger = Logger.getLogger(GUIController.class.getPackage().getName());
 
 	@FXML
 	ScrollPane scrollPane;
@@ -171,11 +164,11 @@ public class GUIController implements Initializable, CaptureStartListener
 
 	private ToggleGroup tglGrpNIC = new ToggleGroup();
 	private ToggleGroup tglGrpCaptureOptions = new ToggleGroup();
-	private IpSniffer sniffer = new IpSniffer();
-	private List<PcapIf> listOfDevices;
-	private HashMap<RadioButton, PcapIf> buttonToNicMap = new HashMap<RadioButton, PcapIf>();
+	private IpSniffer sniffer;
+	private ArrayList<DeviceIPAndDescription> listOfDevices;
+	private HashMap<RadioButton, String> buttonToIpMap = new HashMap<RadioButton, String>();
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
-	private HotKeyManager hotKeyManager = new HotKeyManager();
+	private HotkeyManager hotKeyManager = new HotkeyManager();
 	private Timer timer;
 	private TimerTask timerTask;
 	private boolean isTimedTaskRunning = false;
@@ -184,7 +177,11 @@ public class GUIController implements Initializable, CaptureStartListener
 	private ArrayList<CheckBox> chkboxListColumns;
 	private int protocolBoxesChecked = 0;
 	private String hotkeyID;
+	private int hotkeyKeyCode;
+	private int hotkeyModifiers;
 	private String ptsHotkeyID;
+	private int ptsHotkeyKeyCode;
+	private int ptsHotkeyModifiers;
 
 	@FXML
 	CheckBox chkboxUseHotkey;
@@ -234,10 +231,19 @@ public class GUIController implements Initializable, CaptureStartListener
 	Label labelPTSCurrentHotkey;
 	@FXML
 	Tab tabUtils;
+	@FXML CheckBox chkboxPTSHotkey;
+	@FXML AnchorPane panePTSHotkey;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
+		sniffer = new IpSniffer(Main.DLLx86Location, Main.DLLx64Location);
+		if (!sniffer.isDllLoaded())
+		{
+			System.err.println("Unable to load jnetpcap native dll. See log file for details. Unable to continue, aborting.");
+			shutdownApp();
+		}
+		
 		sniffer.setCapureStartListener(this);
 		activeButton = btnStart;
 
@@ -263,9 +269,9 @@ public class GUIController implements Initializable, CaptureStartListener
 		checkForUpdates(true); //only show a message if there is a new version
 	}
 
-	private void initPTS(int modifiers, int hotkey)
+	private void initPTSHotkey(int modifiers, int hotkey)
 	{
-		HotKeyExecuter executer = new HotKeyExecuter()
+		HotkeyExecuter executer = new HotkeyExecuter()
 		{
 			public void keyPressed(int modifiers, int keyCode, boolean isNewKey)
 			{
@@ -274,6 +280,8 @@ public class GUIController implements Initializable, CaptureStartListener
 					try
 					{
 						ptsHotkeyID = hotKeyManager.modifyHotkey(ptsHotkeyID, modifiers, keyCode);
+						ptsHotkeyModifiers = modifiers;
+						ptsHotkeyKeyCode = keyCode;
 					}
 					catch (IllegalArgumentException iae)
 					{
@@ -287,7 +295,7 @@ public class GUIController implements Initializable, CaptureStartListener
 								error.setHeaderText("Failed to set a new hotkey");
 								error.setContentText(iae.getMessage());
 
-								alertChangeHotkey.close();
+								closeHotkeyChangeAlert();
 								error.showAndWait();
 								tabPane.setDisable(false);
 							}
@@ -301,8 +309,8 @@ public class GUIController implements Initializable, CaptureStartListener
 						@Override
 						public void run()
 						{
-							labelPTSCurrentHotkey.setText("Current hotkey: " + HotKeyManager.hotkeyToString(modifiers, keyCode));
-							alertChangeHotkey.close();
+							labelPTSCurrentHotkey.setText("Current hotkey: " + HotkeyManager.hotkeyToString(modifiers, keyCode));
+							closeHotkeyChangeAlert();
 							tabPane.setDisable(false);
 						}
 					});
@@ -338,7 +346,7 @@ public class GUIController implements Initializable, CaptureStartListener
 
 		ptsHotkeyID = hotKeyManager.addHotkey(executer, modifiers, hotkey);
 
-		labelPTSCurrentHotkey.setText("Current hotkey: " + HotKeyManager.hotkeyToString(modifiers, hotkey));
+		labelPTSCurrentHotkey.setText("Current hotkey: " + HotkeyManager.hotkeyToString(modifiers, hotkey));
 	}
 
 	private void initMenuBar()
@@ -385,11 +393,18 @@ public class GUIController implements Initializable, CaptureStartListener
 
 	private void initHotkeyChangeAlert()
 	{
-		alertChangeHotkey = new Alert(AlertType.INFORMATION);
+		alertChangeHotkey = new Alert(AlertType.NONE);
 
 		alertChangeHotkey.setTitle("Change hotkey");
 		alertChangeHotkey.setHeaderText("Choose a new hotkey");
 		alertChangeHotkey.setContentText("Press the new hotkey");
+	}
+	
+	private void closeHotkeyChangeAlert()
+	{
+		alertChangeHotkey.setAlertType(AlertType.INFORMATION); //javafx bug? can't close it when it's of type NONE
+		alertChangeHotkey.close();
+		alertChangeHotkey.setAlertType(AlertType.NONE); //due to the javafx bug, revert back to NONE
 	}
 
 	private void initColumnListForTTS()
@@ -474,7 +489,7 @@ public class GUIController implements Initializable, CaptureStartListener
 			{
 				hotKeyManager.setKeySelection(hotkeyID, true);
 				tabPane.setDisable(true);
-				alertChangeHotkey.showAndWait();
+				alertChangeHotkey.show();
 			}
 		});
 
@@ -493,17 +508,25 @@ public class GUIController implements Initializable, CaptureStartListener
 			public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val)
 			{
 				if (new_val)
-				{
-					if (!GlobalScreen.isNativeHookRegistered())
-						hotKeyManager.registerNativeHook();
-				}
+					initHotkey(hotkeyModifiers, hotkeyKeyCode);
 				else
-				{
-					if (GlobalScreen.isNativeHookRegistered())
-						hotKeyManager.unregisterNativeHook();
-				}
+					hotKeyManager.removeHotkey(hotkeyID);
 
 				paneEnableHotkey.setDisable(!new_val);
+			}
+		});
+		
+		chkboxPTSHotkey.selectedProperty().addListener(new ChangeListener<Boolean>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val)
+			{
+				if (new_val)
+					initPTSHotkey(ptsHotkeyModifiers, ptsHotkeyKeyCode);
+				else
+					hotKeyManager.removeHotkey(ptsHotkeyID);
+
+				panePTSHotkey.setDisable(!new_val);
 			}
 		});
 
@@ -586,16 +609,16 @@ public class GUIController implements Initializable, CaptureStartListener
 			{
 				hotKeyManager.setKeySelection(ptsHotkeyID, true);
 				tabPane.setDisable(true);
-				alertChangeHotkey.showAndWait();
+				alertChangeHotkey.show();
 			}
 		});
 	}
 
-	private void initHotKey(int modifiers, int key)
+	private void initHotkey(int modifiers, int key)
 	{
 		initHotkeyChangeAlert();
 
-		HotKeyExecuter executer = new HotKeyExecuter()
+		HotkeyExecuter executer = new HotkeyExecuter()
 		{
 			public void keyPressed(int modifiers, int keyCode, boolean isNewKey)
 			{
@@ -604,8 +627,10 @@ public class GUIController implements Initializable, CaptureStartListener
 					try
 					{
 						hotkeyID = hotKeyManager.modifyHotkey(hotkeyID, modifiers, keyCode);
+						hotkeyModifiers = modifiers;
+						hotkeyKeyCode = keyCode;
 					}
-					catch (IllegalArgumentException iae)
+					catch (IllegalArgumentException iae) //failed to change hotkey
 					{
 						Platform.runLater(new Runnable()
 						{
@@ -617,7 +642,7 @@ public class GUIController implements Initializable, CaptureStartListener
 								error.setHeaderText("Failed to set a new hotkey");
 								error.setContentText(iae.getMessage());
 
-								alertChangeHotkey.close();
+								closeHotkeyChangeAlert();
 								error.showAndWait();
 								tabPane.setDisable(false);
 							}
@@ -631,8 +656,8 @@ public class GUIController implements Initializable, CaptureStartListener
 						@Override
 						public void run()
 						{
-							labelCurrHotkey.setText("Current hotkey: " + HotKeyManager.hotkeyToString(modifiers, keyCode));
-							alertChangeHotkey.close();
+							labelCurrHotkey.setText("Current hotkey: " + HotkeyManager.hotkeyToString(modifiers, keyCode));
+							closeHotkeyChangeAlert();
 							tabPane.setDisable(false);
 						}
 					});
@@ -664,7 +689,7 @@ public class GUIController implements Initializable, CaptureStartListener
 
 		hotkeyID = hotKeyManager.addHotkey(executer, modifiers, key);
 
-		labelCurrHotkey.setText("Current hotkey: " + HotKeyManager.hotkeyToString(modifiers, key));
+		labelCurrHotkey.setText("Current hotkey: " + HotkeyManager.hotkeyToString(modifiers, key));
 	}
 
 	private void initTable()
@@ -778,7 +803,7 @@ public class GUIController implements Initializable, CaptureStartListener
 	private void startButtonPressed()
 	{
 		StringBuilder errbuf = new StringBuilder();
-		PcapIf device = buttonToNicMap.get(tglGrpNIC.getSelectedToggle());
+		String deviceIP = buttonToIpMap.get(tglGrpNIC.getSelectedToggle());
 
 		changeGuiTemplate(true);
 
@@ -788,7 +813,7 @@ public class GUIController implements Initializable, CaptureStartListener
 			protected Void call() throws Exception
 			{
 				ArrayList<Integer> list = getSelectedProtocols();
-				sniffer.startCapture(device, list, errbuf);
+				sniffer.startCapture(deviceIP, list, errbuf);
 				return null;
 			}
 
@@ -811,21 +836,21 @@ public class GUIController implements Initializable, CaptureStartListener
 
 			private ArrayList<Integer> getSelectedProtocols()
 			{
-				ArrayList<Integer> list = new ArrayList<Integer>();
+				ArrayList<Integer> protocols = new ArrayList<Integer>();
 
 				if (chkboxUDP.isSelected())
-					list.add(Udp.ID);
+					protocols.add(IpSniffer.UDP_PROTOCOL);
 
 				if (chkboxTCP.isSelected())
-					list.add(Tcp.ID);
+					protocols.add(IpSniffer.TCP_PROTOCOL);
 
 				if (chkboxICMP.isSelected())
-					list.add(Icmp.ID);
+					protocols.add(IpSniffer.ICMP_PROTOCOL);
 
 				if (chkboxHTTP.isSelected())
-					list.add(Http.ID);
+					protocols.add(IpSniffer.HTTP_PROTOCOL);
 
-				return list;
+				return protocols;
 			}
 		};
 
@@ -1144,29 +1169,13 @@ public class GUIController implements Initializable, CaptureStartListener
 
 		int index = 1; //index of radio button in the vbox. starts at 1 because we already added a label earlier
 
-		for (PcapIf device : listOfDevices)
+		for (DeviceIPAndDescription deviceInfo : listOfDevices)
 		{
-			String description = (device.getDescription() != null) ? device.getDescription() : "No description available";
-			String IP = null;
-			for (PcapAddr pcapAddr : device.getAddresses())
-			{
-				String temp = pcapAddr.getAddr().toString();
-
-				if (temp.contains(Ipv4Prefix))
-				{
-					IP = temp.replace(Ipv4Prefix, "");
-					break;
-				}
-			}
-
-			if (IP == null)
-				continue;
-
-			RadioButton btn = new RadioButton(description + " " + IP);
+			RadioButton btn = new RadioButton(deviceInfo.getDescription() + " " + deviceInfo.getIP());
 			btn.setUserData(index++);
 			btn.setToggleGroup(tglGrpNIC);
 			btn.setPadding(new Insets(0, 0, 0, 10));
-			buttonToNicMap.put(btn, device);
+			buttonToIpMap.put(btn, deviceInfo.getIP());
 
 			vboxNICs.getChildren().add(btn);
 		}
@@ -1180,13 +1189,18 @@ public class GUIController implements Initializable, CaptureStartListener
 	{
 		saveCurrentValuesToProperties();
 
-		hotKeyManager.unregisterNativeHook();
+		hotKeyManager.cleanup();
 		sniffer.cleanup();
 		tts.cleanup();
 
+		shutdownApp();
+	}
+	
+	private void shutdownApp()
+	{
 		Platform.setImplicitExit(true); //was initially set to false when initializing the systray
 		Platform.exit();
-		System.exit(0); //needed because of the AWT SysTray
+		System.exit(0); //needed because of the AWT SysTray		
 	}
 
 	private void saveCurrentValuesToProperties()
@@ -1277,7 +1291,6 @@ public class GUIController implements Initializable, CaptureStartListener
 		catch (IOException e) //ignore, maybe it's first run
 		{
 		}
-
 		
 		comboPTSipToPing.getEditor().setText((String)props.get("PTSComboValue"));
 		int nicIndex = getIntProperty(props, "Selected NIC index");
@@ -1292,20 +1305,20 @@ public class GUIController implements Initializable, CaptureStartListener
 
 	private void setPTSHotkey(Properties props)
 	{
-		int modifiers = getIntProperty(props, "PTSModifiers");
-		int hotkey = getIntProperty(props, "PTSHotkey");
+		ptsHotkeyModifiers = getIntProperty(props, "PTSModifiers");
+		ptsHotkeyKeyCode = getIntProperty(props, "PTSHotkey");
 
-		initPTS(modifiers, hotkey);
+		initPTSHotkey(ptsHotkeyModifiers, ptsHotkeyKeyCode);
 	}
 
 	private void setHotkeyAndPane(Properties props)
 	{
-		int modifiers = getIntProperty(props, "hotkey_modifiers");
-		int hotkey = getIntProperty(props, "hotkey_key");
+		hotkeyModifiers = getIntProperty(props, "hotkey_modifiers");
+		hotkeyKeyCode = getIntProperty(props, "hotkey_key");
 
-		initHotKey(modifiers, hotkey);
+		initHotkey(hotkeyModifiers, hotkeyKeyCode);
 		if (!chkboxUseHotkey.isSelected()) //we init it anyway, so it can be enabled later
-			hotKeyManager.unregisterNativeHook();
+			hotKeyManager.cleanup();
 
 		chkboxUseTTS.setSelected(getBoolProperty(props, "chkboxUseTTS"));
 		numFieldRowsToRead.setText(props.getProperty("numFieldRowsToRead"));

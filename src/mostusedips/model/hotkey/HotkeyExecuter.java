@@ -1,6 +1,6 @@
 package mostusedips.model.hotkey;
 
-public interface HotKeyExecuter
+public interface HotkeyExecuter
 {
 	/**
 	 * @param modifiers

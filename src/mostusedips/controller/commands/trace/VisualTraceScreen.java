@@ -27,7 +27,6 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import mostusedips.Main;
 import mostusedips.controller.GUIController;
 import mostusedips.controller.VisualTraceController;
 import mostusedips.model.geoipresolver.GeoIPInfo;
@@ -38,7 +37,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 {
 	private final static String visualTraceFormLocation = "/mostusedips/view/VisualTraceForm.fxml";
 	private final static String baseUrl = "https://maps.googleapis.com/maps/api/staticmap?key=AIzaSyCT-QqmWbW7A-N0ywbXTmblZKq5flvtXmE&size=400x400&scale=2&maptype=roadmap";
-	private final static Logger logger = Logger.getLogger(Main.getAppName());
+	private final static Logger logger = Logger.getLogger(VisualTraceScreen.class.getPackage().getName());
 
 	private VisualTraceController visualTraceController;
 	private ArrayList<String> listOfIPs;

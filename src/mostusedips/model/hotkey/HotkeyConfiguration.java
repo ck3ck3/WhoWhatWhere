@@ -1,13 +1,13 @@
 package mostusedips.model.hotkey;
 
-public class HotKeyConfiguration
+public class HotkeyConfiguration
 {
-	private HotKeyExecuter executer;
+	private HotkeyExecuter executer;
 	private int hotkey;
 	private int modifiers;
 	
 	
-	public HotKeyConfiguration(HotKeyExecuter executer, int modifiers, int hotkey)
+	public HotkeyConfiguration(HotkeyExecuter executer, int modifiers, int hotkey)
 	{
 		this.executer = executer;
 		this.modifiers = modifiers;
@@ -39,7 +39,7 @@ public class HotKeyConfiguration
 		this.modifiers = modifiers;
 	}
 	
-	public HotKeyExecuter getExecutor()
+	public HotkeyExecuter getExecutor()
 	{
 		return executer;
 	}

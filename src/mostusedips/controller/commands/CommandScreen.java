@@ -11,7 +11,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import mostusedips.Main;
 import mostusedips.controller.CmdGUIController;
 import mostusedips.model.cmd.CmdLiveOutput;
 import mostusedips.model.cmd.LiveOutputListener;
@@ -19,7 +18,7 @@ import mostusedips.model.cmd.LiveOutputListener;
 public abstract class CommandScreen implements LiveOutputListener
 {
 	protected final static String commandFormLocation = "/mostusedips/view/CommandForm.fxml";
-	protected final static Logger logger = Logger.getLogger(Main.getAppName());
+	protected final static Logger logger = Logger.getLogger(CommandScreen.class.getPackage().getName());
 
 	private Scene postCloseScene;
 	private Stage stage;

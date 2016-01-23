@@ -6,13 +6,11 @@ import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import mostusedips.Main;
-
 public class CmdLiveOutput
 {
 	private String command;
 	private LiveOutputListener outputListener;
-	private static final Logger logger = Logger.getLogger(Main.getAppName());
+	private static final Logger logger = Logger.getLogger(CmdLiveOutput.class.getPackage().getName());
 
 	public CmdLiveOutput()
 	{
