@@ -14,6 +14,7 @@ import org.jnativehook.keyboard.NativeKeyListener;
 public class HotkeyManager implements NativeKeyListener
 {
 	HashMap<String, HotkeyConfiguration> hotkeyMap = new HashMap<String, HotkeyConfiguration>();
+	HashMap<String, String> hotkeyToID = new HashMap<String, String>();
 
 	private boolean isKeySelection = false;
 	private String hotkeySelectionID; //value only matters when isKeySelection is true
@@ -50,7 +51,6 @@ public class HotkeyManager implements NativeKeyListener
 	@Override
 	public void nativeKeyTyped(NativeKeyEvent e)
 	{
-
 		if (hotkeyMap.isEmpty() && !isKeySelection) //not for us
 			return;
 
@@ -60,13 +60,12 @@ public class HotkeyManager implements NativeKeyListener
 		if (isKeySelection)
 		{
 			hotkeyConfig = hotkeyMap.get(hotkeySelectionID);
-			hotkeyConfig.setHotkey(lastKeycode);
-			hotkeyConfig.setModifiers(modifiers);
 		}
 		else
 		{
-			String id = hotkeyToString(modifiers, lastKeycode);
-			hotkeyConfig = hotkeyMap.get(id);
+			String hotkeyAsStr = hotkeyToString(modifiers, lastKeycode);
+			String hotkeyID = hotkeyToID.get(hotkeyAsStr);
+			hotkeyConfig = hotkeyMap.get(hotkeyID);
 			if (hotkeyConfig == null) //not a hotkey
 				return;
 		}
@@ -105,45 +104,27 @@ public class HotkeyManager implements NativeKeyListener
 		return isKeySelection;
 	}
 
-	public void setKeySelection(String hotkeyID, boolean isKeySelection)
+	public void setKeySelection(String hotkeyID, boolean isKeySelection) throws IllegalStateException
 	{
 		if (this.isKeySelection && isKeySelection)
-			throw new IllegalStateException("A hotkey selection is already taking place. You can use only one hotkey selection at a time.");
+			throw new IllegalStateException("A hotkey selection is already taking place. You can set only one hotkey selection at a time.");
 
 		this.isKeySelection = isKeySelection;
 		hotkeySelectionID = hotkeyID;
 	}
 
-	/**
-	 * 
-	 * @param executer
-	 * @param modifiers
-	 * @param hotkey
-	 * @return a string representing this hotkey, also to be used as an
-	 *         identifier for this hotkey with the HotkeyManager instance.
-	 */
-	public String addHotkey(HotkeyExecuter executer, int modifiers, int hotkey)
+	public void addHotkey(String hotkeyID, HotkeyExecuter executer, int modifiers, int hotkey) throws IllegalArgumentException
 	{
 		if (isHotkeyTaken(modifiers, hotkey))
 			throw new IllegalArgumentException("This key combination is already assigned to a different hotkey");
 
 		HotkeyConfiguration hotkeyConfig = new HotkeyConfiguration(executer, modifiers, hotkey);
-		String id = hotkeyToString(modifiers, hotkey);
 
-		hotkeyMap.put(id, hotkeyConfig);
-
-		return id;
+		hotkeyMap.put(hotkeyID, hotkeyConfig);
+		hotkeyToID.put(hotkeyToString(modifiers, hotkey), hotkeyID);
 	}
 
-	/**
-	 * 
-	 * @param hotkeyID
-	 *            - old hotkey ID
-	 * @param modifiers
-	 * @param hotkey
-	 * @return new hotkey ID
-	 */
-	public String modifyHotkey(String hotkeyID, int modifiers, int hotkey)
+	public void modifyHotkey(String hotkeyID, int modifiers, int hotkey) throws IllegalArgumentException
 	{
 		HotkeyConfiguration hotkeyConfig = hotkeyMap.get(hotkeyID);
 
@@ -154,18 +135,23 @@ public class HotkeyManager implements NativeKeyListener
 			throw new IllegalArgumentException("This key combination is already assigned to a hotkey");
 
 		HotkeyExecuter executer = hotkeyConfig.getExecutor();
-		hotkeyMap.remove(hotkeyID);
-		return addHotkey(executer, modifiers, hotkey);
+		
+		hotkeyToID.remove(hotkeyToString(hotkeyConfig.getModifiers(), hotkeyConfig.getHotkey()));
+		hotkeyToID.put(hotkeyToString(modifiers, hotkey), hotkeyID);
+		hotkeyMap.replace(hotkeyID, new HotkeyConfiguration(executer, modifiers, hotkey));
 	}
 	
 	public void removeHotkey(String hotkeyID)
 	{
-		hotkeyMap.remove(hotkeyID);
+		HotkeyConfiguration hotkeyConfig = hotkeyMap.get(hotkeyID);
+		
+		hotkeyToID.remove(hotkeyToString(hotkeyConfig.getModifiers(), hotkeyConfig.getHotkey()));
+//		hotkeyMap.remove(hotkeyID);
 	}
 
 	private boolean isHotkeyTaken(int modifiers, int hotkey)
 	{
-		return hotkeyMap.containsKey(hotkeyToString(modifiers, hotkey));
+		return hotkeyToID.containsKey(hotkeyToString(modifiers, hotkey));
 	}
 
 	public static String hotkeyToString(int modifiers, int hotkey)
