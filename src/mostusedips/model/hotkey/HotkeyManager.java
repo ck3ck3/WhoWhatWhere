@@ -117,6 +117,9 @@ public class HotkeyManager implements NativeKeyListener
 	{
 		if (isHotkeyTaken(modifiers, hotkey))
 			throw new IllegalArgumentException("This key combination is already assigned to a different hotkey");
+		
+//		if (hotkeyMap.containsKey(hotkeyID))
+//			throw new IllegalArgumentException("This hotkeyID is already assigned to a different hotkey");
 
 		HotkeyConfiguration hotkeyConfig = new HotkeyConfiguration(executer, modifiers, hotkey);
 
@@ -162,7 +165,7 @@ public class HotkeyManager implements NativeKeyListener
 		return (modifiersText.isEmpty() ? "" : modifiersText + "+") + keyText;
 	}
 
-	public int getHotkeyModifiers(String hotkeyID)
+	public int getHotkeyModifiers(String hotkeyID) throws IllegalArgumentException
 	{
 		HotkeyConfiguration config = hotkeyMap.get(hotkeyID);
 
@@ -172,7 +175,7 @@ public class HotkeyManager implements NativeKeyListener
 		return config.getModifiers();
 	}
 
-	public int getHotkeyKeycode(String hotkeyID)
+	public int getHotkeyKeycode(String hotkeyID) throws IllegalArgumentException
 	{
 		HotkeyConfiguration config = hotkeyMap.get(hotkeyID);
 

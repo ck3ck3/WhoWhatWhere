@@ -215,6 +215,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 				{
 					checkBox.setSelected(false);
 					checkBox.setDisable(true);
+					checkBox.getParent().getChildrenUnmodifiable().get(1).setDisable(true); //also disable the hyperlink "focus map", since there's no location
 
 					continue;
 				}

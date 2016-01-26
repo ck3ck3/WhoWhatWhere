@@ -98,8 +98,33 @@ public class GUIController implements Initializable, CaptureStartListener
 	private final static int defaultRowsToRead = 3;
 	private final static String msgTimerExpired = "Timer expired, stopping capture";
 	private final static String ptsHistoryFile = "ptsHistory";
-	private final static String hotkeyID = "Mosed used IPs hotkey";
+	private final static String captureHotkeyID = "Mosed used IPs capture hotkey";
 	private final static String ptsHotkeyID = "PTS hotkey";
+
+	private final static String propsNICIndex = "Selected NIC index";
+	private final static String propsChkboxUDP = "chkboxUDP";
+	private final static String propsChkboxTCP = "chkboxTCP";
+	private final static String propsChkboxICMP = "chkboxICMP";
+	private final static String propsChkboxHTTP = "chkboxHTTP";
+	private final static String propsRadioTimedCapture = "radioTimedCapture";
+	private final static String propsNumFieldCaptureTimeout = "numFieldCaptureTimeout";
+	private final static String propsRadioManual = "radioManual";
+	private final static String propsChkboxGetLocation = "chkboxGetLocation";
+	private final static String propsChkboxPing = "chkboxPing";
+	private final static String propsNumberFieldPingTimeout = "numberFieldPingTimeout";
+	private final static String propsChkboxUseCaptureHotkey = "chkboxUseCaptureHotkey";
+	private final static String propsCaptureHotkeyKeycode = "captureHotkeyKeycode";
+	private final static String propsCaptureHotkeyModifiers = "captureHotkeyModifiers";
+	private final static String propsChkboxUseTTS = "chkboxUseTTS";
+	private final static String propsNumFieldRowsToRead = "numFieldRowsToRead";
+	private final static String propsChkboxFilterResults = "chkboxFilterResults";
+	private final static String propsComboColumnsSelection = "comboColumnsSelection";
+	private final static String propsTextColumnContains = "textColumnContains";
+	private final static String propsTTSCheckBox = "TTSCheckBox ";
+	private final static String propsChkboxPTSHotkey = "chkboxPTSHotkey";
+	private final static String propsPTSHotkey = "PTSHotkey";
+	private final static String propsPTSModifiers = "PTSModifiers";
+	private final static String propsPTSComboValue = "PTSComboValue";
 
 	private final static Logger logger = Logger.getLogger(GUIController.class.getPackage().getName());
 
@@ -157,7 +182,7 @@ public class GUIController implements Initializable, CaptureStartListener
 	@FXML
 	private TableColumn<IPInfoRowModel, String> columnCity;
 	@FXML
-	private Label labelCurrHotkey;
+	private Label labelCurrCaptureHotkey;
 
 	private NumberTextField numFieldCaptureTimeout;
 	private NumberTextField numFieldRowsToRead;
@@ -170,7 +195,7 @@ public class GUIController implements Initializable, CaptureStartListener
 	private ArrayList<DeviceIPAndDescription> listOfDevices;
 	private HashMap<RadioButton, String> buttonToIpMap = new HashMap<RadioButton, String>();
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
-	private HotkeyManager hotKeyManager = new HotkeyManager();
+	private HotkeyManager hotkeyManager = new HotkeyManager();
 	private Timer timer;
 	private TimerTask timerTask;
 	private boolean isTimedTaskRunning = false;
@@ -178,17 +203,17 @@ public class GUIController implements Initializable, CaptureStartListener
 	private boolean isAHotkeyResult = false;
 	private ArrayList<CheckBox> chkboxListColumns;
 	private int protocolBoxesChecked = 0;
-	private int hotkeyKeyCode;
-	private int hotkeyModifiers;
+	private int captureHotkeyKeyCode;
+	private int captureHotkeyModifiers;
 	private int ptsHotkeyKeyCode;
 	private int ptsHotkeyModifiers;
 
 	@FXML
-	CheckBox chkboxUseHotkey;
+	CheckBox chkboxUseCaptureHotkey;
 	@FXML
-	Button btnConfigHotkey;
+	Button btnConfigCaptureHotkey;
 	@FXML
-	AnchorPane paneEnableHotkey;
+	AnchorPane paneEnableCaptureHotkey;
 	@FXML
 	CheckBox chkboxUseTTS;
 	@FXML
@@ -231,8 +256,10 @@ public class GUIController implements Initializable, CaptureStartListener
 	Label labelPTSCurrentHotkey;
 	@FXML
 	Tab tabUtils;
-	@FXML CheckBox chkboxPTSHotkey;
-	@FXML AnchorPane panePTSHotkey;
+	@FXML
+	CheckBox chkboxPTSHotkey;
+	@FXML
+	AnchorPane panePTSHotkey;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
@@ -243,8 +270,7 @@ public class GUIController implements Initializable, CaptureStartListener
 			System.err.println("Unable to load jnetpcap native dll. See log file for details. Unable to continue, aborting.");
 			shutdownApp();
 		}
-		
-		sniffer.setCapureStartListener(this);
+
 		activeButton = btnStart;
 
 		if (!createNICRadioButtons())
@@ -268,86 +294,6 @@ public class GUIController implements Initializable, CaptureStartListener
 		initMenuBar();
 
 		checkForUpdates(true); //only show a message if there is a new version
-	}
-
-	private void initPTSHotkey(int modifiers, int hotkey)
-	{
-		HotkeyExecuter executer = new HotkeyExecuter()
-		{
-			public void keyPressed(int modifiers, int keyCode, boolean isNewKey)
-			{
-				if (isNewKey)
-				{
-					try
-					{
-						hotKeyManager.modifyHotkey(ptsHotkeyID, modifiers, keyCode);
-						ptsHotkeyModifiers = modifiers;
-						ptsHotkeyKeyCode = keyCode;
-					}
-					catch (IllegalArgumentException iae)
-					{
-						Platform.runLater(new Runnable()
-						{
-							@Override
-							public void run()
-							{
-								Alert error = new Alert(AlertType.ERROR);
-								error.setTitle("Unable to change hotkey");
-								error.setHeaderText("Failed to set a new hotkey");
-								error.setContentText(iae.getMessage());
-
-								closeHotkeyChangeAlert();
-								error.showAndWait();
-								tabPane.setDisable(false);
-							}
-						});
-
-						return;
-					}
-
-					Platform.runLater(new Runnable()
-					{
-						@Override
-						public void run()
-						{
-							labelPTSCurrentHotkey.setText("Current hotkey: " + HotkeyManager.hotkeyToString(modifiers, keyCode));
-							closeHotkeyChangeAlert();
-							tabPane.setDisable(false);
-						}
-					});
-				}
-				else //hotkey pressed
-				{
-					Platform.runLater(new Runnable()
-					{
-						@Override
-						public void run()
-						{
-							
-							String address = comboPTSipToPing.getEditor().getText();
-							List<String> items = comboPTSipToPing.getItems();
-							
-							if (!items.contains(address))
-								items.add(address);
-							
-							String ping = getPingForIP(address, null); //default timeout
-							
-							if (ping.contains("milliseconds"))
-								tts.speak(ping);
-							else
-								if (ping.contains("Timeout"))
-									tts.speak("Ping time out");
-								else
-									tts.speak("Ping failed");							
-						}
-					});
-				}
-			}
-		};
-
-		hotKeyManager.addHotkey(ptsHotkeyID, executer, modifiers, hotkey);
-
-		labelPTSCurrentHotkey.setText("Current hotkey: " + HotkeyManager.hotkeyToString(modifiers, hotkey));
 	}
 
 	private void initMenuBar()
@@ -400,7 +346,7 @@ public class GUIController implements Initializable, CaptureStartListener
 		alertChangeHotkey.setHeaderText("Choose a new hotkey");
 		alertChangeHotkey.setContentText("Press the new hotkey");
 	}
-	
+
 	private void closeHotkeyChangeAlert()
 	{
 		alertChangeHotkey.setAlertType(AlertType.INFORMATION); //javafx bug? can't close it when it's of type NONE
@@ -483,12 +429,12 @@ public class GUIController implements Initializable, CaptureStartListener
 			}
 		});
 
-		btnConfigHotkey.setOnAction(new EventHandler<ActionEvent>()
+		btnConfigCaptureHotkey.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent e)
 			{
-				hotKeyManager.setKeySelection(hotkeyID, true);
+				hotkeyManager.setKeySelection(captureHotkeyID, true);
 				tabPane.setDisable(true);
 				alertChangeHotkey.show();
 			}
@@ -503,73 +449,11 @@ public class GUIController implements Initializable, CaptureStartListener
 			}
 		});
 
-		chkboxUseHotkey.selectedProperty().addListener(new ChangeListener<Boolean>()
-		{
-			boolean ignoreUncheck = false; //when we want to programmatically disable the box, without removing the key
-			
-			@Override
-			public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val)
-			{
-				paneEnableHotkey.setDisable(!new_val);
-				
-				if (new_val)
-				{
-					try
-					{
-						initHotkey(hotkeyModifiers, hotkeyKeyCode);
-					}
-					catch(IllegalArgumentException iae)
-					{
-						new Alert(AlertType.ERROR, "This key combination is already in use. Change the hotkey that uses this combination, then try enabling this hotkey again.").showAndWait();
-						paneEnableHotkey.setDisable(true);
-						
-						ignoreUncheck = true; //setSelected(false) will trigger this change listener, we manually ignore it just once
-						chkboxUseHotkey.setSelected(false);
-					}
-				}
-				else
-				{
-					if (!ignoreUncheck)
-						hotKeyManager.removeHotkey(hotkeyID);
-					
-					ignoreUncheck = false;
-				}
-			}
-		});
-		
-		chkboxPTSHotkey.selectedProperty().addListener(new ChangeListener<Boolean>()
-		{
-			boolean ignoreUncheck = false; //when we want to programmatically disable the box, without removing the key
-			
-			@Override
-			public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val)
-			{
-				panePTSHotkey.setDisable(!new_val);
-				
-				if (new_val)
-				{
-					try
-					{
-						initPTSHotkey(ptsHotkeyModifiers, ptsHotkeyKeyCode);
-					}
-					catch(IllegalArgumentException iae)
-					{
-						new Alert(AlertType.ERROR, "This key combination is already in use. Change the hotkey that uses this combination, then try enabling this hotkey again.").showAndWait();
-						panePTSHotkey.setDisable(true);
-						
-						ignoreUncheck = true; //setSelected(false) will trigger this change listener, we manually ignore it just once
-						chkboxPTSHotkey.setSelected(false);
-					}
-				}
-				else
-				{
-					if (!ignoreUncheck)
-						hotKeyManager.removeHotkey(ptsHotkeyID);
+		chkboxUseCaptureHotkey.selectedProperty().addListener(generateChangeListenerForHotkeyCheckbox(captureHotkeyID, captureHotkeyModifiers, captureHotkeyKeyCode, chkboxUseCaptureHotkey,
+				labelCurrCaptureHotkey, paneEnableCaptureHotkey, captureHotkeyPressed));
 
-					ignoreUncheck = false;
-				}
-			}
-		});
+		chkboxPTSHotkey.selectedProperty()
+				.addListener(generateChangeListenerForHotkeyCheckbox(ptsHotkeyID, ptsHotkeyModifiers, ptsHotkeyKeyCode, chkboxPTSHotkey, labelPTSCurrentHotkey, panePTSHotkey, ptsHotkeyPressed));
 
 		chkboxUseTTS.selectedProperty().addListener(new ChangeListener<Boolean>()
 		{
@@ -648,26 +532,85 @@ public class GUIController implements Initializable, CaptureStartListener
 			@Override
 			public void handle(ActionEvent event)
 			{
-				hotKeyManager.setKeySelection(ptsHotkeyID, true);
+				hotkeyManager.setKeySelection(ptsHotkeyID, true);
 				tabPane.setDisable(true);
 				alertChangeHotkey.show();
 			}
 		});
 	}
 
-	private void initHotkey(int modifiers, int key)
+	private ChangeListener<Boolean> generateChangeListenerForHotkeyCheckbox(String hotkeyID, int defaultModifiers, int defaultKeycode, CheckBox chkbox, Label hotkeyLabel, Pane hotkeyPane,
+			Runnable runnableKeyPressed)
 	{
-		HotkeyExecuter executer = new HotkeyExecuter()
+		return new ChangeListener<Boolean>()
 		{
-			public void keyPressed(int modifiers, int keyCode, boolean isNewKey)
+			boolean ignoreUncheck = false; //when we want to programmatically disable the box, without removing the key
+
+			@Override
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val)
 			{
-				if (isNewKey)
+				hotkeyPane.setDisable(!new_val);
+
+				if (new_val)
 				{
 					try
 					{
-						hotKeyManager.modifyHotkey(hotkeyID, modifiers, keyCode);
-						hotkeyModifiers = modifiers;
-						hotkeyKeyCode = keyCode;
+						int modifiers, keycode;
+
+						try
+						{
+							modifiers = hotkeyManager.getHotkeyModifiers(hotkeyID);
+							keycode = hotkeyManager.getHotkeyKeycode(hotkeyID);
+						}
+						catch (IllegalArgumentException iae) //first time we use this key
+						{
+							initHotkey(hotkeyID, defaultModifiers, defaultKeycode, hotkeyLabel, runnableKeyPressed);
+							return;
+						}
+
+						initHotkey(hotkeyID, modifiers, keycode, hotkeyLabel, runnableKeyPressed);
+					}
+					catch (IllegalArgumentException iae)
+					{
+						new Alert(AlertType.ERROR, "This key combination is already in use. Change the hotkey that uses this combination, then try enabling this hotkey again.").showAndWait();
+						hotkeyPane.setDisable(true);
+
+						ignoreUncheck = true; //setSelected(false) will trigger this change listener, we manually ignore it just once
+						chkbox.setSelected(false);
+					}
+				}
+				else
+				{
+					if (!ignoreUncheck)
+						hotkeyManager.removeHotkey(hotkeyID);
+
+					ignoreUncheck = false;
+				}
+			}
+		};
+	}
+
+	private void initHotkey(String hotkeyID, int modifiers, int keycode, Label hotkeyLabel, Runnable runnableKeyPressed)
+	{
+		HotkeyExecuter executer = generateHotkeyExecuter(hotkeyID, hotkeyLabel, runnableKeyPressed);
+
+		hotkeyManager.addHotkey(hotkeyID, executer, modifiers, keycode);
+		hotkeyLabel.setText("Current hotkey: " + HotkeyManager.hotkeyToString(modifiers, keycode));
+	}
+
+	private HotkeyExecuter generateHotkeyExecuter(String hotkeyID, Label hotkeyLabel, Runnable keyPressedRunnable)
+	{
+		return new HotkeyExecuter()
+		{
+			public void keyPressed(int modifiers, int keyCode, boolean isNewKey)
+			{
+				if (!isNewKey) //hotkey pressed
+					Platform.runLater(keyPressedRunnable);
+				else //new hotkey selection
+				{
+					try
+					{
+						hotkeyManager.modifyHotkey(hotkeyID, modifiers, keyCode);
 					}
 					catch (IllegalArgumentException iae) //failed to change hotkey
 					{
@@ -695,40 +638,14 @@ public class GUIController implements Initializable, CaptureStartListener
 						@Override
 						public void run()
 						{
-							labelCurrHotkey.setText("Current hotkey: " + HotkeyManager.hotkeyToString(modifiers, keyCode));
+							hotkeyLabel.setText("Current hotkey: " + HotkeyManager.hotkeyToString(modifiers, keyCode));
 							closeHotkeyChangeAlert();
 							tabPane.setDisable(false);
 						}
 					});
 				}
-				else //hotkey pressed
-				{
-					Platform.runLater(new Runnable()
-					{
-						@Override
-						public void run()
-						{
-							String line;
-
-							if (activeButton == btnStart)
-							{
-								line = "Pressing start capturing button";
-								isAHotkeyResult = true;
-							}
-							else
-								line = "Pressing Stop capturing button";
-
-							activeButton.fire();
-							tts.speak(line);
-						}
-					});
-				}
 			}
 		};
-
-		hotKeyManager.addHotkey(hotkeyID, executer, modifiers, key);
-
-		labelCurrHotkey.setText("Current hotkey: " + HotkeyManager.hotkeyToString(modifiers, key));
 	}
 
 	private void initTable()
@@ -843,6 +760,7 @@ public class GUIController implements Initializable, CaptureStartListener
 	{
 		StringBuilder errbuf = new StringBuilder();
 		String deviceIP = buttonToIpMap.get(tglGrpNIC.getSelectedToggle());
+		final CaptureStartListener thisObj = this;
 
 		changeGuiTemplate(true);
 
@@ -851,8 +769,7 @@ public class GUIController implements Initializable, CaptureStartListener
 			@Override
 			protected Void call() throws Exception
 			{
-				ArrayList<Integer> list = getSelectedProtocols();
-				sniffer.startCapture(deviceIP, list, errbuf);
+				sniffer.startAppearanceCounterCapture(deviceIP, getSelectedProtocols(), thisObj, errbuf);
 				return null;
 			}
 
@@ -861,7 +778,7 @@ public class GUIController implements Initializable, CaptureStartListener
 			{
 				labelStatus.setText(statusResults);
 
-				fillTable(sniffer.getResults());
+				fillTable(sniffer.getAppearanceCounterResults());
 
 				if (isAHotkeyResult)
 				{
@@ -1226,13 +1143,13 @@ public class GUIController implements Initializable, CaptureStartListener
 	{
 		saveCurrentValuesToProperties();
 
-		hotKeyManager.cleanup();
+		hotkeyManager.cleanup();
 		sniffer.cleanup();
 		tts.cleanup();
 
 		shutdownApp();
 	}
-	
+
 	private void shutdownApp()
 	{
 		Platform.setImplicitExit(true); //was initially set to false when initializing the systray
@@ -1246,38 +1163,38 @@ public class GUIController implements Initializable, CaptureStartListener
 
 		Integer selectedNic = (Integer) (tglGrpNIC.getSelectedToggle().getUserData());
 
-		props.put("Selected NIC index", selectedNic.toString());
-		props.put("chkboxUDP", ((Boolean) chkboxUDP.isSelected()).toString());
-		props.put("chkboxTCP", ((Boolean) chkboxTCP.isSelected()).toString());
-		props.put("chkboxICMP", ((Boolean) chkboxICMP.isSelected()).toString());
-		props.put("chkboxHTTP", ((Boolean) chkboxHTTP.isSelected()).toString());
-		props.put("radioTimedCapture", ((Boolean) radioTimedCapture.isSelected()).toString());
-		props.put("numFieldCaptureTimeout", numFieldCaptureTimeout.getText());
-		props.put("radioManual", ((Boolean) radioManual.isSelected()).toString());
-		props.put("chkboxGetLocation", ((Boolean) chkboxGetLocation.isSelected()).toString());
-		props.put("chkboxPing", ((Boolean) chkboxPing.isSelected()).toString());
-		props.put("numberFieldPingTimeout", numberFieldPingTimeout.getText());
-		props.put("chkboxUseHotkey", ((Boolean) chkboxUseHotkey.isSelected()).toString());
-		props.put("hotkey_key", Integer.toString(hotkeyKeyCode));
-		props.put("hotkey_modifiers", Integer.toString(hotkeyModifiers));
-		props.put("chkboxUseTTS", ((Boolean) chkboxUseTTS.isSelected()).toString());
-		props.put("numFieldRowsToRead", numFieldRowsToRead.getText());
-		props.put("chkboxFilterResults", ((Boolean) chkboxFilterResults.isSelected()).toString());
-		props.put("comboColumnsSelection", comboColumns.getValue());
-		props.put("textColumnContains", textColumnContains.getText());
-		
+		props.put(propsNICIndex, selectedNic.toString());
+		props.put(propsChkboxUDP, ((Boolean) chkboxUDP.isSelected()).toString());
+		props.put(propsChkboxTCP, ((Boolean) chkboxTCP.isSelected()).toString());
+		props.put(propsChkboxICMP, ((Boolean) chkboxICMP.isSelected()).toString());
+		props.put(propsChkboxHTTP, ((Boolean) chkboxHTTP.isSelected()).toString());
+		props.put(propsRadioTimedCapture, ((Boolean) radioTimedCapture.isSelected()).toString());
+		props.put(propsNumFieldCaptureTimeout, numFieldCaptureTimeout.getText());
+		props.put(propsRadioManual, ((Boolean) radioManual.isSelected()).toString());
+		props.put(propsChkboxGetLocation, ((Boolean) chkboxGetLocation.isSelected()).toString());
+		props.put(propsChkboxPing, ((Boolean) chkboxPing.isSelected()).toString());
+		props.put(propsNumberFieldPingTimeout, numberFieldPingTimeout.getText());
+		props.put(propsChkboxUseCaptureHotkey, ((Boolean) chkboxUseCaptureHotkey.isSelected()).toString());
+		props.put(propsCaptureHotkeyKeycode, Integer.toString(hotkeyManager.getHotkeyKeycode(captureHotkeyID)));
+		props.put(propsCaptureHotkeyModifiers, Integer.toString(hotkeyManager.getHotkeyModifiers(captureHotkeyID)));
+		props.put(propsChkboxUseTTS, ((Boolean) chkboxUseTTS.isSelected()).toString());
+		props.put(propsNumFieldRowsToRead, numFieldRowsToRead.getText());
+		props.put(propsChkboxFilterResults, ((Boolean) chkboxFilterResults.isSelected()).toString());
+		props.put(propsComboColumnsSelection, comboColumns.getValue());
+		props.put(propsTextColumnContains, textColumnContains.getText());
+
 		for (CheckBox box : chkboxListColumns)
-			props.put("TTSCheckBox " + box.getText(), ((Boolean) box.isSelected()).toString());
-		
-		props.put("chkboxPTSHotkey", ((Boolean) chkboxPTSHotkey.isSelected()).toString());
-		props.put("PTSHotkey", Integer.toString(ptsHotkeyKeyCode));
-		props.put("PTSModifiers", Integer.toString(ptsHotkeyModifiers));
-		props.put("PTSComboValue", comboPTSipToPing.getEditor().getText());
-		
+			props.put(propsTTSCheckBox + box.getText(), ((Boolean) box.isSelected()).toString());
+
+		props.put(propsChkboxPTSHotkey, ((Boolean) chkboxPTSHotkey.isSelected()).toString());
+		props.put(propsPTSHotkey, Integer.toString(hotkeyManager.getHotkeyKeycode(ptsHotkeyID)));
+		props.put(propsPTSModifiers, Integer.toString(hotkeyManager.getHotkeyModifiers(ptsHotkeyID)));
+		props.put(propsPTSComboValue, comboPTSipToPing.getEditor().getText());
+
 		StringBuilder ptsHistoryBuilder = new StringBuilder();
 		for (String item : comboPTSipToPing.getItems())
 			ptsHistoryBuilder.append(item + "\n");
-		
+
 		try
 		{
 			FileOutputStream out = new FileOutputStream(propsFileLocation);
@@ -1288,7 +1205,7 @@ public class GUIController implements Initializable, CaptureStartListener
 		{
 			logger.log(Level.SEVERE, "Unable to save properties file " + propsFileLocation, e);
 		}
-		
+
 		try
 		{
 			FileUtils.writeStringToFile(new File(ptsHistoryFile), ptsHistoryBuilder.toString(), "UTF-8");
@@ -1320,7 +1237,7 @@ public class GUIController implements Initializable, CaptureStartListener
 		{
 			logger.log(Level.SEVERE, "Unable to load properties file: " + e.getMessage(), e);
 		}
-		
+
 		try
 		{
 			List<String> lines = FileUtils.readLines(new File(ptsHistoryFile), "UTF-8");
@@ -1329,9 +1246,9 @@ public class GUIController implements Initializable, CaptureStartListener
 		catch (IOException e) //ignore, maybe it's first run
 		{
 		}
-		
-		comboPTSipToPing.getEditor().setText((String)props.get("PTSComboValue"));
-		int nicIndex = getIntProperty(props, "Selected NIC index");
+
+		comboPTSipToPing.getEditor().setText((String) props.get(propsPTSComboValue));
+		int nicIndex = getIntProperty(props, propsNICIndex);
 		((RadioButton) (vboxNICs.getChildren().get(nicIndex))).setSelected(true);
 
 		setProtocolCheckboxes(props);
@@ -1343,47 +1260,47 @@ public class GUIController implements Initializable, CaptureStartListener
 
 	private void setPTSHotkey(Properties props)
 	{
-		chkboxPTSHotkey.setSelected(getBoolProperty(props, "chkboxPTSHotkey"));
-		ptsHotkeyModifiers = getIntProperty(props, "PTSModifiers");
-		ptsHotkeyKeyCode = getIntProperty(props, "PTSHotkey");
+		chkboxPTSHotkey.setSelected(getBoolProperty(props, propsChkboxPTSHotkey));
+		ptsHotkeyModifiers = getIntProperty(props, propsPTSModifiers);
+		ptsHotkeyKeyCode = getIntProperty(props, propsPTSHotkey);
 
 		if (chkboxPTSHotkey.isSelected())
-			initPTSHotkey(ptsHotkeyModifiers, ptsHotkeyKeyCode);
+			initHotkey(ptsHotkeyID, ptsHotkeyModifiers, ptsHotkeyKeyCode, labelPTSCurrentHotkey, ptsHotkeyPressed);
 		else
 			panePTSHotkey.setDisable(true);
 	}
 
 	private void setHotkeyAndPane(Properties props)
 	{
-		hotkeyModifiers = getIntProperty(props, "hotkey_modifiers");
-		hotkeyKeyCode = getIntProperty(props, "hotkey_key");
+		captureHotkeyModifiers = getIntProperty(props, propsCaptureHotkeyModifiers);
+		captureHotkeyKeyCode = getIntProperty(props, propsCaptureHotkeyKeycode);
 
-		if (chkboxUseHotkey.isSelected())
-			initHotkey(hotkeyModifiers, hotkeyKeyCode);
-		
-		chkboxUseTTS.setSelected(getBoolProperty(props, "chkboxUseTTS"));
-		numFieldRowsToRead.setText(props.getProperty("numFieldRowsToRead"));
+		if (chkboxUseCaptureHotkey.isSelected())
+			initHotkey(captureHotkeyID, captureHotkeyModifiers, captureHotkeyKeyCode, labelCurrCaptureHotkey, captureHotkeyPressed);
 
-		chkboxFilterResults.setSelected(getBoolProperty(props, "chkboxFilterResults"));
-		textColumnContains.setText(props.getProperty("textColumnContains"));
+		chkboxUseTTS.setSelected(getBoolProperty(props, propsChkboxUseTTS));
+		numFieldRowsToRead.setText(props.getProperty(propsNumFieldRowsToRead));
 
-		String comboValue = props.getProperty("comboColumnsSelection");
+		chkboxFilterResults.setSelected(getBoolProperty(props, propsChkboxFilterResults));
+		textColumnContains.setText(props.getProperty(propsTextColumnContains));
+
+		String comboValue = props.getProperty(propsComboColumnsSelection);
 		if (!comboValue.isEmpty())
 			comboColumns.setValue(comboValue);
 
 		for (CheckBox box : chkboxListColumns)
-			box.setSelected(getBoolProperty(props, "TTSCheckBox " + box.getText()));
+			box.setSelected(getBoolProperty(props, propsTTSCheckBox + box.getText()));
 	}
 
 	private void setCaptureOptionsPane(Properties props)
 	{
-		radioTimedCapture.setSelected(getBoolProperty(props, "radioTimedCapture"));
-		numFieldCaptureTimeout.setText(props.getProperty("numFieldCaptureTimeout"));
-		radioManual.setSelected(getBoolProperty(props, "radioManual"));
-		chkboxGetLocation.setSelected(getBoolProperty(props, "chkboxGetLocation"));
-		chkboxPing.setSelected(getBoolProperty(props, "chkboxPing"));
-		numberFieldPingTimeout.setText(props.getProperty("numberFieldPingTimeout"));
-		chkboxUseHotkey.setSelected(getBoolProperty(props, "chkboxUseHotkey"));
+		radioTimedCapture.setSelected(getBoolProperty(props, propsRadioTimedCapture));
+		numFieldCaptureTimeout.setText(props.getProperty(propsNumFieldCaptureTimeout));
+		radioManual.setSelected(getBoolProperty(props, propsRadioManual));
+		chkboxGetLocation.setSelected(getBoolProperty(props, propsChkboxGetLocation));
+		chkboxPing.setSelected(getBoolProperty(props, propsChkboxPing));
+		numberFieldPingTimeout.setText(props.getProperty(propsNumberFieldPingTimeout));
+		chkboxUseCaptureHotkey.setSelected(getBoolProperty(props, propsChkboxUseCaptureHotkey));
 	}
 
 	private void setProtocolCheckboxes(Properties props)
@@ -1391,25 +1308,25 @@ public class GUIController implements Initializable, CaptureStartListener
 		boolean isChecked;
 		protocolBoxesChecked = 0;
 
-		isChecked = getBoolProperty(props, "chkboxUDP");
+		isChecked = getBoolProperty(props, propsChkboxUDP);
 		if (isChecked)
 			protocolBoxesChecked++;
 
 		chkboxUDP.setSelected(isChecked);
 
-		isChecked = getBoolProperty(props, "chkboxTCP");
+		isChecked = getBoolProperty(props, propsChkboxTCP);
 		if (isChecked)
 			protocolBoxesChecked++;
 
 		chkboxTCP.setSelected(isChecked);
 
-		isChecked = getBoolProperty(props, "chkboxICMP");
+		isChecked = getBoolProperty(props, propsChkboxICMP);
 		if (isChecked)
 			protocolBoxesChecked++;
 
 		chkboxICMP.setSelected(isChecked);
 
-		isChecked = getBoolProperty(props, "chkboxHTTP");
+		isChecked = getBoolProperty(props, propsChkboxHTTP);
 		if (isChecked)
 			protocolBoxesChecked++;
 
@@ -1431,8 +1348,8 @@ public class GUIController implements Initializable, CaptureStartListener
 		if (!chkboxPing.isSelected())
 			numberFieldPingTimeout.setDisable(true);
 
-		if (!chkboxUseHotkey.isSelected())
-			paneEnableHotkey.setDisable(true);
+		if (!chkboxUseCaptureHotkey.isSelected())
+			paneEnableCaptureHotkey.setDisable(true);
 
 		if (!chkboxFilterResults.isSelected())
 			paneFilterResults.setDisable(true);
@@ -1587,5 +1504,48 @@ public class GUIController implements Initializable, CaptureStartListener
 
 		return alert;
 	}
+
+	private Runnable captureHotkeyPressed = new Runnable()
+	{
+		@Override
+		public void run()
+		{
+			String line;
+
+			if (activeButton == btnStart)
+			{
+				line = "Pressing start capturing button";
+				isAHotkeyResult = true;
+			}
+			else
+				line = "Pressing Stop capturing button";
+
+			activeButton.fire();
+			tts.speak(line);
+		}
+	};
+
+	private Runnable ptsHotkeyPressed = new Runnable()
+	{
+		@Override
+		public void run()
+		{
+			String address = comboPTSipToPing.getEditor().getText();
+			List<String> items = comboPTSipToPing.getItems();
+
+			if (!items.contains(address))
+				items.add(address);
+
+			String ping = getPingForIP(address, null); //default timeout
+
+			if (ping.contains("milliseconds"))
+				tts.speak(ping);
+			else
+				if (ping.contains("Timeout"))
+					tts.speak("Ping time out");
+				else
+					tts.speak("Ping failed");
+		}
+	};
 
 }

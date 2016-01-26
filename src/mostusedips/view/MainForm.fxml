@@ -88,10 +88,10 @@
                               <TableColumn fx:id="columnCity" editable="false" prefWidth="155.0" text="City" />
                            </columns>
                         </TableView>
-                        <AnchorPane fx:id="paneEnableHotkey" layoutX="36.0" layoutY="534.0" prefHeight="159.0" prefWidth="876.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="36.0">
+                        <AnchorPane fx:id="paneEnableCaptureHotkey" layoutX="36.0" layoutY="534.0" prefHeight="159.0" prefWidth="876.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="36.0">
                            <children>
-                              <Button fx:id="btnConfigHotkey" layoutX="82.0" mnemonicParsing="false" text="Configure hotkey" />
-                              <Label fx:id="labelCurrHotkey" layoutX="199.0" layoutY="4.0" text="Current hotkey: " />
+                              <Button fx:id="btnConfigCaptureHotkey" layoutX="82.0" mnemonicParsing="false" text="Configure hotkey" />
+                              <Label fx:id="labelCurrCaptureHotkey" layoutX="199.0" layoutY="4.0" text="Current hotkey: " />
                               <CheckBox fx:id="chkboxUseTTS" layoutY="32.0" mnemonicParsing="false" selected="true" text="Use text-to-speech when hotkey is used" />
                               <AnchorPane fx:id="paneUseTTS" layoutX="20.0" layoutY="61.0" prefHeight="94.0" prefWidth="856.0">
                                  <children>
@@ -111,7 +111,7 @@
                               </AnchorPane>
                            </children>
                         </AnchorPane>
-                        <CheckBox fx:id="chkboxUseHotkey" layoutX="15.0" layoutY="538.0" mnemonicParsing="false" selected="true" text="Enable hotkey" AnchorPane.bottomAnchor="138.0" AnchorPane.leftAnchor="15.0" />
+                        <CheckBox fx:id="chkboxUseCaptureHotkey" layoutX="15.0" layoutY="538.0" mnemonicParsing="false" selected="true" text="Enable hotkey" AnchorPane.bottomAnchor="138.0" AnchorPane.leftAnchor="15.0" />
                      </children>
                   </AnchorPane>
             </content>

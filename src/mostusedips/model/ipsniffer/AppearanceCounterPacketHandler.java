@@ -9,19 +9,25 @@ import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
 import org.jnetpcap.protocol.network.Ip4;
 
-public class FilteredCounterPacketHandler implements PcapPacketHandler<Void>
+public class AppearanceCounterPacketHandler implements PcapPacketHandler<Void>
 {
 
 	private HashMap<Integer, Integer> ipToAmountOfRepeats = new HashMap<Integer, Integer>();
 	private int ownIpInt;
 	private ArrayList<Integer> protocolsToCount = new ArrayList<Integer>();
 	private boolean isFirstPacket = true;
-	CaptureStartListener captureStartListener = null;
+	CaptureStartListener captureStartListener;
 
-	public FilteredCounterPacketHandler(int ownIpInt, ArrayList<Integer> listOfProtocls)
+	public AppearanceCounterPacketHandler(int ownIpInt, ArrayList<Integer> listOfProtocls)
+	{
+		this(ownIpInt, listOfProtocls, null);
+	}
+	
+	public AppearanceCounterPacketHandler(int ownIpInt, ArrayList<Integer> listOfProtocls, CaptureStartListener listener)
 	{
 		this.ownIpInt = ownIpInt;
 		this.protocolsToCount = listOfProtocls;
+		this.captureStartListener = listener;
 	}
 
 	public ArrayList<IpAppearancesCounter> getListOfIpAppearances()
