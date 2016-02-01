@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="282.0" prefWidth="553.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mostusedips.controller.WatchdogManageListScreen">
+   <children>
+      <TableView layoutX="14.0" layoutY="14.0" prefHeight="175.0" prefWidth="527.0">
+         <columns>
+            <TableColumn prefWidth="155.0" text="IP address" />
+            <TableColumn prefWidth="136.0" text="Protocol" />
+            <TableColumn prefWidth="122.0" text="Source port" />
+            <TableColumn prefWidth="111.0" text="Destination port" />
+         </columns>
+      </TableView>
+      <Button fx:id="btnAddRow" layoutX="14.0" layoutY="199.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="83.0" text="Add row" />
+      <Button fx:id="btnEditRow" layoutX="104.0" layoutY="199.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="83.0" text="Edit row" />
+      <Button fx:id="btnRemoveRow" layoutX="195.0" layoutY="199.0" mnemonicParsing="false" text="Remove row" />
+      <Button fx:id="btnClose" layoutX="434.0" layoutY="243.0" mnemonicParsing="false" text="Close this screen" />
+      <Button fx:id="btnLoadPreset" layoutX="14.0" layoutY="243.0" mnemonicParsing="false" text="Load preset" />
+      <Button fx:id="btnSavePreset" layoutX="104.0" layoutY="243.0" mnemonicParsing="false" text="Save as preset" />
+   </children>
+</AnchorPane>

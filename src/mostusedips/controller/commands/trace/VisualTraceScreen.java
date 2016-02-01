@@ -60,6 +60,8 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		}
 
 		initScreen();
+		generateTraceInfoGUI();
+		generateAndShowImage();
 
 		imgService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
 		{
@@ -101,13 +103,16 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		visualTraceController = loader.<VisualTraceController> getController();
 
 		setCloseButtonStageAndScene(getVisualTraceController().getBtnClose(), getStage(), getPostCloseScene());
+	}
 
+	private void generateTraceInfoGUI()
+	{
 		VBox vbox = getVisualTraceController().getVboxChkboxes();
 
 		char label = 'A';
 		for (String ipInfo : listOfIPs)
 		{
-			String text = label + ": " + ipInfo;//+ ipInfo.getIp() + " (" + ipInfo.getHostname() + ")";
+			String text = label + ": " + ipInfo;
 			CheckBox box = new CheckBox(text);
 
 			box.setSelected(true);
@@ -157,9 +162,6 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			else
 				label = '0';
 		}
-
-		generateAndShowImage();
-
 	}
 
 	private void generateAndShowImage()

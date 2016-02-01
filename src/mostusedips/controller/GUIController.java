@@ -75,14 +75,17 @@ import mostusedips.model.geoipresolver.GeoIPInfo;
 import mostusedips.model.geoipresolver.GeoIPResolver;
 import mostusedips.model.hotkey.HotkeyExecuter;
 import mostusedips.model.hotkey.HotkeyManager;
+import mostusedips.model.ipsniffer.AppearanceCounterResults;
 import mostusedips.model.ipsniffer.CaptureStartListener;
 import mostusedips.model.ipsniffer.DeviceIPAndDescription;
+import mostusedips.model.ipsniffer.FirstSightListener;
+import mostusedips.model.ipsniffer.IPToMatch;
 import mostusedips.model.ipsniffer.IpAppearancesCounter;
 import mostusedips.model.ipsniffer.IpSniffer;
 import mostusedips.model.tts.TextToSpeech;
 import mostusedips.view.NumberTextField;
 
-public class GUIController implements Initializable, CaptureStartListener
+public class GUIController implements Initializable, CaptureStartListener, FirstSightListener
 {
 	private final static String propsFileLocation = Main.getAppName() + ".properties";
 	private final static String defaultPropsResource = "/defaultLastRun.properties";
@@ -100,6 +103,7 @@ public class GUIController implements Initializable, CaptureStartListener
 	private final static String ptsHistoryFile = "ptsHistory";
 	private final static String captureHotkeyID = "Mosed used IPs capture hotkey";
 	private final static String ptsHotkeyID = "PTS hotkey";
+	private final static String watchdogHotkeyID = "Watchdog hotkey";
 
 	private final static String propsNICIndex = "Selected NIC index";
 	private final static String propsChkboxUDP = "chkboxUDP";
@@ -125,11 +129,15 @@ public class GUIController implements Initializable, CaptureStartListener
 	private final static String propsPTSHotkey = "PTSHotkey";
 	private final static String propsPTSModifiers = "PTSModifiers";
 	private final static String propsPTSComboValue = "PTSComboValue";
+	private final static String propsChkboxWatchdogHotkey = "chkboxWatchdogHotkey";
+	private final static String propsWatchdogHotkeyKeycode = "watchdogHotkeyKeycode";
+	private final static String propsWatchdogHotkeyModifiers = "watchdogHotkeyModifiers";
+	private final static String propsWatchdogMessage = "watchdogMessage";
 
 	private final static Logger logger = Logger.getLogger(GUIController.class.getPackage().getName());
 
 	@FXML
-	ScrollPane scrollPane;
+	private ScrollPane scrollPane;
 	@FXML
 	private VBox vboxNICs;
 	@FXML
@@ -162,7 +170,7 @@ public class GUIController implements Initializable, CaptureStartListener
 	private Button btnExit;
 
 	@FXML
-	CheckBox chkboxGetLocation;
+	private CheckBox chkboxGetLocation;
 	@FXML
 	private Spinner<Integer> spinnerTimeout;
 	@FXML
@@ -174,7 +182,7 @@ public class GUIController implements Initializable, CaptureStartListener
 	@FXML
 	private TableColumn<IPInfoRowModel, String> columnOwner;
 	@FXML
-	TableColumn<IPInfoRowModel, String> columnPing;
+	private TableColumn<IPInfoRowModel, String> columnPing;
 	@FXML
 	private TableColumn<IPInfoRowModel, String> columnCountry;
 	@FXML
@@ -207,59 +215,77 @@ public class GUIController implements Initializable, CaptureStartListener
 	private int captureHotkeyModifiers;
 	private int ptsHotkeyKeyCode;
 	private int ptsHotkeyModifiers;
+	private int watchdogHotkeyKeyCode;
+	private int watchdogHotkeyModifiers;
 
 	@FXML
-	CheckBox chkboxUseCaptureHotkey;
+	private CheckBox chkboxUseCaptureHotkey;
 	@FXML
-	Button btnConfigCaptureHotkey;
+	private Button btnConfigCaptureHotkey;
 	@FXML
-	AnchorPane paneEnableCaptureHotkey;
+	private AnchorPane paneEnableCaptureHotkey;
 	@FXML
-	CheckBox chkboxUseTTS;
+	private CheckBox chkboxUseTTS;
 	@FXML
-	AnchorPane paneUseTTS;
+	private AnchorPane paneUseTTS;
 	@FXML
-	HBox hboxColumnNames;
+	private HBox hboxColumnNames;
 	@FXML
-	Label labelReadFirstRows;
+	private Label labelReadFirstRows;
 	@FXML
-	TextArea textAreaOutput;
+	private TextArea textAreaOutput;
 	@FXML
-	ButtonBar buttonBar;
+	private ButtonBar buttonBar;
 	@FXML
-	Button btnCloseCmd;
+	private Button btnCloseCmd;
 	@FXML
-	CheckBox chkboxPing;
+	private CheckBox chkboxPing;
 	@FXML
-	CheckBox chkboxFilterResults;
+	private CheckBox chkboxFilterResults;
 	@FXML
-	Pane paneFilterResults;
+	private Pane paneFilterResults;
 	@FXML
-	ComboBox<String> comboColumns;
+	private ComboBox<String> comboColumns;
 	@FXML
-	TextField textColumnContains;
+	private TextField textColumnContains;
 	@FXML
-	MenuItem menuItemMinimize;
+	private MenuItem menuItemMinimize;
 	@FXML
-	MenuItem menuItemExit;
+	private MenuItem menuItemExit;
 	@FXML
-	MenuItem menuItemUpdate;
+	private MenuItem menuItemUpdate;
 	@FXML
-	MenuItem menuItemAbout;
+	private MenuItem menuItemAbout;
 	@FXML
-	TabPane tabPane;
+	private TabPane tabPane;
 	@FXML
-	ComboBox<String> comboPTSipToPing;
+	private ComboBox<String> comboPTSipToPing;
 	@FXML
-	Button btnPTSConfigureHotkey;
+	private Button btnPTSConfigureHotkey;
 	@FXML
-	Label labelPTSCurrentHotkey;
+	private Label labelPTSCurrentHotkey;
 	@FXML
-	Tab tabUtils;
+	private Tab tabUtils;
 	@FXML
-	CheckBox chkboxPTSHotkey;
+	private CheckBox chkboxPTSHotkey;
 	@FXML
-	AnchorPane panePTSHotkey;
+	private AnchorPane panePTSHotkey;
+	@FXML
+	private CheckBox chkboxWatchdogHotkey;
+	@FXML
+	private AnchorPane paneWatchdogHotkeyConfig;
+	@FXML
+	private Button btnWatchdogConfigureHotkey;
+	@FXML
+	private Label labelWatchdogCurrHotkey;
+	@FXML
+	private Button btnWatchdogStart;
+	@FXML
+	private Button btnWatchdogStop;
+	@FXML
+	private TextField textWatchdogMessage;
+	@FXML
+	private Button btnWatchdogManageList;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
@@ -455,6 +481,9 @@ public class GUIController implements Initializable, CaptureStartListener
 		chkboxPTSHotkey.selectedProperty()
 				.addListener(generateChangeListenerForHotkeyCheckbox(ptsHotkeyID, ptsHotkeyModifiers, ptsHotkeyKeyCode, chkboxPTSHotkey, labelPTSCurrentHotkey, panePTSHotkey, ptsHotkeyPressed));
 
+		chkboxWatchdogHotkey.selectedProperty().addListener(generateChangeListenerForHotkeyCheckbox(watchdogHotkeyID, watchdogHotkeyModifiers, watchdogHotkeyKeyCode, chkboxWatchdogHotkey,
+				labelWatchdogCurrHotkey, paneWatchdogHotkeyConfig, watchdogHotkeyPressed));
+
 		chkboxUseTTS.selectedProperty().addListener(new ChangeListener<Boolean>()
 		{
 			@Override
@@ -507,7 +536,6 @@ public class GUIController implements Initializable, CaptureStartListener
 
 		ChangeListener<Boolean> protocolBoxes = new ChangeListener<Boolean>()
 		{
-
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
 			{
@@ -535,6 +563,30 @@ public class GUIController implements Initializable, CaptureStartListener
 				hotkeyManager.setKeySelection(ptsHotkeyID, true);
 				tabPane.setDisable(true);
 				alertChangeHotkey.show();
+			}
+		});
+
+		btnWatchdogConfigureHotkey.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				hotkeyManager.setKeySelection(watchdogHotkeyID, true);
+				tabPane.setDisable(true);
+				alertChangeHotkey.show();
+			}
+		});
+
+		btnWatchdogManageList.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				WatchdogManageListScreen watchdogManageListScreen = new WatchdogManageListScreen();
+				Stage stage = (Stage) scrollPane.getScene().getWindow();
+				watchdogManageListScreen.setCloseButtonStageAndScene(watchdogManageListScreen.getBtnClose(), stage, stage.getScene());
+
+				watchdogManageListScreen.showScreen();
 			}
 		});
 	}
@@ -766,10 +818,12 @@ public class GUIController implements Initializable, CaptureStartListener
 
 		Task<Void> workerThreadTask = new Task<Void>()
 		{
+			private AppearanceCounterResults results;
+
 			@Override
 			protected Void call() throws Exception
 			{
-				sniffer.startAppearanceCounterCapture(deviceIP, getSelectedProtocols(), thisObj, errbuf);
+				results = sniffer.startAppearanceCounterCapture(deviceIP, getSelectedProtocols(), thisObj, errbuf);
 				return null;
 			}
 
@@ -778,7 +832,7 @@ public class GUIController implements Initializable, CaptureStartListener
 			{
 				labelStatus.setText(statusResults);
 
-				fillTable(sniffer.getAppearanceCounterResults());
+				fillTable(results.getAppearanceCounterResults());
 
 				if (isAHotkeyResult)
 				{
@@ -977,7 +1031,6 @@ public class GUIController implements Initializable, CaptureStartListener
 
 				Platform.runLater(new Runnable()
 				{
-
 					@Override
 					public void run()
 					{
@@ -1191,6 +1244,11 @@ public class GUIController implements Initializable, CaptureStartListener
 		props.put(propsPTSModifiers, Integer.toString(hotkeyManager.getHotkeyModifiers(ptsHotkeyID)));
 		props.put(propsPTSComboValue, comboPTSipToPing.getEditor().getText());
 
+		props.put(propsChkboxWatchdogHotkey, ((Boolean) chkboxWatchdogHotkey.isSelected()).toString());
+		props.put(propsWatchdogHotkeyKeycode, Integer.toString(hotkeyManager.getHotkeyKeycode(watchdogHotkeyID)));
+		props.put(propsWatchdogHotkeyModifiers, Integer.toString(hotkeyManager.getHotkeyModifiers(watchdogHotkeyID)));
+		props.put(propsWatchdogMessage, textWatchdogMessage.getText());
+
 		StringBuilder ptsHistoryBuilder = new StringBuilder();
 		for (String item : comboPTSipToPing.getItems())
 			ptsHistoryBuilder.append(item + "\n");
@@ -1253,9 +1311,23 @@ public class GUIController implements Initializable, CaptureStartListener
 
 		setProtocolCheckboxes(props);
 		setCaptureOptionsPane(props);
-		setHotkeyAndPane(props);
+		setCaptureHotkeyAndPane(props);
 		setPTSHotkey(props);
+		setWatchdogHotkey(props);
 		applyGUILogic();
+	}
+
+	private void setWatchdogHotkey(Properties props)
+	{
+		chkboxWatchdogHotkey.setSelected(getBoolProperty(props, propsChkboxWatchdogHotkey));
+		watchdogHotkeyModifiers = getIntProperty(props, propsWatchdogHotkeyModifiers);
+		watchdogHotkeyKeyCode = getIntProperty(props, propsWatchdogHotkeyKeycode);
+		textWatchdogMessage.setText(props.getProperty(propsWatchdogMessage));
+
+		if (chkboxWatchdogHotkey.isSelected())
+			initHotkey(watchdogHotkeyID, watchdogHotkeyModifiers, watchdogHotkeyKeyCode, labelWatchdogCurrHotkey, watchdogHotkeyPressed);
+		else
+			paneWatchdogHotkeyConfig.setDisable(true);
 	}
 
 	private void setPTSHotkey(Properties props)
@@ -1270,10 +1342,11 @@ public class GUIController implements Initializable, CaptureStartListener
 			panePTSHotkey.setDisable(true);
 	}
 
-	private void setHotkeyAndPane(Properties props)
+	private void setCaptureHotkeyAndPane(Properties props)
 	{
 		captureHotkeyModifiers = getIntProperty(props, propsCaptureHotkeyModifiers);
 		captureHotkeyKeyCode = getIntProperty(props, propsCaptureHotkeyKeycode);
+		chkboxUseCaptureHotkey.setSelected(getBoolProperty(props, propsChkboxUseCaptureHotkey));
 
 		if (chkboxUseCaptureHotkey.isSelected())
 			initHotkey(captureHotkeyID, captureHotkeyModifiers, captureHotkeyKeyCode, labelCurrCaptureHotkey, captureHotkeyPressed);
@@ -1300,7 +1373,6 @@ public class GUIController implements Initializable, CaptureStartListener
 		chkboxGetLocation.setSelected(getBoolProperty(props, propsChkboxGetLocation));
 		chkboxPing.setSelected(getBoolProperty(props, propsChkboxPing));
 		numberFieldPingTimeout.setText(props.getProperty(propsNumberFieldPingTimeout));
-		chkboxUseCaptureHotkey.setSelected(getBoolProperty(props, propsChkboxUseCaptureHotkey));
 	}
 
 	private void setProtocolCheckboxes(Properties props)
@@ -1547,5 +1619,33 @@ public class GUIController implements Initializable, CaptureStartListener
 					tts.speak("Ping failed");
 		}
 	};
+
+	private Runnable watchdogHotkeyPressed = new Runnable()
+	{
+		@Override
+		public void run()
+		{
+			tts.speak(textWatchdogMessage.getText());
+		}
+	};
+
+	@Override
+	public void firstSightOfIP(IPToMatch ipInfo)
+	{
+		System.out.println("fff");
+
+		//		String deviceIP = buttonToIpMap.get(tglGrpNIC.getSelectedToggle());
+		//		ArrayList<IPToMatch> arrayList = new ArrayList<IPToMatch>();
+		//		arrayList.add(new IPToMatch("8.8.8.8"));
+		//		FirstSightListener listener = this;
+		//		new Thread(new Runnable(){
+		//
+		//			@Override
+		//			public void run()
+		//			{
+		//				sniffer.startFirstSightCapture(deviceIP, arrayList, listener, new StringBuilder());
+		//				
+		//			}}).start();
+	}
 
 }

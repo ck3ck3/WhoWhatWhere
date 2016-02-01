@@ -19,6 +19,7 @@ import org.jnetpcap.PcapAddr;
 import org.jnetpcap.PcapIf;
 import org.jnetpcap.packet.PcapPacketHandler;
 import org.jnetpcap.protocol.network.Icmp;
+import org.jnetpcap.protocol.network.Ip4;
 import org.jnetpcap.protocol.tcpip.Http;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
@@ -27,7 +28,6 @@ import mostusedips.Main;
 
 public class IpSniffer
 {
-	private AppearanceCounterPacketHandler filteredCounterPH;
 	private Pcap pcap;
 	private HashMap<String, PcapIf> ipToDevice = new HashMap<String, PcapIf>();
 	
@@ -35,6 +35,7 @@ public class IpSniffer
 	public static final int UDP_PROTOCOL = Udp.ID;
 	public static final int TCP_PROTOCOL = Tcp.ID;
 	public static final int HTTP_PROTOCOL = Http.ID;
+	public static final int IPv4_PROTOCOL = Ip4.ID;
 
 	private static int snaplen = 64 * 1024; // Capture all packets, no truncation
 	private static int flags = Pcap.MODE_PROMISCUOUS; // capture all packets
@@ -171,14 +172,14 @@ public class IpSniffer
 		return ByteBuffer.wrap(bar.getAddress()).getInt();
 	}
 	
-	public void startAppearanceCounterCapture(String ip, ArrayList<Integer> protocolsToCapture, StringBuilder errbuf)
+	public void startAppearanceCounterCapture(String deviceIp, ArrayList<Integer> protocolsToCapture, StringBuilder errbuf)
 	{
-		startAppearanceCounterCapture(ip, protocolsToCapture, null, errbuf);
+		startAppearanceCounterCapture(deviceIp, protocolsToCapture, null, errbuf);
 	}
 	
-	public void startAppearanceCounterCapture(String ip, ArrayList<Integer> protocolsToCapture, CaptureStartListener listener, StringBuilder errbuf)
+	public AppearanceCounterResults startAppearanceCounterCapture(String deviceIp, ArrayList<Integer> protocolsToCapture, CaptureStartListener listener, StringBuilder errbuf)
 	{
-		String ownAddress = ip.substring(1, ip.length() - 1);
+		String ownAddress = deviceIp.substring(1, deviceIp.length() - 1);
 		int ownIpInt;
 
 		try
@@ -187,22 +188,31 @@ public class IpSniffer
 		}
 		catch (UnknownHostException uhe)
 		{
-			logger.log(Level.SEVERE, "Unable convert own IP address " + ownAddress + " to integer. Debug info: " + ipToDevice.get(ip).getAddresses().get(0).getAddr() + "\nUnable to capture");
-			return;
+			logger.log(Level.SEVERE, "Unable convert own IP address " + ownAddress + " to integer. Debug info: " + ipToDevice.get(deviceIp).getAddresses().get(0).getAddr() + "\nUnable to capture");
+			return null;
 		}
 
-		filteredCounterPH = new AppearanceCounterPacketHandler(ownIpInt, protocolsToCapture, listener);
+		AppearanceCounterPacketHandler filteredCounterPH = new AppearanceCounterPacketHandler(ownIpInt, protocolsToCapture, listener);
 
-		startCapture(ip, filteredCounterPH, errbuf);
+		startCapture(deviceIp, filteredCounterPH, errbuf);
+		
+		return new AppearanceCounterResults(filteredCounterPH);
+	}
+	
+	public void startFirstSightCapture(String deviceIP, ArrayList<IPToMatch> ipList, FirstSightListener listener, StringBuilder errbuf)
+	{
+		FirstSightPacketHandler firstSightPH = new FirstSightPacketHandler(ipList, listener, this);
+		
+		startCapture(deviceIP, firstSightPH, errbuf);
 	}
 
-	private void startCapture(String ip, PcapPacketHandler<Void> packetHandler, StringBuilder errbuf)
+	private void startCapture(String deviceIp, PcapPacketHandler<Void> packetHandler, StringBuilder errbuf)
 	{
-		PcapIf device = ipToDevice.get(ip);
+		PcapIf device = ipToDevice.get(deviceIp);
 		
 		if (device == null)
 		{
-			logger.log(Level.SEVERE, "Unable to find device with IP " + ip);
+			logger.log(Level.SEVERE, "Unable to find device with IP " + deviceIp);
 			return;
 		}
 		
@@ -220,11 +230,6 @@ public class IpSniffer
 	public void stopCapture()
 	{
 		pcap.breakloop();
-	}
-
-	public ArrayList<IpAppearancesCounter> getAppearanceCounterResults()
-	{
-		return filteredCounterPH.getListOfIpAppearances();
 	}
 
 	public void cleanup()

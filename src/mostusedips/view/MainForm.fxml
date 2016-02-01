@@ -137,6 +137,26 @@
                               </AnchorPane>
                           </content>
                         </TitledPane>
+                        <TitledPane collapsible="false" layoutX="14.0" layoutY="174.0" prefHeight="153.0" prefWidth="510.0" text="Watchdog">
+                           <content>
+                              <AnchorPane prefHeight="122.0" prefWidth="508.0">
+                                 <children>
+                                    <CheckBox fx:id="chkboxWatchdogHotkey" layoutX="14.0" layoutY="133.0" mnemonicParsing="false" selected="true" text="Enable hotkey" />
+                                    <AnchorPane fx:id="paneWatchdogHotkeyConfig" layoutX="119.0" layoutY="129.0" prefHeight="25.0" prefWidth="366.0">
+                                       <children>
+                                          <Button fx:id="btnWatchdogConfigureHotkey" mnemonicParsing="false" text="Configure hotkey" />
+                                          <Label fx:id="labelWatchdogCurrHotkey" layoutX="117.0" layoutY="4.0" prefHeight="17.0" prefWidth="244.0" text="Current hotkey: " />
+                                       </children>
+                                    </AnchorPane>
+                                    <Button fx:id="btnWatchdogStart" layoutX="14.0" layoutY="87.0" mnemonicParsing="false" text="Start waiting for match" />
+                                    <Button fx:id="btnWatchdogStop" layoutX="164.0" layoutY="87.0" mnemonicParsing="false" text="Stop waiting for match" />
+                                    <Label layoutX="14.0" layoutY="53.0" text="When a match is found, say this message:" />
+                                    <TextField fx:id="textWatchdogMessage" layoutX="245.0" layoutY="49.0" prefHeight="25.0" prefWidth="243.0" />
+                                    <Button fx:id="btnWatchdogManageList" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" text="Manage match list" />
+                                 </children>
+                              </AnchorPane>
+                           </content>
+                        </TitledPane>
                      </children>
                   </AnchorPane>
             </content>
