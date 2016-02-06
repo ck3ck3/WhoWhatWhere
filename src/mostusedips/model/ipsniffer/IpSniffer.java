@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.collections.bidimap.TreeBidiMap;
 import org.apache.commons.io.IOUtils;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapAddr;
@@ -30,34 +31,44 @@ public class IpSniffer
 {
 	private Pcap pcap;
 	private HashMap<String, PcapIf> ipToDevice = new HashMap<String, PcapIf>();
-	
+
 	public static final int ICMP_PROTOCOL = Icmp.ID;
 	public static final int UDP_PROTOCOL = Udp.ID;
 	public static final int TCP_PROTOCOL = Tcp.ID;
 	public static final int HTTP_PROTOCOL = Http.ID;
 	public static final int IPv4_PROTOCOL = Ip4.ID;
 
+	private static TreeBidiMap protocolBidiMap;
+	static
+	{
+		protocolBidiMap = new TreeBidiMap();
+		protocolBidiMap.put("ICMP", ICMP_PROTOCOL);
+		protocolBidiMap.put("UDP", UDP_PROTOCOL);
+		protocolBidiMap.put("TCP", TCP_PROTOCOL);
+		protocolBidiMap.put("HTTP", HTTP_PROTOCOL);
+	}
+
 	private static int snaplen = 64 * 1024; // Capture all packets, no truncation
 	private static int flags = Pcap.MODE_PROMISCUOUS; // capture all packets
 	private static int timeout = 10 * 1000; // 10 seconds in milliseconds
-	
+
 	private final static String Ipv4Prefix = "INET4:";
 	private final static String DLLName = "jnetpcap";
 
 	private static final Logger logger = Logger.getLogger(IpSniffer.class.getPackage().getName());
-	
+
 	private boolean dllLoaded = false;
-	
+
 	public IpSniffer(String dllX86Location, String dllX64Location)
 	{
 		dllLoaded = loadJnetpcapDll(dllX86Location, dllX64Location);
 	}
-	
+
 	public boolean isDllLoaded()
 	{
 		return dllLoaded;
 	}
-	
+
 	/**
 	 * @return true if successfully loaded, false otherwise
 	 */
@@ -133,7 +144,7 @@ public class IpSniffer
 			logger.log(Level.SEVERE, "Can't read list of devices, error is " + errbuf.toString());
 			return null;
 		}
-		
+
 		for (PcapIf device : alldevs)
 		{
 			String description = (device.getDescription() != null) ? device.getDescription() : "No description available";
@@ -151,11 +162,11 @@ public class IpSniffer
 
 			if (IP == null)
 				continue;
-			
+
 			ipAndDescList.add(new DeviceIPAndDescription(IP, description));
 			ipToDevice.put(IP, device);
 		}
-		
+
 		return ipAndDescList;
 	}
 
@@ -171,12 +182,22 @@ public class IpSniffer
 		InetAddress bar = InetAddress.getByName(str);
 		return ByteBuffer.wrap(bar.getAddress()).getInt();
 	}
+
+	public static int stringProtocolToInt(String protocol)
+	{
+		return (Integer)protocolBidiMap.get(protocol);
+	}
 	
+	public static String intProtocolToString(int protocol)
+	{
+		return (String)protocolBidiMap.getKey(protocol);
+	}
+
 	public void startAppearanceCounterCapture(String deviceIp, ArrayList<Integer> protocolsToCapture, StringBuilder errbuf)
 	{
 		startAppearanceCounterCapture(deviceIp, protocolsToCapture, null, errbuf);
 	}
-	
+
 	public AppearanceCounterResults startAppearanceCounterCapture(String deviceIp, ArrayList<Integer> protocolsToCapture, CaptureStartListener listener, StringBuilder errbuf)
 	{
 		String ownAddress = deviceIp.substring(1, deviceIp.length() - 1);
@@ -195,27 +216,27 @@ public class IpSniffer
 		AppearanceCounterPacketHandler filteredCounterPH = new AppearanceCounterPacketHandler(ownIpInt, protocolsToCapture, listener);
 
 		startCapture(deviceIp, filteredCounterPH, errbuf);
-		
+
 		return new AppearanceCounterResults(filteredCounterPH);
 	}
-	
+
 	public void startFirstSightCapture(String deviceIP, ArrayList<IPToMatch> ipList, FirstSightListener listener, StringBuilder errbuf)
 	{
 		FirstSightPacketHandler firstSightPH = new FirstSightPacketHandler(ipList, listener, this);
-		
+
 		startCapture(deviceIP, firstSightPH, errbuf);
 	}
 
 	private void startCapture(String deviceIp, PcapPacketHandler<Void> packetHandler, StringBuilder errbuf)
 	{
 		PcapIf device = ipToDevice.get(deviceIp);
-		
+
 		if (device == null)
 		{
 			logger.log(Level.SEVERE, "Unable to find device with IP " + deviceIp);
 			return;
 		}
-		
+
 		pcap = Pcap.openLive(device.getName(), snaplen, flags, timeout, errbuf);
 
 		if (pcap == null)

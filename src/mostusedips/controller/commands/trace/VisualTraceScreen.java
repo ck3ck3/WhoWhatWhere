@@ -19,7 +19,6 @@ import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Hyperlink;
@@ -45,8 +44,9 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 	private ArrayList<CheckBox> listOfChkBoxes = new ArrayList<CheckBox>();
 	private GenerateImageFromURLService imgService;
 
-	public VisualTraceScreen(ArrayList<String> listOfIPs)
+	public VisualTraceScreen(ArrayList<String> listOfIPs, Stage postCloseStage, Scene postCloseScene) throws IOException
 	{
+		super(visualTraceFormLocation, postCloseStage, postCloseScene);
 		this.listOfIPs = listOfIPs;
 
 		imgService = new GenerateImageFromURLService(this);
@@ -59,7 +59,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			geoIPResults.put(ip, ipInfo);
 		}
 
-		initScreen();
+		visualTraceController = getLoader().<VisualTraceController> getController();
 		generateTraceInfoGUI();
 		generateAndShowImage();
 
@@ -74,35 +74,6 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 				getVisualTraceController().getImgView().setImage(img);
 			}
 		});
-	}
-
-	public void showScreen()
-	{
-		Scene scene = new Scene(getLoadedFXML());
-		Stage stage = getStage();
-		stage.setScene(scene);
-		stage.show();
-	}
-
-	private void initScreen()
-	{
-		FXMLLoader loader;
-
-		try
-		{
-			loader = new FXMLLoader(getClass().getResource(visualTraceFormLocation));
-			setLoadedFXML(loader.load());
-
-		}
-		catch (IOException e)
-		{
-			logger.log(Level.SEVERE, "Unable to load resource " + visualTraceFormLocation, e);
-			return;
-		}
-
-		visualTraceController = loader.<VisualTraceController> getController();
-
-		setCloseButtonStageAndScene(getVisualTraceController().getBtnClose(), getStage(), getPostCloseScene());
 	}
 
 	private void generateTraceInfoGUI()
@@ -177,14 +148,14 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			}
 		});
 	}
-	
+
 	private String generateURL(String centerOnIP)
 	{
 		String url = new String(baseUrl);
 		final String pathInit = "&path=";
 		String path = pathInit;
 		boolean isFirstMarker = true;
-		
+
 		if (centerOnIP != null)
 		{
 			GeoIPInfo ipInfo = geoIPResults.get(centerOnIP);
@@ -197,7 +168,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			{
 				logger.log(Level.SEVERE, "Unable to encode this URL: " + location, e);
 			}
-			
+
 			return url + "&center=" + location + "&zoom=10";
 		}
 
@@ -306,6 +277,5 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		{
 			this.centerOnIP = centerOnIP;
 		}
-
 	}
 }

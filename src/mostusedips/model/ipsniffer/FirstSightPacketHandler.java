@@ -27,7 +27,7 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 		{
 			for (IPToMatch ipToMatch : ipList)
 			{
-				String ip = ipToMatch.getIP();
+				String ip = ipToMatch.ipProperty().getValue();
 				
 				if (ip == null)
 					throw new IllegalArgumentException("IP address must be set");
@@ -69,9 +69,9 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 		
 		if (ipToMatch != null)
 		{
-			Integer protocol = ipToMatch.getProtocol();
-			Integer srcPort = ipToMatch.getSrcPort();
-			Integer dstPort = ipToMatch.getDstPort();
+			Integer protocol = ipToMatch.protocolAsInt();
+			Integer srcPort = ipToMatch.srcPortProperty().getValue();
+			Integer dstPort = ipToMatch.dstPortProperty().getValue();
 
 			if (protocol != null && !packet.hasHeader(protocol)) //if a protocol was specified, but this packet doesn't have it
 					return null;

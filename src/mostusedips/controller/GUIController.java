@@ -104,6 +104,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 	private final static String captureHotkeyID = "Mosed used IPs capture hotkey";
 	private final static String ptsHotkeyID = "PTS hotkey";
 	private final static String watchdogHotkeyID = "Watchdog hotkey";
+	private final static String watchdogListFormLocation = "/mostusedips/view/WatchdogList.fxml";
 
 	private final static String propsNICIndex = "Selected NIC index";
 	private final static String propsChkboxUDP = "chkboxUDP";
@@ -196,7 +197,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 	private NumberTextField numFieldRowsToRead;
 	private NumberTextField numberFieldPingTimeout;
 	private Alert alertChangeHotkey;
-
+	
 	private ToggleGroup tglGrpNIC = new ToggleGroup();
 	private ToggleGroup tglGrpCaptureOptions = new ToggleGroup();
 	private IpSniffer sniffer;
@@ -209,6 +210,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 	private boolean isTimedTaskRunning = false;
 	private Button activeButton;
 	private boolean isAHotkeyResult = false;
+	private boolean isMuted = false;
 	private ArrayList<CheckBox> chkboxListColumns;
 	private int protocolBoxesChecked = 0;
 	private int captureHotkeyKeyCode;
@@ -286,6 +288,10 @@ public class GUIController implements Initializable, CaptureStartListener, First
 	private TextField textWatchdogMessage;
 	@FXML
 	private Button btnWatchdogManageList;
+	@FXML
+	private Button btnWatchdogPreview;
+	@FXML
+	private Label labelWatchdogEntryCount;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
@@ -489,7 +495,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 			@Override
 			public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val)
 			{
-				tts.setMuted(!new_val);
+				isMuted = !new_val;
 				paneUseTTS.setDisable(!new_val);
 			}
 		});
@@ -582,13 +588,30 @@ public class GUIController implements Initializable, CaptureStartListener, First
 			@Override
 			public void handle(ActionEvent event)
 			{
-				WatchdogManageListScreen watchdogManageListScreen = new WatchdogManageListScreen();
+				WatchdogManageListScreen watchdogManageListScreen;
 				Stage stage = (Stage) scrollPane.getScene().getWindow();
-				watchdogManageListScreen.setCloseButtonStageAndScene(watchdogManageListScreen.getBtnClose(), stage, stage.getScene());
 
-				watchdogManageListScreen.showScreen();
+				try
+				{
+					watchdogManageListScreen = new WatchdogManageListScreen(watchdogListFormLocation, stage, stage.getScene());
+				}
+				catch (IOException e)
+				{
+					logger.log(Level.SEVERE, "Unable to load watchdog list screen", e);
+					return;
+				}
+
+				watchdogManageListScreen.showScreenOnNewStage(watchdogManageListScreen.getCloseButton(), "Manage Watchdog list");
 			}
 		});
+		
+		btnWatchdogPreview.setOnAction(new EventHandler<ActionEvent>(){
+
+			@Override
+			public void handle(ActionEvent event)
+			{
+				speakIfNotMuted(textWatchdogMessage.getText());				
+			}});
 	}
 
 	private ChangeListener<Boolean> generateChangeListenerForHotkeyCheckbox(String hotkeyID, int defaultModifiers, int defaultKeycode, CheckBox chkbox, Label hotkeyLabel, Pane hotkeyPane,
@@ -616,11 +639,11 @@ public class GUIController implements Initializable, CaptureStartListener, First
 						}
 						catch (IllegalArgumentException iae) //first time we use this key
 						{
-							initHotkey(hotkeyID, defaultModifiers, defaultKeycode, hotkeyLabel, runnableKeyPressed);
+							addHotkey(hotkeyID, defaultModifiers, defaultKeycode, hotkeyLabel, runnableKeyPressed);
 							return;
 						}
 
-						initHotkey(hotkeyID, modifiers, keycode, hotkeyLabel, runnableKeyPressed);
+						addHotkey(hotkeyID, modifiers, keycode, hotkeyLabel, runnableKeyPressed);
 					}
 					catch (IllegalArgumentException iae)
 					{
@@ -642,7 +665,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		};
 	}
 
-	private void initHotkey(String hotkeyID, int modifiers, int keycode, Label hotkeyLabel, Runnable runnableKeyPressed)
+	private void addHotkey(String hotkeyID, int modifiers, int keycode, Label hotkeyLabel, Runnable runnableKeyPressed)
 	{
 		HotkeyExecuter executer = generateHotkeyExecuter(hotkeyID, hotkeyLabel, runnableKeyPressed);
 
@@ -794,18 +817,38 @@ public class GUIController implements Initializable, CaptureStartListener, First
 	{
 		Stage stage = (Stage) scrollPane.getScene().getWindow();
 
-		PingCommandScreen cmdScreen = new PingCommandScreen(stage, stage.getScene(), ip);
+		PingCommandScreen cmdScreen;
 
-		cmdScreen.showScreen();
+		try
+		{
+			cmdScreen = new PingCommandScreen(stage, stage.getScene(), ip);
+		}
+		catch (IOException e)
+		{
+			logger.log(Level.SEVERE, "Unable able to load Ping (command) screen", e);
+			return;
+		}
+
+		cmdScreen.showScreenOnCurrentStage(cmdScreen.getCloseButton());
 		cmdScreen.runCommand();
 	}
 
 	private void traceCommand(String ip)
 	{
 		Stage stage = (Stage) scrollPane.getScene().getWindow();
-		TraceCommandScreen cmdScreen = new TraceCommandScreen(stage, stage.getScene(), ip);
+		TraceCommandScreen cmdScreen;
 
-		cmdScreen.showScreen();
+		try
+		{
+			cmdScreen = new TraceCommandScreen(stage, stage.getScene(), ip);
+		}
+		catch (IOException e)
+		{
+			logger.log(Level.SEVERE, "Unable to load Trace (command) screen", e);
+			return;
+		}
+
+		cmdScreen.showScreenOnCurrentStage(cmdScreen.getCloseButton());
 	}
 
 	private void startButtonPressed()
@@ -930,7 +973,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		for (int i = 0; i < rowsToRead; i++)
 			result += lines[i].toString();
 
-		tts.speak(result);
+		speakIfNotMuted(result);
 	}
 
 	private ArrayList<IPInfoRowModel> filterItemsByColValue(List<IPInfoRowModel> items, String colName, String colValue)
@@ -1075,7 +1118,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		sniffer.stopCapture();
 
 		if (isAHotkeyResult)
-			tts.speak(msgTimerExpired);
+			speakIfNotMuted(msgTimerExpired);
 	}
 
 	private void fillTable(ArrayList<IpAppearancesCounter> ips)
@@ -1129,7 +1172,17 @@ public class GUIController implements Initializable, CaptureStartListener, First
 	private String getPingForIP(String ip, Integer timeout)
 	{
 		String ping;
-		PingCommandScreen pingCmd = new PingCommandScreen(null, null, ip, "-n 1" + (timeout != null ? " -w " + timeout : ""));
+		PingCommandScreen pingCmd;
+
+		try
+		{
+			pingCmd = new PingCommandScreen(null, null, ip, "-n 1" + (timeout != null ? " -w " + timeout : ""));
+		}
+		catch (IOException e)
+		{
+			logger.log(Level.SEVERE, "Unable able to generate ping (failed to load Ping (command) screen)", e);
+			return null;
+		}
 
 		pingCmd.runCommand();
 
@@ -1312,9 +1365,10 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		setProtocolCheckboxes(props);
 		setCaptureOptionsPane(props);
 		setCaptureHotkeyAndPane(props);
+		setDisabledPanes();
+
 		setPTSHotkey(props);
 		setWatchdogHotkey(props);
-		applyGUILogic();
 	}
 
 	private void setWatchdogHotkey(Properties props)
@@ -1325,7 +1379,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		textWatchdogMessage.setText(props.getProperty(propsWatchdogMessage));
 
 		if (chkboxWatchdogHotkey.isSelected())
-			initHotkey(watchdogHotkeyID, watchdogHotkeyModifiers, watchdogHotkeyKeyCode, labelWatchdogCurrHotkey, watchdogHotkeyPressed);
+			addHotkey(watchdogHotkeyID, watchdogHotkeyModifiers, watchdogHotkeyKeyCode, labelWatchdogCurrHotkey, watchdogHotkeyPressed);
 		else
 			paneWatchdogHotkeyConfig.setDisable(true);
 	}
@@ -1337,7 +1391,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		ptsHotkeyKeyCode = getIntProperty(props, propsPTSHotkey);
 
 		if (chkboxPTSHotkey.isSelected())
-			initHotkey(ptsHotkeyID, ptsHotkeyModifiers, ptsHotkeyKeyCode, labelPTSCurrentHotkey, ptsHotkeyPressed);
+			addHotkey(ptsHotkeyID, ptsHotkeyModifiers, ptsHotkeyKeyCode, labelPTSCurrentHotkey, ptsHotkeyPressed);
 		else
 			panePTSHotkey.setDisable(true);
 	}
@@ -1349,7 +1403,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		chkboxUseCaptureHotkey.setSelected(getBoolProperty(props, propsChkboxUseCaptureHotkey));
 
 		if (chkboxUseCaptureHotkey.isSelected())
-			initHotkey(captureHotkeyID, captureHotkeyModifiers, captureHotkeyKeyCode, labelCurrCaptureHotkey, captureHotkeyPressed);
+			addHotkey(captureHotkeyID, captureHotkeyModifiers, captureHotkeyKeyCode, labelCurrCaptureHotkey, captureHotkeyPressed);
 
 		chkboxUseTTS.setSelected(getBoolProperty(props, propsChkboxUseTTS));
 		numFieldRowsToRead.setText(props.getProperty(propsNumFieldRowsToRead));
@@ -1408,11 +1462,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 			chkboxAnyProtocol.setSelected(true);
 	}
 
-	/**
-	 * Makes sure all the panes and controls are enabled/disabled according to
-	 * the gui logic
-	 */
-	private void applyGUILogic()
+	private void setDisabledPanes()
 	{
 		if (!radioTimedCapture.isSelected())
 			numFieldCaptureTimeout.setDisable(true);
@@ -1429,7 +1479,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		if (!chkboxUseTTS.isSelected())
 		{
 			paneUseTTS.setDisable(true);
-			tts.setMuted(true);
+			isMuted = true;
 		}
 	}
 
@@ -1473,7 +1523,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 				labelStatus.setText(statusCapturing + timerExpires);
 
 				if (isAHotkeyResult)
-					tts.speak("Capture started");
+					speakIfNotMuted("Capture started");
 			}
 		});
 
@@ -1593,10 +1643,20 @@ public class GUIController implements Initializable, CaptureStartListener, First
 				line = "Pressing Stop capturing button";
 
 			activeButton.fire();
-			tts.speak(line);
+			speakIfNotMuted(line);
 		}
 	};
 
+	private void speakIfNotMuted(String line)
+	{
+		if (!isMuted)
+			tts.speak(line);
+	}
+
+	
+	
+	
+	
 	private Runnable ptsHotkeyPressed = new Runnable()
 	{
 		@Override
@@ -1619,33 +1679,40 @@ public class GUIController implements Initializable, CaptureStartListener, First
 					tts.speak("Ping failed");
 		}
 	};
-
+		
+//private FirstSightListener crap = this;	
+	
+	
 	private Runnable watchdogHotkeyPressed = new Runnable()
 	{
 		@Override
 		public void run()
 		{
 			tts.speak(textWatchdogMessage.getText());
+			
+			
+			
+//			String deviceIP = buttonToIpMap.get(tglGrpNIC.getSelectedToggle());
+//			ArrayList<IPToMatch> arrayList = new ArrayList<IPToMatch>();
+//			arrayList.add(new IPToMatch("185.56.66.12", null, null, null));
+//			arrayList.add(new IPToMatch("185.56.66.13", null, null, null));
+//			arrayList.add(new IPToMatch("185.56.66.14", null, null, null));
+//			FirstSightListener listener = crap;
+//			new Thread(new Runnable(){
+//	
+//				@Override
+//				public void run()
+//				{
+//					sniffer.startFirstSightCapture(deviceIP, arrayList, listener, new StringBuilder());
+//					
+//				}}).start();
 		}
 	};
 
 	@Override
 	public void firstSightOfIP(IPToMatch ipInfo)
 	{
-		System.out.println("fff");
-
-		//		String deviceIP = buttonToIpMap.get(tglGrpNIC.getSelectedToggle());
-		//		ArrayList<IPToMatch> arrayList = new ArrayList<IPToMatch>();
-		//		arrayList.add(new IPToMatch("8.8.8.8"));
-		//		FirstSightListener listener = this;
-		//		new Thread(new Runnable(){
-		//
-		//			@Override
-		//			public void run()
-		//			{
-		//				sniffer.startFirstSightCapture(deviceIP, arrayList, listener, new StringBuilder());
-		//				
-		//			}}).start();
+		tts.speak(textWatchdogMessage.getText());
 	}
 
 }

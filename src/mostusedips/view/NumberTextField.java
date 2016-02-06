@@ -10,6 +10,7 @@ public class NumberTextField extends TextField
 {
 	private Integer minValue = null;
 	private Integer maxValue = null;
+	private boolean allowEmpty = false;
 
 	public NumberTextField()
 	{
@@ -24,6 +25,16 @@ public class NumberTextField extends TextField
 	public NumberTextField(String text, Integer minValue)
 	{
 		this(text, minValue, null);
+	}
+	
+	public NumberTextField(Integer minValue)
+	{
+		this("", minValue, null);
+	}
+	
+	public NumberTextField(Integer minValue, Integer maxValue)
+	{
+		this("", minValue, maxValue);
 	}
 
 	public NumberTextField(String text, Integer minValue, Integer maxValue)
@@ -64,7 +75,7 @@ public class NumberTextField extends TextField
 	private boolean validate(String text)
 	{
 		if (text.isEmpty())
-			return false;
+			return allowEmpty;
 
 		int value;
 		try
@@ -87,7 +98,9 @@ public class NumberTextField extends TextField
 
 	public Integer getValue()
 	{
-		return Integer.valueOf(getText());
+		String text = getText();
+		
+		return (text == null || text.isEmpty() ? null : Integer.valueOf(text));
 	}
 
 	public Integer getMinValue()
@@ -108,5 +121,15 @@ public class NumberTextField extends TextField
 	public void setMaxValue(Integer maxValue)
 	{
 		this.maxValue = maxValue;
+	}
+
+	public boolean isAllowEmpty()
+	{
+		return allowEmpty;
+	}
+
+	public void setAllowEmpty(boolean allowEmpty)
+	{
+		this.allowEmpty = allowEmpty;
 	}
 }

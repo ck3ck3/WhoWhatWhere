@@ -4,11 +4,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
-import mostusedips.view.SecondaryFXMLScreen;
 
-public class CmdGUIController extends SecondaryFXMLScreen
+public class CmdGUIController
 {
-
 	@FXML
 	private TextArea textAreaOutput;
 	@FXML

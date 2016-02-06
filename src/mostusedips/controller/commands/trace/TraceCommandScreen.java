@@ -1,6 +1,8 @@
 package mostusedips.controller.commands.trace;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import javafx.event.ActionEvent;
@@ -40,7 +42,7 @@ public class TraceCommandScreen extends CommandScreen
 			+ "\" button, or select an IP address and right click it to see more GeoIP info about it\n\n" + introMarker;
 	private static final Pattern ipv4Pattern = Pattern.compile("^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
 
-	public TraceCommandScreen(Stage stage, Scene scene, String ip)
+	public TraceCommandScreen(Stage stage, Scene scene, String ip) throws IOException
 	{
 		super(stage, scene);
 		this.ip = ip;
@@ -138,13 +140,22 @@ public class TraceCommandScreen extends CommandScreen
 	private void openVisualTrace()
 	{
 		ArrayList<String> listOfIPs = getListOfIPs();
-		VisualTraceScreen visualTraceScreen = new VisualTraceScreen(listOfIPs);
+		VisualTraceScreen visualTraceScreen;
+		Stage stage = getPostCloseStage();
+		
+		try
+		{
+			visualTraceScreen = new VisualTraceScreen(listOfIPs, stage, stage.getScene());
+		}
+		catch (IOException e)
+		{
+			logger.log(Level.SEVERE, "Unable to load Visual Trace screen", e);
+			return;
+		}
 
-		Stage stage = getStage();
 		Button btnClose = visualTraceScreen.getVisualTraceController().getBtnClose();
-		visualTraceScreen.setCloseButtonStageAndScene(btnClose, stage, stage.getScene());
 
-		visualTraceScreen.showScreen();
+		visualTraceScreen.showScreenOnCurrentStage(btnClose);
 	}
 
 	private ArrayList<String> getListOfIPs()
