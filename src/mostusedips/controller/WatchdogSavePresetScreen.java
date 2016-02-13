@@ -43,7 +43,12 @@ public class WatchdogSavePresetScreen extends SecondaryFXMLScreen
 
 					MenuItem menuItem = WatchdogManageListScreen.createMenuItem(list, textToSay, labelCounter, filename);
 					
-					menuButton.getItems().add(menuItem);
+					ObservableList<MenuItem> items = menuButton.getItems();
+					
+					if (items.get(0).isDisable()) //it only contains the disabled "none found " item, remove it before adding new one
+						items.clear();
+						
+					items.add(menuItem);
 				}
 				catch (IOException e)
 				{

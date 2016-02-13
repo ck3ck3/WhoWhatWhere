@@ -16,7 +16,7 @@
 				<attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader" />
 				<attribute name="Rsrc-Main-Class" value="mostusedips.Main" />
 				<attribute name="Class-Path" value="." />
-				<attribute name="Rsrc-Class-Path" value="./ org.eclipse.fx.ide.css.jfx8_2.1.0.201508240705.jar jnativehook-2.0.2.jar freetts-1.2.2.jar jnetpcap-1.4.r1425-1f.jar commons-io-2.4.jar json-20151123.jar" />
+				<attribute name="Rsrc-Class-Path" value="./ org.eclipse.fx.ide.css.jfx8_2.1.0.201508240705.jar jnativehook-2.0.2.jar freetts-1.2.2.jar jnetpcap-1.4.r1425-1f.jar commons-io-2.4.jar json-20151123.jar commons-collections-3.0.jar" />
 			</manifest>
 			<zipfileset src="jar-in-jar-loader.zip" />
 			<fileset dir="../../target/classes" />
@@ -27,6 +27,7 @@
 			<zipfileset dir="${dir.maven_repo}/net/sf/sociaal/freetts/1.2.2" includes="freetts-1.2.2.jar" />
 			<zipfileset dir="${dir.maven_repo}/jnetpcap/jnetpcap/1.4.r1425-1f" includes="jnetpcap-1.4.r1425-1f.jar" />
 			<zipfileset dir="${dir.maven_repo}/org/json/json/20151123" includes="json-20151123.jar" />
+			<zipfileset dir="${dir.maven_repo}/commons-collections/commons-collections/3.0" includes="commons-collections-3.0.jar" />
 
 		</jar>
 		<mkdir dir="MostUsedIPs" />
@@ -36,6 +37,7 @@
 			<arg value="mostUsedIPs-launch4j.xml" />
 		</exec>
 		<delete file="MostUsedIPs/MostUsedIPs.jar" />
+		<copy file="../../NBA2K Europe MyPark.watchdogPreset" toDir="MostUsedIPs" />
 		<exec executable="cmd">
 			<arg value="/c" />
 			<arg value="rar" />

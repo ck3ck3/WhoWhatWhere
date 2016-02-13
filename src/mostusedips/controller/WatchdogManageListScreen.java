@@ -139,6 +139,14 @@ public class WatchdogManageListScreen extends SecondaryFXMLScreen
 
 		for (File file : files)
 			items.add(createMenuItem(list, textToSay, labelCounter, file.getName().replace(".watchdogPreset", "")));
+		
+		if (items.isEmpty())
+		{
+			MenuItem none = new MenuItem("No presets found");
+			
+			none.setDisable(true);
+			items.add(none);
+		}
 	}
 
 	public static MenuItem createMenuItem(ObservableList<IPToMatch> list, TextField textToSay, Label labelCounter, String filename)
