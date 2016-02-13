@@ -1,37 +1,52 @@
 package mostusedips.model.ipsniffer;
 
-import javafx.beans.property.SimpleIntegerProperty;
+import java.io.Serializable;
+import java.util.HashMap;
+
 import javafx.beans.property.SimpleStringProperty;
 
-public class IPToMatch
+public class IPToMatch implements Serializable
 {
+	private static final long serialVersionUID = 4082672055903423251L; //auto-generated, modify if changes to the class are not backwards-compatible
 	public final static String protocol_ANY = "ANY";
-	public final static String port_ANY = "0";
+	public final static String port_ANY = "ANY";
 	
-	private final SimpleStringProperty ip;
-	private final SimpleStringProperty protocol;
-	private final SimpleIntegerProperty srcPort;
-	private final SimpleIntegerProperty dstPort;
+	transient private SimpleStringProperty ip;
+	private String ipToSerialize;
 	
-	public IPToMatch(String ip, Integer protocol, Integer srcPort, Integer dstPort)
+	transient private SimpleStringProperty protocol;
+	private String protocolToSerialize;
+	
+	transient private SimpleStringProperty srcPort;
+	private String srcPortToSerialize;
+	
+	transient private SimpleStringProperty dstPort;
+	private String dstPortToSerialize;
+	
+	public IPToMatch(String ip, Integer protocol, String srcPort, String dstPort)
 	{
 		this(ip, (protocol != null ? IpSniffer.intProtocolToString(protocol) : protocol_ANY), srcPort, dstPort);		
 	}
 	
-	public IPToMatch(String ip, String protocol, Integer srcPort, Integer dstPort)
+	public IPToMatch(String ip, String protocol, String srcPort, String dstPort)
 	{
-		this.ip = (ip != null ? new SimpleStringProperty(ip) : new SimpleStringProperty());
-		this.protocol = (protocol != null ? new SimpleStringProperty(protocol) : new SimpleStringProperty());
-		this.srcPort = (srcPort != null ? new SimpleIntegerProperty(srcPort) : new SimpleIntegerProperty());
-		this.dstPort = (dstPort != null ? new SimpleIntegerProperty(dstPort) : new SimpleIntegerProperty());
+		init(ip, protocol, srcPort, dstPort);
 	}
 	
-	public void init(String ip, String protocol, Integer srcPort, Integer dstPort)
+	public void init(String ip, String protocol, String srcPort, String dstPort)
 	{
-		this.ip.setValue(ip);
-		this.protocol.setValue(protocol);
-		this.srcPort.setValue(srcPort);
-		this.dstPort.setValue(dstPort);
+		setIP(ip);
+		setProtocol(protocol);
+		setSrcPort(srcPort);
+		setDstPort(dstPort);
+	}
+	
+	public void initAfterSerialization()
+	{
+		setIP(ipToSerialize);
+		setProtocol(protocolToSerialize);
+		setSrcPort(srcPortToSerialize);
+		setDstPort(dstPortToSerialize);
 	}
 	
 	public SimpleStringProperty ipProperty()
@@ -41,7 +56,12 @@ public class IPToMatch
 
 	public void setIP(String ip)
 	{
-		this.ip.setValue(ip);
+		if (this.ip == null)
+			this.ip = (ip != null ? new SimpleStringProperty(ip) : new SimpleStringProperty());
+		else
+			this.ip.setValue(ip);
+		
+		this.ipToSerialize = ip;
 	}
 
 	public SimpleStringProperty protocolProperty()
@@ -51,7 +71,12 @@ public class IPToMatch
 
 	public void setProtocol(String protocol)
 	{
-		this.protocol.setValue(protocol);
+		if (this.protocol == null)
+			this.protocol = (protocol != null ? new SimpleStringProperty(protocol) : new SimpleStringProperty());
+		else
+			this.protocol.setValue(protocol);
+		
+		this.protocolToSerialize = protocol;
 	}
 	
 	public Integer protocolAsInt()
@@ -59,23 +84,45 @@ public class IPToMatch
 		return (protocol == null || protocol.getValue().isEmpty() || protocol.getValue().equals(protocol_ANY) ? null : IpSniffer.stringProtocolToInt(protocol.getValue()));
 	}
 
-	public SimpleIntegerProperty srcPortProperty()
+	public SimpleStringProperty srcPortProperty()
 	{
 		return srcPort;
 	}
 
-	public void setSrcPort(Integer port)
+	public void setSrcPort(String port)
 	{
-		this.srcPort.setValue(port);
+		if (this.srcPort == null)
+			this.srcPort = (port != null ? new SimpleStringProperty(port) : new SimpleStringProperty());
+		else
+			this.srcPort.setValue(port);
+		
+		this.srcPortToSerialize = port;
 	}
 	
-	public SimpleIntegerProperty dstPortProperty()
+	public SimpleStringProperty dstPortProperty()
 	{
 		return dstPort;
 	}
 
-	public void setDstPort(Integer port)
+	public void setDstPort(String port)
 	{
-		this.dstPort.setValue(port);
+		if (this.dstPort == null)
+			this.dstPort = (port != null ? new SimpleStringProperty(port) : new SimpleStringProperty());
+		else
+			this.dstPort.setValue(port);
+		
+		this.dstPortToSerialize = port;
+	}
+	
+	public HashMap<String, String> getDataAsMap()
+	{
+		HashMap<String, String> map = new HashMap<String, String>();
+		
+		map.put("ip", ip.getValue());
+		map.put("protocol", protocol.getValue());
+		map.put("srcPort", srcPort.getValue());
+		map.put("dstPort", dstPort.getValue());
+		
+		return map;
 	}
 }

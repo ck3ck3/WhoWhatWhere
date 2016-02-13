@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="282.0" prefWidth="553.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mostusedips.controller.WatchdogController">
+<AnchorPane fx:id="paneRoot" prefHeight="282.0" prefWidth="553.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mostusedips.controller.WatchdogController">
    <children>
       <TableView fx:id="tableEntries" layoutX="14.0" layoutY="14.0" prefHeight="175.0" prefWidth="527.0" AnchorPane.bottomAnchor="93.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="14.0">
          <columns>
@@ -16,16 +16,11 @@
       </TableView>
       <AnchorPane layoutX="14.0" layoutY="199.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0">
          <children>
-            <Button fx:id="btnAddRow" mnemonicParsing="false" prefHeight="25.0" prefWidth="83.0" text="Add row" />
-            <Button fx:id="btnEditRow" layoutX="90.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="83.0" text="Edit row" />
-            <Button fx:id="btnRemoveRow" layoutX="181.0" mnemonicParsing="false" text="Remove row" />
+            <Button fx:id="btnAddRow" mnemonicParsing="false" prefHeight="25.0" prefWidth="83.0" text="Add entry" />
+            <Button fx:id="btnEditRow" layoutX="90.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="83.0" text="Edit entry" />
+            <Button fx:id="btnRemoveRow" layoutX="181.0" mnemonicParsing="false" text="Remove entry" />
             <Button fx:id="btnSavePreset" layoutX="102.0" layoutY="44.0" mnemonicParsing="false" text="Save as preset" />
-            <MenuButton fx:id="menubtnLoadPreset" layoutY="44.0" mnemonicParsing="false" text="Load preset">
-              <items>
-                <MenuItem mnemonicParsing="false" text="Action 1" />
-                <MenuItem mnemonicParsing="false" text="Action 2" />
-              </items>
-            </MenuButton>
+            <MenuButton fx:id="menubtnLoadPreset" layoutY="44.0" mnemonicParsing="false" text="Load preset" />
          </children>
       </AnchorPane>
       <Button fx:id="btnClose" layoutX="496.0" layoutY="243.0" mnemonicParsing="false" text="Done" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="12.0" />

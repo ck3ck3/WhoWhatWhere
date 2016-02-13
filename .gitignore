@@ -1,6 +1,7 @@
 bin
 Most used IPs.properties
 ptsHistory
+Last run.watchdogPreset
 /jnetpcap.dll
 Most Used IPs.log*
 /target/

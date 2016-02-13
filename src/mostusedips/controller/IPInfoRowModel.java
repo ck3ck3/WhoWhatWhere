@@ -7,84 +7,85 @@ public class IPInfoRowModel
 {
 	private Integer rowID;
 
-	private Integer packetCount;
-	private String ipAddress;
-	private String owner;
-	private String ping;
-	private String country;
-	private String region;
-	private String city;
+	private SimpleIntegerProperty packetCount;
+	private SimpleStringProperty ipAddress;
+	private SimpleStringProperty owner;
+	private SimpleStringProperty ping;
+	private SimpleStringProperty country;
+	private SimpleStringProperty region;
+	private SimpleStringProperty city;
 
 	public IPInfoRowModel(Integer rowID, Integer packetCount, String ipAddress, String owner, String ping, String country, String region, String city)
 	{
-		this.rowID = rowID;
-		this.setPacketCount(new SimpleIntegerProperty(packetCount));
-		this.setIpAddress(new SimpleStringProperty(ipAddress));
-		this.setOwner(new SimpleStringProperty(owner));
-		this.setPing(new SimpleStringProperty(ping));
-		this.setCountry(new SimpleStringProperty(country));
-		this.setRegion(new SimpleStringProperty(region));
-		this.setCity(new SimpleStringProperty(city));
+		this.rowID = new Integer(rowID);
+		
+		this.packetCount = new SimpleIntegerProperty(packetCount);
+		this.ipAddress = new SimpleStringProperty(ipAddress);
+		this.owner = new SimpleStringProperty(owner);
+		this.ping = new SimpleStringProperty(ping);
+		this.country = new SimpleStringProperty(country);
+		this.region = new SimpleStringProperty(region);
+		this.city = new SimpleStringProperty(city);
 	}
 
-	public Integer getPacketCount()
+	public SimpleIntegerProperty packetCountProperty()
 	{
 		return packetCount;
 	}
 
-	public void setPacketCount(SimpleIntegerProperty packetCount)
+	public void setPacketCount(Integer packetCount)
 	{
-		this.packetCount = packetCount.get();
+		this.packetCount.setValue(packetCount);
 	}
 
-	public String getIpAddress()
+	public SimpleStringProperty ipAddressProperty()
 	{
 		return ipAddress;
 	}
 
-	public void setIpAddress(SimpleStringProperty ipAddress)
+	public void setIpAddress(String ipAddress)
 	{
-		this.ipAddress = ipAddress.get();
+		this.ipAddress.setValue(ipAddress);
 	}
 
-	public String getOwner()
+	public SimpleStringProperty ownerProperty()
 	{
 		return owner;
 	}
 
-	public void setOwner(SimpleStringProperty owner)
+	public void setOwner(String owner)
 	{
-		this.owner = owner.get();
+		this.owner.setValue(owner);
 	}
 
-	public String getCountry()
+	public SimpleStringProperty countryProperty()
 	{
 		return country;
 	}
 
-	public void setCountry(SimpleStringProperty country)
+	public void setCountry(String country)
 	{
-		this.country = country.get();
+		this.country.setValue(country);
 	}
 
-	public String getRegion()
+	public SimpleStringProperty regionProperty()
 	{
 		return region;
 	}
 
-	public void setRegion(SimpleStringProperty region)
+	public void setRegion(String region)
 	{
-		this.region = region.get();
+		this.region.setValue(region);
 	}
 
-	public String getCity()
+	public SimpleStringProperty cityProperty()
 	{
 		return city;
 	}
 
-	public void setCity(SimpleStringProperty city)
+	public void setCity(String city)
 	{
-		this.city = city.get();
+		this.city.setValue(city);
 	}
 
 	public Integer getRowID()
@@ -97,14 +98,14 @@ public class IPInfoRowModel
 		this.rowID = rowID;
 	}
 
-	public String getPing()
+	public SimpleStringProperty pingProperty()
 	{
 		return ping;
 	}
 
-	public void setPing(SimpleStringProperty ping)
+	public void setPing(String ping)
 	{
-		this.ping = ping.get();
+		this.ping.setValue(ping);
 	}
 
 }

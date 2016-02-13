@@ -6,6 +6,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -105,6 +107,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 	private final static String ptsHotkeyID = "PTS hotkey";
 	private final static String watchdogHotkeyID = "Watchdog hotkey";
 	private final static String watchdogListFormLocation = "/mostusedips/view/WatchdogList.fxml";
+	private static final String watchdogLastRunFilename = "Last run.watchdogPreset";
 
 	private final static String propsNICIndex = "Selected NIC index";
 	private final static String propsChkboxUDP = "chkboxUDP";
@@ -133,7 +136,6 @@ public class GUIController implements Initializable, CaptureStartListener, First
 	private final static String propsChkboxWatchdogHotkey = "chkboxWatchdogHotkey";
 	private final static String propsWatchdogHotkeyKeycode = "watchdogHotkeyKeycode";
 	private final static String propsWatchdogHotkeyModifiers = "watchdogHotkeyModifiers";
-	private final static String propsWatchdogMessage = "watchdogMessage";
 
 	private final static Logger logger = Logger.getLogger(GUIController.class.getPackage().getName());
 
@@ -197,7 +199,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 	private NumberTextField numFieldRowsToRead;
 	private NumberTextField numberFieldPingTimeout;
 	private Alert alertChangeHotkey;
-	
+
 	private ToggleGroup tglGrpNIC = new ToggleGroup();
 	private ToggleGroup tglGrpCaptureOptions = new ToggleGroup();
 	private IpSniffer sniffer;
@@ -219,6 +221,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 	private int ptsHotkeyModifiers;
 	private int watchdogHotkeyKeyCode;
 	private int watchdogHotkeyModifiers;
+	private ObservableList<IPToMatch> watchdogList = FXCollections.observableArrayList();
 
 	@FXML
 	private CheckBox chkboxUseCaptureHotkey;
@@ -292,6 +295,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 	private Button btnWatchdogPreview;
 	@FXML
 	private Label labelWatchdogEntryCount;
+	private Button watchdogActiveButton;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
@@ -593,7 +597,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 
 				try
 				{
-					watchdogManageListScreen = new WatchdogManageListScreen(watchdogListFormLocation, stage, stage.getScene());
+					watchdogManageListScreen = new WatchdogManageListScreen(watchdogListFormLocation, stage, stage.getScene(), watchdogList, textWatchdogMessage, labelWatchdogEntryCount);
 				}
 				catch (IOException e)
 				{
@@ -601,17 +605,69 @@ public class GUIController implements Initializable, CaptureStartListener, First
 					return;
 				}
 
-				watchdogManageListScreen.showScreenOnNewStage(watchdogManageListScreen.getCloseButton(), "Manage Watchdog list");
+				watchdogManageListScreen.showScreenOnNewStage("Manage Watchdog list", watchdogManageListScreen.getCloseButton());
 			}
 		});
-		
-		btnWatchdogPreview.setOnAction(new EventHandler<ActionEvent>(){
+
+		btnWatchdogPreview.setOnAction(new EventHandler<ActionEvent>()
+		{
 
 			@Override
 			public void handle(ActionEvent event)
 			{
-				speakIfNotMuted(textWatchdogMessage.getText());				
-			}});
+				speakIfNotMuted(textWatchdogMessage.getText());
+			}
+		});
+
+		FirstSightListener thisObj = this;
+
+		btnWatchdogStart.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				if (sniffer.isCaptureInProgress())
+				{
+					new Alert(AlertType.ERROR, "There's already a capture in progress. Only one capture at a time is allowed.").showAndWait();
+					return;
+				}
+				
+				if (watchdogList.isEmpty())
+				{
+					new Alert(AlertType.ERROR, "The list must contain at least one entry").showAndWait();
+					return;
+				}
+
+				String deviceIP = buttonToIpMap.get(tglGrpNIC.getSelectedToggle());
+				new Thread(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						sniffer.startFirstSightCapture(deviceIP, new ArrayList<IPToMatch>(watchdogList), thisObj, new StringBuilder());
+					}
+				}).start();
+
+				watchdogActiveButton = btnWatchdogStop;
+				btnWatchdogStop.setDisable(false);
+				btnWatchdogStart.setDisable(true);
+			}
+		});
+
+		btnWatchdogStop.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				watchdogActiveButton = btnWatchdogStart;
+				btnWatchdogStop.setDisable(true);
+				btnWatchdogStart.setDisable(false);
+
+				sniffer.stopCapture();
+			}
+		});
+
+		watchdogActiveButton = btnWatchdogStart;
 	}
 
 	private ChangeListener<Boolean> generateChangeListenerForHotkeyCheckbox(String hotkeyID, int defaultModifiers, int defaultKeycode, CheckBox chkbox, Label hotkeyLabel, Pane hotkeyPane,
@@ -755,7 +811,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 					@Override
 					public void handle(ActionEvent event)
 					{
-						openInBrowser(getSecondaryGeoIpPrefix() + row.getItem().getIpAddress());
+						openInBrowser(getSecondaryGeoIpPrefix() + row.getItem().ipAddressProperty());
 					}
 				});
 
@@ -767,7 +823,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 					{
 						final Clipboard clipboard = Clipboard.getSystemClipboard();
 						final ClipboardContent content = new ClipboardContent();
-						content.putString(row.getItem().getIpAddress());
+						content.putString(row.getItem().ipAddressProperty().getValue());
 						clipboard.setContent(content);
 					}
 				});
@@ -778,7 +834,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 					@Override
 					public void handle(ActionEvent event)
 					{
-						comboPTSipToPing.getEditor().setText(row.getItem().getIpAddress());
+						comboPTSipToPing.getEditor().setText(row.getItem().ipAddressProperty().getValue());
 						tabPane.getSelectionModel().select(tabUtils);
 					}
 				});
@@ -789,7 +845,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 					@Override
 					public void handle(ActionEvent event)
 					{
-						pingCommand(row.getItem().getIpAddress());
+						pingCommand(row.getItem().ipAddressProperty().getValue());
 					}
 				});
 
@@ -799,7 +855,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 					@Override
 					public void handle(ActionEvent event)
 					{
-						traceCommand(row.getItem().getIpAddress());
+						traceCommand(row.getItem().ipAddressProperty().getValue());
 					}
 				});
 
@@ -857,6 +913,12 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		String deviceIP = buttonToIpMap.get(tglGrpNIC.getSelectedToggle());
 		final CaptureStartListener thisObj = this;
 
+		if (sniffer.isCaptureInProgress())
+		{
+			new Alert(AlertType.ERROR, "There's already a capture in progress. Only one capture at a time is allowed.").showAndWait();
+			return;
+		}
+		
 		changeGuiTemplate(true);
 
 		Task<Void> workerThreadTask = new Task<Void>()
@@ -1007,13 +1069,13 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		{
 			HashMap<String, String> colMapping = new HashMap<String, String>();
 
-			colMapping.put("Packet Count", ipInfoRowModel.getPacketCount().toString());
-			colMapping.put("IP Address", ipInfoRowModel.getIpAddress());
-			colMapping.put("Owner", ipInfoRowModel.getOwner());
-			colMapping.put("Ping", ipInfoRowModel.getPing());
-			colMapping.put("Country", ipInfoRowModel.getCountry());
-			colMapping.put("Region", ipInfoRowModel.getRegion());
-			colMapping.put("City", ipInfoRowModel.getCity());
+			colMapping.put("Packet Count", ipInfoRowModel.packetCountProperty().getValue().toString());
+			colMapping.put("IP Address", ipInfoRowModel.ipAddressProperty().getValue());
+			colMapping.put("Owner", ipInfoRowModel.ownerProperty().getValue());
+			colMapping.put("Ping", ipInfoRowModel.pingProperty().getValue());
+			colMapping.put("Country", ipInfoRowModel.countryProperty().getValue());
+			colMapping.put("Region", ipInfoRowModel.regionProperty().getValue());
+			colMapping.put("City", ipInfoRowModel.cityProperty().getValue());
 
 			rowIDToCOlMapping.put(ipInfoRowModel.getRowID(), colMapping);
 		}
@@ -1165,8 +1227,6 @@ public class GUIController implements Initializable, CaptureStartListener, First
 			tableResults.setPlaceholder(new Label("No packets to show"));
 		else
 			tableResults.setItems(data);
-
-		tableResults.requestFocus(); //otherwise table contents only shown when hovering over the table. JavaFX bug?
 	}
 
 	private String getPingForIP(String ip, Integer timeout)
@@ -1300,7 +1360,6 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		props.put(propsChkboxWatchdogHotkey, ((Boolean) chkboxWatchdogHotkey.isSelected()).toString());
 		props.put(propsWatchdogHotkeyKeycode, Integer.toString(hotkeyManager.getHotkeyKeycode(watchdogHotkeyID)));
 		props.put(propsWatchdogHotkeyModifiers, Integer.toString(hotkeyManager.getHotkeyModifiers(watchdogHotkeyID)));
-		props.put(propsWatchdogMessage, textWatchdogMessage.getText());
 
 		StringBuilder ptsHistoryBuilder = new StringBuilder();
 		for (String item : comboPTSipToPing.getItems())
@@ -1324,6 +1383,15 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		catch (IOException e)
 		{
 			logger.log(Level.SEVERE, "Unable to save Ping-to-Speech history: " + e.getMessage(), e);
+		}
+		
+		try
+		{
+			watchdogSaveListToFile(new ArrayList<IPToMatch>(watchdogList), textWatchdogMessage.getText(), watchdogLastRunFilename);
+		}
+		catch(IOException ioe)
+		{
+			logger.log(Level.SEVERE, "Unable to save Watchdog list: " + ioe.getMessage(), ioe);
 		}
 	}
 
@@ -1369,6 +1437,12 @@ public class GUIController implements Initializable, CaptureStartListener, First
 
 		setPTSHotkey(props);
 		setWatchdogHotkey(props);
+		try
+		{
+			watchdogLoadListFromFile(watchdogList, textWatchdogMessage, labelWatchdogEntryCount, watchdogLastRunFilename);
+		}
+		catch(IOException | ClassNotFoundException ioe) //ignore, don't load
+		{}
 	}
 
 	private void setWatchdogHotkey(Properties props)
@@ -1376,7 +1450,6 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		chkboxWatchdogHotkey.setSelected(getBoolProperty(props, propsChkboxWatchdogHotkey));
 		watchdogHotkeyModifiers = getIntProperty(props, propsWatchdogHotkeyModifiers);
 		watchdogHotkeyKeyCode = getIntProperty(props, propsWatchdogHotkeyKeycode);
-		textWatchdogMessage.setText(props.getProperty(propsWatchdogMessage));
 
 		if (chkboxWatchdogHotkey.isSelected())
 			addHotkey(watchdogHotkeyID, watchdogHotkeyModifiers, watchdogHotkeyKeyCode, labelWatchdogCurrHotkey, watchdogHotkeyPressed);
@@ -1627,6 +1700,60 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		return alert;
 	}
 
+	private void speakIfNotMuted(String line)
+	{
+		if (!isMuted)
+			tts.speak(line);
+	}
+
+	@Override
+	public void firstSightOfIP(IPToMatch ipInfo)
+	{
+		tts.speak(textWatchdogMessage.getText());
+
+		watchdogActiveButton = btnWatchdogStart;
+		btnWatchdogStop.setDisable(true);
+		btnWatchdogStart.setDisable(false);
+	}
+	
+	public static void watchdogSaveListToFile(ArrayList<IPToMatch> list, String msgToSay, String filename) throws IOException
+	{
+		FileOutputStream fout = new FileOutputStream(filename);
+		ObjectOutputStream oos = new ObjectOutputStream(fout);
+		
+		oos.writeObject(list);
+		oos.writeUTF(msgToSay);
+
+		oos.close();
+		fout.close();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static void watchdogLoadListFromFile(ObservableList<IPToMatch> listToLoadInto, TextField messageField, Label labelCounter, String filename) throws IOException, ClassNotFoundException
+	{
+		FileInputStream fin = new FileInputStream(filename);
+		ObjectInputStream ois = new ObjectInputStream(fin);
+		
+		ArrayList<IPToMatch> temp = (ArrayList<IPToMatch>) ois.readObject();
+		
+		listToLoadInto.clear();
+		listToLoadInto.addAll(temp);
+		
+		messageField.setText(ois.readUTF());
+
+		ois.close();
+		fin.close();
+		
+		for (IPToMatch entry : listToLoadInto)
+			entry.initAfterSerialization();
+		
+		labelCounter.setText("Match list contains " + listToLoadInto.size() + " entries");
+	}
+	
+	
+	
+	
+
 	private Runnable captureHotkeyPressed = new Runnable()
 	{
 		@Override
@@ -1642,21 +1769,43 @@ public class GUIController implements Initializable, CaptureStartListener, First
 			else
 				line = "Pressing Stop capturing button";
 
-			activeButton.fire();
 			speakIfNotMuted(line);
+			activeButton.fire();
 		}
 	};
 
-	private void speakIfNotMuted(String line)
+	private Runnable watchdogHotkeyPressed = new Runnable()
 	{
-		if (!isMuted)
-			tts.speak(line);
-	}
+		@Override
+		public void run()
+		{
+			String line;
+			Button savedActiveButton = watchdogActiveButton;
 
-	
-	
-	
-	
+			watchdogActiveButton.fire();
+
+			if (savedActiveButton == btnWatchdogStart)
+			{
+				if (watchdogList.isEmpty())
+					return;
+
+				line = "Starting watchdog";
+				watchdogActiveButton = btnWatchdogStop;
+				btnWatchdogStart.setDisable(true);
+				btnWatchdogStop.setDisable(false);
+			}
+			else
+			{
+				line = "Stopping watchdog";
+				watchdogActiveButton = btnWatchdogStart;
+				btnWatchdogStop.setDisable(true);
+				btnWatchdogStart.setDisable(false);
+			}
+
+			tts.speak(line);
+		}
+	};
+
 	private Runnable ptsHotkeyPressed = new Runnable()
 	{
 		@Override
@@ -1679,40 +1828,4 @@ public class GUIController implements Initializable, CaptureStartListener, First
 					tts.speak("Ping failed");
 		}
 	};
-		
-//private FirstSightListener crap = this;	
-	
-	
-	private Runnable watchdogHotkeyPressed = new Runnable()
-	{
-		@Override
-		public void run()
-		{
-			tts.speak(textWatchdogMessage.getText());
-			
-			
-			
-//			String deviceIP = buttonToIpMap.get(tglGrpNIC.getSelectedToggle());
-//			ArrayList<IPToMatch> arrayList = new ArrayList<IPToMatch>();
-//			arrayList.add(new IPToMatch("185.56.66.12", null, null, null));
-//			arrayList.add(new IPToMatch("185.56.66.13", null, null, null));
-//			arrayList.add(new IPToMatch("185.56.66.14", null, null, null));
-//			FirstSightListener listener = crap;
-//			new Thread(new Runnable(){
-//	
-//				@Override
-//				public void run()
-//				{
-//					sniffer.startFirstSightCapture(deviceIP, arrayList, listener, new StringBuilder());
-//					
-//				}}).start();
-		}
-	};
-
-	@Override
-	public void firstSightOfIP(IPToMatch ipInfo)
-	{
-		tts.speak(textWatchdogMessage.getText());
-	}
-
 }

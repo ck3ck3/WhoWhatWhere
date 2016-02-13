@@ -1,5 +1,7 @@
 package mostusedips.view;
 
+import java.util.ArrayList;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Alert;
@@ -11,6 +13,8 @@ public class NumberTextField extends TextField
 	private Integer minValue = null;
 	private Integer maxValue = null;
 	private boolean allowEmpty = false;
+	private ArrayList<String> allowedWords;
+	private ChangeListener<Boolean> focusedPropertyListenr;
 
 	public NumberTextField()
 	{
@@ -43,7 +47,23 @@ public class NumberTextField extends TextField
 		this.setMinValue(minValue);
 		this.setMaxValue(maxValue);
 
-		this.focusedProperty().addListener(new ChangeListener<Boolean>()
+		focusedPropertyListenr = generateFocusedPropertyListenr();
+		this.focusedProperty().addListener(focusedPropertyListenr);
+	}
+	
+	public void removeFocusValidator()
+	{
+		this.focusedProperty().removeListener(focusedPropertyListenr);
+	}
+	
+	public void setFocusValidator()
+	{
+		this.focusedProperty().addListener(focusedPropertyListenr);
+	}
+	
+	protected ChangeListener<Boolean> generateFocusedPropertyListenr()
+	{
+		return new ChangeListener<Boolean>()
 		{
 			@Override
 			public void changed(ObservableValue<? extends Boolean> arg0, Boolean oldPropertyValue, Boolean newPropertyValue)
@@ -63,20 +83,40 @@ public class NumberTextField extends TextField
 								if (maxValue != null)
 									validRange = "<= " + maxValue;
 
-						Alert alert = new Alert(AlertType.ERROR, "Input \"" + getText() + "\" is not a number " + validRange);
+						String msg = "Input \"" + getText() + "\" is not a number " + validRange;
+						if (allowedWords != null)
+							msg += ", or one of the allowed values " + getStringOfAllowedWords();
+						
+						Alert alert = new Alert(AlertType.ERROR, msg);
 						alert.showAndWait();
 						requestFocus();
 					}
 				}
 			}
-		});
+
+			private String getStringOfAllowedWords()
+			{
+				StringBuilder builder = new StringBuilder("(");
+				
+				for (String word : allowedWords)
+					builder.append("\"" + word + "\", ");
+				
+				builder.delete(builder.lastIndexOf(", "), builder.length());
+				builder.append("}");
+				
+				return builder.toString();
+			}
+		};
 	}
 
-	private boolean validate(String text)
+	protected boolean validate(String text)
 	{
 		if (text.isEmpty())
 			return allowEmpty;
 
+		if (allowedWords != null && allowedWords.contains(text))
+			return true;
+		
 		int value;
 		try
 		{
@@ -94,6 +134,21 @@ public class NumberTextField extends TextField
 			return false;
 
 		return true;
+	}
+	
+	public boolean isValidText()
+	{
+		return validate(getText());
+	}
+	
+	public void setAllowedWords(ArrayList<String> words)
+	{
+		allowedWords = new ArrayList<String>(words);
+	}
+	
+	public ArrayList<String> getAllowedWords()
+	{
+		return allowedWords;
 	}
 
 	public Integer getValue()

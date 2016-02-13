@@ -1,8 +1,12 @@
 package mostusedips.controller;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -11,8 +15,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -22,15 +29,27 @@ import mostusedips.view.SecondaryFXMLScreen;
 public class WatchdogManageListScreen extends SecondaryFXMLScreen
 {
 	private final static String watchdogListAddEditFormLocation = "/mostusedips/view/WatchdogListAddEdit.fxml";
+	private final static String watchdogSavePresetFormLocation = "/mostusedips/view/WatchdogSavePreset.fxml";
 	private final static Logger logger = Logger.getLogger(WatchdogManageListScreen.class.getPackage().getName());
 
 	private WatchdogController watchdogController;
+	private TableView<IPToMatch> table;
+	private ObservableList<IPToMatch> list;
+	private TextField textToSay;
+	private Label labelCounter;
 
-	public WatchdogManageListScreen(String fxmlLocation, Stage stage, Scene scene) throws IOException
+	public WatchdogManageListScreen(String fxmlLocation, Stage stage, Scene scene, ObservableList<IPToMatch> list, TextField textToSay, Label labelCounter) throws IOException
 	{
 		super(fxmlLocation, stage, scene);
 
+		this.list = list;
+		this.textToSay = textToSay;
+		this.labelCounter = labelCounter;
+
 		watchdogController = getLoader().<WatchdogController> getController();
+		table = watchdogController.getTable();
+
+		table.setItems(list);
 
 		initButtonHandlers();
 
@@ -39,7 +58,7 @@ public class WatchdogManageListScreen extends SecondaryFXMLScreen
 
 	private void setTableRowDoubleClickToEdit()
 	{
-		watchdogController.getTable().setRowFactory(new Callback<TableView<IPToMatch>, TableRow<IPToMatch>>()
+		table.setRowFactory(new Callback<TableView<IPToMatch>, TableRow<IPToMatch>>()
 		{
 			@Override
 			public TableRow<IPToMatch> call(TableView<IPToMatch> param)
@@ -64,17 +83,85 @@ public class WatchdogManageListScreen extends SecondaryFXMLScreen
 	{
 		watchdogController.getBtnAddRow().setOnAction(generateAddEditEventHandler(false));
 		watchdogController.getBtnEditRow().setOnAction(generateAddEditEventHandler(true));
-		watchdogController.getBtnRemoveRow().setOnAction(new EventHandler<ActionEvent>(){
-
+		watchdogController.getBtnRemoveRow().setOnAction(new EventHandler<ActionEvent>()
+		{
 			@Override
 			public void handle(ActionEvent event)
 			{
-				TableView<IPToMatch> table = watchdogController.getTable();
-				
 				ObservableList<IPToMatch> selectedItems = table.getSelectionModel().getSelectedItems();
-				
-				table.getItems().removeAll(selectedItems);
-			}});
+
+				list.removeAll(selectedItems);
+			}
+		});
+
+		watchdogController.getBtnClose().setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				labelCounter.setText("Match list contains " + list.size() + " entries");
+			}
+		});
+
+		watchdogController.getBtnSavePreset().setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				WatchdogSavePresetScreen screen;
+				Stage stage = getPostCloseStage();
+
+				try
+				{
+					screen = new WatchdogSavePresetScreen(watchdogSavePresetFormLocation, stage, stage.getScene(), list, textToSay, labelCounter, watchdogController.getMenuBtnLoadPreset());
+				}
+				catch (IOException e)
+				{
+					logger.log(Level.SEVERE, "Unable to load watchdog save preset screen", e);
+					return;
+				}
+
+				screen.showScreenOnNewStage("Save preset", screen.getCloseButton());
+			}
+		});
+
+		initMenuButton();
+	}
+
+	private void initMenuButton()
+	{
+		ObservableList<MenuItem> items = watchdogController.getMenuBtnLoadPreset().getItems();
+		items.clear();
+
+		File dir = new File(System.getProperty("user.dir"));
+		FileFilter fileFilter = new WildcardFileFilter("*.watchdogPreset");
+		File[] files = dir.listFiles(fileFilter);
+
+		for (File file : files)
+			items.add(createMenuItem(list, textToSay, labelCounter, file.getName().replace(".watchdogPreset", "")));
+	}
+
+	public static MenuItem createMenuItem(ObservableList<IPToMatch> list, TextField textToSay, Label labelCounter, String filename)
+	{
+		MenuItem menuItem = new MenuItem(filename);
+
+		menuItem.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				try
+				{
+					GUIController.watchdogLoadListFromFile(list, textToSay, labelCounter, filename + ".watchdogPreset");
+				}
+				catch (ClassNotFoundException | IOException e)
+				{
+					new Alert(AlertType.ERROR, "Unable to load preset: " + e.getMessage()).showAndWait();
+				}
+			}
+		});
+		
+		return menuItem;
 	}
 
 	private EventHandler<ActionEvent> generateAddEditEventHandler(boolean isEdit)
@@ -89,7 +176,7 @@ public class WatchdogManageListScreen extends SecondaryFXMLScreen
 
 				try
 				{
-					watchdogListAddEditScreen = new WatchdogListAddEditScreen(watchdogListAddEditFormLocation, stage, stage.getScene(), watchdogController.getTable(), isEdit);
+					watchdogListAddEditScreen = new WatchdogListAddEditScreen(watchdogListAddEditFormLocation, stage, stage.getScene(), table, isEdit);
 				}
 				catch (IOException e)
 				{
@@ -102,7 +189,7 @@ public class WatchdogManageListScreen extends SecondaryFXMLScreen
 					return;
 				}
 
-				watchdogListAddEditScreen.showScreenOnNewStage(watchdogListAddEditScreen.getCloseButton(), (isEdit ? "Edit" : "Add") + " an entry");
+				watchdogListAddEditScreen.showScreenOnNewStage((isEdit ? "Edit" : "Add") + " an entry", watchdogListAddEditScreen.getCloseButton());
 			}
 		};
 	}

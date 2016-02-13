@@ -41,35 +41,44 @@ public abstract class SecondaryFXMLScreen
 	 * Shows the screen on the current stage
 	 * 
 	 * @param btnClose
-	 *            - the button that closes this window
+	 *            - the button that closes this window. The button's onAction
+	 *            doesn't have to implement anything, but if it does, that
+	 *            implementation will be called before closing the window. In
+	 *            case the window shouldn't be closed (if there's an input error
+	 *            on a form for example), the onAction method can throw an
+	 *            IllegalArgumentException, which will then leave the window
+	 *            open.
 	 */
-	public void showScreenOnCurrentStage(Button btnClose)
+	public void showScreenOnCurrentStage(Button... buttonsToClose)
 	{
 		Scene scene = new Scene(getLoadedFXML());
 		Stage stage = getPostCloseStage();
 
-		EventHandler<ActionEvent> onAction = btnClose.getOnAction();
-		
-		btnClose.setOnAction(new EventHandler<ActionEvent>()
+		for(Button btn : buttonsToClose)
 		{
-			@Override
-			public void handle(ActionEvent event)
+			EventHandler<ActionEvent> onAction = btn.getOnAction();
+			
+			btn.setOnAction(new EventHandler<ActionEvent>()
 			{
-				try
+				@Override
+				public void handle(ActionEvent event)
 				{
-					if (onAction != null) //if there was already a button handler, run it, and then close the screen
-						onAction.handle(event);
-				}
-				catch(IllegalArgumentException iae) //some error occurred (like invalid data entry), don't close the window 
-				{
-					return;
-				}
-				
-				postCloseStage.setScene(postCloseScene);
-				postCloseStage.show();
-			}
-		});
+					try
+					{
+						if (onAction != null) //if there was already a button handler, run it, and then close the screen
+							onAction.handle(event);
+					}
+					catch (IllegalArgumentException iae) //some error occurred (like invalid data entry), don't close the window 
+					{
+						return;
+					}
 
+					postCloseStage.setScene(postCloseScene);
+					postCloseStage.show();
+				}
+			});
+		}
+		
 		stage.setScene(scene);
 		stage.show();
 	}
@@ -78,11 +87,17 @@ public abstract class SecondaryFXMLScreen
 	 * Shows the screen on a new stage
 	 * 
 	 * @param btnClose
-	 *            - the button that closes this window
+	 *            - the button that closes this window. The button's onAction
+	 *            doesn't have to implement anything, but if it does, that
+	 *            implementation will be called before closing the window. In
+	 *            case the window shouldn't be closed (if there's an input error
+	 *            on a form for example), the onAction method can throw an
+	 *            IllegalArgumentException, which will then leave the window
+	 *            open.
 	 * @param title
 	 *            - Title for the new stage
 	 */
-	public void showScreenOnNewStage(Button btnClose, String title)
+	public void showScreenOnNewStage(String title, Button... buttonsToClose)
 	{
 		Scene scene = new Scene(getLoadedFXML());
 		Stage stage = new Stage();
@@ -90,27 +105,29 @@ public abstract class SecondaryFXMLScreen
 		stage.setTitle(title);
 		stage.getIcons().addAll(postCloseStage.getIcons());
 
-		EventHandler<ActionEvent> onAction = btnClose.getOnAction();
-		
-		btnClose.setOnAction(new EventHandler<ActionEvent>()
+		for(Button btn : buttonsToClose)
 		{
-			@Override
-			public void handle(ActionEvent event)
+			EventHandler<ActionEvent> onAction = btn.getOnAction();
+			
+			btn.setOnAction(new EventHandler<ActionEvent>()
 			{
-				try
+				@Override
+				public void handle(ActionEvent event)
 				{
-					if (onAction != null) //if there was already a button handler, run it, and then close the screen
-						onAction.handle(event);
+					try
+					{
+						if (onAction != null) //if there was already a button handler, run it, and then close the screen
+							onAction.handle(event);
+					}
+					catch (IllegalArgumentException iae) //some error occurred (like invalid data entry), don't close the window
+					{
+						return;
+					}
+					
+					stage.close();
 				}
-				catch(IllegalArgumentException iae) //some error occurred (like invalid data entry), don't close the window
-				{
-					return;
-				}
-				
-				stage.close();
-			}
-		});
-
+			});
+		}			
 		stage.setScene(scene);
 		stage.show();
 	}

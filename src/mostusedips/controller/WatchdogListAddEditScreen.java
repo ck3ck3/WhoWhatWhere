@@ -3,8 +3,6 @@ package mostusedips.controller;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -58,10 +56,10 @@ public class WatchdogListAddEditScreen extends SecondaryFXMLScreen
 				choiceProtocol.getSelectionModel().select(selectedItem.protocolProperty().getValue());
 
 			if (selectedItem.srcPortProperty() != null)
-				numTextSrcPort.setText(selectedItem.srcPortProperty().getValue().toString());
+				numTextSrcPort.setText(selectedItem.srcPortProperty().getValue());
 
 			if (selectedItem.dstPortProperty() != null)
-				numTextDstPort.setText(selectedItem.dstPortProperty().getValue().toString());
+				numTextDstPort.setText(selectedItem.dstPortProperty().getValue());
 		}
 		else //add
 		{
@@ -77,8 +75,8 @@ public class WatchdogListAddEditScreen extends SecondaryFXMLScreen
 			{
 				String ip = textIP.getText();
 				String protocol = choiceProtocol.getSelectionModel().getSelectedItem();
-				Integer srcPort = numTextSrcPort.getValue();
-				Integer dstPort = numTextDstPort.getValue();
+				String srcPort = numTextSrcPort.getText();
+				String dstPort = numTextDstPort.getText();
 				
 				if (!validateInput())
 				{
@@ -87,22 +85,15 @@ public class WatchdogListAddEditScreen extends SecondaryFXMLScreen
 				}
 
 				if (!isEdit) //adding new row
-				{
-					ObservableList<IPToMatch> items = FXCollections.observableArrayList();
-					items.addAll(table.getItems());
-					items.add(new IPToMatch(ip, protocol, srcPort, dstPort));
-					table.setItems(items);
-				}
+					table.getItems().add(new IPToMatch(ip, protocol, srcPort, dstPort));
 				else //edit existing row
-				{
 					table.getItems().get(selectedIndex).init(ip, protocol, srcPort, dstPort);
-				}
 			}
 
 			private boolean validateInput()
 			{
 				String ip = textIP.getText();
-				return !ip.isEmpty() && ipv4Pattern.matcher(ip).matches();
+				return !ip.isEmpty() && ipv4Pattern.matcher(ip).matches() && numTextSrcPort.isValidText() && numTextDstPort.isValidText();
 			}
 		});
 	}

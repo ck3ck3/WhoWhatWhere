@@ -31,6 +31,7 @@ public class IpSniffer
 {
 	private Pcap pcap;
 	private HashMap<String, PcapIf> ipToDevice = new HashMap<String, PcapIf>();
+	private boolean captureInProgress = false;
 
 	public static final int ICMP_PROTOCOL = Icmp.ID;
 	public static final int UDP_PROTOCOL = Udp.ID;
@@ -229,6 +230,11 @@ public class IpSniffer
 
 	private void startCapture(String deviceIp, PcapPacketHandler<Void> packetHandler, StringBuilder errbuf)
 	{
+		if (captureInProgress)
+			throw new IllegalStateException("A capture is already in progress.");
+		
+		captureInProgress = true;
+		
 		PcapIf device = ipToDevice.get(deviceIp);
 
 		if (device == null)
@@ -251,6 +257,12 @@ public class IpSniffer
 	public void stopCapture()
 	{
 		pcap.breakloop();
+		captureInProgress = false;
+	}
+	
+	public boolean isCaptureInProgress()
+	{
+		return captureInProgress;
 	}
 
 	public void cleanup()

@@ -70,23 +70,29 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 		if (ipToMatch != null)
 		{
 			Integer protocol = ipToMatch.protocolAsInt();
-			Integer srcPort = ipToMatch.srcPortProperty().getValue();
-			Integer dstPort = ipToMatch.dstPortProperty().getValue();
+			String srcPort = ipToMatch.srcPortProperty().getValue();
+			String dstPort = ipToMatch.dstPortProperty().getValue();
 
 			if (protocol != null && !packet.hasHeader(protocol)) //if a protocol was specified, but this packet doesn't have it
 					return null;
 
-			if (srcPort != null || dstPort != null)
+			boolean checkSrcPort = (srcPort != null && !srcPort.equals(IPToMatch.port_ANY));
+			boolean checkDstPort = (dstPort != null && !dstPort.equals(IPToMatch.port_ANY));
+			
+			if (checkSrcPort || checkDstPort)
 			{
+				int intSrcPort = Integer.valueOf(srcPort);
+				int intdstPort = Integer.valueOf(dstPort);
+				
 				if (packet.hasHeader(IpSniffer.TCP_PROTOCOL))
 				{
 					Tcp tcp = new Tcp();
 					tcp = packet.getHeader(tcp);
 					
-					if (srcPort != null && srcPort != tcp.source())
+					if (checkSrcPort && intSrcPort != tcp.source())
 						return null;
 
-					if (dstPort != null && dstPort != tcp.destination())
+					if (checkDstPort && intdstPort != tcp.destination())
 						return null;
 				}
 				else
@@ -95,10 +101,10 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 						Udp udp = new Udp();
 						udp = packet.getHeader(udp);
 
-						if (srcPort != null && srcPort != udp.source())
+						if (checkSrcPort && intSrcPort != udp.source())
 							return null;
 
-						if (dstPort != null && dstPort != udp.destination())
+						if (checkDstPort && intdstPort != udp.destination())
 							return null;
 					}
 					else //port specified, but unable to check ports on this packet
