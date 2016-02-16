@@ -12,7 +12,7 @@
   <supportUrl></supportUrl>
   <stayAlive>false</stayAlive>
   <restartOnCrash>false</restartOnCrash>
-  <manifest></manifest>
+  <manifest>UAC.manifest</manifest>
   <icon>ip16.ico</icon>
   <jre>
     <path></path>

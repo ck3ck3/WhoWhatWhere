@@ -58,6 +58,7 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.Clipboard;
@@ -309,8 +310,9 @@ public class GUIController implements Initializable, CaptureStartListener, First
 
 		activeButton = btnStart;
 
-		if (!createNICRadioButtons())
-			return;
+//		if (!createNICRadioButtons())
+//			return;
+		createNICRadioButtons();
 
 		vboxNICs.setSpacing(10);
 
@@ -631,7 +633,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 					new Alert(AlertType.ERROR, "There's already a capture in progress. Only one capture at a time is allowed.").showAndWait();
 					return;
 				}
-				
+
 				if (watchdogList.isEmpty())
 				{
 					new Alert(AlertType.ERROR, "The list must contain at least one entry").showAndWait();
@@ -918,7 +920,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 			new Alert(AlertType.ERROR, "There's already a capture in progress. Only one capture at a time is allowed.").showAndWait();
 			return;
 		}
-		
+
 		changeGuiTemplate(true);
 
 		Task<Void> workerThreadTask = new Task<Void>()
@@ -1307,13 +1309,22 @@ public class GUIController implements Initializable, CaptureStartListener, First
 
 	private void exitButtonPressed()
 	{
-		saveCurrentValuesToProperties();
+		try
+		{
+			saveCurrentValuesToProperties();
 
-		hotkeyManager.cleanup();
-		sniffer.cleanup();
-		tts.cleanup();
-
-		shutdownApp();
+			hotkeyManager.cleanup();
+			sniffer.cleanup();
+			tts.cleanup();
+		}
+		catch (Exception e) //just in case
+		{
+			logger.log(Level.SEVERE, "Exception while trying to close the program: ", e);
+		}
+		finally
+		{
+			shutdownApp();
+		}
 	}
 
 	private void shutdownApp()
@@ -1327,7 +1338,8 @@ public class GUIController implements Initializable, CaptureStartListener, First
 	{
 		Properties props = new Properties();
 
-		Integer selectedNic = (Integer) (tglGrpNIC.getSelectedToggle().getUserData());
+		Toggle selectedToggle = tglGrpNIC.getSelectedToggle();
+		Integer selectedNic = (selectedToggle != null ? (Integer) (selectedToggle.getUserData()) : 1);
 
 		props.put(propsNICIndex, selectedNic.toString());
 		props.put(propsChkboxUDP, ((Boolean) chkboxUDP.isSelected()).toString());
@@ -1384,12 +1396,12 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		{
 			logger.log(Level.SEVERE, "Unable to save Ping-to-Speech history: " + e.getMessage(), e);
 		}
-		
+
 		try
 		{
 			watchdogSaveListToFile(new ArrayList<IPToMatch>(watchdogList), textWatchdogMessage.getText(), watchdogLastRunFilename);
 		}
-		catch(IOException ioe)
+		catch (IOException ioe)
 		{
 			logger.log(Level.SEVERE, "Unable to save Watchdog list: " + ioe.getMessage(), ioe);
 		}
@@ -1428,7 +1440,13 @@ public class GUIController implements Initializable, CaptureStartListener, First
 
 		comboPTSipToPing.getEditor().setText((String) props.get(propsPTSComboValue));
 		int nicIndex = getIntProperty(props, propsNICIndex);
-		((RadioButton) (vboxNICs.getChildren().get(nicIndex))).setSelected(true);
+		
+		Node node = vboxNICs.getChildren().get(nicIndex);
+		if (node instanceof RadioButton)
+		{
+			RadioButton rb = (RadioButton)node;
+			rb.setSelected(true);
+		}
 
 		setProtocolCheckboxes(props);
 		setCaptureOptionsPane(props);
@@ -1441,8 +1459,9 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		{
 			watchdogLoadListFromFile(watchdogList, textWatchdogMessage, labelWatchdogEntryCount, watchdogLastRunFilename);
 		}
-		catch(IOException | ClassNotFoundException ioe) //ignore, don't load
-		{}
+		catch (IOException | ClassNotFoundException ioe) //ignore, don't load
+		{
+		}
 	}
 
 	private void setWatchdogHotkey(Properties props)
@@ -1715,44 +1734,40 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		btnWatchdogStop.setDisable(true);
 		btnWatchdogStart.setDisable(false);
 	}
-	
+
 	public static void watchdogSaveListToFile(ArrayList<IPToMatch> list, String msgToSay, String filename) throws IOException
 	{
 		FileOutputStream fout = new FileOutputStream(filename);
 		ObjectOutputStream oos = new ObjectOutputStream(fout);
-		
+
 		oos.writeObject(list);
 		oos.writeUTF(msgToSay);
 
 		oos.close();
 		fout.close();
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public static void watchdogLoadListFromFile(ObservableList<IPToMatch> listToLoadInto, TextField messageField, Label labelCounter, String filename) throws IOException, ClassNotFoundException
 	{
 		FileInputStream fin = new FileInputStream(filename);
 		ObjectInputStream ois = new ObjectInputStream(fin);
-		
+
 		ArrayList<IPToMatch> temp = (ArrayList<IPToMatch>) ois.readObject();
-		
+
 		listToLoadInto.clear();
 		listToLoadInto.addAll(temp);
-		
+
 		messageField.setText(ois.readUTF());
 
 		ois.close();
 		fin.close();
-		
+
 		for (IPToMatch entry : listToLoadInto)
 			entry.initAfterSerialization();
-		
+
 		labelCounter.setText("Match list contains " + listToLoadInto.size() + " entries");
 	}
-	
-	
-	
-	
 
 	private Runnable captureHotkeyPressed = new Runnable()
 	{
