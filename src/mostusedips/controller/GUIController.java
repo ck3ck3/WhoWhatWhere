@@ -310,8 +310,6 @@ public class GUIController implements Initializable, CaptureStartListener, First
 
 		activeButton = btnStart;
 
-//		if (!createNICRadioButtons())
-//			return;
 		createNICRadioButtons();
 
 		vboxNICs.setSpacing(10);
@@ -1040,6 +1038,18 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		speakIfNotMuted(result);
 	}
 
+	/**
+	 * 
+	 * @param items
+	 *            - a list of all the items
+	 * @param colName
+	 *            - the column that we want to filter by
+	 * @param colValue
+	 *            - the value that we want to filter by. Every column that
+	 *            contains that string will be added to the returned list
+	 * @return a filtered list, where all the values in the selected column
+	 *         contain the selected value
+	 */
 	private ArrayList<IPInfoRowModel> filterItemsByColValue(List<IPInfoRowModel> items, String colName, String colValue)
 	{
 		ArrayList<IPInfoRowModel> filteredList = new ArrayList<IPInfoRowModel>();
@@ -1157,7 +1167,6 @@ public class GUIController implements Initializable, CaptureStartListener, First
 	{
 		TimerTask timerTask = new TimerTask()
 		{
-
 			@Override
 			public void run()
 			{
@@ -1271,10 +1280,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		return ping;
 	}
 
-	/**
-	 * @return false on failure, true otherwise
-	 */
-	private boolean createNICRadioButtons()
+	private void createNICRadioButtons()
 	{
 		StringBuilder errbuf = new StringBuilder();
 
@@ -1286,7 +1292,7 @@ public class GUIController implements Initializable, CaptureStartListener, First
 			vboxNICs.getChildren().add(label);
 			btnStart.setDisable(true);
 			logger.log(Level.SEVERE, "Unable to find any network interfaces. More info: " + errbuf);
-			return false;
+			return;
 		}
 
 		int index = 1; //index of radio button in the vbox. starts at 1 because we already added a label earlier
@@ -1303,8 +1309,6 @@ public class GUIController implements Initializable, CaptureStartListener, First
 		}
 
 		tglGrpNIC.selectToggle(tglGrpNIC.getToggles().get(0)); //select the first button
-
-		return true;
 	}
 
 	private void exitButtonPressed()
@@ -1440,11 +1444,11 @@ public class GUIController implements Initializable, CaptureStartListener, First
 
 		comboPTSipToPing.getEditor().setText((String) props.get(propsPTSComboValue));
 		int nicIndex = getIntProperty(props, propsNICIndex);
-		
+
 		Node node = vboxNICs.getChildren().get(nicIndex);
 		if (node instanceof RadioButton)
 		{
-			RadioButton rb = (RadioButton)node;
+			RadioButton rb = (RadioButton) node;
 			rb.setSelected(true);
 		}
 
@@ -1618,12 +1622,10 @@ public class GUIController implements Initializable, CaptureStartListener, First
 					speakIfNotMuted("Capture started");
 			}
 		});
-
 	}
 
 	public static void openInBrowser(String link)
 	{
-
 		if (Desktop.isDesktopSupported())
 		{
 			try
@@ -1638,7 +1640,6 @@ public class GUIController implements Initializable, CaptureStartListener, First
 				logger.log(Level.SEVERE, msg, e);
 			}
 		}
-
 	}
 
 	public static String getSecondaryGeoIpPrefix()
