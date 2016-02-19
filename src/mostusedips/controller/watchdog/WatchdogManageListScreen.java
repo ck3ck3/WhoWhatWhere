@@ -1,4 +1,4 @@
-package mostusedips.controller;
+package mostusedips.controller.watchdog;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -160,7 +160,7 @@ public class WatchdogManageListScreen extends SecondaryFXMLScreen
 			{
 				try
 				{
-					GUIController.watchdogLoadListFromFile(list, textToSay, labelCounter, filename + ".watchdogPreset");
+					WatchdogUI.watchdogLoadListFromFile(list, textToSay, labelCounter, filename + ".watchdogPreset");
 				}
 				catch (ClassNotFoundException | IOException e)
 				{

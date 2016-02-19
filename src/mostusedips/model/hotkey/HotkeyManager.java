@@ -34,7 +34,7 @@ public class HotkeyManager implements NativeKeyListener
 			libLogger.addHandler(handler);
 	}
 
-	public void init()
+	private void init()
 	{
 		try
 		{
@@ -118,9 +118,6 @@ public class HotkeyManager implements NativeKeyListener
 		if (isHotkeyTaken(modifiers, hotkey))
 			throw new IllegalArgumentException("This key combination is already assigned to a different hotkey");
 		
-//		if (hotkeyMap.containsKey(hotkeyID))
-//			throw new IllegalArgumentException("This hotkeyID is already assigned to a different hotkey");
-
 		HotkeyConfiguration hotkeyConfig = new HotkeyConfiguration(executer, modifiers, hotkey);
 
 		hotkeyMap.put(hotkeyID, hotkeyConfig);
@@ -149,7 +146,6 @@ public class HotkeyManager implements NativeKeyListener
 		HotkeyConfiguration hotkeyConfig = hotkeyMap.get(hotkeyID);
 		
 		hotkeyToID.remove(hotkeyToString(hotkeyConfig.getModifiers(), hotkeyConfig.getHotkey()));
-//		hotkeyMap.remove(hotkeyID);
 	}
 
 	private boolean isHotkeyTaken(int modifiers, int hotkey)

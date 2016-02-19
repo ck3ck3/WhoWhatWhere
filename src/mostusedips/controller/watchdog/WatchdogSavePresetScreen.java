@@ -1,4 +1,4 @@
-package mostusedips.controller;
+package mostusedips.controller.watchdog;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class WatchdogSavePresetScreen extends SecondaryFXMLScreen
 				{
 					String filename = savePresetController.getTextFilename().getText();
 
-					GUIController.watchdogSaveListToFile(new ArrayList<IPToMatch>(list), textToSay.getText(), filename + ".watchdogPreset");
+					WatchdogUI.watchdogSaveListToFile(new ArrayList<IPToMatch>(list), textToSay.getText(), filename + ".watchdogPreset");
 
 					MenuItem menuItem = WatchdogManageListScreen.createMenuItem(list, textToSay, labelCounter, filename);
 					

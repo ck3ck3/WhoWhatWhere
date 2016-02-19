@@ -1,4 +1,4 @@
-package mostusedips.controller;
+package mostusedips.controller.watchdog;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
