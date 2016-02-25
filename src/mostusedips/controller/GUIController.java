@@ -1,13 +1,10 @@
 package mostusedips.controller;
 
-import java.awt.Desktop;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,21 +45,19 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import mostusedips.Main;
-import mostusedips.controller.commands.ping.PingCommandScreen;
 import mostusedips.controller.watchdog.WatchdogUI;
+import mostusedips.model.PropertiesByType;
+import mostusedips.model.TextToSpeech;
 import mostusedips.model.ipsniffer.DeviceIPAndDescription;
 import mostusedips.model.ipsniffer.IpSniffer;
-import mostusedips.model.tts.TextToSpeech;
 import mostusedips.view.NumberTextField;
 
 public class GUIController implements Initializable
 {
 	private final static String propsFileLocation = Main.getAppName() + ".properties";
 	private final static String defaultPropsResource = "/defaultLastRun.properties";
-	private final static String voiceForTTS = "kevin16";
-	private final static String secondaryGeoIpPrefix = "https://www.iplocation.net/?query=";
-
 	private final static String propsNICIndex = "Selected NIC index";
+	private final static String voiceForTTS = "kevin16";
 
 	private final static Logger logger = Logger.getLogger(GUIController.class.getPackage().getName());
 
@@ -80,14 +75,12 @@ public class GUIController implements Initializable
 	private CheckBox chkboxICMP;
 	@FXML
 	private CheckBox chkboxHTTP;
-
 	@FXML
 	private RadioButton radioManual;
 	@FXML
 	private RadioButton radioTimedCapture;
 	@FXML
 	private NumberTextField textFieldTimeout;
-
 	@FXML
 	private Button btnStart;
 	@FXML
@@ -96,7 +89,6 @@ public class GUIController implements Initializable
 	private Label labelStatus;
 	@FXML
 	private Button btnExit;
-
 	@FXML
 	private CheckBox chkboxGetLocation;
 	@FXML
@@ -117,20 +109,6 @@ public class GUIController implements Initializable
 	private TableColumn<IPInfoRowModel, String> columnCity;
 	@FXML
 	private Label labelCurrCaptureHotkey;
-
-	private NumberTextField numFieldCaptureTimeout;
-	private NumberTextField numFieldRowsToRead;
-	private NumberTextField numberFieldPingTimeout;
-	
-
-	private ToggleGroup tglGrpNIC = new ToggleGroup();
-	private IpSniffer sniffer;
-	private ArrayList<DeviceIPAndDescription> listOfDevices;
-	private HashMap<RadioButton, String> buttonToIpMap = new HashMap<RadioButton, String>();
-	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
-	
-	
-
 	@FXML
 	private CheckBox chkboxUseCaptureHotkey;
 	@FXML
@@ -197,9 +175,19 @@ public class GUIController implements Initializable
 	private Button btnWatchdogPreview;
 	@FXML
 	private Label labelWatchdogEntryCount;
+
+	private NumberTextField numFieldCaptureTimeout;
+	private NumberTextField numFieldRowsToRead;
+	private NumberTextField numberFieldPingTimeout;
 	
+	
+	private ToggleGroup tglGrpNIC = new ToggleGroup();
+	private IpSniffer sniffer;
+	private ArrayList<DeviceIPAndDescription> listOfDevices;
+	private HashMap<RadioButton, String> buttonToIpMap = new HashMap<RadioButton, String>();
+	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 	private HotkeyRegistry hotkeyRegistry = new HotkeyRegistry(tabPane);
-	
+
 	private AppearanceCounterUI appearanceCounterUI;
 	private PingToSpeechUI pingToSpeechUI;
 	private WatchdogUI watchdogUI;
@@ -219,7 +207,15 @@ public class GUIController implements Initializable
 
 		vboxNICs.setSpacing(10);
 
-		initButtonHandlers();
+		btnExit.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent e)
+			{
+				exitButtonPressed();
+			}
+		});
+		
 		initMenuBar();
 		
 		appearanceCounterUI = new AppearanceCounterUI(this);
@@ -273,72 +269,6 @@ public class GUIController implements Initializable
 
 	}
 
-
-
-
-	private void initButtonHandlers()
-	{
-		btnExit.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				exitButtonPressed();
-			}
-		});
-
-
-
-
-
-
-
-		
-
-
-	}
-
-
-	public static String getPingForIP(String ip, Integer timeout)
-	{
-		String ping;
-		PingCommandScreen pingCmd;
-
-		try
-		{
-			pingCmd = new PingCommandScreen(null, null, ip, "-n 1" + (timeout != null ? " -w " + timeout : ""));
-		}
-		catch (IOException e)
-		{
-			logger.log(Level.SEVERE, "Unable able to generate ping (failed to load Ping (command) screen)", e);
-			return null;
-		}
-
-		pingCmd.runCommand();
-
-		try
-		{
-			while (!pingCmd.isOutputReady())
-				Thread.sleep(10); //allow the command to run and finish without creating a deadlock
-		}
-		catch (InterruptedException e) //required, nothing to do here
-		{
-		}
-
-		String output = pingCmd.getOutput();
-		String pingResult = output.substring(output.lastIndexOf(' '));
-
-		if (pingResult.contains("loss"))
-			ping = "Timeout";
-		else
-			if (pingResult.contains("ms\n"))
-				ping = pingResult.replace("ms\n", " milliseconds");
-			else
-				ping = "Error";
-
-		return ping;
-	}
-
 	private void createNICRadioButtons()
 	{
 		StringBuilder errbuf = new StringBuilder();
@@ -389,14 +319,7 @@ public class GUIController implements Initializable
 			shutdownApp();
 		}
 	}
-
-	private void shutdownApp()
-	{
-		Platform.setImplicitExit(true); //was initially set to false when initializing the systray
-		Platform.exit();
-		System.exit(0); //needed because of the AWT SysTray		
-	}
-
+	
 	private void saveCurrentRunValuesToProperties()
 	{
 		Properties props = new Properties();
@@ -409,8 +332,6 @@ public class GUIController implements Initializable
 		Integer selectedNic = (selectedToggle != null ? (Integer) (selectedToggle.getUserData()) : 1);
 
 		props.put(propsNICIndex, selectedNic.toString());
-
-
 
 		try
 		{
@@ -433,11 +354,8 @@ public class GUIController implements Initializable
 
 		try
 		{
-			if (lastRun.exists())
-				in = new FileInputStream(lastRun);
-			else
-				in = this.getClass().getResourceAsStream(defaultPropsResource);
-
+			in = (lastRun.exists() ? new FileInputStream(lastRun) : this.getClass().getResourceAsStream(defaultPropsResource));
+			
 			props.load(in);
 			in.close();
 		}
@@ -446,7 +364,7 @@ public class GUIController implements Initializable
 			logger.log(Level.SEVERE, "Unable to load properties file: " + e.getMessage(), e);
 		}
 
-		int nicIndex = getIntProperty(props, propsNICIndex);
+		int nicIndex = PropertiesByType.getIntProperty(props, propsNICIndex);
 
 		Node node = vboxNICs.getChildren().get(nicIndex);
 		if (node instanceof RadioButton)
@@ -460,50 +378,11 @@ public class GUIController implements Initializable
 		watchdogUI.loadLastRunConfig(props);
 	}
 
-
-	public static boolean getBoolProperty(Properties props, String key)
+	private void shutdownApp()
 	{
-		String value = props.getProperty(key);
-
-		if (value == null)
-			throw new IllegalArgumentException("The key \"" + key + "\" doesn't exist");
-
-		return value.equals("true");
-
-	}
-
-	public static Integer getIntProperty(Properties props, String key)
-	{
-		String value = props.getProperty(key);
-
-		if (value == null)
-			throw new IllegalArgumentException("The key \"" + key + "\" doesn't exist");
-
-		return Integer.valueOf(value);
-	}
-
-
-	public static void openInBrowser(String link)
-	{
-		if (Desktop.isDesktopSupported())
-		{
-			try
-			{
-				URI uri = new URI(link);
-				Desktop.getDesktop().browse(uri);
-			}
-			catch (IOException | URISyntaxException e)
-			{
-				String msg = "Unable to open \"" + link + "\" in the browser";
-				new Alert(AlertType.ERROR, msg).showAndWait();
-				logger.log(Level.SEVERE, msg, e);
-			}
-		}
-	}
-
-	public static String getSecondaryGeoIpPrefix()
-	{
-		return secondaryGeoIpPrefix;
+		Platform.setImplicitExit(true); //was initially set to false when initializing the systray
+		Platform.exit();
+		System.exit(0); //needed because of the AWT SysTray		
 	}
 
 	private void showAboutWindow()
@@ -573,7 +452,7 @@ public class GUIController implements Initializable
 			@Override
 			public void handle(ActionEvent event)
 			{
-				openInBrowser(link.getText());
+				Main.openInBrowser(link.getText());
 				alert.close();
 			}
 		});
@@ -889,5 +768,4 @@ public class GUIController implements Initializable
 	{
 		return sniffer;
 	}
-	
 }

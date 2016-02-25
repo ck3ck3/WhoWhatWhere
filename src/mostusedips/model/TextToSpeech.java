@@ -1,4 +1,4 @@
-package mostusedips.model.tts;
+package mostusedips.model;
 
 import com.sun.speech.freetts.Voice;
 import com.sun.speech.freetts.VoiceManager;
@@ -21,12 +21,10 @@ public class TextToSpeech
 		{
 			new Thread(new Runnable()
 			{
-
 				@Override
 				public void run()
 				{
 					voice.speak(line); //blocks the calling thread
-
 				}
 			}).start();
 		}

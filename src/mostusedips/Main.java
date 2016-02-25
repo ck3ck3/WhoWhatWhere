@@ -1,5 +1,6 @@
 package mostusedips;
 
+import java.awt.Desktop;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
@@ -8,6 +9,8 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.logging.FileHandler;
@@ -23,6 +26,8 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -46,7 +51,7 @@ public class Main extends Application
 	private final static int windowSizeX = 1024;
 	private final static int windowSizeY = 790;
 
-	private Logger logger;
+	private static Logger logger = Logger.getLogger(Main.class.getPackage().getName());
 
 	@Override
 	public void start(Stage primaryStage)
@@ -168,6 +173,24 @@ public class Main extends Application
 		String version = (String) jsonObject.get("tag_name");
 
 		return !version.equals(getReleaseVersion());
+	}
+	
+	public static void openInBrowser(String link)
+	{
+		if (Desktop.isDesktopSupported())
+		{
+			try
+			{
+				URI uri = new URI(link);
+				Desktop.getDesktop().browse(uri);
+			}
+			catch (IOException | URISyntaxException e)
+			{
+				String msg = "Unable to open \"" + link + "\" in the browser";
+				new Alert(AlertType.ERROR, msg).showAndWait();
+				logger.log(Level.SEVERE, msg, e);
+			}
+		}
 	}
 
 	public static void main(String[] args)

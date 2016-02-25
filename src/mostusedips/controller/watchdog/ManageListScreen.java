@@ -15,7 +15,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
@@ -26,28 +25,28 @@ import javafx.util.Callback;
 import mostusedips.model.ipsniffer.IPToMatch;
 import mostusedips.view.SecondaryFXMLScreen;
 
-public class WatchdogManageListScreen extends SecondaryFXMLScreen
+public class ManageListScreen extends SecondaryFXMLScreen
 {
 	private final static String watchdogListAddEditFormLocation = "/mostusedips/view/WatchdogListAddEdit.fxml";
 	private final static String watchdogSavePresetFormLocation = "/mostusedips/view/WatchdogSavePreset.fxml";
-	private final static Logger logger = Logger.getLogger(WatchdogManageListScreen.class.getPackage().getName());
+	private final static Logger logger = Logger.getLogger(ManageListScreen.class.getPackage().getName());
 
-	private WatchdogController watchdogController;
+	private ListController watchdogListController;
+	private WatchdogUI watchdogUIController;
 	private TableView<IPToMatch> table;
 	private ObservableList<IPToMatch> list;
 	private TextField textToSay;
-	private Label labelCounter;
 
-	public WatchdogManageListScreen(String fxmlLocation, Stage stage, Scene scene, ObservableList<IPToMatch> list, TextField textToSay, Label labelCounter) throws IOException
+	public ManageListScreen(String fxmlLocation, Stage stage, Scene scene, WatchdogUI uiController) throws IOException
 	{
 		super(fxmlLocation, stage, scene);
 
-		this.list = list;
-		this.textToSay = textToSay;
-		this.labelCounter = labelCounter;
+		this.list = uiController.getEntryList();
+		this.textToSay = uiController.getTextMessage();
 
-		watchdogController = getLoader().<WatchdogController> getController();
-		table = watchdogController.getTable();
+		watchdogListController = getLoader().<ListController> getController();
+		this.watchdogUIController = uiController;
+		table = watchdogListController.getTable();
 
 		table.setItems(list);
 
@@ -70,7 +69,7 @@ public class WatchdogManageListScreen extends SecondaryFXMLScreen
 					public void handle(MouseEvent event)
 					{
 						if (event.getClickCount() == 2 && (!row.isEmpty()))
-							watchdogController.getBtnEditRow().fire();
+							watchdogListController.getBtnEditRow().fire();
 					}
 				});
 
@@ -81,9 +80,9 @@ public class WatchdogManageListScreen extends SecondaryFXMLScreen
 
 	private void initButtonHandlers()
 	{
-		watchdogController.getBtnAddRow().setOnAction(generateAddEditEventHandler(false));
-		watchdogController.getBtnEditRow().setOnAction(generateAddEditEventHandler(true));
-		watchdogController.getBtnRemoveRow().setOnAction(new EventHandler<ActionEvent>()
+		watchdogListController.getBtnAddRow().setOnAction(generateAddEditEventHandler(false));
+		watchdogListController.getBtnEditRow().setOnAction(generateAddEditEventHandler(true));
+		watchdogListController.getBtnRemoveRow().setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent event)
@@ -94,26 +93,17 @@ public class WatchdogManageListScreen extends SecondaryFXMLScreen
 			}
 		});
 
-		watchdogController.getBtnClose().setOnAction(new EventHandler<ActionEvent>()
+		watchdogListController.getBtnSavePreset().setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent event)
 			{
-				labelCounter.setText("Match list contains " + list.size() + " entries");
-			}
-		});
-
-		watchdogController.getBtnSavePreset().setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				WatchdogSavePresetScreen screen;
+				SavePresetScreen screen;
 				Stage stage = getPostCloseStage();
 
 				try
 				{
-					screen = new WatchdogSavePresetScreen(watchdogSavePresetFormLocation, stage, stage.getScene(), list, textToSay, labelCounter, watchdogController.getMenuBtnLoadPreset());
+					screen = new SavePresetScreen(watchdogSavePresetFormLocation, stage, stage.getScene(), watchdogUIController, watchdogListController);
 				}
 				catch (IOException e)
 				{
@@ -130,15 +120,15 @@ public class WatchdogManageListScreen extends SecondaryFXMLScreen
 
 	private void initMenuButton()
 	{
-		ObservableList<MenuItem> items = watchdogController.getMenuBtnLoadPreset().getItems();
+		ObservableList<MenuItem> items = watchdogListController.getMenuBtnLoadPreset().getItems();
 		items.clear();
 
 		File dir = new File(System.getProperty("user.dir"));
-		FileFilter fileFilter = new WildcardFileFilter("*.watchdogPreset");
+		FileFilter fileFilter = new WildcardFileFilter("*" + WatchdogUI.presetExtension);
 		File[] files = dir.listFiles(fileFilter);
 
 		for (File file : files)
-			items.add(createMenuItem(list, textToSay, labelCounter, file.getName().replace(".watchdogPreset", "")));
+			items.add(createMenuItem(list, textToSay, file.getName().replace(WatchdogUI.presetExtension, "")));
 		
 		if (items.isEmpty())
 		{
@@ -149,7 +139,7 @@ public class WatchdogManageListScreen extends SecondaryFXMLScreen
 		}
 	}
 
-	public static MenuItem createMenuItem(ObservableList<IPToMatch> list, TextField textToSay, Label labelCounter, String filename)
+	public static MenuItem createMenuItem(ObservableList<IPToMatch> list, TextField textToSay, String filename)
 	{
 		MenuItem menuItem = new MenuItem(filename);
 
@@ -160,7 +150,7 @@ public class WatchdogManageListScreen extends SecondaryFXMLScreen
 			{
 				try
 				{
-					WatchdogUI.watchdogLoadListFromFile(list, textToSay, labelCounter, filename + ".watchdogPreset");
+					WatchdogUI.loadListFromFile(list, textToSay, filename + WatchdogUI.presetExtension);
 				}
 				catch (ClassNotFoundException | IOException e)
 				{
@@ -179,12 +169,12 @@ public class WatchdogManageListScreen extends SecondaryFXMLScreen
 			@Override
 			public void handle(ActionEvent event)
 			{
-				WatchdogListAddEditScreen watchdogListAddEditScreen;
+				ListAddEditScreen watchdogListAddEditScreen;
 				Stage stage = getPostCloseStage();
 
 				try
 				{
-					watchdogListAddEditScreen = new WatchdogListAddEditScreen(watchdogListAddEditFormLocation, stage, stage.getScene(), table, isEdit);
+					watchdogListAddEditScreen = new ListAddEditScreen(watchdogListAddEditFormLocation, stage, stage.getScene(), table, isEdit);
 				}
 				catch (IOException e)
 				{
@@ -204,6 +194,6 @@ public class WatchdogManageListScreen extends SecondaryFXMLScreen
 
 	public Button getCloseButton()
 	{
-		return watchdogController.getBtnClose();
+		return watchdogListController.getBtnClose();
 	}
 }

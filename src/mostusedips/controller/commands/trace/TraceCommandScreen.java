@@ -3,7 +3,6 @@ package mostusedips.controller.commands.trace;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -22,8 +21,10 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import mostusedips.controller.GUIController;
+import mostusedips.Main;
 import mostusedips.controller.commands.CommandScreen;
+import mostusedips.model.geoipresolver.GeoIPResolver;
+import mostusedips.model.ipsniffer.IpSniffer;
 import mostusedips.view.NumberTextField;
 
 public class TraceCommandScreen extends CommandScreen
@@ -40,7 +41,6 @@ public class TraceCommandScreen extends CommandScreen
 	private final String introMarker = "==================================\n";
 	private final String introMsg = "Press the start button to start tracing.\nWhen the trace is complete, you can press the \"" + btnVisualTrace.getText()
 			+ "\" button, or select an IP address and right click it to see more GeoIP info about it\n\n" + introMarker;
-	private static final Pattern ipv4Pattern = Pattern.compile("^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
 
 	public TraceCommandScreen(Stage stage, Scene scene, String ip) throws IOException
 	{
@@ -99,8 +99,8 @@ public class TraceCommandScreen extends CommandScreen
 			{
 				String selectedText = textArea.getSelectedText();
 
-				if (ipv4Pattern.matcher(selectedText).matches())
-					GUIController.openInBrowser(GUIController.getSecondaryGeoIpPrefix() + selectedText);
+				if (IpSniffer.isValidIPv4(selectedText))
+					Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + selectedText);
 				else
 					new Alert(AlertType.ERROR, "The selected text \"" + selectedText + "\" is not an IP address").showAndWait();
 			}

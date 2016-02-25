@@ -26,7 +26,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import mostusedips.controller.GUIController;
+import mostusedips.Main;
 import mostusedips.controller.VisualTraceController;
 import mostusedips.model.geoipresolver.GeoIPInfo;
 import mostusedips.model.geoipresolver.GeoIPResolver;
@@ -110,7 +110,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 				@Override
 				public void handle(ActionEvent event)
 				{
-					GUIController.openInBrowser(GUIController.getSecondaryGeoIpPrefix() + ip);
+					Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + ip);
 				}
 			});
 

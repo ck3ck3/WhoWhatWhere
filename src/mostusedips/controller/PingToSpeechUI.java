@@ -14,7 +14,9 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
-import mostusedips.model.tts.TextToSpeech;
+import mostusedips.model.PropertiesByType;
+import mostusedips.model.TextToSpeech;
+import mostusedips.model.ipsniffer.IpSniffer;
 
 public class PingToSpeechUI
 {
@@ -54,7 +56,7 @@ public class PingToSpeechUI
 			if (!items.contains(address))
 				items.add(address);
 
-			String ping = GUIController.getPingForIP(address, null); //default timeout
+			String ping = IpSniffer.pingAsString(address, -1); //default timeout
 
 			if (ping.contains("milliseconds"))
 				tts.speak(ping);
@@ -137,9 +139,9 @@ public class PingToSpeechUI
 	
 	private void setPTSHotkey(Properties props)
 	{
-		chkboxPTSHotkey.setSelected(GUIController.getBoolProperty(props, propsChkboxPTSHotkey));
-		ptsHotkeyModifiers = GUIController.getIntProperty(props, propsPTSModifiers);
-		ptsHotkeyKeyCode = GUIController.getIntProperty(props, propsPTSHotkey);
+		chkboxPTSHotkey.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxPTSHotkey));
+		ptsHotkeyModifiers = PropertiesByType.getIntProperty(props, propsPTSModifiers);
+		ptsHotkeyKeyCode = PropertiesByType.getIntProperty(props, propsPTSHotkey);
 
 		if (chkboxPTSHotkey.isSelected())
 			hotkeyRegistry.addHotkey(ptsHotkeyID, ptsHotkeyModifiers, ptsHotkeyKeyCode, labelPTSCurrentHotkey, ptsHotkeyPressed);

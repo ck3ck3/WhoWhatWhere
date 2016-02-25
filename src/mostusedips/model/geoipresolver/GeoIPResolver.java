@@ -16,7 +16,7 @@ import org.w3c.dom.NodeList;
 
 public class GeoIPResolver
 {
-
+	private final static String secondaryGeoIpPrefix = "https://www.iplocation.net/?query=";
 	private static final String serviceBaseURI = "http://ip-api.com/xml/";
 	private static final String failMsg = "fail";
 	private static final Logger logger = Logger.getLogger(GeoIPResolver.class.getPackage().getName());
@@ -122,5 +122,9 @@ public class GeoIPResolver
 
 		return ipInfo;
 	}
-
+	
+	public static String getSecondaryGeoIpPrefix()
+	{
+		return secondaryGeoIpPrefix;
+	}
 }

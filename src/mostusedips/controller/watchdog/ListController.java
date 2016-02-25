@@ -17,7 +17,7 @@ import javafx.scene.input.KeyEvent;
 import mostusedips.model.ipsniffer.IPToMatch;
 import javafx.scene.layout.AnchorPane;
 
-public class WatchdogController implements Initializable
+public class ListController implements Initializable
 {
 	@FXML
 	private Button btnAddRow;

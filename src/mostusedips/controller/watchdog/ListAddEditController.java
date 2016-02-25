@@ -17,7 +17,7 @@ import javafx.scene.layout.AnchorPane;
 import mostusedips.model.ipsniffer.IPToMatch;
 import mostusedips.view.NumberTextField;
 
-public class WatchdogListAddEditController implements Initializable
+public class ListAddEditController implements Initializable
 {
 	@FXML
 	private TextField textIP;

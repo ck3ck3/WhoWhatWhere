@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -24,127 +25,133 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import mostusedips.controller.GUIController;
 import mostusedips.controller.HotkeyRegistry;
+import mostusedips.model.PropertiesByType;
+import mostusedips.model.TextToSpeech;
 import mostusedips.model.ipsniffer.FirstSightListener;
 import mostusedips.model.ipsniffer.IPToMatch;
 import mostusedips.model.ipsniffer.IpSniffer;
-import mostusedips.model.tts.TextToSpeech;
 
 public class WatchdogUI implements FirstSightListener
 {
 	private final static Logger logger = Logger.getLogger(WatchdogUI.class.getPackage().getName());
-	
-	private final static String watchdogHotkeyID = "Watchdog hotkey";
-	private final static String watchdogListFormLocation = "/mostusedips/view/WatchdogList.fxml";
-	private static final String watchdogLastRunFilename = "Last run.watchdogPreset";
+
+	private final static String hotkeyID = "Watchdog hotkey";
+	private final static String listFormLocation = "/mostusedips/view/WatchdogList.fxml";
+	public static final String presetExtension = ".watchdogPreset";
+	private static final String lastRunFilename = "Last run" + presetExtension;
 	private final static String voiceForTTS = "kevin16";
 
-	private final static String propsChkboxWatchdogHotkey = "chkboxWatchdogHotkey";
-	private final static String propsWatchdogHotkeyKeycode = "watchdogHotkeyKeycode";
-	private final static String propsWatchdogHotkeyModifiers = "watchdogHotkeyModifiers";
+	private final static String propsChkboxHotkey = "chkboxWatchdogHotkey";
+	private final static String propsHotkeyKeycode = "watchdogHotkeyKeycode";
+	private final static String propsHotkeyModifiers = "watchdogHotkeyModifiers";
 
-	
 	private GUIController controller;
-	
-	private CheckBox chkboxWatchdogHotkey;
-	private AnchorPane paneWatchdogHotkeyConfig;
-	private Button btnWatchdogConfigureHotkey;
-	private Label labelWatchdogCurrHotkey;
-	private Button btnWatchdogStart;
-	private Button btnWatchdogStop;
-	private TextField textWatchdogMessage;
-	private Button btnWatchdogManageList;
-	private Button btnWatchdogPreview;
-	private Label labelWatchdogEntryCount;
-	private Button watchdogActiveButton;
-	
-	private int watchdogHotkeyKeyCode;
-	private int watchdogHotkeyModifiers;
-	private ObservableList<IPToMatch> watchdogList = FXCollections.observableArrayList();
+
+	private CheckBox chkboxHotkey;
+	private AnchorPane paneHotkeyConfig;
+	private Button btnConfigureHotkey;
+	private Label labelCurrHotkey;
+	private Button btnStart;
+	private Button btnStop;
+	private TextField textMessage;
+	private Button btnManageList;
+	private Button btnPreview;
+	private Label labelEntryCount;
+	private Button activeButton;
+
+	private int hotkeyKeyCode;
+	private int hotkeyModifiers;
+	private ObservableList<IPToMatch> entryList = FXCollections.observableArrayList();
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 	private IpSniffer sniffer;
-	
-	private Runnable watchdogHotkeyPressed = new Runnable()
+	private HotkeyRegistry hotkeyRegistry;
+
+	private Runnable hotkeyPressed = new Runnable()
 	{
 		@Override
 		public void run()
 		{
 			String line;
-			Button savedActiveButton = watchdogActiveButton;
+			Button savedActiveButton = activeButton;
 
-			watchdogActiveButton.fire();
+			activeButton.fire();
 
-			if (savedActiveButton == btnWatchdogStart)
+			if (savedActiveButton == btnStart)
 			{
-				if (watchdogList.isEmpty())
+				if (entryList.isEmpty())
 					return;
 
 				line = "Starting watchdog";
-				watchdogActiveButton = btnWatchdogStop;
-				btnWatchdogStart.setDisable(true);
-				btnWatchdogStop.setDisable(false);
+				activeButton = btnStop;
+				btnStart.setDisable(true);
+				btnStop.setDisable(false);
 			}
 			else
 			{
 				line = "Stopping watchdog";
-				watchdogActiveButton = btnWatchdogStart;
-				btnWatchdogStop.setDisable(true);
-				btnWatchdogStart.setDisable(false);
+				activeButton = btnStart;
+				btnStop.setDisable(true);
+				btnStart.setDisable(false);
 			}
 
 			tts.speak(line);
 		}
 	};
 
-	private HotkeyRegistry hotkeyRegistry;
-	
-	
 	public WatchdogUI(GUIController controller)
 	{
 		this.controller = controller;
-		
-		
+
 		initUIElementsFromController();
-		
 		initButtonHandlers();
-		
+
+		entryList.addListener(new ListChangeListener<IPToMatch>()
+		{
+			@Override
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends IPToMatch> c)
+			{
+				labelEntryCount.setText("Match list contains " + c.getList().size() + " entries");
+			}
+		});
 	}
-	
+
 	private void initUIElementsFromController()
 	{
 		hotkeyRegistry = controller.getHotkeyRegistry();
 		sniffer = controller.getIpSniffer();
-		
-		chkboxWatchdogHotkey = controller.getChkboxWatchdogHotkey();
-		paneWatchdogHotkeyConfig = controller.getPaneWatchdogHotkeyConfig();
-		btnWatchdogConfigureHotkey = controller.getBtnWatchdogConfigureHotkey();
-		labelWatchdogCurrHotkey = controller.getLabelWatchdogCurrHotkey();
-		btnWatchdogStart = controller.getBtnWatchdogStart();
-		btnWatchdogStop = controller.getBtnWatchdogStop();
-		textWatchdogMessage = controller.getTextWatchdogMessage();
-		btnWatchdogManageList = controller.getBtnWatchdogManageList();
-		btnWatchdogPreview = controller.getBtnWatchdogPreview();
-		labelWatchdogEntryCount = controller.getLabelWatchdogEntryCount();
-		
+
+		chkboxHotkey = controller.getChkboxWatchdogHotkey();
+		paneHotkeyConfig = controller.getPaneWatchdogHotkeyConfig();
+		btnConfigureHotkey = controller.getBtnWatchdogConfigureHotkey();
+		labelCurrHotkey = controller.getLabelWatchdogCurrHotkey();
+		btnStart = controller.getBtnWatchdogStart();
+		btnStop = controller.getBtnWatchdogStop();
+		textMessage = controller.getTextWatchdogMessage();
+		btnManageList = controller.getBtnWatchdogManageList();
+		btnPreview = controller.getBtnWatchdogPreview();
+		labelEntryCount = controller.getLabelWatchdogEntryCount();
 	}
 
 	private void initButtonHandlers()
 	{
-		chkboxWatchdogHotkey.selectedProperty().addListener(hotkeyRegistry.generateChangeListenerForHotkeyCheckbox(watchdogHotkeyID, watchdogHotkeyModifiers, watchdogHotkeyKeyCode, chkboxWatchdogHotkey,
-				labelWatchdogCurrHotkey, paneWatchdogHotkeyConfig, watchdogHotkeyPressed));
+		WatchdogUI thisObj = this;
 		
-		btnWatchdogConfigureHotkey.setOnAction(hotkeyRegistry.generateEventHandlerForHotkeyConfigButton(watchdogHotkeyID));
+		chkboxHotkey.selectedProperty()
+				.addListener(hotkeyRegistry.generateChangeListenerForHotkeyCheckbox(hotkeyID, hotkeyModifiers, hotkeyKeyCode, chkboxHotkey, labelCurrHotkey, paneHotkeyConfig, hotkeyPressed));
 
-		btnWatchdogManageList.setOnAction(new EventHandler<ActionEvent>()
+		btnConfigureHotkey.setOnAction(hotkeyRegistry.generateEventHandlerForHotkeyConfigButton(hotkeyID));
+		
+		btnManageList.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent event)
 			{
-				WatchdogManageListScreen watchdogManageListScreen;
+				ManageListScreen watchdogManageListScreen;
 				Stage stage = (Stage) controller.getTabPane().getScene().getWindow();
 
 				try
 				{
-					watchdogManageListScreen = new WatchdogManageListScreen(watchdogListFormLocation, stage, stage.getScene(), watchdogList, textWatchdogMessage, labelWatchdogEntryCount);
+					watchdogManageListScreen = new ManageListScreen(listFormLocation, stage, stage.getScene(), thisObj);
 				}
 				catch (IOException e)
 				{
@@ -156,19 +163,17 @@ public class WatchdogUI implements FirstSightListener
 			}
 		});
 
-		btnWatchdogPreview.setOnAction(new EventHandler<ActionEvent>()
+		btnPreview.setOnAction(new EventHandler<ActionEvent>()
 		{
 
 			@Override
 			public void handle(ActionEvent event)
 			{
-				tts.speak(textWatchdogMessage.getText());
+				tts.speak(textMessage.getText());
 			}
 		});
 
-		FirstSightListener thisObj = this;
-
-		btnWatchdogStart.setOnAction(new EventHandler<ActionEvent>()
+		btnStart.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent event)
@@ -179,7 +184,7 @@ public class WatchdogUI implements FirstSightListener
 					return;
 				}
 
-				if (watchdogList.isEmpty())
+				if (entryList.isEmpty())
 				{
 					new Alert(AlertType.ERROR, "The list must contain at least one entry").showAndWait();
 					return;
@@ -191,43 +196,43 @@ public class WatchdogUI implements FirstSightListener
 					@Override
 					public void run()
 					{
-						sniffer.startFirstSightCapture(deviceIP, new ArrayList<IPToMatch>(watchdogList), thisObj, new StringBuilder());
+						sniffer.startFirstSightCapture(deviceIP, new ArrayList<IPToMatch>(entryList), thisObj, new StringBuilder());
 					}
 				}).start();
 
-				watchdogActiveButton = btnWatchdogStop;
-				btnWatchdogStop.setDisable(false);
-				btnWatchdogStart.setDisable(true);
+				activeButton = btnStop;
+				btnStop.setDisable(false);
+				btnStart.setDisable(true);
 			}
 		});
 
-		btnWatchdogStop.setOnAction(new EventHandler<ActionEvent>()
+		btnStop.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent event)
 			{
-				watchdogActiveButton = btnWatchdogStart;
-				btnWatchdogStop.setDisable(true);
-				btnWatchdogStart.setDisable(false);
+				activeButton = btnStart;
+				btnStop.setDisable(true);
+				btnStart.setDisable(false);
 
 				sniffer.stopCapture();
 			}
 		});
 
-		watchdogActiveButton = btnWatchdogStart;
+		activeButton = btnStart;
 	}
 
 	@Override
 	public void firstSightOfIP(IPToMatch ipInfo)
 	{
-		tts.speak(textWatchdogMessage.getText());
+		tts.speak(textMessage.getText());
 
-		watchdogActiveButton = btnWatchdogStart;
-		btnWatchdogStop.setDisable(true);
-		btnWatchdogStart.setDisable(false);
+		activeButton = btnStart;
+		btnStop.setDisable(true);
+		btnStart.setDisable(false);
 	}
-	
-	public static void watchdogSaveListToFile(ArrayList<IPToMatch> list, String msgToSay, String filename) throws IOException
+
+	public static void saveListToFile(ArrayList<IPToMatch> list, String msgToSay, String filename) throws IOException
 	{
 		FileOutputStream fout = new FileOutputStream(filename);
 		ObjectOutputStream oos = new ObjectOutputStream(fout);
@@ -240,7 +245,7 @@ public class WatchdogUI implements FirstSightListener
 	}
 
 	@SuppressWarnings("unchecked")
-	public static void watchdogLoadListFromFile(ObservableList<IPToMatch> listToLoadInto, TextField messageField, Label labelCounter, String filename) throws IOException, ClassNotFoundException
+	public static void loadListFromFile(ObservableList<IPToMatch> listToLoadInto, TextField messageField, String filename) throws IOException, ClassNotFoundException
 	{
 		FileInputStream fin = new FileInputStream(filename);
 		ObjectInputStream ois = new ObjectInputStream(fin);
@@ -257,48 +262,56 @@ public class WatchdogUI implements FirstSightListener
 
 		for (IPToMatch entry : listToLoadInto)
 			entry.initAfterSerialization();
-
-		labelCounter.setText("Match list contains " + listToLoadInto.size() + " entries");
 	}
-	
+
 	private void setWatchdogHotkey(Properties props)
 	{
-		chkboxWatchdogHotkey.setSelected(GUIController.getBoolProperty(props, propsChkboxWatchdogHotkey));
-		watchdogHotkeyModifiers = GUIController.getIntProperty(props, propsWatchdogHotkeyModifiers);
-		watchdogHotkeyKeyCode = GUIController.getIntProperty(props, propsWatchdogHotkeyKeycode);
+		chkboxHotkey.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxHotkey));
+		hotkeyModifiers = PropertiesByType.getIntProperty(props, propsHotkeyModifiers);
+		hotkeyKeyCode = PropertiesByType.getIntProperty(props, propsHotkeyKeycode);
 
-		if (chkboxWatchdogHotkey.isSelected())
-			hotkeyRegistry.addHotkey(watchdogHotkeyID, watchdogHotkeyModifiers, watchdogHotkeyKeyCode, labelWatchdogCurrHotkey, watchdogHotkeyPressed);
+		if (chkboxHotkey.isSelected())
+			hotkeyRegistry.addHotkey(hotkeyID, hotkeyModifiers, hotkeyKeyCode, labelCurrHotkey, hotkeyPressed);
 		else
-			paneWatchdogHotkeyConfig.setDisable(true);
+			paneHotkeyConfig.setDisable(true);
 	}
-	
+
 	public void saveCurrentRunValuesToProperties(Properties props)
 	{
-		props.put(propsChkboxWatchdogHotkey, ((Boolean) chkboxWatchdogHotkey.isSelected()).toString());
-		props.put(propsWatchdogHotkeyKeycode, Integer.toString(hotkeyRegistry.getHotkeyKeycode(watchdogHotkeyID)));
-		props.put(propsWatchdogHotkeyModifiers, Integer.toString(hotkeyRegistry.getHotkeyModifiers(watchdogHotkeyID)));
-		
+		props.put(propsChkboxHotkey, ((Boolean) chkboxHotkey.isSelected()).toString());
+		props.put(propsHotkeyKeycode, Integer.toString(hotkeyRegistry.getHotkeyKeycode(hotkeyID)));
+		props.put(propsHotkeyModifiers, Integer.toString(hotkeyRegistry.getHotkeyModifiers(hotkeyID)));
+
 		try
 		{
-			watchdogSaveListToFile(new ArrayList<IPToMatch>(watchdogList), textWatchdogMessage.getText(), watchdogLastRunFilename);
+			saveListToFile(new ArrayList<IPToMatch>(entryList), textMessage.getText(), lastRunFilename);
 		}
 		catch (IOException ioe)
 		{
 			logger.log(Level.SEVERE, "Unable to save Watchdog list: " + ioe.getMessage(), ioe);
 		}
 	}
-	
+
 	public void loadLastRunConfig(Properties props)
 	{
 		setWatchdogHotkey(props);
-		
+
 		try
 		{
-			watchdogLoadListFromFile(watchdogList, textWatchdogMessage, labelWatchdogEntryCount, watchdogLastRunFilename);
+			loadListFromFile(entryList, textMessage, lastRunFilename);
 		}
 		catch (IOException | ClassNotFoundException ioe) //ignore, don't load
 		{
 		}
+	}
+
+	public ObservableList<IPToMatch> getEntryList()
+	{
+		return entryList;
+	}
+
+	public TextField getTextMessage()
+	{
+		return textMessage;
 	}
 }

@@ -44,15 +44,17 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import mostusedips.Main;
 import mostusedips.controller.commands.ping.PingCommandScreen;
 import mostusedips.controller.commands.trace.TraceCommandScreen;
+import mostusedips.model.PropertiesByType;
+import mostusedips.model.TextToSpeech;
 import mostusedips.model.geoipresolver.GeoIPInfo;
 import mostusedips.model.geoipresolver.GeoIPResolver;
 import mostusedips.model.ipsniffer.AppearanceCounterResults;
 import mostusedips.model.ipsniffer.CaptureStartListener;
 import mostusedips.model.ipsniffer.IpAppearancesCounter;
 import mostusedips.model.ipsniffer.IpSniffer;
-import mostusedips.model.tts.TextToSpeech;
 import mostusedips.view.NumberTextField;
 
 public class AppearanceCounterUI implements CaptureStartListener
@@ -141,7 +143,6 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private TimerTask timerTask;
 	private boolean isTimedTaskRunning = false;
 	private boolean isAHotkeyResult = false;
-	private boolean isMuted = false;
 	private int protocolBoxesChecked = 0;
 	private HashMap<RadioButton, String> buttonToIpMap;
 	private IpSniffer sniffer;
@@ -165,7 +166,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			else
 				line = "Pressing Stop capturing button";
 
-			speakIfNotMuted(line);
+			tts.speak(line);
 			activeButton.fire();
 		}
 	};
@@ -328,7 +329,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			@Override
 			public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val)
 			{
-				isMuted = !new_val;
+				tts.setMuted(!new_val);
 				paneUseTTS.setDisable(!new_val);
 			}
 		});
@@ -426,7 +427,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 					@Override
 					public void handle(ActionEvent event)
 					{
-						GUIController.openInBrowser(GUIController.getSecondaryGeoIpPrefix() + row.getItem().ipAddressProperty());
+						Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + row.getItem().ipAddressProperty());
 					}
 				});
 
@@ -650,7 +651,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		for (int i = 0; i < rowsToRead; i++)
 			result += lines[i].toString();
 
-		speakIfNotMuted(result);
+		tts.speak(result);
 	}
 
 	/**
@@ -806,7 +807,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		sniffer.stopCapture();
 
 		if (isAHotkeyResult)
-			speakIfNotMuted(msgTimerExpired);
+			tts.speak(msgTimerExpired);
 	}
 
 	private void fillTable(ArrayList<IpAppearancesCounter> ips)
@@ -843,7 +844,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			}
 
 			if (chkboxPing.isSelected())
-				ping = GUIController.getPingForIP(ip, numberFieldPingTimeout.getValue().intValue());
+				ping = IpSniffer.pingAsString(ip, numberFieldPingTimeout.getValue().intValue());
 
 			row = new IPInfoRowModel(id, amountOfAppearances, ip, owner, ping, country, region, city);
 			data.add(row);
@@ -874,30 +875,24 @@ public class AppearanceCounterUI implements CaptureStartListener
 				labelStatus.setText(statusCapturing + timerExpires);
 
 				if (isAHotkeyResult)
-					speakIfNotMuted("Capture started");
+					tts.speak("Capture started");
 			}
 		});
-	}
-	
-	private void speakIfNotMuted(String line)
-	{
-		if (!isMuted)
-			tts.speak(line);
 	}
 
 	private void setCaptureHotkeyAndPane(Properties props)
 	{
-		captureHotkeyModifiers = GUIController.getIntProperty(props, propsCaptureHotkeyModifiers);
-		captureHotkeyKeyCode = GUIController.getIntProperty(props, propsCaptureHotkeyKeycode);
-		chkboxUseCaptureHotkey.setSelected(GUIController.getBoolProperty(props, propsChkboxUseCaptureHotkey));
+		captureHotkeyModifiers = PropertiesByType.getIntProperty(props, propsCaptureHotkeyModifiers);
+		captureHotkeyKeyCode = PropertiesByType.getIntProperty(props, propsCaptureHotkeyKeycode);
+		chkboxUseCaptureHotkey.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseCaptureHotkey));
 
 		if (chkboxUseCaptureHotkey.isSelected())
 			hotkeyRegistry.addHotkey(captureHotkeyID, captureHotkeyModifiers, captureHotkeyKeyCode, labelCurrCaptureHotkey, captureHotkeyPressed);
 
-		chkboxUseTTS.setSelected(GUIController.getBoolProperty(props, propsChkboxUseTTS));
+		chkboxUseTTS.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseTTS));
 		numFieldRowsToRead.setText(props.getProperty(propsNumFieldRowsToRead));
 
-		chkboxFilterResults.setSelected(GUIController.getBoolProperty(props, propsChkboxFilterResults));
+		chkboxFilterResults.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxFilterResults));
 		textColumnContains.setText(props.getProperty(propsTextColumnContains));
 
 		String comboValue = props.getProperty(propsComboColumnsSelection);
@@ -905,16 +900,16 @@ public class AppearanceCounterUI implements CaptureStartListener
 			comboColumns.setValue(comboValue);
 
 		for (CheckBox box : chkboxListColumns)
-			box.setSelected(GUIController.getBoolProperty(props, propsTTSCheckBox + box.getText()));
+			box.setSelected(PropertiesByType.getBoolProperty(props, propsTTSCheckBox + box.getText()));
 	}
 
 	private void setCaptureOptionsPane(Properties props)
 	{
-		radioTimedCapture.setSelected(GUIController.getBoolProperty(props, propsRadioTimedCapture));
+		radioTimedCapture.setSelected(PropertiesByType.getBoolProperty(props, propsRadioTimedCapture));
 		numFieldCaptureTimeout.setText(props.getProperty(propsNumFieldCaptureTimeout));
-		radioManual.setSelected(GUIController.getBoolProperty(props, propsRadioManual));
-		chkboxGetLocation.setSelected(GUIController.getBoolProperty(props, propsChkboxGetLocation));
-		chkboxPing.setSelected(GUIController.getBoolProperty(props, propsChkboxPing));
+		radioManual.setSelected(PropertiesByType.getBoolProperty(props, propsRadioManual));
+		chkboxGetLocation.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxGetLocation));
+		chkboxPing.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxPing));
 		numberFieldPingTimeout.setText(props.getProperty(propsNumberFieldPingTimeout));
 	}
 
@@ -923,25 +918,25 @@ public class AppearanceCounterUI implements CaptureStartListener
 		boolean isChecked;
 		protocolBoxesChecked = 0;
 
-		isChecked = GUIController.getBoolProperty(props, propsChkboxUDP);
+		isChecked = PropertiesByType.getBoolProperty(props, propsChkboxUDP);
 		if (isChecked)
 			protocolBoxesChecked++;
 
 		chkboxUDP.setSelected(isChecked);
 
-		isChecked = GUIController.getBoolProperty(props, propsChkboxTCP);
+		isChecked = PropertiesByType.getBoolProperty(props, propsChkboxTCP);
 		if (isChecked)
 			protocolBoxesChecked++;
 
 		chkboxTCP.setSelected(isChecked);
 
-		isChecked = GUIController.getBoolProperty(props, propsChkboxICMP);
+		isChecked = PropertiesByType.getBoolProperty(props, propsChkboxICMP);
 		if (isChecked)
 			protocolBoxesChecked++;
 
 		chkboxICMP.setSelected(isChecked);
 
-		isChecked = GUIController.getBoolProperty(props, propsChkboxHTTP);
+		isChecked = PropertiesByType.getBoolProperty(props, propsChkboxHTTP);
 		if (isChecked)
 			protocolBoxesChecked++;
 
@@ -968,7 +963,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		if (!chkboxUseTTS.isSelected())
 		{
 			paneUseTTS.setDisable(true);
-			isMuted = true;
+			tts.setMuted(true);
 		}
 	}
 	

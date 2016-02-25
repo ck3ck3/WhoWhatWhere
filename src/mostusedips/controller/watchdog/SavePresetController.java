@@ -4,7 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Button;
 
-public class WatchdogSavePresetController
+public class SavePresetController
 {
 	@FXML
 	private TextField textFilename;

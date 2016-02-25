@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import org.apache.commons.collections.bidimap.TreeBidiMap;
 import org.apache.commons.io.IOUtils;
@@ -52,6 +53,8 @@ public class IpSniffer
 	private static int snaplen = 64 * 1024; // Capture all packets, no truncation
 	private static int flags = Pcap.MODE_PROMISCUOUS; // capture all packets
 	private static int timeout = 10 * 1000; // 10 seconds in milliseconds
+	
+	private static final Pattern ipv4Pattern = Pattern.compile("^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
 
 	private final static String Ipv4Prefix = "INET4:";
 	private final static String DLLName = "jnetpcap";
@@ -62,7 +65,8 @@ public class IpSniffer
 
 	public IpSniffer(String dllX86Location, String dllX64Location)
 	{
-		dllLoaded = loadJnetpcapDll(dllX86Location, dllX64Location);
+		if (!dllLoaded)
+			dllLoaded = loadJnetpcapDll(dllX86Location, dllX64Location);
 	}
 
 	public boolean isDllLoaded()
@@ -193,6 +197,11 @@ public class IpSniffer
 	{
 		return (String)protocolBidiMap.getKey(protocol);
 	}
+	
+	public static boolean isValidIPv4(String ip)
+	{
+		return ipv4Pattern.matcher(ip).matches();
+	}
 
 	public void startAppearanceCounterCapture(String deviceIp, ArrayList<Integer> protocolsToCapture, StringBuilder errbuf)
 	{
@@ -271,6 +280,44 @@ public class IpSniffer
 		{
 			stopCapture();
 			pcap.close();
+		}
+	}
+	
+	/**
+	 * 
+	 * @param ip - IP to ping
+	 * @param timeout - timeout in ms. -1 for default timeout
+	 * @return The string "X milliseconds" (where X is the ping result).
+	 * If the ping timed out, returns "Timeout". If an error occurred, returns "Error".
+	 */
+	public static String pingAsString(String ip, int timeout)
+	{
+		String command = "ping -n 1 " + (timeout > 0 ? "-w " + timeout + " " : "") + ip;
+		String errorString = "Error";
+		Process exec;
+		
+		try
+		{
+			exec = Runtime.getRuntime().exec(command);
+			List<String> readLines = IOUtils.readLines(exec.getInputStream());
+			String results = readLines.get(readLines.size() - 1);
+			results = results.substring(results.lastIndexOf(' '));
+			String ping;
+			
+			if (results.contains("loss"))
+				ping = "Timeout";
+			else
+				if (results.contains("ms"))
+					ping = results.replace("ms", " milliseconds");
+				else
+					ping = "Error";
+
+			return ping;
+		}
+		catch (IOException e)
+		{
+			logger.log(Level.SEVERE, "Unable able to generate ping (failed to load Ping (command) screen)", e);
+			return errorString;
 		}
 	}
 }
