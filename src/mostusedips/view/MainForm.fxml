@@ -159,6 +159,17 @@
                               </AnchorPane>
                            </content>
                         </TitledPane>
+                        <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="389.0" prefHeight="78.0" prefWidth="570.0" text="Trace (and Visual Trace)">
+                          <content>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <children>
+                                    <Label layoutX="14.0" layoutY="14.0" text="Enter an IP or hostname to trace:" />
+                                    <TextField fx:id="textTrace" layoutX="196.0" layoutY="10.0" prefHeight="25.0" prefWidth="295.0" />
+                                    <Button fx:id="btnTrace" layoutX="502.0" layoutY="10.0" mnemonicParsing="false" text="Trace" />
+                                 </children>
+                              </AnchorPane>
+                          </content>
+                        </TitledPane>
                      </children>
                   </AnchorPane>
             </content>

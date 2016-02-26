@@ -23,6 +23,8 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -57,6 +59,7 @@ public class GUIController implements Initializable
 	private final static String propsFileLocation = Main.getAppName() + ".properties";
 	private final static String defaultPropsResource = "/defaultLastRun.properties";
 	private final static String propsNICIndex = "Selected NIC index";
+	private final static String propsTraceAddress = "traceAddress";
 	private final static String voiceForTTS = "kevin16";
 
 	private final static Logger logger = Logger.getLogger(GUIController.class.getPackage().getName());
@@ -175,12 +178,15 @@ public class GUIController implements Initializable
 	private Button btnWatchdogPreview;
 	@FXML
 	private Label labelWatchdogEntryCount;
+	@FXML
+	private TextField textTrace;
+	@FXML
+	private Button btnTrace;
 
 	private NumberTextField numFieldCaptureTimeout;
 	private NumberTextField numFieldRowsToRead;
 	private NumberTextField numberFieldPingTimeout;
-	
-	
+
 	private ToggleGroup tglGrpNIC = new ToggleGroup();
 	private IPSniffer sniffer;
 	private ArrayList<DeviceIPAndDescription> listOfDevices;
@@ -191,7 +197,6 @@ public class GUIController implements Initializable
 	private AppearanceCounterUI appearanceCounterUI;
 	private PingToSpeechUI pingToSpeechUI;
 	private WatchdogUI watchdogUI;
-	
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
@@ -199,9 +204,22 @@ public class GUIController implements Initializable
 		sniffer = new IPSniffer();
 
 		createNICRadioButtons();
-
 		vboxNICs.setSpacing(10);
+		
+		appearanceCounterUI = new AppearanceCounterUI(this);
+		pingToSpeechUI = new PingToSpeechUI(this);
+		watchdogUI = new WatchdogUI(this);
 
+		initButtonHandlers();
+		initMenuBar();
+
+		loadLastRunConfig();
+
+		checkForUpdates(true); //only show a message if there is a new version
+	}
+
+	private void initButtonHandlers()
+	{
 		btnExit.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -210,16 +228,25 @@ public class GUIController implements Initializable
 				exitButtonPressed();
 			}
 		});
-		
-		initMenuBar();
-		
-		appearanceCounterUI = new AppearanceCounterUI(this);
-		pingToSpeechUI = new PingToSpeechUI(this);
-		watchdogUI = new WatchdogUI(this);
-		
-		loadLastRunConfig();
 
-		checkForUpdates(true); //only show a message if there is a new version
+		btnTrace.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				appearanceCounterUI.traceCommand(textTrace.getText());
+			}
+		});
+		
+		textTrace.setOnKeyPressed(new EventHandler<KeyEvent>()
+		{
+			@Override
+			public void handle(KeyEvent ke)
+			{
+				if (ke.getCode().equals(KeyCode.ENTER))
+					btnTrace.fire();
+			}
+		});
 	}
 
 	private void initMenuBar()
@@ -312,7 +339,7 @@ public class GUIController implements Initializable
 			shutdownApp();
 		}
 	}
-	
+
 	private void saveCurrentRunValuesToProperties()
 	{
 		Properties props = new Properties();
@@ -325,6 +352,7 @@ public class GUIController implements Initializable
 		Integer selectedNic = (selectedToggle != null ? (Integer) (selectedToggle.getUserData()) : 1);
 
 		props.put(propsNICIndex, selectedNic.toString());
+		props.put(propsTraceAddress, textTrace.getText());
 
 		try
 		{
@@ -348,7 +376,7 @@ public class GUIController implements Initializable
 		try
 		{
 			in = (lastRun.exists() ? new FileInputStream(lastRun) : this.getClass().getResourceAsStream(defaultPropsResource));
-			
+
 			props.load(in);
 			in.close();
 		}
@@ -365,6 +393,8 @@ public class GUIController implements Initializable
 			RadioButton rb = (RadioButton) node;
 			rb.setSelected(true);
 		}
+		
+		textTrace.setText(props.getProperty(propsTraceAddress));
 
 		appearanceCounterUI.loadLastRunConfig(props);
 		pingToSpeechUI.loadLastRunConfig(props);
@@ -419,9 +449,9 @@ public class GUIController implements Initializable
 			{
 				alert = new Alert(AlertType.ERROR);
 				alert.setHeaderText("Unable to check for updates");
-				alert.setHeaderText(e.getMessage());				
+				alert.setHeaderText(e.getMessage());
 			}
-			
+
 			logger.log(Level.SEVERE, "Failed to check for updates", e);
 		}
 		finally
@@ -455,7 +485,6 @@ public class GUIController implements Initializable
 
 		return alert;
 	}
-
 
 	public VBox getVboxNICs()
 	{
@@ -726,12 +755,12 @@ public class GUIController implements Initializable
 	{
 		return labelWatchdogEntryCount;
 	}
-	
+
 	public TabPane getTabPane()
 	{
 		return tabPane;
 	}
-	
+
 	public Tab getUtilsTab()
 	{
 		return tabUtils;
@@ -746,7 +775,7 @@ public class GUIController implements Initializable
 	{
 		return tglGrpNIC;
 	}
-	
+
 	public HotkeyRegistry getHotkeyRegistry()
 	{
 		return hotkeyRegistry;

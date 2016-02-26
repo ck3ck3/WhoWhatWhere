@@ -39,6 +39,7 @@ public abstract class SecondaryFXMLScreen
 
 	/**
 	 * Shows the screen on the current stage
+	 * @param existingStage - The stage on which to show the new screen.
 	 * 
 	 * @param btnClose
 	 *            - the button that closes this window. The button's onAction
@@ -49,10 +50,9 @@ public abstract class SecondaryFXMLScreen
 	 *            IllegalArgumentException, which will then leave the window
 	 *            open.
 	 */
-	public void showScreenOnCurrentStage(Button... buttonsToClose)
+	public void showScreenOnExistingStage(Stage existingStage, Button... buttonsToClose)
 	{
 		Scene scene = new Scene(getLoadedFXML());
-		Stage stage = getPostCloseStage();
 
 		for(Button btn : buttonsToClose)
 		{
@@ -79,8 +79,8 @@ public abstract class SecondaryFXMLScreen
 			});
 		}
 		
-		stage.setScene(scene);
-		stage.show();
+		existingStage.setScene(scene);
+		existingStage.show();
 	}
 
 	/**

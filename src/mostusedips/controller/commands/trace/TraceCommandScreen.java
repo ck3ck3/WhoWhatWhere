@@ -71,13 +71,11 @@ public class TraceCommandScreen extends CommandScreen
 
 		btnVisualTrace.setOnAction(new EventHandler<ActionEvent>()
 		{
-
 			@Override
 			public void handle(ActionEvent event)
 			{
 				openVisualTrace();
 			}
-
 		});
 
 		btnVisualTrace.setDisable(true);
@@ -93,7 +91,6 @@ public class TraceCommandScreen extends CommandScreen
 		MenuItem moreInfo = new MenuItem("See more GeoIP results for selected IP address in browser");
 		moreInfo.setOnAction(new EventHandler<ActionEvent>()
 		{
-
 			@Override
 			public void handle(ActionEvent event)
 			{
@@ -141,7 +138,7 @@ public class TraceCommandScreen extends CommandScreen
 	{
 		ArrayList<String> listOfIPs = getListOfIPs();
 		VisualTraceScreen visualTraceScreen;
-		Stage stage = getPostCloseStage();
+		Stage stage = (Stage)btnStart.getScene().getWindow();
 		
 		try
 		{
@@ -155,7 +152,7 @@ public class TraceCommandScreen extends CommandScreen
 
 		Button btnClose = visualTraceScreen.getVisualTraceController().getBtnClose();
 
-		visualTraceScreen.showScreenOnCurrentStage(btnClose);
+		visualTraceScreen.showScreenOnExistingStage(stage, btnClose);
 	}
 
 	private ArrayList<String> getListOfIPs()

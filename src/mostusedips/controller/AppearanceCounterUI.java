@@ -498,11 +498,11 @@ public class AppearanceCounterUI implements CaptureStartListener
 			return;
 		}
 
-		cmdScreen.showScreenOnCurrentStage(cmdScreen.getCloseButton());
+		cmdScreen.showScreenOnNewStage("Pinging " + ip, cmdScreen.getCloseButton());
 		cmdScreen.runCommand();
 	}
 
-	private void traceCommand(String ip)
+	public void traceCommand(String ip)
 	{
 		Stage stage = (Stage) tabPane.getScene().getWindow();
 		TraceCommandScreen cmdScreen;
@@ -517,7 +517,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			return;
 		}
 
-		cmdScreen.showScreenOnCurrentStage(cmdScreen.getCloseButton());
+		cmdScreen.showScreenOnNewStage("Tracing " + ip, cmdScreen.getCloseButton());
 	}
 
 	private void startButtonPressed()
