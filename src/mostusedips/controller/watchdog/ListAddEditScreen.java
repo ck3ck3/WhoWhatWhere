@@ -12,8 +12,8 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import mostusedips.model.ipsniffer.IPToMatch;
-import mostusedips.model.ipsniffer.IpSniffer;
+import mostusedips.model.ipsniffer.IPSniffer;
+import mostusedips.model.ipsniffer.firstsight.IPToMatch;
 import mostusedips.view.NumberTextField;
 import mostusedips.view.SecondaryFXMLScreen;
 
@@ -92,7 +92,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 			private boolean validateInput()
 			{
 				String ip = textIP.getText();
-				return !ip.isEmpty() && IpSniffer.isValidIPv4(ip) && numTextSrcPort.isValidText() && numTextDstPort.isValidText();
+				return !ip.isEmpty() && IPSniffer.isValidIPv4(ip) && numTextSrcPort.isValidText() && numTextDstPort.isValidText();
 			}
 		});
 	}

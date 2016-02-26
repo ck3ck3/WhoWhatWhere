@@ -40,8 +40,10 @@ public class HotkeyRegistry
 			public void handle(ActionEvent e)
 			{
 				hotkeyManager.setKeySelection(hotkeyID, true);
+				
 				if (nodeToDisableOnKeyConfig != null)
 					nodeToDisableOnKeyConfig.setDisable(true);
+				
 				alertChangeHotkey.show();
 			}
 		};
@@ -188,6 +190,4 @@ public class HotkeyRegistry
 	{
 		return hotkeyManager.getHotkeyModifiers(hotkeyID);
 	}
-
-
 }

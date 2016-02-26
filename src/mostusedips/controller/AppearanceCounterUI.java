@@ -21,8 +21,6 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -51,10 +49,10 @@ import mostusedips.model.PropertiesByType;
 import mostusedips.model.TextToSpeech;
 import mostusedips.model.geoipresolver.GeoIPInfo;
 import mostusedips.model.geoipresolver.GeoIPResolver;
-import mostusedips.model.ipsniffer.AppearanceCounterResults;
 import mostusedips.model.ipsniffer.CaptureStartListener;
-import mostusedips.model.ipsniffer.IpAppearancesCounter;
-import mostusedips.model.ipsniffer.IpSniffer;
+import mostusedips.model.ipsniffer.IPSniffer;
+import mostusedips.model.ipsniffer.appearancecounter.AppearanceCounterResults;
+import mostusedips.model.ipsniffer.appearancecounter.IpAppearancesCounter;
 import mostusedips.view.NumberTextField;
 
 public class AppearanceCounterUI implements CaptureStartListener
@@ -145,7 +143,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private boolean isAHotkeyResult = false;
 	private int protocolBoxesChecked = 0;
 	private HashMap<RadioButton, String> buttonToIpMap;
-	private IpSniffer sniffer;
+	private IPSniffer sniffer = new IPSniffer();
 	private int captureHotkeyKeyCode;
 	private int captureHotkeyModifiers;
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
@@ -237,7 +235,6 @@ public class AppearanceCounterUI implements CaptureStartListener
 		tabPane = controller.getTabPane();
 		
 		buttonToIpMap = controller.getButtonToIpMap();
-		sniffer = controller.getSniffer();
 		hotkeyRegistry = controller.getHotkeyRegistry();
 	}
 	
@@ -529,12 +526,6 @@ public class AppearanceCounterUI implements CaptureStartListener
 		String deviceIP = buttonToIpMap.get(controller.getTglGrpNIC().getSelectedToggle());
 		final CaptureStartListener thisObj = this;
 
-		if (sniffer.isCaptureInProgress())
-		{
-			new Alert(AlertType.ERROR, "There's already a capture in progress. Only one capture at a time is allowed.").showAndWait();
-			return;
-		}
-
 		changeGuiTemplate(true);
 
 		Task<Void> workerThreadTask = new Task<Void>()
@@ -570,16 +561,16 @@ public class AppearanceCounterUI implements CaptureStartListener
 				ArrayList<Integer> protocols = new ArrayList<Integer>();
 
 				if (chkboxUDP.isSelected())
-					protocols.add(IpSniffer.UDP_PROTOCOL);
+					protocols.add(IPSniffer.UDP_PROTOCOL);
 
 				if (chkboxTCP.isSelected())
-					protocols.add(IpSniffer.TCP_PROTOCOL);
+					protocols.add(IPSniffer.TCP_PROTOCOL);
 
 				if (chkboxICMP.isSelected())
-					protocols.add(IpSniffer.ICMP_PROTOCOL);
+					protocols.add(IPSniffer.ICMP_PROTOCOL);
 
 				if (chkboxHTTP.isSelected())
-					protocols.add(IpSniffer.HTTP_PROTOCOL);
+					protocols.add(IPSniffer.HTTP_PROTOCOL);
 
 				return protocols;
 			}
@@ -844,7 +835,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			}
 
 			if (chkboxPing.isSelected())
-				ping = IpSniffer.pingAsString(ip, numberFieldPingTimeout.getValue().intValue());
+				ping = IPSniffer.pingAsString(ip, numberFieldPingTimeout.getValue().intValue());
 
 			row = new IPInfoRowModel(id, amountOfAppearances, ip, owner, ping, country, region, city);
 			data.add(row);

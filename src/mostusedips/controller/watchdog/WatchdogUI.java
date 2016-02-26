@@ -27,9 +27,9 @@ import mostusedips.controller.GUIController;
 import mostusedips.controller.HotkeyRegistry;
 import mostusedips.model.PropertiesByType;
 import mostusedips.model.TextToSpeech;
-import mostusedips.model.ipsniffer.FirstSightListener;
-import mostusedips.model.ipsniffer.IPToMatch;
-import mostusedips.model.ipsniffer.IpSniffer;
+import mostusedips.model.ipsniffer.IPSniffer;
+import mostusedips.model.ipsniffer.firstsight.FirstSightListener;
+import mostusedips.model.ipsniffer.firstsight.IPToMatch;
 
 public class WatchdogUI implements FirstSightListener
 {
@@ -63,7 +63,7 @@ public class WatchdogUI implements FirstSightListener
 	private int hotkeyModifiers;
 	private ObservableList<IPToMatch> entryList = FXCollections.observableArrayList();
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
-	private IpSniffer sniffer;
+	private IPSniffer sniffer = new IPSniffer();
 	private HotkeyRegistry hotkeyRegistry;
 
 	private Runnable hotkeyPressed = new Runnable()
@@ -118,8 +118,7 @@ public class WatchdogUI implements FirstSightListener
 	private void initUIElementsFromController()
 	{
 		hotkeyRegistry = controller.getHotkeyRegistry();
-		sniffer = controller.getIpSniffer();
-
+		
 		chkboxHotkey = controller.getChkboxWatchdogHotkey();
 		paneHotkeyConfig = controller.getPaneWatchdogHotkeyConfig();
 		btnConfigureHotkey = controller.getBtnWatchdogConfigureHotkey();
@@ -178,12 +177,6 @@ public class WatchdogUI implements FirstSightListener
 			@Override
 			public void handle(ActionEvent event)
 			{
-				if (sniffer.isCaptureInProgress())
-				{
-					new Alert(AlertType.ERROR, "There's already a capture in progress. Only one capture at a time is allowed.").showAndWait();
-					return;
-				}
-
 				if (entryList.isEmpty())
 				{
 					new Alert(AlertType.ERROR, "The list must contain at least one entry").showAndWait();

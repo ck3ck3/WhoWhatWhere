@@ -22,7 +22,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import mostusedips.model.ipsniffer.IPToMatch;
+import mostusedips.model.ipsniffer.firstsight.IPToMatch;
 import mostusedips.view.SecondaryFXMLScreen;
 
 public class ManageListScreen extends SecondaryFXMLScreen

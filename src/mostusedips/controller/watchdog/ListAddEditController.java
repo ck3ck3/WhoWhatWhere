@@ -14,7 +14,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
-import mostusedips.model.ipsniffer.IPToMatch;
+import mostusedips.model.ipsniffer.firstsight.IPToMatch;
 import mostusedips.view.NumberTextField;
 
 public class ListAddEditController implements Initializable

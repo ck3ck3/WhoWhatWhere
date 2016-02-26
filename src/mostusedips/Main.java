@@ -43,8 +43,8 @@ public class Main extends Application
 
 	private final static String iconResource16 = "/ip16.jpg";
 	private final static String iconResource32 = "/ip32.jpg";
-	public final static String DLLx86Location = "/native/windows/x86/jnetpcap.dll";
-	public final static String DLLx64Location = "/native/windows/x86_64/jnetpcap.dll";
+	public final static String jnetpcapDLLx86Location = "/native/windows/x86/jnetpcap.dll";
+	public final static String jnetpcapDLLx64Location = "/native/windows/x86_64/jnetpcap.dll";
 
 	private final static String appTitle = "Most Used IPs";
 	private final static String mainFormLocation = "/mostusedips/view/MainForm.fxml";

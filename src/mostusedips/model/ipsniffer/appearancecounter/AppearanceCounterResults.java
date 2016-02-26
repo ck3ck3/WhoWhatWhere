@@ -1,4 +1,4 @@
-package mostusedips.model.ipsniffer;
+package mostusedips.model.ipsniffer.appearancecounter;
 
 import java.util.ArrayList;
 

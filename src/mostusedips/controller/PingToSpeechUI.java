@@ -16,7 +16,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import mostusedips.model.PropertiesByType;
 import mostusedips.model.TextToSpeech;
-import mostusedips.model.ipsniffer.IpSniffer;
+import mostusedips.model.ipsniffer.IPSniffer;
 
 public class PingToSpeechUI
 {
@@ -56,7 +56,7 @@ public class PingToSpeechUI
 			if (!items.contains(address))
 				items.add(address);
 
-			String ping = IpSniffer.pingAsString(address, -1); //default timeout
+			String ping = IPSniffer.pingAsString(address, -1); //default timeout
 
 			if (ping.contains("milliseconds"))
 				tts.speak(ping);

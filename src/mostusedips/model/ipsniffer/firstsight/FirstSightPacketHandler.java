@@ -1,4 +1,4 @@
-package mostusedips.model.ipsniffer;
+package mostusedips.model.ipsniffer.firstsight;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -10,14 +10,16 @@ import org.jnetpcap.protocol.network.Ip4;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
 
+import mostusedips.model.ipsniffer.IPSniffer;
+
 public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 {
 	private FirstSightListener listener;
-	private IpSniffer sniffer;
+	private IPSniffer sniffer;
 	private HashMap<Integer, IPToMatch> ipMap;
 	//	private boolean found = false;
 
-	public FirstSightPacketHandler(ArrayList<IPToMatch> ipList, FirstSightListener listener, IpSniffer sniffer)
+	public FirstSightPacketHandler(ArrayList<IPToMatch> ipList, FirstSightListener listener, IPSniffer sniffer)
 	{
 		this.listener = listener;
 		this.sniffer = sniffer;
@@ -32,7 +34,7 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 				if (ip == null)
 					throw new IllegalArgumentException("IP address must be set");
 				
-				ipMap.put(IpSniffer.stringToIntIp(ip), ipToMatch);
+				ipMap.put(IPSniffer.stringToIntIp(ip), ipToMatch);
 			}
 		}
 		catch (UnknownHostException e) 
@@ -46,7 +48,7 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 	@Override
 	public void nextPacket(PcapPacket packet, Void nothing)
 	{
-		if (/* !found && */ packet.hasHeader(IpSniffer.IPv4_PROTOCOL))
+		if (/* !found && */ packet.hasHeader(IPSniffer.IPv4_PROTOCOL))
 		{
 			IPToMatch ipInfo = getMatchingIP(packet);
 
@@ -84,7 +86,7 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 				int intSrcPort = Integer.valueOf(srcPort);
 				int intdstPort = Integer.valueOf(dstPort);
 				
-				if (packet.hasHeader(IpSniffer.TCP_PROTOCOL))
+				if (packet.hasHeader(IPSniffer.TCP_PROTOCOL))
 				{
 					Tcp tcp = new Tcp();
 					tcp = packet.getHeader(tcp);
@@ -96,7 +98,7 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 						return null;
 				}
 				else
-					if (packet.hasHeader(IpSniffer.UDP_PROTOCOL))
+					if (packet.hasHeader(IPSniffer.UDP_PROTOCOL))
 					{
 						Udp udp = new Udp();
 						udp = packet.getHeader(udp);

@@ -1,9 +1,10 @@
-package mostusedips.model.ipsniffer;
+package mostusedips.model.ipsniffer.firstsight;
 
 import java.io.Serializable;
 import java.util.HashMap;
 
 import javafx.beans.property.SimpleStringProperty;
+import mostusedips.model.ipsniffer.IPSniffer;
 
 public class IPToMatch implements Serializable
 {
@@ -25,7 +26,7 @@ public class IPToMatch implements Serializable
 	
 	public IPToMatch(String ip, Integer protocol, String srcPort, String dstPort)
 	{
-		this(ip, (protocol != null ? IpSniffer.intProtocolToString(protocol) : protocol_ANY), srcPort, dstPort);		
+		this(ip, (protocol != null ? IPSniffer.intProtocolToString(protocol) : protocol_ANY), srcPort, dstPort);		
 	}
 	
 	public IPToMatch(String ip, String protocol, String srcPort, String dstPort)
@@ -81,7 +82,7 @@ public class IPToMatch implements Serializable
 	
 	public Integer protocolAsInt()
 	{
-		return (protocol == null || protocol.getValue().isEmpty() || protocol.getValue().equals(protocol_ANY) ? null : IpSniffer.stringProtocolToInt(protocol.getValue()));
+		return (protocol == null || protocol.getValue().isEmpty() || protocol.getValue().equals(protocol_ANY) ? null : IPSniffer.stringProtocolToInt(protocol.getValue()));
 	}
 
 	public SimpleStringProperty srcPortProperty()

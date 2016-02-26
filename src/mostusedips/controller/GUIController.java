@@ -49,7 +49,7 @@ import mostusedips.controller.watchdog.WatchdogUI;
 import mostusedips.model.PropertiesByType;
 import mostusedips.model.TextToSpeech;
 import mostusedips.model.ipsniffer.DeviceIPAndDescription;
-import mostusedips.model.ipsniffer.IpSniffer;
+import mostusedips.model.ipsniffer.IPSniffer;
 import mostusedips.view.NumberTextField;
 
 public class GUIController implements Initializable
@@ -182,7 +182,7 @@ public class GUIController implements Initializable
 	
 	
 	private ToggleGroup tglGrpNIC = new ToggleGroup();
-	private IpSniffer sniffer;
+	private IPSniffer sniffer;
 	private ArrayList<DeviceIPAndDescription> listOfDevices;
 	private HashMap<RadioButton, String> buttonToIpMap = new HashMap<RadioButton, String>();
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
@@ -196,12 +196,7 @@ public class GUIController implements Initializable
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
-		sniffer = new IpSniffer(Main.DLLx86Location, Main.DLLx64Location);
-		if (!sniffer.isDllLoaded())
-		{
-			System.err.println("Unable to load jnetpcap native dll. See log file for details. Unable to continue, aborting.");
-			shutdownApp();
-		}
+		sniffer = new IPSniffer();
 
 		createNICRadioButtons();
 
@@ -271,16 +266,14 @@ public class GUIController implements Initializable
 
 	private void createNICRadioButtons()
 	{
-		StringBuilder errbuf = new StringBuilder();
-
-		listOfDevices = sniffer.getListOfDevices(errbuf);
+		listOfDevices = sniffer.getListOfDevices();
 
 		if (listOfDevices == null)
 		{
 			Label label = new Label("Unable to find any network interfaces");
 			vboxNICs.getChildren().add(label);
 			btnStart.setDisable(true);
-			logger.log(Level.SEVERE, "Unable to find any network interfaces. More info: " + errbuf);
+			logger.log(Level.SEVERE, "Unable to find any network interfaces");
 			return;
 		}
 
@@ -754,18 +747,8 @@ public class GUIController implements Initializable
 		return tglGrpNIC;
 	}
 	
-	public IpSniffer getSniffer()
-	{
-		return sniffer;
-	}
-	
 	public HotkeyRegistry getHotkeyRegistry()
 	{
 		return hotkeyRegistry;
-	}
-	
-	public IpSniffer getIpSniffer()
-	{
-		return sniffer;
 	}
 }

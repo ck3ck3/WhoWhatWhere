@@ -27,19 +27,22 @@ import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
 
 import mostusedips.Main;
+import mostusedips.model.ipsniffer.appearancecounter.AppearanceCounterPacketHandler;
+import mostusedips.model.ipsniffer.appearancecounter.AppearanceCounterResults;
+import mostusedips.model.ipsniffer.firstsight.FirstSightListener;
+import mostusedips.model.ipsniffer.firstsight.FirstSightPacketHandler;
+import mostusedips.model.ipsniffer.firstsight.IPToMatch;
 
-public class IpSniffer
+public class IPSniffer
 {
-	private Pcap pcap;
-	private HashMap<String, PcapIf> ipToDevice = new HashMap<String, PcapIf>();
-	private boolean captureInProgress = false;
-
+	private static final Logger logger = Logger.getLogger(IPSniffer.class.getPackage().getName());
+	
 	public static final int ICMP_PROTOCOL = Icmp.ID;
 	public static final int UDP_PROTOCOL = Udp.ID;
 	public static final int TCP_PROTOCOL = Tcp.ID;
 	public static final int HTTP_PROTOCOL = Http.ID;
 	public static final int IPv4_PROTOCOL = Ip4.ID;
-
+	
 	private static TreeBidiMap protocolBidiMap;
 	static
 	{
@@ -48,6 +51,9 @@ public class IpSniffer
 		protocolBidiMap.put("UDP", UDP_PROTOCOL);
 		protocolBidiMap.put("TCP", TCP_PROTOCOL);
 		protocolBidiMap.put("HTTP", HTTP_PROTOCOL);
+			
+		if (!loadJnetpcapDll(Main.jnetpcapDLLx86Location, Main.jnetpcapDLLx64Location)) //modify locations if needed
+			logger.log(Level.SEVERE, "Unable to load jnetpcap.dll. See log for more details.");
 	}
 
 	private static int snaplen = 64 * 1024; // Capture all packets, no truncation
@@ -59,14 +65,15 @@ public class IpSniffer
 	private final static String Ipv4Prefix = "INET4:";
 	private final static String DLLName = "jnetpcap";
 
-	private static final Logger logger = Logger.getLogger(IpSniffer.class.getPackage().getName());
 
+	private Pcap pcap;
+	private HashMap<String, PcapIf> ipToDevice = new HashMap<String, PcapIf>();
 	private boolean dllLoaded = false;
+	private ArrayList<DeviceIPAndDescription> ipAndDescList = new ArrayList<DeviceIPAndDescription>();
 
-	public IpSniffer(String dllX86Location, String dllX64Location)
+	public IPSniffer()
 	{
-		if (!dllLoaded)
-			dllLoaded = loadJnetpcapDll(dllX86Location, dllX64Location);
+		generateListOfDevices();
 	}
 
 	public boolean isDllLoaded()
@@ -77,7 +84,7 @@ public class IpSniffer
 	/**
 	 * @return true if successfully loaded, false otherwise
 	 */
-	private boolean loadJnetpcapDll(String dllX86Location, String dllX64Location)
+	private static boolean loadJnetpcapDll(String dllX86Location, String dllX64Location)
 	{
 		try
 		{
@@ -109,7 +116,7 @@ public class IpSniffer
 	 *            - if true, caught UnsatisfiedLinkError will be logged.
 	 * @return true if successfully loaded, false otherwise
 	 */
-	private boolean tryLoadingDll(String copyDllFrom, String libName, boolean logULE) throws IOException
+	private static boolean tryLoadingDll(String copyDllFrom, String libName, boolean logULE) throws IOException
 	{
 		try
 		{
@@ -136,18 +143,23 @@ public class IpSniffer
 
 		return true;
 	}
+	
+	public ArrayList<DeviceIPAndDescription> getListOfDevices()
+	{
+		return ipAndDescList;
+	}
 
-	public ArrayList<DeviceIPAndDescription> getListOfDevices(StringBuilder errbuf)
+	private void generateListOfDevices()
 	{
 		List<PcapIf> alldevs = new ArrayList<PcapIf>();
-		ArrayList<DeviceIPAndDescription> ipAndDescList = new ArrayList<DeviceIPAndDescription>();
+		StringBuilder errbuf = new StringBuilder();
 
 		int r = Pcap.findAllDevs(alldevs, errbuf);
 
 		if (r == Pcap.ERROR || alldevs.isEmpty())
 		{
 			logger.log(Level.SEVERE, "Can't read list of devices, error is " + errbuf.toString());
-			return null;
+			return;
 		}
 
 		for (PcapIf device : alldevs)
@@ -171,8 +183,6 @@ public class IpSniffer
 			ipAndDescList.add(new DeviceIPAndDescription(IP, description));
 			ipToDevice.put(IP, device);
 		}
-
-		return ipAndDescList;
 	}
 
 	public static String intToIpString(int intIp) throws UnknownHostException
@@ -239,11 +249,6 @@ public class IpSniffer
 
 	private void startCapture(String deviceIp, PcapPacketHandler<Void> packetHandler, StringBuilder errbuf)
 	{
-		if (captureInProgress)
-			throw new IllegalStateException("A capture is already in progress.");
-		
-		captureInProgress = true;
-		
 		PcapIf device = ipToDevice.get(deviceIp);
 
 		if (device == null)
@@ -266,14 +271,8 @@ public class IpSniffer
 	public void stopCapture()
 	{
 		pcap.breakloop();
-		captureInProgress = false;
 	}
 	
-	public boolean isCaptureInProgress()
-	{
-		return captureInProgress;
-	}
-
 	public void cleanup()
 	{
 		if (pcap != null)

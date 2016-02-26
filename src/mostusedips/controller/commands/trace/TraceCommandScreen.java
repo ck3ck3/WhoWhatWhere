@@ -24,7 +24,7 @@ import javafx.stage.Stage;
 import mostusedips.Main;
 import mostusedips.controller.commands.CommandScreen;
 import mostusedips.model.geoipresolver.GeoIPResolver;
-import mostusedips.model.ipsniffer.IpSniffer;
+import mostusedips.model.ipsniffer.IPSniffer;
 import mostusedips.view.NumberTextField;
 
 public class TraceCommandScreen extends CommandScreen
@@ -99,7 +99,7 @@ public class TraceCommandScreen extends CommandScreen
 			{
 				String selectedText = textArea.getSelectedText();
 
-				if (IpSniffer.isValidIPv4(selectedText))
+				if (IPSniffer.isValidIPv4(selectedText))
 					Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + selectedText);
 				else
 					new Alert(AlertType.ERROR, "The selected text \"" + selectedText + "\" is not an IP address").showAndWait();

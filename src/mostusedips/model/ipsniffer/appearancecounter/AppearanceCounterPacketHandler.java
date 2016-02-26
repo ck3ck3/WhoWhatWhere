@@ -1,4 +1,4 @@
-package mostusedips.model.ipsniffer;
+package mostusedips.model.ipsniffer.appearancecounter;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -8,6 +8,9 @@ import java.util.HashMap;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
 import org.jnetpcap.protocol.network.Ip4;
+
+import mostusedips.model.ipsniffer.CaptureStartListener;
+import mostusedips.model.ipsniffer.IPSniffer;
 
 public class AppearanceCounterPacketHandler implements PcapPacketHandler<Void>
 {
@@ -39,7 +42,7 @@ public class AppearanceCounterPacketHandler implements PcapPacketHandler<Void>
 		{
 			try
 			{
-				strKey = IpSniffer.intToIpString(key.intValue());
+				strKey = IPSniffer.intToIpString(key.intValue());
 			}
 			catch (UnknownHostException uhe)
 			{

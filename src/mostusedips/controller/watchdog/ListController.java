@@ -14,8 +14,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import mostusedips.model.ipsniffer.IPToMatch;
 import javafx.scene.layout.AnchorPane;
+import mostusedips.model.ipsniffer.firstsight.IPToMatch;
 
 public class ListController implements Initializable
 {

@@ -1,4 +1,4 @@
-package mostusedips.model.ipsniffer;
+package mostusedips.model.ipsniffer.firstsight;
 
 public interface FirstSightListener
 {
