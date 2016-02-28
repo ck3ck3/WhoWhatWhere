@@ -1,0 +1,28 @@
+.expando {
+  display: inline-block;
+  background-position: 0px 0px;
+  background-image: url("icons.png");
+  width: 23px;
+  height: 23px;
+  margin-left: 4px;
+  margin-right: 6px;
+  margin-bottom: 2px;
+  vertical-align: top;
+  text-decoration: none;
+  cursor: pointer;
+}
+.expando.expanded {
+  background-position: 0px -48px;
+}
+.expando:hover {
+  background-position: 0px -24px;
+}
+.expando.expanded:hover {
+  background-position: 0px -72px;
+}
+
+.expandoContent {
+  padding-top: 2px;
+  padding-bottom: 2px;
+  display: none;
+}
