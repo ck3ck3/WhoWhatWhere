@@ -5,7 +5,6 @@ import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
 import java.awt.TrayIcon.MessageType;
-import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -38,7 +37,7 @@ public class Main extends Application
 	private final static String urlForLatestRelease = "https://api.github.com/repos/ck3ck3/MostUsedIPs/releases/latest";
 	private static final int connectionTimeout = 5000;
 	private static final int readTimeout = 5000;
-	
+
 	private static final String website = "http://ck3ck3.github.io/MostUsedIPs/";
 
 	private final static String iconResource16 = "/ip16.jpg";
@@ -90,11 +89,13 @@ public class Main extends Application
 		TrayIcon trayIcon;
 		SystemTray tray;
 
-		if (SystemTray.isSupported())
+		if (!SystemTray.isSupported())
+			return false;
+		else
 		{
 			primaryStage.getIcons().add(new Image(Main.class.getResourceAsStream(iconResource16)));
 			primaryStage.getIcons().add(new Image(Main.class.getResourceAsStream(iconResource32)));
-			
+
 			tray = SystemTray.getSystemTray();
 			java.awt.Image image = Toolkit.getDefaultToolkit().getImage(Main.class.getResource(iconResource16));
 
@@ -102,25 +103,11 @@ public class Main extends Application
 
 			trayIcon = new TrayIcon(image, appTitle);
 
-			ActionListener listenerTray = new ActionListener()
+			trayIcon.addActionListener(ae -> Platform.runLater(() ->
 			{
-				@Override
-				public void actionPerformed(java.awt.event.ActionEvent arg0)
-				{
-					Platform.runLater(new Runnable()
-					{
-
-						@Override
-						public void run()
-						{
-							primaryStage.show();
-							tray.remove(trayIcon);
-						}
-					});
-				}
-			};
-
-			trayIcon.addActionListener(listenerTray);
+				primaryStage.show();
+				tray.remove(trayIcon);
+			}));
 
 			primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>()
 			{
@@ -150,8 +137,6 @@ public class Main extends Application
 
 			return true;
 		}
-		else
-			return false;
 	}
 
 	public static boolean isUpdateAvailable() throws IOException
@@ -174,7 +159,7 @@ public class Main extends Application
 
 		return !version.equals(getReleaseVersion());
 	}
-	
+
 	public static void openInBrowser(String link)
 	{
 		if (Desktop.isDesktopSupported())
@@ -197,17 +182,17 @@ public class Main extends Application
 	{
 		launch(args);
 	}
-	
+
 	public static String getAppName()
 	{
 		return appTitle;
 	}
-	
+
 	public static String getReleaseVersion()
 	{
 		return releaseVersion;
 	}
-	
+
 	public static String getWebsite()
 	{
 		return website;

@@ -124,36 +124,28 @@ public class HotkeyRegistry
 					}
 					catch (IllegalArgumentException iae) //failed to change hotkey
 					{
-						Platform.runLater(new Runnable()
+						Platform.runLater(() ->
 						{
-							@Override
-							public void run()
-							{
-								Alert error = new Alert(AlertType.ERROR);
-								error.setTitle("Unable to change hotkey");
-								error.setHeaderText("Failed to set a new hotkey");
-								error.setContentText(iae.getMessage());
+							Alert error = new Alert(AlertType.ERROR);
+							error.setTitle("Unable to change hotkey");
+							error.setHeaderText("Failed to set a new hotkey");
+							error.setContentText(iae.getMessage());
 
-								closeHotkeyChangeAlert();
-								error.showAndWait();
-								if (nodeToDisableOnKeyConfig != null)
-									nodeToDisableOnKeyConfig.setDisable(false);
-							}
+							closeHotkeyChangeAlert();
+							error.showAndWait();
+							if (nodeToDisableOnKeyConfig != null)
+								nodeToDisableOnKeyConfig.setDisable(false);
 						});
 
 						return;
 					}
 
-					Platform.runLater(new Runnable()
+					Platform.runLater(() ->
 					{
-						@Override
-						public void run()
-						{
-							hotkeyLabel.setText("Current hotkey: " + HotkeyManager.hotkeyToString(modifiers, keyCode));
-							closeHotkeyChangeAlert();
-							if (nodeToDisableOnKeyConfig != null)
-								nodeToDisableOnKeyConfig.setDisable(false);
-						}
+						hotkeyLabel.setText("Current hotkey: " + HotkeyManager.hotkeyToString(modifiers, keyCode));
+						closeHotkeyChangeAlert();
+						if (nodeToDisableOnKeyConfig != null)
+							nodeToDisableOnKeyConfig.setDisable(false);
 					});
 				}
 			}

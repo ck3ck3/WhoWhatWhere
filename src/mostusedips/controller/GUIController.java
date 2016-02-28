@@ -24,7 +24,6 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -205,7 +204,7 @@ public class GUIController implements Initializable
 
 		createNICRadioButtons();
 		vboxNICs.setSpacing(10);
-		
+
 		appearanceCounterUI = new AppearanceCounterUI(this);
 		pingToSpeechUI = new PingToSpeechUI(this);
 		watchdogUI = new WatchdogUI(this);
@@ -220,32 +219,14 @@ public class GUIController implements Initializable
 
 	private void initButtonHandlers()
 	{
-		btnExit.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-				exitButtonPressed();
-			}
-		});
+		btnExit.setOnAction(e -> exitButtonPressed());
 
-		btnTrace.setOnAction(new EventHandler<ActionEvent>()
+		btnTrace.setOnAction(event -> appearanceCounterUI.traceCommand(textTrace.getText()));
+
+		textTrace.setOnKeyPressed(ke ->
 		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				appearanceCounterUI.traceCommand(textTrace.getText());
-			}
-		});
-		
-		textTrace.setOnKeyPressed(new EventHandler<KeyEvent>()
-		{
-			@Override
-			public void handle(KeyEvent ke)
-			{
-				if (ke.getCode().equals(KeyCode.ENTER))
-					btnTrace.fire();
-			}
+			if (ke.getCode().equals(KeyCode.ENTER))
+				btnTrace.fire();
 		});
 	}
 
@@ -393,7 +374,7 @@ public class GUIController implements Initializable
 			RadioButton rb = (RadioButton) node;
 			rb.setSelected(true);
 		}
-		
+
 		textTrace.setText(props.getProperty(propsTraceAddress));
 
 		appearanceCounterUI.loadLastRunConfig(props);
