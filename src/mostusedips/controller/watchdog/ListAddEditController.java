@@ -4,7 +4,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -12,7 +11,6 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import mostusedips.model.ipsniffer.firstsight.IPToMatch;
 import mostusedips.view.NumberTextField;
@@ -63,14 +61,10 @@ public class ListAddEditController implements Initializable
 
 		paneRoot.getChildren().remove(btnDone); //to get the tab-order right, we remove the button and then add it after the NumTextFields
 		paneRoot.getChildren().addAll(numTextSrcPort, numTextDstPort, btnDone);
-		paneRoot.setOnKeyPressed(new EventHandler<KeyEvent>()
+		paneRoot.setOnKeyPressed(ke ->
 		{
-			@Override
-			public void handle(KeyEvent ke)
-			{
-				if (ke.getCode().equals(KeyCode.ENTER))
-					btnDone.fire();
-			}
+			if (ke.getCode().equals(KeyCode.ENTER))
+				btnDone.fire();
 		});
 
 		choiceProtocol.getItems().addAll(IPToMatch.protocol_ANY, "ICMP", "UDP", "TCP", "HTTP");

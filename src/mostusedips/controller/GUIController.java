@@ -6,24 +6,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.input.KeyCode;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -38,6 +36,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -188,8 +187,8 @@ public class GUIController implements Initializable
 
 	private ToggleGroup tglGrpNIC = new ToggleGroup();
 	private IPSniffer sniffer;
-	private ArrayList<DeviceIPAndDescription> listOfDevices;
-	private HashMap<RadioButton, String> buttonToIpMap = new HashMap<RadioButton, String>();
+	private List<DeviceIPAndDescription> listOfDevices;
+	private Map<RadioButton, String> buttonToIpMap = new HashMap<>();
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 	private HotkeyRegistry hotkeyRegistry = new HotkeyRegistry(tabPane);
 
@@ -220,7 +219,6 @@ public class GUIController implements Initializable
 	private void initButtonHandlers()
 	{
 		btnExit.setOnAction(e -> exitButtonPressed());
-
 		btnTrace.setOnAction(event -> appearanceCounterUI.traceCommand(textTrace.getText()));
 
 		textTrace.setOnKeyPressed(ke ->
@@ -232,44 +230,15 @@ public class GUIController implements Initializable
 
 	private void initMenuBar()
 	{
-		menuItemMinimize.setOnAction(new EventHandler<ActionEvent>()
+		menuItemMinimize.setOnAction(event ->
 		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				Stage stage = (Stage) tabPane.getScene().getWindow();
-				Event.fireEvent(stage, new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
-			}
+			Stage stage = (Stage) tabPane.getScene().getWindow();
+			Event.fireEvent(stage, new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
 		});
 
-		menuItemExit.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				exitButtonPressed();
-			}
-		});
-
-		menuItemUpdate.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				checkForUpdates(false);
-			}
-
-		});
-
-		menuItemAbout.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				showAboutWindow();
-			}
-		});
-
+		menuItemExit.setOnAction(event -> exitButtonPressed());
+		menuItemUpdate.setOnAction(event -> checkForUpdates(false));
+		menuItemAbout.setOnAction(event -> showAboutWindow());
 	}
 
 	private void createNICRadioButtons()
@@ -451,15 +420,13 @@ public class GUIController implements Initializable
 		FlowPane fp = new FlowPane();
 		Label lbl = new Label(text);
 		Hyperlink link = new Hyperlink(url);
-		link.setOnAction(new EventHandler<ActionEvent>()
+		
+		link.setOnAction(event ->
 		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				Main.openInBrowser(link.getText());
-				alert.close();
-			}
+			Main.openInBrowser(link.getText());
+			alert.close();
 		});
+		
 		fp.getChildren().addAll(lbl, link);
 
 		alert.getDialogPane().contentProperty().set(fp);
@@ -747,7 +714,7 @@ public class GUIController implements Initializable
 		return tabUtils;
 	}
 
-	public HashMap<RadioButton, String> getButtonToIpMap()
+	public Map<RadioButton, String> getButtonToIpMap()
 	{
 		return buttonToIpMap;
 	}

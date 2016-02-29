@@ -96,8 +96,6 @@ public class PingToSpeechUI
 		btnPTSConfigureHotkey.setOnAction(hotkeyRegistry.generateEventHandlerForHotkeyConfigButton(ptsHotkeyID));
 	}
 
-
-
 	public void saveCurrentRunValuesToProperties(Properties props)
 	{
 		props.put(propsChkboxPTSHotkey, ((Boolean) chkboxPTSHotkey.isSelected()).toString());
@@ -109,7 +107,6 @@ public class PingToSpeechUI
 		for (String item : comboPTSipToPing.getItems())
 			ptsHistoryBuilder.append(item + "\n");
 
-		
 		try
 		{
 			FileUtils.writeStringToFile(new File(ptsHistoryFile), ptsHistoryBuilder.toString(), "UTF-8");
@@ -148,5 +145,4 @@ public class PingToSpeechUI
 		else
 			panePTSHotkey.setDisable(true);
 	}
-
 }

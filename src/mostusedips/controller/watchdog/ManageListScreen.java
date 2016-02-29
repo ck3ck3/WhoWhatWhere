@@ -19,9 +19,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 import mostusedips.model.ipsniffer.firstsight.IPToMatch;
 import mostusedips.view.SecondaryFXMLScreen;
 
@@ -57,24 +55,16 @@ public class ManageListScreen extends SecondaryFXMLScreen
 
 	private void setTableRowDoubleClickToEdit()
 	{
-		table.setRowFactory(new Callback<TableView<IPToMatch>, TableRow<IPToMatch>>()
+		table.setRowFactory(param ->
 		{
-			@Override
-			public TableRow<IPToMatch> call(TableView<IPToMatch> param)
+			TableRow<IPToMatch> row = new TableRow<IPToMatch>();
+			row.setOnMouseClicked(event ->
 			{
-				TableRow<IPToMatch> row = new TableRow<IPToMatch>();
-				row.setOnMouseClicked(new EventHandler<MouseEvent>()
-				{
-					@Override
-					public void handle(MouseEvent event)
-					{
-						if (event.getClickCount() == 2 && (!row.isEmpty()))
-							watchdogListController.getBtnEditRow().fire();
-					}
-				});
+				if (event.getClickCount() == 2 && (!row.isEmpty()))
+					watchdogListController.getBtnEditRow().fire();
+			});
 
-				return row;
-			}
+			return row;
 		});
 	}
 
@@ -82,37 +72,29 @@ public class ManageListScreen extends SecondaryFXMLScreen
 	{
 		watchdogListController.getBtnAddRow().setOnAction(generateAddEditEventHandler(false));
 		watchdogListController.getBtnEditRow().setOnAction(generateAddEditEventHandler(true));
-		watchdogListController.getBtnRemoveRow().setOnAction(new EventHandler<ActionEvent>()
+		watchdogListController.getBtnRemoveRow().setOnAction(event ->
 		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				ObservableList<IPToMatch> selectedItems = table.getSelectionModel().getSelectedItems();
+			ObservableList<IPToMatch> selectedItems = table.getSelectionModel().getSelectedItems();
 
-				list.removeAll(selectedItems);
-			}
+			list.removeAll(selectedItems);
 		});
 
-		watchdogListController.getBtnSavePreset().setOnAction(new EventHandler<ActionEvent>()
+		watchdogListController.getBtnSavePreset().setOnAction(event ->
 		{
-			@Override
-			public void handle(ActionEvent event)
+			SavePresetScreen screen;
+			Stage stage = getPostCloseStage();
+
+			try
 			{
-				SavePresetScreen screen;
-				Stage stage = getPostCloseStage();
-
-				try
-				{
-					screen = new SavePresetScreen(watchdogSavePresetFormLocation, stage, stage.getScene(), watchdogUIController, watchdogListController);
-				}
-				catch (IOException e)
-				{
-					logger.log(Level.SEVERE, "Unable to load watchdog save preset screen", e);
-					return;
-				}
-
-				screen.showScreenOnNewStage("Save preset", screen.getCloseButton());
+				screen = new SavePresetScreen(watchdogSavePresetFormLocation, stage, stage.getScene(), watchdogUIController, watchdogListController);
 			}
+			catch (IOException e)
+			{
+				logger.log(Level.SEVERE, "Unable to load watchdog save preset screen", e);
+				return;
+			}
+
+			screen.showScreenOnNewStage("Save preset", screen.getCloseButton());
 		});
 
 		initMenuButton();
@@ -143,19 +125,15 @@ public class ManageListScreen extends SecondaryFXMLScreen
 	{
 		MenuItem menuItem = new MenuItem(filename);
 
-		menuItem.setOnAction(new EventHandler<ActionEvent>()
+		menuItem.setOnAction(event ->
 		{
-			@Override
-			public void handle(ActionEvent event)
+			try
 			{
-				try
-				{
-					WatchdogUI.loadListFromFile(list, textToSay, filename + WatchdogUI.presetExtension);
-				}
-				catch (ClassNotFoundException | IOException e)
-				{
-					new Alert(AlertType.ERROR, "Unable to load preset: " + e.getMessage()).showAndWait();
-				}
+				WatchdogUI.loadListFromFile(list, textToSay, filename + WatchdogUI.presetExtension);
+			}
+			catch (ClassNotFoundException | IOException e)
+			{
+				new Alert(AlertType.ERROR, "Unable to load preset: " + e.getMessage()).showAndWait();
 			}
 		});
 		

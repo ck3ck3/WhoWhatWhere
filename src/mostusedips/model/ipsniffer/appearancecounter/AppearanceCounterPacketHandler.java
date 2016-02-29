@@ -4,6 +4,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
@@ -15,27 +17,27 @@ import mostusedips.model.ipsniffer.IPSniffer;
 public class AppearanceCounterPacketHandler implements PcapPacketHandler<Void>
 {
 
-	private HashMap<Integer, Integer> ipToAmountOfRepeats = new HashMap<Integer, Integer>();
+	private Map<Integer, Integer> ipToAmountOfRepeats = new HashMap<>();
 	private int ownIpInt;
-	private ArrayList<Integer> protocolsToCount = new ArrayList<Integer>();
+	private List<Integer> protocolsToCount = new ArrayList<>();
 	private boolean isFirstPacket = true;
 	CaptureStartListener captureStartListener;
 
-	public AppearanceCounterPacketHandler(int ownIpInt, ArrayList<Integer> listOfProtocls)
+	public AppearanceCounterPacketHandler(int ownIpInt, List<Integer> listOfProtocls)
 	{
 		this(ownIpInt, listOfProtocls, null);
 	}
 	
-	public AppearanceCounterPacketHandler(int ownIpInt, ArrayList<Integer> listOfProtocls, CaptureStartListener listener)
+	public AppearanceCounterPacketHandler(int ownIpInt, List<Integer> listOfProtocls, CaptureStartListener listener)
 	{
 		this.ownIpInt = ownIpInt;
 		this.protocolsToCount = listOfProtocls;
 		this.captureStartListener = listener;
 	}
 
-	public ArrayList<IpAppearancesCounter> getListOfIpAppearances()
+	public List<IpAppearancesCounter> getListOfIpAppearances()
 	{
-		ArrayList<IpAppearancesCounter> list = new ArrayList<IpAppearancesCounter>();
+		List<IpAppearancesCounter> list = new ArrayList<>();
 		String strKey;
 
 		for (Integer key : ipToAmountOfRepeats.keySet())
@@ -60,7 +62,6 @@ public class AppearanceCounterPacketHandler implements PcapPacketHandler<Void>
 	@Override
 	public void nextPacket(PcapPacket packet, Void nothing)
 	{
-
 		if (isFirstPacket && captureStartListener != null) //notify on first packet captured
 		{
 			isFirstPacket = false;

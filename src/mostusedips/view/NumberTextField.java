@@ -1,6 +1,7 @@
 package mostusedips.view;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -13,7 +14,7 @@ public class NumberTextField extends TextField
 	private Integer minValue = null;
 	private Integer maxValue = null;
 	private boolean allowEmpty = false;
-	private ArrayList<String> allowedWords;
+	private List<String> allowedWords;
 	private ChangeListener<Boolean> focusedPropertyListenr;
 
 	public NumberTextField()
@@ -146,7 +147,7 @@ public class NumberTextField extends TextField
 		allowedWords = new ArrayList<String>(words);
 	}
 	
-	public ArrayList<String> getAllowedWords()
+	public List<String> getAllowedWords()
 	{
 		return allowedWords;
 	}

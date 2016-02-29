@@ -1,8 +1,9 @@
 package mostusedips.model.ipsniffer.firstsight;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
@@ -16,14 +17,13 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 {
 	private FirstSightListener listener;
 	private IPSniffer sniffer;
-	private HashMap<Integer, IPToMatch> ipMap;
-	//	private boolean found = false;
+	private Map<Integer, IPToMatch> ipMap;
 
-	public FirstSightPacketHandler(ArrayList<IPToMatch> ipList, FirstSightListener listener, IPSniffer sniffer)
+	public FirstSightPacketHandler(List<IPToMatch> ipList, FirstSightListener listener, IPSniffer sniffer)
 	{
 		this.listener = listener;
 		this.sniffer = sniffer;
-		ipMap = new HashMap<Integer, IPToMatch>();
+		ipMap = new HashMap<>();
 
 		try
 		{
@@ -48,13 +48,12 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 	@Override
 	public void nextPacket(PcapPacket packet, Void nothing)
 	{
-		if (/* !found && */ packet.hasHeader(IPSniffer.IPv4_PROTOCOL))
+		if (packet.hasHeader(IPSniffer.IPv4_PROTOCOL))
 		{
 			IPToMatch ipInfo = getMatchingIP(packet);
 
 			if (ipInfo != null)
 			{
-				//				found = true;
 				listener.firstSightOfIP(ipInfo);
 				sniffer.stopCapture();
 			}

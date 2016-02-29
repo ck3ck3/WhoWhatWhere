@@ -1,6 +1,7 @@
 package mostusedips.model.hotkey;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -13,8 +14,8 @@ import org.jnativehook.keyboard.NativeKeyListener;
 
 public class HotkeyManager implements NativeKeyListener
 {
-	HashMap<String, HotkeyConfiguration> hotkeyMap = new HashMap<String, HotkeyConfiguration>();
-	HashMap<String, String> hotkeyToID = new HashMap<String, String>();
+	Map<String, HotkeyConfiguration> hotkeyMap = new HashMap<>();
+	Map<String, String> hotkeyToID = new HashMap<>();
 
 	private boolean isKeySelection = false;
 	private String hotkeySelectionID; //value only matters when isKeySelection is true

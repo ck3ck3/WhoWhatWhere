@@ -2,10 +2,9 @@ package mostusedips.controller.commands.trace;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -55,28 +54,17 @@ public class TraceCommandScreen extends CommandScreen
 		HBox bottomHBox = getBottomHBox();
 		TextArea textArea = getTextArea();
 
-		btnStart.setOnAction(new EventHandler<ActionEvent>()
+		btnStart.setOnAction(event ->
 		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				textArea.setText(introMsg);
-				bottomHBox.setDisable(true);
-				setCommandStr(generateCommandString());
-				runCommand();
-			}
+			textArea.setText(introMsg);
+			bottomHBox.setDisable(true);
+			setCommandStr(generateCommandString());
+			runCommand();
 		});
 
 		numFieldTimeout.setPrefSize(45, 25);
 
-		btnVisualTrace.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				openVisualTrace();
-			}
-		});
+		btnVisualTrace.setOnAction(event -> openVisualTrace());
 
 		btnVisualTrace.setDisable(true);
 
@@ -89,33 +77,25 @@ public class TraceCommandScreen extends CommandScreen
 		textArea.setText(introMsg);
 
 		MenuItem moreInfo = new MenuItem("See more GeoIP results for selected IP address in browser");
-		moreInfo.setOnAction(new EventHandler<ActionEvent>()
+		moreInfo.setOnAction(event ->
 		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				String selectedText = textArea.getSelectedText();
+			String selectedText = textArea.getSelectedText();
 
-				if (IPSniffer.isValidIPv4(selectedText))
-					Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + selectedText);
-				else
-					new Alert(AlertType.ERROR, "The selected text \"" + selectedText + "\" is not an IP address").showAndWait();
-			}
+			if (IPSniffer.isValidIPv4(selectedText))
+				Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + selectedText);
+			else
+				new Alert(AlertType.ERROR, "The selected text \"" + selectedText + "\" is not an IP address").showAndWait();
 		});
 
 		MenuItem copyIPtoClipboard = new MenuItem("Copy to clipboard");
-		copyIPtoClipboard.setOnAction(new EventHandler<ActionEvent>()
+		copyIPtoClipboard.setOnAction(event ->
 		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				String selectedText = textArea.getSelectedText();
+			String selectedText = textArea.getSelectedText();
 
-				final Clipboard clipboard = Clipboard.getSystemClipboard();
-				final ClipboardContent content = new ClipboardContent();
-				content.putString(selectedText);
-				clipboard.setContent(content);
-			}
+			final Clipboard clipboard = Clipboard.getSystemClipboard();
+			final ClipboardContent content = new ClipboardContent();
+			content.putString(selectedText);
+			clipboard.setContent(content);
 		});
 
 		textArea.setContextMenu(new ContextMenu(moreInfo, copyIPtoClipboard));
@@ -136,7 +116,7 @@ public class TraceCommandScreen extends CommandScreen
 
 	private void openVisualTrace()
 	{
-		ArrayList<String> listOfIPs = getListOfIPs();
+		List<String> listOfIPs = getListOfIPs();
 		VisualTraceScreen visualTraceScreen;
 		Stage stage = (Stage)btnStart.getScene().getWindow();
 		
@@ -155,9 +135,9 @@ public class TraceCommandScreen extends CommandScreen
 		visualTraceScreen.showScreenOnExistingStage(stage, btnClose);
 	}
 
-	private ArrayList<String> getListOfIPs()
+	private List<String> getListOfIPs()
 	{
-		ArrayList<String> listOfIPs = new ArrayList<String>();
+		List<String> listOfIPs = new ArrayList<>();
 		String lines[] = getTextArea().getText().split(introMarker)[1].split("\n"); //get actual command output, after our intro string
 
 		for (int i = 3; i < lines.length - 2; i++) //first few lines and last line are not relevant

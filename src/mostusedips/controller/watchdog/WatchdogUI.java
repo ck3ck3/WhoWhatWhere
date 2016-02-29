@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,8 +14,6 @@ import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -105,14 +104,7 @@ public class WatchdogUI implements FirstSightListener
 		initUIElementsFromController();
 		initButtonHandlers();
 
-		entryList.addListener(new ListChangeListener<IPToMatch>()
-		{
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends IPToMatch> c)
-			{
-				labelEntryCount.setText("Match list contains " + c.getList().size() + " entries");
-			}
-		});
+		entryList.addListener((ListChangeListener<IPToMatch>) change -> labelEntryCount.setText("Match list contains " + change.getList().size() + " entries"));
 	}
 
 	private void initUIElementsFromController()
@@ -140,76 +132,56 @@ public class WatchdogUI implements FirstSightListener
 
 		btnConfigureHotkey.setOnAction(hotkeyRegistry.generateEventHandlerForHotkeyConfigButton(hotkeyID));
 		
-		btnManageList.setOnAction(new EventHandler<ActionEvent>()
+		btnManageList.setOnAction(event ->
 		{
-			@Override
-			public void handle(ActionEvent event)
+			ManageListScreen watchdogManageListScreen;
+			Stage stage = (Stage) controller.getTabPane().getScene().getWindow();
+
+			try
 			{
-				ManageListScreen watchdogManageListScreen;
-				Stage stage = (Stage) controller.getTabPane().getScene().getWindow();
-
-				try
-				{
-					watchdogManageListScreen = new ManageListScreen(listFormLocation, stage, stage.getScene(), thisObj);
-				}
-				catch (IOException e)
-				{
-					logger.log(Level.SEVERE, "Unable to load watchdog list screen", e);
-					return;
-				}
-
-				watchdogManageListScreen.showScreenOnNewStage("Manage Watchdog list", watchdogManageListScreen.getCloseButton());
+				watchdogManageListScreen = new ManageListScreen(listFormLocation, stage, stage.getScene(), thisObj);
 			}
+			catch (IOException e)
+			{
+				logger.log(Level.SEVERE, "Unable to load watchdog list screen", e);
+				return;
+			}
+
+			watchdogManageListScreen.showScreenOnNewStage("Manage Watchdog list", watchdogManageListScreen.getCloseButton());
 		});
 
-		btnPreview.setOnAction(new EventHandler<ActionEvent>()
-		{
+		btnPreview.setOnAction(event -> tts.speak(textMessage.getText()));
 
-			@Override
-			public void handle(ActionEvent event)
+		btnStart.setOnAction(event ->
+		{
+			if (entryList.isEmpty())
 			{
-				tts.speak(textMessage.getText());
+				new Alert(AlertType.ERROR, "The list must contain at least one entry").showAndWait();
+				return;
 			}
-		});
 
-		btnStart.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
+			String deviceIP = controller.getButtonToIpMap().get(controller.getTglGrpNIC().getSelectedToggle());
+			new Thread(new Runnable()
 			{
-				if (entryList.isEmpty())
+				@Override
+				public void run()
 				{
-					new Alert(AlertType.ERROR, "The list must contain at least one entry").showAndWait();
-					return;
+					sniffer.startFirstSightCapture(deviceIP, new ArrayList<IPToMatch>(entryList), thisObj, new StringBuilder());
 				}
+			}).start();
 
-				String deviceIP = controller.getButtonToIpMap().get(controller.getTglGrpNIC().getSelectedToggle());
-				new Thread(new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						sniffer.startFirstSightCapture(deviceIP, new ArrayList<IPToMatch>(entryList), thisObj, new StringBuilder());
-					}
-				}).start();
-
-				activeButton = btnStop;
-				btnStop.setDisable(false);
-				btnStart.setDisable(true);
-			}
+			activeButton = btnStop;
+			btnStop.setDisable(false);
+			btnStart.setDisable(true);
 		});
 
-		btnStop.setOnAction(new EventHandler<ActionEvent>()
+		btnStop.setOnAction(event ->
 		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				activeButton = btnStart;
-				btnStop.setDisable(true);
-				btnStart.setDisable(false);
+			activeButton = btnStart;
+			btnStop.setDisable(true);
+			btnStart.setDisable(false);
 
-				sniffer.stopCapture();
-			}
+			sniffer.stopCapture();
 		});
 
 		activeButton = btnStart;
@@ -225,12 +197,12 @@ public class WatchdogUI implements FirstSightListener
 		btnStart.setDisable(false);
 	}
 
-	public static void saveListToFile(ArrayList<IPToMatch> list, String msgToSay, String filename) throws IOException
+	public static void saveListToFile(List<IPToMatch> list, String msgToSay, String filename) throws IOException
 	{
 		FileOutputStream fout = new FileOutputStream(filename);
 		ObjectOutputStream oos = new ObjectOutputStream(fout);
 
-		oos.writeObject(list);
+		oos.writeObject(new ArrayList<IPToMatch>(list));
 		oos.writeUTF(msgToSay);
 
 		oos.close();

@@ -13,7 +13,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import mostusedips.model.ipsniffer.firstsight.IPToMatch;
 import mostusedips.view.SecondaryFXMLScreen;
@@ -63,14 +62,10 @@ public class SavePresetScreen extends SecondaryFXMLScreen
 			}
 		});
 
-		savePresetController.getTextFilename().setOnKeyPressed(new EventHandler<KeyEvent>()
+		savePresetController.getTextFilename().setOnKeyPressed(ke ->
 		{
-			@Override
-			public void handle(KeyEvent ke)
-			{
-				if (ke.getCode().equals(KeyCode.ENTER))
-					savePresetController.getBtnSave().fire();
-			}
+			if (ke.getCode().equals(KeyCode.ENTER))
+				savePresetController.getBtnSave().fire();
 		});
 	}
 

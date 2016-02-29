@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -67,9 +68,9 @@ public class IPSniffer
 
 
 	private Pcap pcap;
-	private HashMap<String, PcapIf> ipToDevice = new HashMap<String, PcapIf>();
+	private Map<String, PcapIf> ipToDevice = new HashMap<>();
 	private boolean dllLoaded = false;
-	private ArrayList<DeviceIPAndDescription> ipAndDescList = new ArrayList<DeviceIPAndDescription>();
+	private List<DeviceIPAndDescription> ipAndDescList = new ArrayList<>();
 
 	public IPSniffer()
 	{
@@ -144,14 +145,14 @@ public class IPSniffer
 		return true;
 	}
 	
-	public ArrayList<DeviceIPAndDescription> getListOfDevices()
+	public List<DeviceIPAndDescription> getListOfDevices()
 	{
 		return ipAndDescList;
 	}
 
 	private void generateListOfDevices()
 	{
-		List<PcapIf> alldevs = new ArrayList<PcapIf>();
+		List<PcapIf> alldevs = new ArrayList<>();
 		StringBuilder errbuf = new StringBuilder();
 
 		int r = Pcap.findAllDevs(alldevs, errbuf);
@@ -213,12 +214,12 @@ public class IPSniffer
 		return ipv4Pattern.matcher(ip).matches();
 	}
 
-	public void startAppearanceCounterCapture(String deviceIp, ArrayList<Integer> protocolsToCapture, StringBuilder errbuf)
+	public void startAppearanceCounterCapture(String deviceIp, List<Integer> protocolsToCapture, StringBuilder errbuf)
 	{
 		startAppearanceCounterCapture(deviceIp, protocolsToCapture, null, errbuf);
 	}
 
-	public AppearanceCounterResults startAppearanceCounterCapture(String deviceIp, ArrayList<Integer> protocolsToCapture, CaptureStartListener listener, StringBuilder errbuf)
+	public AppearanceCounterResults startAppearanceCounterCapture(String deviceIp, List<Integer> protocolsToCapture, CaptureStartListener listener, StringBuilder errbuf)
 	{
 		String ownAddress = deviceIp.substring(1, deviceIp.length() - 1);
 		int ownIpInt;
@@ -240,7 +241,7 @@ public class IPSniffer
 		return new AppearanceCounterResults(filteredCounterPH);
 	}
 
-	public void startFirstSightCapture(String deviceIP, ArrayList<IPToMatch> ipList, FirstSightListener listener, StringBuilder errbuf)
+	public void startFirstSightCapture(String deviceIP, List<IPToMatch> ipList, FirstSightListener listener, StringBuilder errbuf)
 	{
 		FirstSightPacketHandler firstSightPH = new FirstSightPacketHandler(ipList, listener, this);
 

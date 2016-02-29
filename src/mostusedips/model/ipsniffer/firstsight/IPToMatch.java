@@ -2,6 +2,7 @@ package mostusedips.model.ipsniffer.firstsight;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
 import javafx.beans.property.SimpleStringProperty;
 import mostusedips.model.ipsniffer.IPSniffer;
@@ -115,9 +116,9 @@ public class IPToMatch implements Serializable
 		this.dstPortToSerialize = port;
 	}
 	
-	public HashMap<String, String> getDataAsMap()
+	public Map<String, String> getDataAsMap()
 	{
-		HashMap<String, String> map = new HashMap<String, String>();
+		Map<String, String> map = new HashMap<>();
 		
 		map.put("ip", ip.getValue());
 		map.put("protocol", protocol.getValue());

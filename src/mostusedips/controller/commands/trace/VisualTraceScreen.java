@@ -8,17 +8,15 @@ import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Hyperlink;
@@ -39,12 +37,12 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 	private final static Logger logger = Logger.getLogger(VisualTraceScreen.class.getPackage().getName());
 
 	private VisualTraceController visualTraceController;
-	private ArrayList<String> listOfIPs;
-	private HashMap<String, GeoIPInfo> geoIPResults = new HashMap<String, GeoIPInfo>();
-	private ArrayList<CheckBox> listOfChkBoxes = new ArrayList<CheckBox>();
+	private List<String> listOfIPs;
+	private Map<String, GeoIPInfo> geoIPResults = new HashMap<>();
+	private List<CheckBox> listOfChkBoxes = new ArrayList<>();
 	private GenerateImageFromURLService imgService;
 
-	public VisualTraceScreen(ArrayList<String> listOfIPs, Stage postCloseStage, Scene postCloseScene) throws IOException
+	public VisualTraceScreen(List<String> listOfIPs, Stage postCloseStage, Scene postCloseScene) throws IOException
 	{
 		super(visualTraceFormLocation, postCloseStage, postCloseScene);
 		this.listOfIPs = listOfIPs;
@@ -63,16 +61,11 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		generateTraceInfoGUI();
 		generateAndShowImage();
 
-		imgService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
+		imgService.setOnSucceeded(event ->
 		{
-
-			@Override
-			public void handle(WorkerStateEvent event)
-			{
-				getVisualTraceController().getLoadingLabel().setVisible(false);
-				Image img = imgService.getValue();
-				getVisualTraceController().getImgView().setImage(img);
-			}
+			getVisualTraceController().getLoadingLabel().setVisible(false);
+			Image img = imgService.getValue();
+			getVisualTraceController().getImgView().setImage(img);
 		});
 	}
 
@@ -87,15 +80,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			CheckBox box = new CheckBox(text);
 
 			box.setSelected(true);
-			box.selectedProperty().addListener(new ChangeListener<Boolean>()
-			{
-
-				@Override
-				public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-				{
-					generateAndShowImage();
-				}
-			});
+			box.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> generateAndShowImage());
 
 			listOfChkBoxes.add(box);
 			vbox.getChildren().add(box);
@@ -105,24 +90,13 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			final String ip = tempIP;
 
 			Hyperlink geoIPLink = new Hyperlink("GeoIP info");
-			geoIPLink.setOnAction(new EventHandler<ActionEvent>()
-			{
-				@Override
-				public void handle(ActionEvent event)
-				{
-					Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + ip);
-				}
-			});
+			geoIPLink.setOnAction(event -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + ip));
 
 			Hyperlink focusMapLink = new Hyperlink("Focus map here");
-			focusMapLink.setOnAction(new EventHandler<ActionEvent>()
+			focusMapLink.setOnAction(event ->
 			{
-				@Override
-				public void handle(ActionEvent event)
-				{
-					imgService.setCenterOnIP(ip);
-					generateAndShowImage();
-				}
+				imgService.setCenterOnIP(ip);
+				generateAndShowImage();
 			});
 
 			HBox hbox = new HBox(box, focusMapLink, geoIPLink);
@@ -137,15 +111,11 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 
 	private void generateAndShowImage()
 	{
-		Platform.runLater(new Runnable()
+		Platform.runLater(() ->
 		{
-			@Override
-			public void run()
-			{
-				getVisualTraceController().getImgView().setImage(null);
-				getVisualTraceController().getLoadingLabel().setVisible(true);
-				imgService.restart();
-			}
+			getVisualTraceController().getImgView().setImage(null);
+			getVisualTraceController().getLoadingLabel().setVisible(true);
+			imgService.restart();
 		});
 	}
 

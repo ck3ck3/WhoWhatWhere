@@ -1,6 +1,6 @@
 package mostusedips.model.ipsniffer.appearancecounter;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class AppearanceCounterResults
 {
@@ -11,7 +11,7 @@ public class AppearanceCounterResults
 		this.packetHandler = packetHandler;
 	}
 	
-	public ArrayList<IpAppearancesCounter> getAppearanceCounterResults()
+	public List<IpAppearancesCounter> getAppearanceCounterResults()
 	{
 		return packetHandler.getListOfIpAppearances();
 	}
