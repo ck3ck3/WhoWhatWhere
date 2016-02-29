@@ -15,7 +15,6 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -238,26 +237,22 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 		btnConfigCaptureHotkey.setOnAction(hotkeyRegistry.generateEventHandlerForHotkeyConfigButton(captureHotkeyID));
 
-		chkboxFilterResults.selectedProperty().addListener((ChangeListener<Boolean>) (ov, old_val, new_val) -> paneFilterResults.setDisable(!new_val));
-		chkboxPing.selectedProperty().addListener((ChangeListener<Boolean>) (ov, old_val, new_val) -> numberFieldPingTimeout.setDisable(!new_val));
+		chkboxFilterResults.selectedProperty().addListener((ov, old_val, new_val) -> paneFilterResults.setDisable(!new_val));
+		chkboxPing.selectedProperty().addListener((ov, old_val, new_val) -> numberFieldPingTimeout.setDisable(!new_val));
 
 		radioManual.setOnAction(event -> numFieldCaptureTimeout.setDisable(true));
 		radioTimedCapture.setOnAction(event -> numFieldCaptureTimeout.setDisable(false));
 
-		ChangeListener<Boolean> protocolBoxes = new ChangeListener<Boolean>()
+		ChangeListener<Boolean> protocolBoxes = (observable, oldValue, newValue) ->
 		{
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+			if (newValue)
 			{
-				if (newValue)
-				{
-					chkboxAnyProtocol.setSelected(false);
-					protocolBoxesChecked++;
-				}
-				else
-					if (--protocolBoxesChecked == 0) //we are unchecking the last checkbox
-						chkboxAnyProtocol.setSelected(true);
+				chkboxAnyProtocol.setSelected(false);
+				protocolBoxesChecked++;
 			}
+			else
+				if (--protocolBoxesChecked == 0) //we are unchecking the last checkbox
+					chkboxAnyProtocol.setSelected(true);
 		};
 
 		chkboxUDP.selectedProperty().addListener(protocolBoxes);
@@ -265,7 +260,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		chkboxICMP.selectedProperty().addListener(protocolBoxes);
 		chkboxHTTP.selectedProperty().addListener(protocolBoxes);
 
-		chkboxUseTTS.selectedProperty().addListener((ChangeListener<Boolean>) (ov, old_val, new_val) ->
+		chkboxUseTTS.selectedProperty().addListener((ov, old_val, new_val) ->
 		{
 			tts.setMuted(!new_val);
 			paneUseTTS.setDisable(!new_val);
@@ -283,7 +278,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		numFieldCaptureTimeout.setLayoutX(208);
 		numFieldCaptureTimeout.setLayoutY(radioTimedCapture.getLayoutY() - 2);
 
-		numFieldCaptureTimeout.focusedProperty().addListener((ChangeListener<Boolean>) (arg0, oldPropertyValue, newPropertyValue) ->
+		numFieldCaptureTimeout.focusedProperty().addListener((arg0, oldPropertyValue, newPropertyValue) ->
 		{
 			if (newPropertyValue)
 				radioTimedCapture.setSelected(true);
@@ -309,20 +304,20 @@ public class AppearanceCounterUI implements CaptureStartListener
 	{
 		tableResults.setPlaceholder(new Label()); //remove default string on empty table
 
-		columnPacketCount.setCellValueFactory(new PropertyValueFactory<IPInfoRowModel, Integer>("packetCount"));
-		columnIP.setCellValueFactory(new PropertyValueFactory<IPInfoRowModel, String>("ipAddress"));
-		columnOwner.setCellValueFactory(new PropertyValueFactory<IPInfoRowModel, String>("owner"));
-		columnPing.setCellValueFactory(new PropertyValueFactory<IPInfoRowModel, String>("ping"));
-		columnCountry.setCellValueFactory(new PropertyValueFactory<IPInfoRowModel, String>("country"));
-		columnRegion.setCellValueFactory(new PropertyValueFactory<IPInfoRowModel, String>("region"));
-		columnCity.setCellValueFactory(new PropertyValueFactory<IPInfoRowModel, String>("city"));
+		columnPacketCount.setCellValueFactory(new PropertyValueFactory<>("packetCount"));
+		columnIP.setCellValueFactory(new PropertyValueFactory<>("ipAddress"));
+		columnOwner.setCellValueFactory(new PropertyValueFactory<>("owner"));
+		columnPing.setCellValueFactory(new PropertyValueFactory<>("ping"));
+		columnCountry.setCellValueFactory(new PropertyValueFactory<>("country"));
+		columnRegion.setCellValueFactory(new PropertyValueFactory<>("region"));
+		columnCity.setCellValueFactory(new PropertyValueFactory<>("city"));
 
 		generatePopupMenus();
 	}
 
 	private void initColumnListForTTS()
 	{
-		chkboxListColumns = new ArrayList<CheckBox>();
+		chkboxListColumns = new ArrayList<>();
 
 		for (TableColumn<IPInfoRowModel, ?> tableColumn : tableResults.getColumns())
 		{
@@ -455,7 +450,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 			private ArrayList<Integer> getSelectedProtocols()
 			{
-				ArrayList<Integer> protocols = new ArrayList<Integer>();
+				ArrayList<Integer> protocols = new ArrayList<>();
 
 				if (chkboxUDP.isSelected())
 					protocols.add(IPSniffer.UDP_PROTOCOL);
@@ -492,9 +487,6 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 		if (isNoColumnChecked() || items == null)
 			return;
-
-		if (chkboxFilterResults.isSelected())
-			filteredList = filterItemsByColValue(items, comboColumns.getValue(), textColumnContains.getText());
 
 		filteredList = (chkboxFilterResults.isSelected() ? filterItemsByColValue(items, comboColumns.getValue(), textColumnContains.getText()) : new ArrayList<>(items));
 
@@ -652,14 +644,10 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 				sniffer.stopCapture();
 
-				Platform.runLater(new Runnable()
+				Platform.runLater(() ->
 				{
-					@Override
-					public void run()
-					{
-						btnStop.setDisable(true);
-						labelStatus.setText(statusStopping);
-					}
+					btnStop.setDisable(true);
+					labelStatus.setText(statusStopping);
 				});
 
 				return null;
@@ -671,7 +659,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 	private TimerTask initTimer()
 	{
-		TimerTask timerTask = new TimerTask()
+		return new TimerTask()
 		{
 			@Override
 			public void run()
@@ -679,8 +667,6 @@ public class AppearanceCounterUI implements CaptureStartListener
 				Platform.runLater(() -> timerExpired());
 			}
 		};
-
-		return timerTask;
 	}
 
 	private void timerExpired()
@@ -725,7 +711,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			}
 
 			if (chkboxPing.isSelected())
-				ping = IPSniffer.pingAsString(ip, numberFieldPingTimeout.getValue().intValue());
+				ping = IPSniffer.pingAsString(ip, numberFieldPingTimeout.getValue());
 
 			row = new IPInfoRowModel(id, amountOfAppearances, ip, owner, ping, country, region, city);
 			data.add(row);

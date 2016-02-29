@@ -14,7 +14,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.scene.Scene;
@@ -80,14 +79,12 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			CheckBox box = new CheckBox(text);
 
 			box.setSelected(true);
-			box.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> generateAndShowImage());
+			box.selectedProperty().addListener((observable, oldValue, newValue) -> generateAndShowImage());
 
 			listOfChkBoxes.add(box);
 			vbox.getChildren().add(box);
 
-			String tempIP = TraceCommandScreen.extractIPFromLine(ipInfo);
-
-			final String ip = tempIP;
+			final String ip = TraceCommandScreen.extractIPFromLine(ipInfo);
 
 			Hyperlink geoIPLink = new Hyperlink("GeoIP info");
 			geoIPLink.setOnAction(event -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + ip));
@@ -121,7 +118,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 
 	private String generateURL(String centerOnIP)
 	{
-		String url = new String(baseUrl);
+		String url = baseUrl;
 		final String pathInit = "&path=";
 		String path = pathInit;
 		boolean isFirstMarker = true;
@@ -145,7 +142,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		for (CheckBox checkBox : listOfChkBoxes)
 		{
 			String text = checkBox.getText();
-			String ip = TraceCommandScreen.extractIPFromLine(text);
+			String ip;
 
 			if (checkBox.isSelected())
 			{

@@ -111,7 +111,7 @@ public class TraceCommandScreen extends CommandScreen
 
 	private String generateCommandString()
 	{
-		return new String("tracert " + (chkboxResolveNames.isSelected() ? " " : "-d ") + ("-w " + numFieldTimeout.getValue() + " ") + ip);
+		return "tracert " + (chkboxResolveNames.isSelected() ? " " : "-d ") + ("-w " + numFieldTimeout.getValue() + " ") + ip;
 	}
 
 	private void openVisualTrace()

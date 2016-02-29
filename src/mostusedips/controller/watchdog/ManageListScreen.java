@@ -57,7 +57,7 @@ public class ManageListScreen extends SecondaryFXMLScreen
 	{
 		table.setRowFactory(param ->
 		{
-			TableRow<IPToMatch> row = new TableRow<IPToMatch>();
+			TableRow<IPToMatch> row = new TableRow<>();
 			row.setOnMouseClicked(event ->
 			{
 				if (event.getClickCount() == 2 && (!row.isEmpty()))

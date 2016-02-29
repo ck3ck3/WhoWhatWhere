@@ -45,7 +45,7 @@ public class ListAddEditController implements Initializable
 		numTextSrcPort.setAllowEmpty(true);
 		numTextSrcPort.removeFocusValidator();
 		
-		ArrayList<String> listOfWords = new ArrayList<String>();
+		ArrayList<String> listOfWords = new ArrayList<>();
 		listOfWords.add(IPToMatch.port_ANY);
 		
 		numTextSrcPort.setAllowedWords(listOfWords);

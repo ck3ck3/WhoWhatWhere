@@ -21,7 +21,6 @@ import org.json.JSONObject;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -29,7 +28,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 
 public class Main extends Application
 {
@@ -109,30 +107,23 @@ public class Main extends Application
 				tray.remove(trayIcon);
 			}));
 
-			primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>()
+			primaryStage.setOnCloseRequest(we ->
 			{
-				public void handle(WindowEvent we)
+				we.consume(); //ignore the application's exit button, instead minimize to systray
+				Platform.runLater(() ->
 				{
-					we.consume(); //ignore the application's exit button, instead minimize to systray
-					Platform.runLater(new Runnable()
+					try
 					{
-						@Override
-						public void run()
-						{
-							try
-							{
-								tray.add(trayIcon);
-								trayIcon.displayMessage("Minimized to tray", "Still running in the background, double click this icon to restore the window. Use the \"Exit\" button to exit.",
-										MessageType.INFO);
-								primaryStage.hide();
-							}
-							catch (Exception e)
-							{
-								logger.log(Level.WARNING, "Unable to minimize to tray", e);
-							}
-						}
-					});
-				}
+						tray.add(trayIcon);
+						trayIcon.displayMessage("Minimized to tray", "Still running in the background, double click this icon to restore the window. Use the \"Exit\" button to exit.",
+								MessageType.INFO);
+						primaryStage.hide();
+					}
+					catch (Exception e)
+					{
+						logger.log(Level.WARNING, "Unable to minimize to tray", e);
+					}
+				});
 			});
 
 			return true;

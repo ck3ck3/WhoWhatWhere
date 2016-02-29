@@ -1,11 +1,8 @@
 package mostusedips.controller.watchdog;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -27,38 +24,34 @@ public class SavePresetScreen extends SecondaryFXMLScreen
 
 		savePresetController = getLoader().<SavePresetController> getController();
 
-		savePresetController.getBtnSave().setOnAction(new EventHandler<ActionEvent>()
+		savePresetController.getBtnSave().setOnAction(event ->
 		{
-			@Override
-			public void handle(ActionEvent event)
+			try
 			{
-				try
+				String filename = savePresetController.getTextFilename().getText();
+				ObservableList<IPToMatch> entryList = uiController.getEntryList();
+				TextField textMessage = uiController.getTextMessage();
+				
+				if (filename.isEmpty())
 				{
-					String filename = savePresetController.getTextFilename().getText();
-					ObservableList<IPToMatch> entryList = uiController.getEntryList();
-					TextField textMessage = uiController.getTextMessage();
-					
-					if (filename.isEmpty())
-					{
-						new Alert(AlertType.ERROR, "Please enter a non-empty filename").showAndWait();
-						throw new IllegalArgumentException("File name must not be empty");
-					}
-
-					WatchdogUI.saveListToFile(new ArrayList<IPToMatch>(entryList), textMessage.getText(), filename + WatchdogUI.presetExtension);
-
-					MenuItem menuItem = ManageListScreen.createMenuItem(entryList, textMessage, filename);
-					
-					ObservableList<MenuItem> items = listController.getMenuBtnLoadPreset().getItems();
-					
-					if (items.get(0).isDisable()) //it only contains the disabled "none found " item, remove it before adding new one
-						items.clear();
-						
-					items.add(menuItem);
+					new Alert(AlertType.ERROR, "Please enter a non-empty filename").showAndWait();
+					throw new IllegalArgumentException("File name must not be empty");
 				}
-				catch (IOException e)
-				{
-					new Alert(AlertType.ERROR, "Unable to save preset: " + e.getMessage()).showAndWait();
-				}
+
+				WatchdogUI.saveListToFile(entryList, textMessage.getText(), filename + WatchdogUI.presetExtension);
+
+				MenuItem menuItem = ManageListScreen.createMenuItem(entryList, textMessage, filename);
+				
+				ObservableList<MenuItem> items = listController.getMenuBtnLoadPreset().getItems();
+				
+				if (items.get(0).isDisable()) //it only contains the disabled "none found " item, remove it before adding new one
+					items.clear();
+					
+				items.add(menuItem);
+			}
+			catch (IOException e)
+			{
+				new Alert(AlertType.ERROR, "Unable to save preset: " + e.getMessage()).showAndWait();
 			}
 		});
 

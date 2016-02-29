@@ -44,7 +44,7 @@ public class AppearanceCounterPacketHandler implements PcapPacketHandler<Void>
 		{
 			try
 			{
-				strKey = IPSniffer.intToIpString(key.intValue());
+				strKey = IPSniffer.intToIpString(key);
 			}
 			catch (UnknownHostException uhe)
 			{
@@ -98,7 +98,7 @@ public class AppearanceCounterPacketHandler implements PcapPacketHandler<Void>
 	private boolean isSelectedProtocol(PcapPacket packet)
 	{
 		for (Integer protocolId : protocolsToCount)
-			if (packet.hasHeader(protocolId.intValue()))
+			if (packet.hasHeader(protocolId))
 				return true;
 
 		return false;

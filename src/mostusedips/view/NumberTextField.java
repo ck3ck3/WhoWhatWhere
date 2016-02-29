@@ -142,9 +142,9 @@ public class NumberTextField extends TextField
 		return validate(getText());
 	}
 	
-	public void setAllowedWords(ArrayList<String> words)
+	public void setAllowedWords(List<String> words)
 	{
-		allowedWords = new ArrayList<String>(words);
+		allowedWords = new ArrayList<>(words);
 	}
 	
 	public List<String> getAllowedWords()

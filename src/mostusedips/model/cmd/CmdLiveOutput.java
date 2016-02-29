@@ -43,7 +43,7 @@ public class CmdLiveOutput
 				{
 					process = Runtime.getRuntime().exec(command);
 					BufferedReader inputStream = new BufferedReader(new InputStreamReader(process.getInputStream()));
-					String line = "";
+					String line;
 
 					while ((line = inputStream.readLine()) != null)
 						if (outputListener != null)

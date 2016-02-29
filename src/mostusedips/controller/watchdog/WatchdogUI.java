@@ -166,7 +166,7 @@ public class WatchdogUI implements FirstSightListener
 				@Override
 				public void run()
 				{
-					sniffer.startFirstSightCapture(deviceIP, new ArrayList<IPToMatch>(entryList), thisObj, new StringBuilder());
+					sniffer.startFirstSightCapture(deviceIP, entryList, thisObj, new StringBuilder());
 				}
 			}).start();
 
@@ -202,7 +202,7 @@ public class WatchdogUI implements FirstSightListener
 		FileOutputStream fout = new FileOutputStream(filename);
 		ObjectOutputStream oos = new ObjectOutputStream(fout);
 
-		oos.writeObject(new ArrayList<IPToMatch>(list));
+		oos.writeObject(new ArrayList<>(list));
 		oos.writeUTF(msgToSay);
 
 		oos.close();
@@ -249,7 +249,7 @@ public class WatchdogUI implements FirstSightListener
 
 		try
 		{
-			saveListToFile(new ArrayList<IPToMatch>(entryList), textMessage.getText(), lastRunFilename);
+			saveListToFile(entryList, textMessage.getText(), lastRunFilename);
 		}
 		catch (IOException ioe)
 		{

@@ -33,7 +33,7 @@
                      <children>
                         <HBox prefHeight="275.0" prefWidth="1022.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="2.0">
                            <children>
-                              <ScrollPane fx:id="scrollPane">
+                              <ScrollPane>
                                  <content>
                                     <VBox fx:id="vboxNICs" fillWidth="false" maxHeight="273.0" maxWidth="500.0" minHeight="190.0" minWidth="500.0" prefHeight="273.0" prefWidth="500.0">
                                        <children>

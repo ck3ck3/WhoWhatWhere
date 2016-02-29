@@ -48,20 +48,16 @@ public class ListController implements Initializable
 	public void initialize(URL location, ResourceBundle resources)
 	{
 		columnIP.setCellValueFactory(new PropertyValueFactory<IPToMatch, String>("ip"));
-		columnProtocol.setCellValueFactory(new PropertyValueFactory<IPToMatch, String>("protocol"));
-		columnSrcPort.setCellValueFactory(new PropertyValueFactory<IPToMatch, String>("srcPort"));
-		columnDstPort.setCellValueFactory(new PropertyValueFactory<IPToMatch, String>("dstPort"));
+		columnProtocol.setCellValueFactory(new PropertyValueFactory<>("protocol"));
+		columnSrcPort.setCellValueFactory(new PropertyValueFactory<>("srcPort"));
+		columnDstPort.setCellValueFactory(new PropertyValueFactory<>("dstPort"));
 
 		tableEntries.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		
-		EventHandler<KeyEvent> enterKeyEventHandler = new EventHandler<KeyEvent>()
+		EventHandler<KeyEvent> enterKeyEventHandler = ke ->
 		{
-			@Override
-			public void handle(KeyEvent ke)
-			{
-				if (ke.getCode().equals(KeyCode.ENTER))
-					btnClose.fire();
-			}
+			if (ke.getCode().equals(KeyCode.ENTER))
+				btnClose.fire();
 		};
 		
 		paneRoot.setOnKeyPressed(enterKeyEventHandler);

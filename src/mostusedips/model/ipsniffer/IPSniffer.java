@@ -69,17 +69,11 @@ public class IPSniffer
 
 	private Pcap pcap;
 	private Map<String, PcapIf> ipToDevice = new HashMap<>();
-	private boolean dllLoaded = false;
 	private List<DeviceIPAndDescription> ipAndDescList = new ArrayList<>();
 
 	public IPSniffer()
 	{
 		generateListOfDevices();
-	}
-
-	public boolean isDllLoaded()
-	{
-		return dllLoaded;
 	}
 
 	/**
