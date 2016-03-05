@@ -62,12 +62,14 @@ public class AppearanceCounterPacketHandler implements PcapPacketHandler<Void>
 	@Override
 	public void nextPacket(PcapPacket packet, Void nothing)
 	{
-		if (isFirstPacket && captureStartListener != null) //notify on first packet captured
+		if (isFirstPacket)
 		{
+			if (captureStartListener != null) //notify on first packet captured
+				captureStartListener.captureStartedNotification();
+		
 			isFirstPacket = false;
-			captureStartListener.captureStartedNotification();
 		}
-
+		
 		if (packet.hasHeader(Ip4.ID) && (protocolsToCount.isEmpty() || isSelectedProtocol(packet))) //only if there's an IP layer, and if any filter is selected, filter it 
 		{
 			Ip4 ipHeader = new Ip4();
