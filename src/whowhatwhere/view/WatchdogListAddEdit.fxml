@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="paneRoot" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="179.0" prefWidth="356.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.watchdog.ListAddEditController">
+   <children>
+      <Label layoutX="14.0" layoutY="14.0" text="(mandatory) IP address: " />
+      <TextField fx:id="textIP" layoutX="197.0" layoutY="10.0" />
+      <Label layoutX="14.0" layoutY="47.0" text="Protocol: " />
+      <ChoiceBox fx:id="choiceProtocol" layoutX="197.0" layoutY="43.0" prefWidth="150.0" />
+      <Label fx:id="labelSrcPort" layoutX="14.0" layoutY="80.0" text="Source port (ANY, 0 - 65535):" />
+      <Label fx:id="labelDstPort" layoutX="14.0" layoutY="109.0" text="Destination port (ANY, 0 - 65535):" />
+      <Button fx:id="btnDone" layoutX="297.0" layoutY="140.0" mnemonicParsing="false" text="Done" />
+   </children>
+</AnchorPane>

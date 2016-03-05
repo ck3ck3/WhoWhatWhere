@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="create_dist_rar" name="Create Runnable Jar for Project Most used IPs with Jar-in-Jar Loader">
+<project default="create_dist_rar" name="Create Runnable Jar for Project Who What Where with Jar-in-Jar Loader">
 	<!--this file was created by Eclipse Runnable JAR file Export Wizard-->
 	<!--ANT 1.7 is required-->
 	<!--define folder properties-->
@@ -9,12 +9,12 @@
 	<property name="dir.maven_repo" value="E:/.m2/repository" />
 	<!-- HARDCODED PATH, MODIFY IF NEEDED -->
 
-	<property name="dir.jarfile" value="MostUsedIPs" />
+	<property name="dir.jarfile" value="WhoWhatWhere" />
 	<target name="create_dist_rar">
-		<jar destfile="MostUsedIPs/MostUsedIPs.jar">
+		<jar destfile="WhoWhatWhere/WhoWhatWhere.jar">
 			<manifest>
 				<attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader" />
-				<attribute name="Rsrc-Main-Class" value="mostusedips.Main" />
+				<attribute name="Rsrc-Main-Class" value="whowhatwhere.Main" />
 				<attribute name="Class-Path" value="." />
 				<attribute name="Rsrc-Class-Path" value="./ org.eclipse.fx.ide.css.jfx8_2.1.0.201508240705.jar jnativehook-2.0.2.jar freetts-1.2.2.jar jnetpcap-1.4.r1425-1f.jar commons-io-2.4.jar json-20151123.jar commons-collections-3.0.jar" />
 			</manifest>
@@ -30,21 +30,21 @@
 			<zipfileset dir="${dir.maven_repo}/commons-collections/commons-collections/3.0" includes="commons-collections-3.0.jar" />
 
 		</jar>
-		<mkdir dir="MostUsedIPs" />
+		<mkdir dir="WhoWhatWhere" />
 		<exec executable="cmd">
 			<arg value="/c" />
 			<arg value="launch4jc" />
-			<arg value="mostUsedIPs-launch4j.xml" />
+			<arg value="WhoWhatWhere-launch4j.xml" />
 		</exec>
-		<delete file="MostUsedIPs/MostUsedIPs.jar" />
-		<copy file="../../NBA2K Europe MyPark.watchdogPreset" toDir="MostUsedIPs" />
+		<delete file="WhoWhatWhere/WhoWhatWhere.jar" />
+		<copy file="../../NBA2K Europe MyPark.watchdogPreset" toDir="WhoWhatWhere" />
 		<exec executable="cmd">
 			<arg value="/c" />
 			<arg value="rar" />
 			<arg value="a" />
-			<arg value="../MostUsedIPs.rar" />
-			<arg value="MostUsedIPs" />
+			<arg value="../WhoWhatWhere.rar" />
+			<arg value="WhoWhatWhere" />
 		</exec>
-		<delete dir="MostUsedIPs" />
+		<delete dir="WhoWhatWhere" />
 	</target>
 </project>
