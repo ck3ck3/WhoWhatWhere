@@ -2,24 +2,45 @@
 <html>
 <head>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <link href="http://ck3ck3.github.io/WhoWhatWhere/docs/style.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
 
   <title>Who What Where - Documentation</title>
 </head>
-<!--test-->
 <body>
+<p>
 <b><h1>Feature list</h1></b>
 <br>
-<b><h2><a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/docs/screenshots/WhoWhatWhere.png">Who What Where</a></h2></b> - See the IP addresses that your computer communicates with, sorted by amount of packets transmitted. Shows GeoIP and a ping result for each address. Can be used for determining a game server IP or monitoring suspicious internet connections.
+<b><h2><a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/docs/screenshots/WhoWhatWhere.png">Who What Where</a></h2></b> - Find out the IP addresses that your computer communicates with, sorted by amount of packets sent and received. Shows GeoIP and a ping result for each address. Can be used for determining a game server IP or monitoring suspicious internet connections.
 <br>
 <b><h2><a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/docs/screenshots/PingToSpeech.png">Ping to Speech</a></h2></b> - Press a hotkey and listen to the result of a ping sent to a predefined IP address or hostname. Useful while playing online games.
 <br>
-<b><h2><a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/docs/screenshots/Watchdog.png">Watchdog</a></h2></b> - Inspects network traffic and waits for a packet from a predefined list of IP addresses and source/destination ports and several protocols. Upon finding a match, a predefined message is played on the speakers. Can be used to as a notifier for an incoming connection, for example.
+<b><h2><a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/docs/screenshots/Watchdog.png">Watchdog</a></h2></b> - Inspects network traffic and waits for a packet from a predefined list of IP addresses and source/destination ports and several protocols. Upon finding a match, a predefined message will be read out by text-to-speech. This feature can be used as a notifier for an incoming connection, for example.
 <br>
 <b><h2><a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/docs/screenshots/VisualTrace.png">Trace and Visual Trace</a></h2></b> - Perform a trace-route for a given IP address or hostname. Once the trace is complete, a visual trace is available, which shows the route of your packet on a map.
+</p>
+<br>
+<p>
+<b><h1>Installating and Running</h1></b>
+<br>
+<b><h2>Prerequisites</h2></b>
+<br>
+<h3>Java Runtime Environment (JRE) 1.8_60 or newer</h3> - <a href="http://java.com/en/">Download JRE here</a>. If you already have JRE installed and want to check the version, open the command line (cmd) and type "java -version".
+<br>
+<h3>WinPcap</h3> - <a href="http://www.winpcap.org/install/default.htm">Download WinPcap here</a>. WinPcap is a program that allows capturing network packets on Windows.
+<br>
+<br>
+<b><h2>Running the program</h2></b>
+<br>
+Once you've installed Java and WinPcap, download WhoWhatWhere and extract the archive. Run the executable and allow ~10 seconds to load. This program requires administator rights in order to capture network packets. If you're prompted by Windows, allow it access.
+</p>
+<br>
+<p>
+<b><h2>How to Use</h2></b>
+<br>
 
-<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.js"></script>
-<script type="text/javascript" src="http://ck3ck3.github.io/WhoWhatWhere/docs/script.js"></script>
+</p>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.js"></script>
+<script type="text/javascript" src="script.js"></script>
 
 </body>
 </html>
