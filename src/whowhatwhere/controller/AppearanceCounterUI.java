@@ -149,16 +149,9 @@ public class AppearanceCounterUI implements CaptureStartListener
 		@Override
 		public void run()
 		{
-			String line;
+			String line = "Pressing " + activeButton.getText() + " button";
 
-			if (activeButton == btnStart)
-			{
-				line = "Pressing start capturing button";
-				isAHotkeyResult = true;
-			}
-			else
-				line = "Pressing Stop capturing button";
-
+			isAHotkeyResult = true;
 			tts.speak(line);
 			activeButton.fire();
 		}
@@ -362,7 +355,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			MenuItem pingIP = new MenuItem("Ping this IP");
 			pingIP.setOnAction(event -> pingCommand(row.getItem().ipAddressProperty().getValue()));
 
-			MenuItem traceIP = new MenuItem("Traceroute this IP");
+			MenuItem traceIP = new MenuItem("Visual trace this IP");
 			traceIP.setOnAction(event -> traceCommand(row.getItem().ipAddressProperty().getValue()));
 
 			final ContextMenu rowMenu = new ContextMenu(getGeoIPinfo, copyIPtoClipboard, sendIPToPTS, pingIP, traceIP);

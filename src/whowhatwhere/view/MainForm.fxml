@@ -60,7 +60,7 @@
                                                 <CheckBox fx:id="chkboxHTTP" layoutX="266.0" layoutY="30.0" mnemonicParsing="false" text="HTTP" />
                                                 <Label layoutX="260.0" layoutY="70.0" text="seconds" />
                                                 <CheckBox fx:id="chkboxGetLocation" layoutY="127.0" mnemonicParsing="false" selected="true" text="Get location info for each IP address" />
-                                                <RadioButton fx:id="radioManual" layoutY="95.0" mnemonicParsing="false" text="Manual capture" />
+                                                <RadioButton fx:id="radioManual" layoutY="95.0" mnemonicParsing="false" text="Stop capture manually" />
                                                 <RadioButton fx:id="radioTimedCapture" layoutY="70.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="203.0" text="Automatically stop capturing after" />
                                                 <CheckBox fx:id="chkboxPing" layoutY="155.0" mnemonicParsing="false" selected="true" text="Ping each IP address" />
                                                 <Label layoutX="139.0" layoutY="155.0" text="Ping timeout:" />
@@ -159,7 +159,7 @@
                               </AnchorPane>
                            </content>
                         </TitledPane>
-                        <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="389.0" prefHeight="78.0" prefWidth="570.0" text="Trace (and Visual Trace)">
+                        <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="389.0" prefHeight="78.0" prefWidth="570.0" text="Visual Trace">
                           <content>
                             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                  <children>

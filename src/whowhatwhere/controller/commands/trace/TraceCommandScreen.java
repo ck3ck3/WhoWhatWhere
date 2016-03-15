@@ -33,7 +33,7 @@ public class TraceCommandScreen extends CommandScreen
 	private CheckBox chkboxResolveNames = new CheckBox("Resolve hostnames");
 	private Label labelTimeout = new Label("Ping timeout (in milliseconds)");
 	private NumberTextField numFieldTimeout = new NumberTextField("200", 1);
-	private Button btnVisualTrace = new Button("Show trace visually");
+	private Button btnVisualTrace = new Button("Show visual trace");
 
 	private String ip;
 
