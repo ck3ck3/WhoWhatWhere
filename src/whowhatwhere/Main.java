@@ -40,6 +40,8 @@ public class Main extends Application
 
 	private final static String iconResource16 = "/www16.jpg";
 	private final static String iconResource32 = "/www32.jpg";
+	private final static String iconResource48 = "/www48.jpg";
+	private final static String iconResource256 = "/www256.jpg";
 	public final static String jnetpcapDLLx86Location = "/native/windows/x86/jnetpcap.dll";
 	public final static String jnetpcapDLLx64Location = "/native/windows/x86_64/jnetpcap.dll";
 
@@ -91,8 +93,12 @@ public class Main extends Application
 			return false;
 		else
 		{
-			primaryStage.getIcons().add(new Image(Main.class.getResourceAsStream(iconResource16)));
-			primaryStage.getIcons().add(new Image(Main.class.getResourceAsStream(iconResource32)));
+			primaryStage.getIcons().addAll(
+					new Image(Main.class.getResourceAsStream(iconResource16)), 
+					new Image(Main.class.getResourceAsStream(iconResource32)),
+					new Image(Main.class.getResourceAsStream(iconResource48)), 
+					new Image(Main.class.getResourceAsStream(iconResource256))
+			);
 
 			tray = SystemTray.getSystemTray();
 			java.awt.Image image = Toolkit.getDefaultToolkit().getImage(Main.class.getResource(iconResource16));
