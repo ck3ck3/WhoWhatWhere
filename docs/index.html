@@ -17,7 +17,7 @@
 	<br>
 	<b><h2><a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/docs/screenshots/Watchdog.png">Watchdog</a></h2></b><li>Inspects network traffic and waits for a packet from a predefined list of IP addresses and source/destination ports and several protocols. Upon finding a match, a predefined message will be read out by text-to-speech. This feature can be used as a notifier for an incoming connection, for example.</li>
 	<br>
-	<b><h2><a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/docs/screenshots/VisualTrace.png">Trace and Visual Trace</a></h2></b><li>Perform a trace-route for a given IP address or hostname. Once the trace is complete, a visual trace is available, which shows the route of your packet on a map.</li>
+	<b><h2><a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/docs/screenshots/VisualTrace.png">Visual Trace</a></h2></b><li>Perform a trace-route for a given IP address or hostname. Once the trace is complete, a visual trace is available, which shows the route of your packet on a map.</li>
 </ul>
 </p>
 <br>
@@ -46,7 +46,7 @@ Who What Where can be minimized to the systrem tray by pressing the 'x' (close w
 <b><h3>Pick your netowrk adapter: </h3></b> In the top-left pane there should be a list with at least one network adapter (<a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/docs/screenshots/NetworkAdapter.png">example</a>). Select the adapter your want to listen to. If you're not sure which one to choose (the name would often have "ethernet" or "wireless" in it), just try and see which one works.
 <br>
 <b><h3>Who What Where</h3></b>
-Who What Where listens to your internet traffic and shows you which IP addresses were contacted, as well as some additional info such as ping time and geographical location of the IP address.
+Who What Where listens to (aka "captures") your internet traffic and shows you which IP addresses were contacted, as well as some additional info such as ping time and geographical location of the IP address. Set your preferred settings, start and stop a capture - and the results will be shown in the table.
 <br>
 <a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/docs/screenshots/CaptureOptions.png">Capture Options</a>
 <ul>
@@ -54,23 +54,49 @@ Who What Where listens to your internet traffic and shows you which IP addresses
 	<li>Automatically/manually stop capture: Choose if you'd like to stop the capture yourself, or let it stop automatically after a certain amount of time.</li>
 	<li>Capture options:
 	<br>
-		<i>Get location info for each IP address</i> - If checked, every IP address entry will also show its geographical location information (see limitations). If unchecked, the results will be displayed a bit quicker.
+		<i>Get location info for each IP address</i> - If checked, every IP address entry will also show its geographical location information (see <a href="http://ck3ck3.github.io/WhoWhatWhere/docs/index.html#GeoIPLimitations">limitations</a>). If unchecked, the results will be displayed a bit quicker.
 		<br>
 		<i>Ping each IP address</i> - If checked, each IP address entry will also show the ping result to that IP. There is also a configurable timeout. If unchecked, the results will be displayed a bit quicker.
 	</li>
 </ul>
-table rightclick
-<a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/docs/screenshots/HotkeyOptions.png">Hotkey and Text-To-Speech Options</a>
-Instead of manually pressing the start/stop buttons, you can use a hotkey. The hotkey is active globally, meaning you can press it while using any other application and even when Who What Where is minimized to the system tray.
 <br>
-When the hotkey is used, the text-to-speech feature can be enabled which then reads out the results to you, so you don't have the look at the application screen. This is useful when you already know what you're looking for. 
+<b>Right-clicking on a result in the table</b> opens a <a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/docs/screenshots/TableRightClick.png">pop-up menu</a> with several options: "See more GeoIP results in the browser" loads a GeoIP service results in the default web-browser. This site might have more (or different) results than what's shown in the table. See <a href="http://ck3ck3.github.io/WhoWhatWhere/docs/index.html#GeoIPLimitations">GeoIP Limitations</a>.
+<br>
+<br>
+<a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/docs/screenshots/HotkeyOptions.png">Hotkey and Text-To-Speech Options</a>
+<br>
+Instead of manually pressing the start/stop buttons, you can use a hotkey. The hotkey is active globally, meaning you can press it while using any other application and even when Who What Where is minimized to the system tray. If a capture is running, the hotkey will stop it. Otherwise, it will start a new capture.
+<br>
+If the text-to-speech feature is enabled and you use the hotkey to start or stop the capture, the results will be read out ot you - so you don't have the look at the application screen. This is useful when you already know what you're looking for. 
 <br>
 You can also filter out what is read to you, the first X rows or only rows that contain a certain value in a certain column. You can also select which column values to read out.
 <br>
 <br>
 <b><h3>Ping to Speech</h3></b>
-
+Put in any IP or hostname, and press the hotkey. The ping result will be read out. 
+<br>
+The hotkey is configurable, and the default one (Ctrl+NumPad 0) requires the numlock on your keyboard to be on. 
+<br>
+<br>
+<b><h3>Watchdog</h3></b>
+Watchdog listens to your network traffic and informs you when a packet arrives from a certain IP/port/protocol.
+<br>
+Click "Manage match list" to add entries to the list, or load an existing preset. After clicking "Done", write a message to read out when a match from the list is found. You can preview the message with the preview button.
+<br>
+Once the list and message are set, click "Start waiting for match" or press the hotkey. The default hotkey (Ctrl+NumPad 1) requires the numlock on your keyboard to be on.
+<br>
+<b><h3>Visual Trace</h3></b>
+Put in any IP or hostname, and click "Trace". A trace window opens, where you can configure a ping timeout and whether or not to resolve hostnames.
+<br>
+Click "Start trace" and wait for the trace to <a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/docs/screenshots/Trace.png">complete</a>. Then click "Show visual trace".
+<br>
+In the <a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/docs/screenshots/VisualTrace.png">Visual Trace screen</a> you can check/uncheck any hop on the route and see the changes on the map. You can also click "Focus map here" to see the exact location of the hop zoomed in, or you can click "GeoIP Info" to view info from another GeoIP source on your default browser.
+<br><br>
+<a name="GeoIPLimitations"></a>
+<h3><b><i>Note about GeoIP Limitations:</i></b></h3>
+Geographical IP services aren't always accurate. The address is based on what the company that owns the address reported when the address was bought. Sometimes an international company might list all their IPs are located in one area (where the main offices are, for exmaple), but some of these IPs may be used in other areas that the company operates. This is why sometimes for one IP address there may be more than one possible location, or an incorrect one. 
 </p>
+<br>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.js"></script>
 <script type="text/javascript" src="script.js"></script>
 
