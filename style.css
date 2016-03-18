@@ -1,0 +1,136 @@
+.expando {
+  display: inline-block;
+  background-position: 0px 0px;
+  background-image: url("icons.png");
+  width: 23px;
+  height: 23px;
+  margin-left: 4px;
+  margin-right: 6px;
+  margin-bottom: 2px;
+  vertical-align: top;
+  text-decoration: none;
+  cursor: pointer;
+}
+.expando.expanded {
+  background-position: 0px -48px;
+}
+.expando:hover {
+  background-position: 0px -24px;
+}
+.expando.expanded:hover {
+  background-position: 0px -72px;
+}
+
+.expandoContent {
+  padding-top: 13px;
+  padding-bottom: 2px;
+  overflow: hidden;
+  display: none;
+}
+
+html {
+  font-family: sans-serif;
+}
+
+body {
+    color: #333333;
+    background-color: #F8F8F8;
+    line-height: 1.3em;
+    padding: 10px 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: Verdana, Geneva, sans-serif;
+}
+
+h1 {
+    font-size: 2em;
+    margin: 30px 0;
+    /* margin-top: 40px; */
+    /* margin-bottom: 40px; */
+    font-weight: normal;
+}
+h2 {
+  font-size: 1em;
+  margin: 1.33em 0;
+}
+h3 {
+    font-size: .83em;
+    margin: 10px 0
+}
+.centered {
+    margin: 0 auto;
+    max-width: 960px;
+}
+
+p, span {
+    font-family: Georgia, Times, "Times New Roman", serif;
+}
+
+a.imgLink {
+  color: #333;
+}
+
+.expandoContent img {
+    max-width: 100%;
+}
+
+.title {
+    background: url('www48.jpg') no-repeat center left;
+    background-size: 48px;
+    padding: 1em 0;
+    margin: 1.4em 0.5em;
+}
+
+.title h1 {
+    margin: 0 0 0 64px;
+}
+
+b, strong {
+    font-weight: 700;
+}
+
+.links {
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 12px;
+    /* margin: 30px 0; */
+}
+
+.links a {
+  /* color: #1e6bb8; */
+  text-decoration: none;
+  padding: 0.75rem 1rem;
+  display: inline-block;
+  margin-bottom: 1rem;
+  color: rgb(53, 28, 6);
+  background-color: rgba(39,202,170,0.56);
+  border-color: rgb(0, 0, 0);
+  border-style: solid;
+  border-width: 2px;
+  border-radius: 5px;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+  margin-right: 40px;
+  margin-left: 40px;
+  /* font-weight: bold; */
+  font-size: 21px;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.links a:hover {
+    /* color: rgba(0, 0, 0, 0.46); */
+    /* text-decoration: none; */
+    background-color: hsla(188, 97%, 57%, 0.6);
+    /* border-color: rgba(146, 146, 146, 0.3); */
+}
+
+
+
+.screenshot {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.screenshot a {
+    text-decoration: none;
+}
