@@ -19,28 +19,22 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 	private IPSniffer sniffer;
 	private Map<Integer, IPToMatch> ipMap;
 
-	public FirstSightPacketHandler(List<IPToMatch> ipList, FirstSightListener listener, IPSniffer sniffer)
+	public FirstSightPacketHandler(List<IPToMatch> ipList, FirstSightListener listener, IPSniffer sniffer) throws IllegalArgumentException, UnknownHostException
 	{
 		this.listener = listener;
 		this.sniffer = sniffer;
 		ipMap = new HashMap<>();
 
-		try
+		for (IPToMatch ipToMatch : ipList)
 		{
-			for (IPToMatch ipToMatch : ipList)
-			{
-				String ip = ipToMatch.ipProperty().getValue();
-				
-				if (ip == null)
-					throw new IllegalArgumentException("IP address must be set");
-				
-				ipMap.put(IPSniffer.stringToIntIp(ip), ipToMatch);
-			}
+			String ip = ipToMatch.ipProperty().getValue();
+
+			if (ip == null)
+				throw new IllegalArgumentException("IP address must be set");
+
+			ipMap.put(IPSniffer.stringToIntIp(ip), ipToMatch);
 		}
-		catch (UnknownHostException e) 
-		{
-		}
-		
+
 		if (ipMap.isEmpty())
 			throw new IllegalArgumentException("No valid criteria was found");
 	}
@@ -67,7 +61,7 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 		int sourceInt = ipHeader.sourceToInt();
 
 		IPToMatch ipToMatch = ipMap.get(sourceInt);
-		
+
 		if (ipToMatch != null)
 		{
 			Integer protocol = ipToMatch.protocolAsInt();
@@ -75,21 +69,21 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 			String dstPort = ipToMatch.dstPortProperty().getValue();
 
 			if (protocol != null && !packet.hasHeader(protocol)) //if a protocol was specified, but this packet doesn't have it
-					return null;
+				return null;
 
 			boolean checkSrcPort = (srcPort != null && !srcPort.equals(IPToMatch.port_ANY));
 			boolean checkDstPort = (dstPort != null && !dstPort.equals(IPToMatch.port_ANY));
-			
+
 			if (checkSrcPort || checkDstPort)
 			{
 				int intSrcPort = Integer.valueOf(srcPort);
 				int intdstPort = Integer.valueOf(dstPort);
-				
+
 				if (packet.hasHeader(IPSniffer.TCP_PROTOCOL))
 				{
 					Tcp tcp = new Tcp();
 					tcp = packet.getHeader(tcp);
-					
+
 					if (checkSrcPort && intSrcPort != tcp.source())
 						return null;
 
@@ -112,7 +106,10 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 						return null;
 			}
 
-			return ipToMatch;
+//			if (ipHeader.length() > 300)
+				return ipToMatch;
+//			else
+//				return null;
 		}
 		else
 			return null;

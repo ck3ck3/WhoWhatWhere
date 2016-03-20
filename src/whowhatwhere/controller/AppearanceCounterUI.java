@@ -334,7 +334,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			final TableRow<IPInfoRowModel> row = new TableRow<>();
 
 			MenuItem getGeoIPinfo = new MenuItem("See more GeoIP results for this IP in browser");
-			getGeoIPinfo.setOnAction(event -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + row.getItem().ipAddressProperty()));
+			getGeoIPinfo.setOnAction(event -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + row.getItem().ipAddressProperty().getValue()));
 
 			MenuItem copyIPtoClipboard = new MenuItem("Copy IP to clipboard");
 			copyIPtoClipboard.setOnAction(event ->
@@ -345,7 +345,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 				clipboard.setContent(content);
 			});
 
-			MenuItem sendIPToPTS = new MenuItem("Send IP to Ping-to-Speech tab");
+			MenuItem sendIPToPTS = new MenuItem("Set this IP in Ping-to-Speech (in Utilities tab)");
 			sendIPToPTS.setOnAction(event ->
 			{
 				controller.getComboPTSipToPing().getEditor().setText(row.getItem().ipAddressProperty().getValue());

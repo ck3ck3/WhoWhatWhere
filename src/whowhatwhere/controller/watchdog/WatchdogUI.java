@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -166,7 +167,15 @@ public class WatchdogUI implements FirstSightListener
 				@Override
 				public void run()
 				{
-					sniffer.startFirstSightCapture(deviceIP, entryList, thisObj, new StringBuilder());
+					try
+					{
+						sniffer.startFirstSightCapture(deviceIP, entryList, thisObj, new StringBuilder());
+					}
+					catch (IllegalArgumentException | UnknownHostException e)
+					{
+						logger.log(Level.SEVERE, "Unable to build Watchdog list", e);
+						new Alert(AlertType.ERROR, "Unable to build Watchdog list: " + e.getMessage()).showAndWait();
+					}
 				}
 			}).start();
 
