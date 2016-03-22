@@ -26,7 +26,7 @@
 		<br>
 		
 		<p>
-			This case study uses the game NBA 2K16 to demonstrate how Who What Where can help diagnose network-lag problems in a PC game, and show how the Watchdog utility can inform us of a match that is about to start. But first, some background is required:
+			This case study uses the game NBA 2K16 to demonstrate how Who What Where can help diagnose network-lag problems in a PC game, and show how the Watchdog utility can inform the user of a match that is about to start. But first, some background is required:
 		</p>
 		<p>
 			<strong>What is lag?</strong> Lag (or high network latency) means it takes "too long" for data to reach from your computer to its destination (on the network) and back to your computer. How long is "too long"? Depends on the application in question: If it takes a user 0.3 seconds longer for a web page to finish loading, it's not a big deal. But in many online games, the quickness in which data can flow back and forth is very important for the gameplay experience. For example, in a shooting game it can mean you tried to shoot at a moving target, but since it took your actions 0.3 seconds to reach the game server, the target has already moved and your shot misses.
@@ -35,9 +35,9 @@
 			<br><br>
 			<strong>What causes lag?</strong> It is important to understand that your internet connection's bandwidth (your download speed) has very little to do with the latency. Bandwidth measures how much data can be transferred in a certain amount of time, while latency measures how much time it takes to get from host A to host B. Lag can be caused by several factors:
 			<ul>
-				<li>A Wireless (WiFi) connection instead of a cabled connection. The wireless connection isn't always stable, which can cause high latency for data between your computer and the router just because of errors and re-transmissions. It can be the distance or obstacles between the computer and router, your neighbor's WiFi signals interference, or even using a cordless phone or a microwave in the area. If latency is important to you, always use a cabled connection.</li>
-				<li>Heavy use of the router by different applications. This includes any users of that router, wireless or cabled. Downloading (including streaming media) requires transferring large chunks of data, which can cause some delays in the router's operation. Those delays barely affect other applications, but users of lag-sensitive games will definitely feel it. In those situations, it is recommended not to use the network for anything else.</li>
-				<li>Network congestion somewhere on the route between your computer and the target host. When you send data to a host on the internet, your data goes through several other "hops" , each hop is a router somewhere, on a network that might be congested (busy). In that case, there's nothing you can do. You might be able to bypass it with a VPN or proxy but this is beyond this document's scope.</li>
+				<li>A Wireless (WiFi) connection instead of a cabled connection. The wireless connection isn't always stable, which can cause high latency for data between your computer and the router just because of errors and re-transmissions. It can be the distance or obstacles between the computer and router, your neighbors' WiFi signals interference, or even using a cordless phone or a microwave in the area. If latency is important to you, always use a cabled connection.</li>
+				<li>Heavy use of the router by different applications. This includes any users of that router, wireless or cabled. Downloading (including streaming media) requires transferring large chunks of data, which can cause some delays in the router's operation. Those delays barely affect other applications, but users of latency-sensitive games will definitely feel it. In those situations, it is recommended not to use the network for anything else.</li>
+				<li>Network congestion somewhere on the route between your computer and the target host. When you send data to a host on the internet, your data goes through several other "hops", each hop is a router somewhere, on a network that might be congested (busy). In that case, there's nothing you can do. You might be able to bypass it with a VPN or proxy but this is beyond this document's scope.</li>
 				<li>High CPU load on the game server. Sometimes the servers are too busy if there are too many players on at once, or due to some bug or even hardware failure. There's nothing you can do in that situation.</li>
 				<li>In some online games, the other players in the game might have lag that affects others. This can happen when the server waits for all users to send some data in order to process it and send data back, and then one slow user could affect the others.</li>
 			</ul>
@@ -51,16 +51,16 @@
 			<br><br>
 			If the latency is too high, we can try to see why by performing a trace-route. Right-click the address of the server and choose <strong>Visual Trace</strong>. We can then see the traceroute result, and also see it visually to understand where the delay is. There's not much that you can do to "fix" it once the lag is outside of your home network, but you can get a general idea of where your data gets delayed.
 			<br><br>
-			Another usage for Who What Where is to be able to tell on which server you're playing. NBA 2K16 has servers in Europe, USA and Asia, and sometimes when there's too much load on your region's server, the game moves to a different region's server, which might cause lag due to the bigger distance the data has to travel. By using the <strong>text-to-speech options</strong> you can <a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/2Kconfig.png">configure</a> it so that once you start and stop a capture with the hotkey, you will hear the city name of where the server is and the ping result to it. 
+			Another usage for Who What Where is to be able to know on which server you're playing right now. NBA 2K16 has servers in Europe, USA and Asia, and sometimes when there's too much load on your region's server, the game moves to a different region's server, which might cause lag due to the extra distance the data has to travel. By using the <strong>text-to-speech options</strong> you can <a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/2Kconfig.png">configure</a> it so that once you start and stop a capture with the hotkey, you will hear the city name of where the server is and the ping result to it. 
 			<br><br>
 			If you only want to hear the ping result to a specific IP address or hostname (like the game server), you can use the <strong>Ping-to-Speech</strong> feature. Just press the hotkey and listen to the ping result.
 		</p>
 		<br>
 		<h2>Using Watchdog to find out when an online match is about to start</h2>
 		<p>
-			In some game modes, it takes a while for game to start while it's looking for a match, or waiting for enough players to gather in the lobby, or just waiting for another game to finish. But when the game finally starts, in some modes there is no audio cue to let the user know. Sometimes people alt-tab away and forget about the game they're waiting on.
+			In some game modes, it takes a while for game to start while it's looking for a match, or waiting for enough players to gather in the lobby, or just waiting for another game to finish. But when your game finally starts, in some modes there is no audio cue to let the user know. Sometimes people alt-tab away and forget about the game they're waiting on.
 			<br>
-			Watchdog can listen to incoming traffic, and wait for a packet that matches an entry out of a rule list. Once a match is made, a user-defined text-to-speech message is played. In NBA 2K16, we can know a game is about to start as soon as we start receiving UDP packets from the game server that are above a certain size (~300 bytes). 
+			Watchdog can listen to incoming traffic, and wait for a packet that matches an entry out of a rule list. Once one of those packets is detected, a user-defined text-to-speech message is played. In NBA 2K16, we can know a game is about to start as soon as we start receiving UDP packets from the game server that are above a certain size (~300 bytes). 
 		</p>
 		
 	</div>
