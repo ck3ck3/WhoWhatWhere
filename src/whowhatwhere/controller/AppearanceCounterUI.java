@@ -1,6 +1,10 @@
 package whowhatwhere.controller;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +28,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TabPane;
@@ -33,6 +38,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
@@ -88,6 +94,9 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private final static String msgTimerExpired = "Timer expired, stopping capture";
 	private final static String captureHotkeyID = "Mosed used IPs capture hotkey";
 	private final static String voiceForTTS = "kevin16";
+	
+	private final static String emptyNotesString = "(Click to add notes)";
+	private final static String userNotesFilename = "userNotes.properties";
 
 	private GUIController controller;
 
@@ -106,6 +115,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private TableView<IPInfoRowModel> tableResults;
 	private TableColumn<IPInfoRowModel, Integer> columnPacketCount;
 	private TableColumn<IPInfoRowModel, String> columnIP;
+	private TableColumn<IPInfoRowModel, String> columnNotes;
 	private TableColumn<IPInfoRowModel, String> columnOwner;
 	private TableColumn<IPInfoRowModel, String> columnPing;
 	private TableColumn<IPInfoRowModel, String> columnCountry;
@@ -143,6 +153,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private int captureHotkeyKeyCode;
 	private int captureHotkeyModifiers;
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
+	private Properties userNotes;
 
 	private Runnable captureHotkeyPressed = new Runnable()
 	{
@@ -173,10 +184,31 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 		btnStop.setDisable(true);
 
+		initUserNotes();
 		initTable();
 		initColumnListForTTS();
 		initButtonHandlers();
+	}
 
+	private void initUserNotes()
+	{
+		InputStream in;
+		File userNotesFile = new File(userNotesFilename);
+		userNotes = new Properties();
+
+		if (userNotesFile.exists())
+		{
+			try
+			{
+				in = new FileInputStream(userNotesFile);
+				
+				userNotes.load(in);
+				in.close();
+			}
+			catch (IOException e)
+			{
+			}
+		}
 	}
 
 	private void initUIElementsFromController()
@@ -196,6 +228,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		tableResults = controller.getTableResults();
 		columnPacketCount = controller.getColumnPacketCount();
 		columnIP = controller.getColumnIP();
+		columnNotes = controller.getColumnNotes();
 		columnOwner = controller.getColumnOwner();
 		columnPing = controller.getColumnPing();
 		columnCountry = controller.getColumnCountry();
@@ -299,11 +332,28 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 		columnPacketCount.setCellValueFactory(new PropertyValueFactory<>("packetCount"));
 		columnIP.setCellValueFactory(new PropertyValueFactory<>("ipAddress"));
+		columnNotes.setCellValueFactory(new PropertyValueFactory<>("notes"));
 		columnOwner.setCellValueFactory(new PropertyValueFactory<>("owner"));
 		columnPing.setCellValueFactory(new PropertyValueFactory<>("ping"));
 		columnCountry.setCellValueFactory(new PropertyValueFactory<>("country"));
 		columnRegion.setCellValueFactory(new PropertyValueFactory<>("region"));
 		columnCity.setCellValueFactory(new PropertyValueFactory<>("city"));
+
+		columnNotes.setCellFactory(TextFieldTableCell.forTableColumn()); //make Notes column editable
+		columnNotes.setOnEditCommit(rowModel ->
+		{
+			String newContent = rowModel.getNewValue().isEmpty() ? emptyNotesString : rowModel.getNewValue();
+			String ipAddress = rowModel.getRowValue().ipAddressProperty().get();
+			
+			rowModel.getRowValue().setNotes(newContent);
+
+			if (newContent.equals(emptyNotesString))
+				userNotes.remove(ipAddress); //doesn't do anything if the key didn't exist
+			else
+				userNotes.put(ipAddress, newContent);
+			
+			saveUserNotes();
+		});
 
 		generatePopupMenus();
 	}
@@ -331,19 +381,51 @@ public class AppearanceCounterUI implements CaptureStartListener
 	{
 		tableResults.setRowFactory(tableView ->
 		{
-			final TableRow<IPInfoRowModel> row = new TableRow<>();
+			TableRow<IPInfoRowModel> row = new TableRow<>(); //this row will be populated before the event handlers are called.
+															 //this reference points to the object that will be used for the actual populated row,
+															 //so the event handlers can safely use it.
+			
+			MenuItem copyRowAsCSV = new MenuItem("Copy whole row in CSV format");
+			copyRowAsCSV.setOnAction(event ->
+			{
+				Clipboard clipboard = Clipboard.getSystemClipboard();
+				ClipboardContent content = new ClipboardContent();
+				StringBuilder csvBuilder = new StringBuilder();
+				
+				for(String dataItem : row.getItem().getFullRowDataAsOrderedList())
+					csvBuilder.append(dataItem + ",");
+				
+				csvBuilder.deleteCharAt(csvBuilder.length() - 1);
+				content.putString(csvBuilder.toString());
+				
+				clipboard.setContent(content);
+			});
+			
+			Menu copyMenu = new Menu("Copy");
+			copyMenu.getItems().add(copyRowAsCSV);
+
+			for (TableColumn<IPInfoRowModel, ?> column : tableResults.getColumns()) //build the submenu to copy each column value
+			{
+				String columnName = column.getText();
+				MenuItem itemForcolumn = new MenuItem(columnName);
+				itemForcolumn.setOnAction(event ->
+				{
+					Clipboard clipboard = Clipboard.getSystemClipboard();
+					ClipboardContent content = new ClipboardContent();
+					
+					Map<String, String> mapColumnNameToPropertyValue = mapColumnNameToPropertyValue(row.getItem());
+					
+					String valueToCopy = mapColumnNameToPropertyValue.get(columnName);
+					content.putString(valueToCopy);
+
+					clipboard.setContent(content);					
+				});
+				
+				copyMenu.getItems().add(itemForcolumn);
+			}
 
 			MenuItem getGeoIPinfo = new MenuItem("See more GeoIP results for this IP in browser");
 			getGeoIPinfo.setOnAction(event -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + row.getItem().ipAddressProperty().getValue()));
-
-			MenuItem copyIPtoClipboard = new MenuItem("Copy IP to clipboard");
-			copyIPtoClipboard.setOnAction(event ->
-			{
-				final Clipboard clipboard = Clipboard.getSystemClipboard();
-				final ClipboardContent content = new ClipboardContent();
-				content.putString(row.getItem().ipAddressProperty().getValue());
-				clipboard.setContent(content);
-			});
 
 			MenuItem sendIPToPTS = new MenuItem("Set this IP in Ping-to-Speech (in Utilities tab)");
 			sendIPToPTS.setOnAction(event ->
@@ -358,7 +440,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			MenuItem traceIP = new MenuItem("Visual trace this IP");
 			traceIP.setOnAction(event -> traceCommand(row.getItem().ipAddressProperty().getValue()));
 
-			final ContextMenu rowMenu = new ContextMenu(getGeoIPinfo, copyIPtoClipboard, sendIPToPTS, pingIP, traceIP);
+			final ContextMenu rowMenu = new ContextMenu(copyMenu, getGeoIPinfo, sendIPToPTS, pingIP, traceIP);
 
 			// only display context menu for non-null items:
 			row.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(row.itemProperty())).then(rowMenu).otherwise((ContextMenu) null));
@@ -569,21 +651,25 @@ public class AppearanceCounterUI implements CaptureStartListener
 		ObservableList<IPInfoRowModel> items = tableResults.getItems();
 
 		for (IPInfoRowModel ipInfoRowModel : items)
-		{
-			Map<String, String> colMapping = new HashMap<>();
-
-			colMapping.put("Packet Count", ipInfoRowModel.packetCountProperty().getValue().toString());
-			colMapping.put("IP Address", ipInfoRowModel.ipAddressProperty().getValue());
-			colMapping.put("Owner", ipInfoRowModel.ownerProperty().getValue());
-			colMapping.put("Ping", ipInfoRowModel.pingProperty().getValue());
-			colMapping.put("Country", ipInfoRowModel.countryProperty().getValue());
-			colMapping.put("Region", ipInfoRowModel.regionProperty().getValue());
-			colMapping.put("City", ipInfoRowModel.cityProperty().getValue());
-
-			rowIDToCOlMapping.put(ipInfoRowModel.getRowID(), colMapping);
-		}
+			rowIDToCOlMapping.put(ipInfoRowModel.getRowID(), mapColumnNameToPropertyValue(ipInfoRowModel));
 
 		return rowIDToCOlMapping;
+	}
+	
+	private Map<String, String> mapColumnNameToPropertyValue(IPInfoRowModel ipInfoRowModel)
+	{
+		Map<String, String> colMapping = new HashMap<>();
+		
+		colMapping.put("Packet Count", ipInfoRowModel.packetCountProperty().getValue().toString());
+		colMapping.put("User Notes", ipInfoRowModel.notesProperty().getValue());
+		colMapping.put("IP Address", ipInfoRowModel.ipAddressProperty().getValue());
+		colMapping.put("Owner", ipInfoRowModel.ownerProperty().getValue());
+		colMapping.put("Ping", ipInfoRowModel.pingProperty().getValue());
+		colMapping.put("Country", ipInfoRowModel.countryProperty().getValue());
+		colMapping.put("Region", ipInfoRowModel.regionProperty().getValue());
+		colMapping.put("City", ipInfoRowModel.cityProperty().getValue());
+		
+		return colMapping;
 	}
 
 	private boolean isNoColumnChecked()
@@ -682,6 +768,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			Integer id = i++;
 			Integer amountOfAppearances = ipCounter.getAmountOfAppearances();
 			String ip = ipCounter.getIp();
+			String notes = emptyNotesString;
 			String owner = "";
 			String ping = "";
 			String country = "";
@@ -705,8 +792,10 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 			if (chkboxPing.isSelected())
 				ping = IPSniffer.pingAsString(ip, numberFieldPingTimeout.getValue());
+			
+			notes = userNotes.getProperty(ip, emptyNotesString);
 
-			row = new IPInfoRowModel(id, amountOfAppearances, ip, owner, ping, country, region, city);
+			row = new IPInfoRowModel(id, amountOfAppearances, ip, notes, owner, ping, country, region, city);
 			data.add(row);
 		}
 
@@ -740,15 +829,15 @@ public class AppearanceCounterUI implements CaptureStartListener
 	{
 		captureHotkeyModifiers = PropertiesByType.getIntProperty(props, propsCaptureHotkeyModifiers);
 		captureHotkeyKeyCode = PropertiesByType.getIntProperty(props, propsCaptureHotkeyKeycode);
-		chkboxUseCaptureHotkey.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseCaptureHotkey));
+		chkboxUseCaptureHotkey.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseCaptureHotkey, false));
 
 		if (chkboxUseCaptureHotkey.isSelected())
 			hotkeyRegistry.addHotkey(captureHotkeyID, captureHotkeyModifiers, captureHotkeyKeyCode, labelCurrCaptureHotkey, captureHotkeyPressed);
 
-		chkboxUseTTS.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseTTS));
+		chkboxUseTTS.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseTTS, false));
 		numFieldRowsToRead.setText(props.getProperty(propsNumFieldRowsToRead));
 
-		chkboxFilterResults.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxFilterResults));
+		chkboxFilterResults.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxFilterResults, false));
 		textColumnContains.setText(props.getProperty(propsTextColumnContains));
 
 		String comboValue = props.getProperty(propsComboColumnsSelection);
@@ -756,16 +845,16 @@ public class AppearanceCounterUI implements CaptureStartListener
 			comboColumns.setValue(comboValue);
 
 		for (CheckBox box : chkboxListColumns)
-			box.setSelected(PropertiesByType.getBoolProperty(props, propsTTSCheckBox + box.getText()));
+			box.setSelected(PropertiesByType.getBoolProperty(props, propsTTSCheckBox + box.getText(), false));
 	}
 
 	private void setCaptureOptionsPane(Properties props)
 	{
-		radioTimedCapture.setSelected(PropertiesByType.getBoolProperty(props, propsRadioTimedCapture));
+		radioTimedCapture.setSelected(PropertiesByType.getBoolProperty(props, propsRadioTimedCapture, false));
 		numFieldCaptureTimeout.setText(props.getProperty(propsNumFieldCaptureTimeout));
-		radioManual.setSelected(PropertiesByType.getBoolProperty(props, propsRadioManual));
-		chkboxGetLocation.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxGetLocation));
-		chkboxPing.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxPing));
+		radioManual.setSelected(PropertiesByType.getBoolProperty(props, propsRadioManual, false));
+		chkboxGetLocation.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxGetLocation, false));
+		chkboxPing.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxPing, false));
 		numberFieldPingTimeout.setText(props.getProperty(propsNumberFieldPingTimeout));
 	}
 
@@ -774,25 +863,25 @@ public class AppearanceCounterUI implements CaptureStartListener
 		boolean isChecked;
 		protocolBoxesChecked = 0;
 
-		isChecked = PropertiesByType.getBoolProperty(props, propsChkboxUDP);
+		isChecked = PropertiesByType.getBoolProperty(props, propsChkboxUDP, false);
 		if (isChecked)
 			protocolBoxesChecked++;
 
 		chkboxUDP.setSelected(isChecked);
 
-		isChecked = PropertiesByType.getBoolProperty(props, propsChkboxTCP);
+		isChecked = PropertiesByType.getBoolProperty(props, propsChkboxTCP, false);
 		if (isChecked)
 			protocolBoxesChecked++;
 
 		chkboxTCP.setSelected(isChecked);
 
-		isChecked = PropertiesByType.getBoolProperty(props, propsChkboxICMP);
+		isChecked = PropertiesByType.getBoolProperty(props, propsChkboxICMP, false);
 		if (isChecked)
 			protocolBoxesChecked++;
 
 		chkboxICMP.setSelected(isChecked);
 
-		isChecked = PropertiesByType.getBoolProperty(props, propsChkboxHTTP);
+		isChecked = PropertiesByType.getBoolProperty(props, propsChkboxHTTP, false);
 		if (isChecked)
 			protocolBoxesChecked++;
 
@@ -854,6 +943,22 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 		for (CheckBox box : chkboxListColumns)
 			props.put(propsTTSCheckBox + box.getText(), ((Boolean) box.isSelected()).toString());
+		
+		saveUserNotes();
+	}
+
+	private void saveUserNotes()
+	{
+		try
+		{
+			FileOutputStream out = new FileOutputStream(userNotesFilename);
+			userNotes.store(out, "Last run configuration");
+			out.close();
+		}
+		catch (IOException e)
+		{
+			logger.log(Level.SEVERE, "Unable to save user notes file " + userNotesFilename, e);
+		}
 	}
 
 }

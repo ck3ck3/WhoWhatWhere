@@ -302,7 +302,7 @@ public class IPSniffer
 				ping = "Timeout";
 			else
 				if (results.contains("ms"))
-					ping = results.replace("ms", " milliseconds");
+					ping = results.replace("ms", " milliseconds").substring(1); //replace ms to milliseconds for user-friendly TTS, and eat up a leading space.
 				else
 					ping = "Error";
 

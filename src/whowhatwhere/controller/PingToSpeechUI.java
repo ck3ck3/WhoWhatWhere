@@ -136,7 +136,7 @@ public class PingToSpeechUI
 	
 	private void setPTSHotkey(Properties props)
 	{
-		chkboxPTSHotkey.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxPTSHotkey));
+		chkboxPTSHotkey.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxPTSHotkey, false));
 		ptsHotkeyModifiers = PropertiesByType.getIntProperty(props, propsPTSModifiers);
 		ptsHotkeyKeyCode = PropertiesByType.getIntProperty(props, propsPTSHotkey);
 

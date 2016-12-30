@@ -47,7 +47,7 @@ public class Main extends Application
 
 	private final static String appTitle = "Who What Where";
 	private final static String mainFormLocation = "/whowhatwhere/view/MainForm.fxml";
-	private final static int windowSizeX = 1024;
+	private final static int windowSizeX = 1190;
 	private final static int windowSizeY = 790;
 
 	private static Logger logger = Logger.getLogger(Main.class.getPackage().getName());

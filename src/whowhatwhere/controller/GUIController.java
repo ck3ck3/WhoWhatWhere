@@ -99,6 +99,8 @@ public class GUIController implements Initializable
 	@FXML
 	private TableColumn<IPInfoRowModel, String> columnIP;
 	@FXML
+	private TableColumn<IPInfoRowModel, String> columnNotes;
+	@FXML
 	private TableColumn<IPInfoRowModel, String> columnOwner;
 	@FXML
 	private TableColumn<IPInfoRowModel, String> columnPing;
@@ -335,7 +337,7 @@ public class GUIController implements Initializable
 			logger.log(Level.SEVERE, "Unable to load properties file: " + e.getMessage(), e);
 		}
 
-		int nicIndex = PropertiesByType.getIntProperty(props, propsNICIndex);
+		int nicIndex = PropertiesByType.getIntProperty(props, propsNICIndex, 0);
 
 		Node node = vboxNICs.getChildren().get(nicIndex);
 		if (node instanceof RadioButton)
@@ -524,6 +526,11 @@ public class GUIController implements Initializable
 		return columnIP;
 	}
 
+	public TableColumn<IPInfoRowModel, String> getColumnNotes()
+	{
+		return columnNotes;
+	}
+	
 	public TableColumn<IPInfoRowModel, String> getColumnOwner()
 	{
 		return columnOwner;

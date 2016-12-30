@@ -240,7 +240,7 @@ public class WatchdogUI implements FirstSightListener
 
 	private void setWatchdogHotkey(Properties props)
 	{
-		chkboxHotkey.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxHotkey));
+		chkboxHotkey.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxHotkey, false));
 		hotkeyModifiers = PropertiesByType.getIntProperty(props, propsHotkeyModifiers);
 		hotkeyKeyCode = PropertiesByType.getIntProperty(props, propsHotkeyKeycode);
 

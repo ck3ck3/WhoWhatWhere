@@ -1,5 +1,8 @@
 package whowhatwhere.controller;
 
+import java.util.Arrays;
+import java.util.List;
+
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 
@@ -7,27 +10,36 @@ public class IPInfoRowModel
 {
 	private Integer rowID;
 
+//	ANY NEW PROPERTY THAT IS ADDED, MUST ALSO BE ADDED TO AppearanceCounterUI.mapColumnNameToPropertyValue() method
+	
 	private SimpleIntegerProperty packetCount;
 	private SimpleStringProperty ipAddress;
+	private SimpleStringProperty notes;
 	private SimpleStringProperty owner;
 	private SimpleStringProperty ping;
 	private SimpleStringProperty country;
 	private SimpleStringProperty region;
 	private SimpleStringProperty city;
 
-	public IPInfoRowModel(Integer rowID, Integer packetCount, String ipAddress, String owner, String ping, String country, String region, String city)
+	public IPInfoRowModel(Integer rowID, Integer packetCount, String ipAddress, String notes, String owner, String ping, String country, String region, String city)
 	{
 		this.rowID = new Integer(rowID);
 		
 		this.packetCount = new SimpleIntegerProperty(packetCount);
 		this.ipAddress = new SimpleStringProperty(ipAddress);
+		this.notes = new SimpleStringProperty(notes);
 		this.owner = new SimpleStringProperty(owner);
 		this.ping = new SimpleStringProperty(ping);
 		this.country = new SimpleStringProperty(country);
 		this.region = new SimpleStringProperty(region);
 		this.city = new SimpleStringProperty(city);
 	}
-
+	
+	public List<String> getFullRowDataAsOrderedList() //the items must be set in the order in which they will appear in the table
+	{
+		return Arrays.asList(packetCount.getValue().toString(), ipAddress.getValue(), notes.getValue(), owner.getValue(), ping.getValue(), country.getValue(), region.getValue(), city.getValue());
+	}
+	
 	public SimpleIntegerProperty packetCountProperty()
 	{
 		return packetCount;
@@ -42,12 +54,22 @@ public class IPInfoRowModel
 	{
 		return ipAddress;
 	}
-
+	
 	public void setIpAddress(String ipAddress)
 	{
 		this.ipAddress.setValue(ipAddress);
 	}
 
+	public SimpleStringProperty notesProperty()
+	{
+		return notes;
+	}
+	
+	public void setNotes(String notes)
+	{
+		this.notes.setValue(notes);
+	}
+	
 	public SimpleStringProperty ownerProperty()
 	{
 		return owner;

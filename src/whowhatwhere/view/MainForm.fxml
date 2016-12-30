@@ -5,7 +5,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane prefHeight="800.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.GUIController">
+<BorderPane prefHeight="800.0" prefWidth="1190.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.GUIController">
    <top>
       <MenuBar BorderPane.alignment="CENTER">
         <menus>
@@ -48,7 +48,7 @@
                               </ScrollPane>
                               <ScrollPane hbarPolicy="NEVER" vbarPolicy="NEVER">
                                  <content>
-                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="670.0" prefWidth="508.0">
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="670.0" prefWidth="680.0">
                                        <children>
                                           <AnchorPane fx:id="paneCaptureOptions" layoutX="7.0" layoutY="14.0" prefHeight="190.0" prefWidth="303.0">
                                              <children>
@@ -77,14 +77,15 @@
                            </children>
                         </HBox>
                         <Label layoutX="15.0" layoutY="289.0" text="Results:" />
-                        <TableView fx:id="tableResults" layoutY="315.0" prefHeight="210.0" prefWidth="992.0" stylesheets="whowhatwhere/view/tableResults.css" AnchorPane.bottomAnchor="168.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="315.0">
+                        <TableView fx:id="tableResults" editable="true" layoutY="315.0" prefHeight="210.0" prefWidth="992.0" stylesheets="whowhatwhere/view/tableResults.css" AnchorPane.bottomAnchor="168.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="315.0">
                            <columns>
                               <TableColumn fx:id="columnPacketCount" editable="false" prefWidth="94.0" sortType="DESCENDING" text="Packet Count" />
                               <TableColumn fx:id="columnIP" minWidth="8.0" prefWidth="122.0" text="IP Address" />
+                              <TableColumn fx:id="columnNotes" prefWidth="160.0" text="User Notes" />
                               <TableColumn fx:id="columnOwner" editable="false" minWidth="1.0" prefWidth="188.0" text="Owner" />
                               <TableColumn fx:id="columnPing" prefWidth="128.0" text="Ping" />
                               <TableColumn fx:id="columnCountry" editable="false" minWidth="0.0" prefWidth="166.0" text="Country" />
-                              <TableColumn fx:id="columnRegion" editable="false" minWidth="0.0" prefWidth="119.0" text="Region" />
+                              <TableColumn fx:id="columnRegion" editable="false" minWidth="0.0" prefWidth="143.0" text="Region" />
                               <TableColumn fx:id="columnCity" editable="false" prefWidth="155.0" text="City" />
                            </columns>
                         </TableView>
