@@ -310,7 +310,7 @@ public class IPSniffer
 		}
 		catch (IOException e)
 		{
-			logger.log(Level.SEVERE, "Unable able to generate ping (failed to load Ping (command) screen)", e);
+			logger.log(Level.SEVERE, "Unable to execute ping (failed to load Ping (command) screen)", e);
 			return errorString;
 		}
 	}

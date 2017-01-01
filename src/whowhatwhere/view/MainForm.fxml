@@ -33,9 +33,9 @@
                      <children>
                         <HBox prefHeight="275.0" prefWidth="1022.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="2.0">
                            <children>
-                              <ScrollPane>
+                              <ScrollPane hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
                                  <content>
-                                    <VBox fx:id="vboxNICs" fillWidth="false" maxHeight="273.0" maxWidth="500.0" minHeight="190.0" minWidth="500.0" prefHeight="273.0" prefWidth="500.0">
+                                    <VBox fx:id="vboxNICs" fillWidth="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="190.0" minWidth="500.0" prefHeight="273.0" prefWidth="500.0">
                                        <children>
                                           <Label text="Choose your network adapter:">
                                              <padding>
@@ -46,9 +46,9 @@
                                     </VBox>
                                  </content>
                               </ScrollPane>
-                              <ScrollPane hbarPolicy="NEVER" vbarPolicy="NEVER">
+                              <ScrollPane hbarPolicy="NEVER" vbarPolicy="NEVER" HBox.hgrow="ALWAYS">
                                  <content>
-                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="670.0" prefWidth="680.0">
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="277.0" prefWidth="680.0">
                                        <children>
                                           <AnchorPane fx:id="paneCaptureOptions" layoutX="7.0" layoutY="14.0" prefHeight="190.0" prefWidth="303.0">
                                              <children>
@@ -89,6 +89,11 @@
                               <TableColumn fx:id="columnCity" editable="false" prefWidth="155.0" text="City" />
                            </columns>
                         </TableView>
+                        <AnchorPane layoutX="1114.0" layoutY="529.0" AnchorPane.bottomAnchor="139.0" AnchorPane.rightAnchor="24.0">
+                           <children>
+                              <Button fx:id="btnExportTableToCSV" disable="true" mnemonicParsing="false" text="Export table contents to CSV file" />
+                           </children>
+                        </AnchorPane>
                         <AnchorPane fx:id="paneEnableCaptureHotkey" layoutX="36.0" layoutY="534.0" prefHeight="159.0" prefWidth="876.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="36.0">
                            <children>
                               <Button fx:id="btnConfigCaptureHotkey" layoutX="82.0" mnemonicParsing="false" text="Configure hotkey" />

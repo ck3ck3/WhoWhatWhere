@@ -36,6 +36,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
@@ -182,6 +183,8 @@ public class GUIController implements Initializable
 	private TextField textTrace;
 	@FXML
 	private Button btnTrace;
+	@FXML
+	private Button btnExportTableToCSV;
 
 	private NumberTextField numFieldCaptureTimeout;
 	private NumberTextField numFieldRowsToRead;
@@ -234,7 +237,8 @@ public class GUIController implements Initializable
 	{
 		menuItemMinimize.setOnAction(event ->
 		{
-			Stage stage = (Stage) tabPane.getScene().getWindow();
+			Stage stage = getStage();
+			
 			Event.fireEvent(stage, new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
 		});
 
@@ -261,6 +265,7 @@ public class GUIController implements Initializable
 		for (DeviceIPAndDescription deviceInfo : listOfDevices)
 		{
 			RadioButton btn = new RadioButton(deviceInfo.getDescription() + " " + deviceInfo.getIP());
+			btn.setTooltip(new Tooltip(btn.getText())); // so we don't need a horizontal scroller
 			btn.setUserData(index++);
 			btn.setToggleGroup(tglGrpNIC);
 			btn.setPadding(new Insets(0, 0, 0, 10));
@@ -268,6 +273,8 @@ public class GUIController implements Initializable
 
 			vboxNICs.getChildren().add(btn);
 		}
+		
+		vboxNICs.setPrefHeight(listOfDevices.size() * 30); //to resize, in case we'll need a vertical scroller
 
 		tglGrpNIC.selectToggle(tglGrpNIC.getToggles().get(0)); //select the first button
 	}
@@ -730,9 +737,19 @@ public class GUIController implements Initializable
 	{
 		return tglGrpNIC;
 	}
+	
+	public Button getBtnExportTableToCSV()
+	{
+		return btnExportTableToCSV;
+	}
 
 	public HotkeyRegistry getHotkeyRegistry()
 	{
 		return hotkeyRegistry;
+	}
+	
+	public Stage getStage()
+	{
+		return (Stage)tabPane.getScene().getWindow();
 	}
 }

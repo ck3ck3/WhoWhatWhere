@@ -16,6 +16,8 @@ import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.io.FileUtils;
+
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
@@ -23,6 +25,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -37,6 +40,7 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.Clipboard;
@@ -44,6 +48,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import whowhatwhere.Main;
 import whowhatwhere.controller.commands.ping.PingCommandScreen;
@@ -81,6 +86,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private final static String propsComboColumnsSelection = "comboColumnsSelection";
 	private final static String propsTextColumnContains = "textColumnContains";
 	private final static String propsTTSCheckBox = "TTSCheckBox ";
+	private final static String propsExportCSVPath = "Export to CSV path";
 
 	private final static int defaultCaptureTimeout = 10;
 	private final static int defaultPingTimeout = 300;
@@ -113,6 +119,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private Label labelReadFirstRows;
 	private CheckBox chkboxGetLocation;
 	private TableView<IPInfoRowModel> tableResults;
+	private Button btnExportTableToCSV;
 	private TableColumn<IPInfoRowModel, Integer> columnPacketCount;
 	private TableColumn<IPInfoRowModel, String> columnIP;
 	private TableColumn<IPInfoRowModel, String> columnNotes;
@@ -139,7 +146,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private TextField textColumnContains;
 	private TabPane tabPane;
 	private HotkeyRegistry hotkeyRegistry;
-
+	
 	private Button activeButton;
 	private ToggleGroup tglGrpCaptureOptions = new ToggleGroup();
 	private List<CheckBox> chkboxListColumns;
@@ -154,6 +161,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private int captureHotkeyModifiers;
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 	private Properties userNotes;
+	private String suggestedPathForCSVFile;
 
 	private Runnable captureHotkeyPressed = new Runnable()
 	{
@@ -226,6 +234,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		labelReadFirstRows = controller.getLabelReadFirstRows();
 		chkboxGetLocation = controller.getChkboxGetLocation();
 		tableResults = controller.getTableResults();
+		btnExportTableToCSV = controller.getBtnExportTableToCSV();
 		columnPacketCount = controller.getColumnPacketCount();
 		columnIP = controller.getColumnIP();
 		columnNotes = controller.getColumnNotes();
@@ -285,6 +294,37 @@ public class AppearanceCounterUI implements CaptureStartListener
 		chkboxTCP.selectedProperty().addListener(protocolBoxes);
 		chkboxICMP.selectedProperty().addListener(protocolBoxes);
 		chkboxHTTP.selectedProperty().addListener(protocolBoxes);
+		
+		btnExportTableToCSV.setOnAction(e ->
+		{
+			StringBuilder csvData = new StringBuilder();
+			
+			for (IPInfoRowModel row : tableResults.getItems())
+				csvData.append(String.join(",", row.getFullRowDataAsOrderedList()) + "\n");
+			
+			FileChooser fileChooser = new FileChooser();
+			fileChooser.setTitle("Save table contents in CSV format");
+			fileChooser.setInitialDirectory(new File(suggestedPathForCSVFile));
+			fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("CSV Files", "*.csv"), new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+			
+			Stage stage = controller.getStage();
+			
+			File file = fileChooser.showSaveDialog(stage);
+            if (file != null) 
+            {
+            	suggestedPathForCSVFile = file.getParentFile().getAbsolutePath();
+            	
+				try
+				{
+					FileUtils.writeStringToFile(file, csvData.toString(), (String)null);
+				}
+				catch (Exception ex)
+				{
+					new Alert(AlertType.ERROR, "Unable to save CSV file. See log file for details.").showAndWait();
+					logger.log(Level.SEVERE, "Unable to save CSV file", ex);
+				}
+            }
+		});
 
 		chkboxUseTTS.selectedProperty().addListener((ov, old_val, new_val) ->
 		{
@@ -390,19 +430,15 @@ public class AppearanceCounterUI implements CaptureStartListener
 			{
 				Clipboard clipboard = Clipboard.getSystemClipboard();
 				ClipboardContent content = new ClipboardContent();
-				StringBuilder csvBuilder = new StringBuilder();
-				
-				for(String dataItem : row.getItem().getFullRowDataAsOrderedList())
-					csvBuilder.append(dataItem + ",");
-				
-				csvBuilder.deleteCharAt(csvBuilder.length() - 1);
-				content.putString(csvBuilder.toString());
+
+				content.putString(String.join(",", row.getItem().getFullRowDataAsOrderedList()));
 				
 				clipboard.setContent(content);
 			});
 			
 			Menu copyMenu = new Menu("Copy");
-			copyMenu.getItems().add(copyRowAsCSV);
+			ObservableList<MenuItem> copyMenuItems = copyMenu.getItems();
+			copyMenuItems.add(copyRowAsCSV);
 
 			for (TableColumn<IPInfoRowModel, ?> column : tableResults.getColumns()) //build the submenu to copy each column value
 			{
@@ -421,7 +457,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 					clipboard.setContent(content);					
 				});
 				
-				copyMenu.getItems().add(itemForcolumn);
+				copyMenuItems.add(itemForcolumn);
 			}
 
 			MenuItem getGeoIPinfo = new MenuItem("See more GeoIP results for this IP in browser");
@@ -440,7 +476,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			MenuItem traceIP = new MenuItem("Visual trace this IP");
 			traceIP.setOnAction(event -> traceCommand(row.getItem().ipAddressProperty().getValue()));
 
-			final ContextMenu rowMenu = new ContextMenu(copyMenu, getGeoIPinfo, sendIPToPTS, pingIP, traceIP);
+			ContextMenu rowMenu = new ContextMenu(copyMenu, getGeoIPinfo, sendIPToPTS, pingIP, traceIP);
 
 			// only display context menu for non-null items:
 			row.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(row.itemProperty())).then(rowMenu).otherwise((ContextMenu) null));
@@ -451,9 +487,8 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 	private void pingCommand(String ip)
 	{
-		Stage stage = (Stage) tabPane.getScene().getWindow();
-
 		PingCommandScreen cmdScreen;
+		Stage stage = controller.getStage();
 
 		try
 		{
@@ -461,7 +496,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		}
 		catch (IOException e)
 		{
-			logger.log(Level.SEVERE, "Unable able to load Ping (command) screen", e);
+			logger.log(Level.SEVERE, "Unable to load Ping (command) screen", e);
 			return;
 		}
 
@@ -471,8 +506,8 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 	public void traceCommand(String ip)
 	{
-		Stage stage = (Stage) tabPane.getScene().getWindow();
 		TraceCommandScreen cmdScreen;
+		Stage stage = controller.getStage();
 
 		try
 		{
@@ -699,6 +734,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		paneCaptureOptions.setDisable(duringCapture);
 		controller.getVboxNICs().setDisable(duringCapture);
 		paneCaptureOptions.setDisable(duringCapture);
+		btnExportTableToCSV.setDisable(duringCapture);
 
 		if (duringCapture)
 		{
@@ -918,6 +954,8 @@ public class AppearanceCounterUI implements CaptureStartListener
 		setCaptureOptionsPane(props);
 		setCaptureHotkeyAndPane(props);
 		setDisabledPanes();
+		
+		suggestedPathForCSVFile = props.getProperty(propsExportCSVPath, System.getProperty("user.dir"));
 	}
 
 	public void saveCurrentRunValuesToProperties(Properties props)
@@ -945,6 +983,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			props.put(propsTTSCheckBox + box.getText(), ((Boolean) box.isSelected()).toString());
 		
 		saveUserNotes();
+		props.put(propsExportCSVPath, suggestedPathForCSVFile);
 	}
 
 	private void saveUserNotes()
