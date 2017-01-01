@@ -1,5 +1,8 @@
 package whowhatwhere.controller;
 
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -196,6 +199,7 @@ public class GUIController implements Initializable
 	private Map<RadioButton, String> buttonToIpMap = new HashMap<>();
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 	private HotkeyRegistry hotkeyRegistry = new HotkeyRegistry(tabPane);
+	private boolean isExitAlreadyAddedToSystray = false;
 
 	private AppearanceCounterUI appearanceCounterUI;
 	private PingToSpeechUI pingToSpeechUI;
@@ -215,10 +219,37 @@ public class GUIController implements Initializable
 
 		initButtonHandlers();
 		initMenuBar();
+		addExitToSystrayIcon();
 
 		loadLastRunConfig();
 
 		checkForUpdates(true); //only show a message if there is a new version
+	}
+
+	private void addExitToSystrayIcon()
+	{
+		if (!SystemTray.isSupported())
+			return;
+		
+		SystemTray tray = SystemTray.getSystemTray();
+
+		tray.addPropertyChangeListener("trayIcons", pce ->
+		{
+			TrayIcon[] trayIcons = tray.getTrayIcons();
+			
+			if (!isExitAlreadyAddedToSystray && trayIcons.length == 1) //only for the first time the systray icon appears in systray
+			{
+				PopupMenu popup = trayIcons[0].getPopupMenu();
+				java.awt.MenuItem exit = new java.awt.MenuItem("Exit");
+				
+				exit.addActionListener(al -> exitButtonPressed());
+				
+				popup.addSeparator();
+				popup.add(exit);
+				
+				isExitAlreadyAddedToSystray = true;
+			}
+		});
 	}
 
 	private void initButtonHandlers()

@@ -1,6 +1,8 @@
 package whowhatwhere;
 
 import java.awt.Desktop;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
@@ -106,16 +108,26 @@ public class Main extends Application
 			Platform.setImplicitExit(false); //needed to keep the app running while minimized to tray
 
 			trayIcon = new TrayIcon(image, appTitle);
-
-			trayIcon.addActionListener(ae -> Platform.runLater(() ->
+			
+			Runnable restoreApplication = () ->
 			{
 				primaryStage.show();
-				tray.remove(trayIcon);
-			}));
+				tray.remove(trayIcon);				
+			};
+
+			trayIcon.addActionListener(ae -> Platform.runLater(restoreApplication));
+			
+			PopupMenu popupMenu = new PopupMenu();
+			MenuItem restore = new MenuItem("Restore");
+			
+			restore.addActionListener(al -> Platform.runLater(restoreApplication));
+			
+			popupMenu.add(restore);
+			trayIcon.setPopupMenu(popupMenu);
 
 			primaryStage.setOnCloseRequest(we ->
 			{
-				we.consume(); //ignore the application's exit button, instead minimize to systray
+				we.consume(); //ignore the application's title window exit button, instead minimize to systray
 				Platform.runLater(() ->
 				{
 					try
