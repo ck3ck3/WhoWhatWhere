@@ -32,37 +32,30 @@ public class CmdLiveOutput
 		if (command == null)
 			return;
 
-		new Thread(new Runnable()
+		new Thread(() ->
 		{
-
-			@Override
-			public void run()
+			Process process;
+			try
 			{
-				Process process;
-				try
-				{
-					process = Runtime.getRuntime().exec(command);
-					BufferedReader inputStream = new BufferedReader(new InputStreamReader(process.getInputStream()));
-					String line;
+				process = Runtime.getRuntime().exec(command);
+				BufferedReader inputStream = new BufferedReader(new InputStreamReader(process.getInputStream()));
+				String line;
 
-					while ((line = inputStream.readLine()) != null)
-						if (outputListener != null)
-							outputListener.lineReady(line);
-
-				}
-				catch (IOException e)
-				{
-					logger.log(Level.SEVERE, "Unable to execute command " + command, e);
-				}
-				finally
-				{
+				while ((line = inputStream.readLine()) != null)
 					if (outputListener != null)
-						outputListener.endOfOutput();
-				}
-
+						outputListener.lineReady(line);
 			}
-		}).start();
+			catch (IOException e)
+			{
+				logger.log(Level.SEVERE, "Unable to execute command " + command, e);
+			}
+			finally
+			{
+				if (outputListener != null)
+					outputListener.endOfOutput();
+			}
 
+		}).start();
 	}
 
 	public LiveOutputListener getOutputListener()
