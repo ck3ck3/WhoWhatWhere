@@ -15,6 +15,18 @@
               <MenuItem fx:id="menuItemExit" mnemonicParsing="false" text="Exit" />
             </items>
           </Menu>
+            <Menu mnemonicParsing="false" text="Options">
+               <items>
+                  <CheckMenuItem fx:id="menuItemChkDisplayBalloon" mnemonicParsing="false" text="Display info balloon after minimizing" />
+                  <CheckMenuItem fx:id="menuItemChkStartMinimized" mnemonicParsing="false" text="Start minimized" />
+                  <Menu mnemonicParsing="false" text="Start with Windows">
+                     <items>
+                        <CheckMenuItem fx:id="menuItemChkAllUsers" mnemonicParsing="false" text="For all users" />
+                        <CheckMenuItem fx:id="menuItemChkThisUserOnly" mnemonicParsing="false" text="For this user only" />
+                     </items>
+                  </Menu>
+               </items>
+            </Menu>
           <Menu mnemonicParsing="false" text="Help">
             <items>
                   <MenuItem fx:id="menuItemUpdate" mnemonicParsing="false" text="Check for updates" />

@@ -6,7 +6,6 @@ import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
-import java.awt.TrayIcon.MessageType;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -48,6 +47,7 @@ public class Main extends Application
 	public final static String jnetpcapDLLx64Location = "/native/windows/x86_64/jnetpcap.dll";
 
 	private final static String appTitle = "Who What Where";
+	private final static String executableFilename = "WhoWhatWhere.exe";
 	private final static String mainFormLocation = "/whowhatwhere/view/MainForm.fxml";
 	private final static int windowSizeX = 1190;
 	private final static int windowSizeY = 790;
@@ -112,7 +112,7 @@ public class Main extends Application
 			Runnable restoreApplication = () ->
 			{
 				primaryStage.show();
-				tray.remove(trayIcon);				
+				tray.remove(trayIcon);
 			};
 
 			trayIcon.addActionListener(ae -> Platform.runLater(restoreApplication));
@@ -133,8 +133,6 @@ public class Main extends Application
 					try
 					{
 						tray.add(trayIcon);
-						trayIcon.displayMessage("Minimized to tray", "Still running in the background, double click this icon to restore the window. Use the \"Exit\" button to exit.",
-								MessageType.INFO);
 						primaryStage.hide();
 					}
 					catch (Exception e)
@@ -205,5 +203,10 @@ public class Main extends Application
 	public static String getWebsite()
 	{
 		return website;
+	}
+
+	public static String getExecutablefilename()
+	{
+		return executableFilename;
 	}
 }

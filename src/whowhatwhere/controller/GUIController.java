@@ -3,6 +3,7 @@ package whowhatwhere.controller;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
+import java.awt.TrayIcon.MessageType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -12,13 +13,16 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -26,7 +30,9 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
@@ -54,6 +60,7 @@ import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.ipsniffer.DeviceIPAndDescription;
 import whowhatwhere.model.ipsniffer.IPSniffer;
+import whowhatwhere.model.startwithwindows.StartWithWindowsRegistryUtils;
 import whowhatwhere.view.NumberTextField;
 
 public class GUIController implements Initializable
@@ -62,6 +69,9 @@ public class GUIController implements Initializable
 	private final static String defaultPropsResource = "/defaultLastRun.properties";
 	private final static String propsNICIndex = "Selected NIC index";
 	private final static String propsTraceAddress = "traceAddress";
+	private final static String propsShowMessageOnMinimize = "showMinimizeMessage";
+	private final static String propsStartMinimized = "startMinimized";
+	private final static String propsIgnoreRunPathDiff = "ignorePathDiff";
 	private final static String voiceForTTS = "kevin16";
 
 	private final static Logger logger = Logger.getLogger(GUIController.class.getPackage().getName());
@@ -188,6 +198,14 @@ public class GUIController implements Initializable
 	private Button btnTrace;
 	@FXML
 	private Button btnExportTableToCSV;
+	@FXML
+	private CheckMenuItem menuItemChkDisplayBalloon;
+	@FXML
+	private CheckMenuItem menuItemChkStartMinimized;
+	@FXML
+	private CheckMenuItem menuItemChkThisUserOnly;
+	@FXML
+	private CheckMenuItem menuItemChkAllUsers;
 
 	private NumberTextField numFieldCaptureTimeout;
 	private NumberTextField numFieldRowsToRead;
@@ -200,6 +218,8 @@ public class GUIController implements Initializable
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 	private HotkeyRegistry hotkeyRegistry = new HotkeyRegistry(tabPane);
 	private boolean isExitAlreadyAddedToSystray = false;
+	private boolean showMessageOnMinimize;
+	private boolean ignoreRunPathDiff;
 
 	private AppearanceCounterUI appearanceCounterUI;
 	private PingToSpeechUI pingToSpeechUI;
@@ -230,25 +250,28 @@ public class GUIController implements Initializable
 	{
 		if (!SystemTray.isSupported())
 			return;
-		
+
 		SystemTray tray = SystemTray.getSystemTray();
 
 		tray.addPropertyChangeListener("trayIcons", pce ->
 		{
 			TrayIcon[] trayIcons = tray.getTrayIcons();
-			
+
 			if (!isExitAlreadyAddedToSystray && trayIcons.length == 1) //only for the first time the systray icon appears in systray
 			{
 				PopupMenu popup = trayIcons[0].getPopupMenu();
 				java.awt.MenuItem exit = new java.awt.MenuItem("Exit");
-				
+
 				exit.addActionListener(al -> exitButtonPressed());
-				
+
 				popup.addSeparator();
 				popup.add(exit);
-				
+
 				isExitAlreadyAddedToSystray = true;
 			}
+
+			if (trayIcons.length == 1 && showMessageOnMinimize)
+				trayIcons[0].displayMessage("Minimized to tray", "Still running in the background, double click this icon to restore the window. Use the \"Exit\" button to exit.", MessageType.INFO);
 		});
 	}
 
@@ -269,13 +292,33 @@ public class GUIController implements Initializable
 		menuItemMinimize.setOnAction(event ->
 		{
 			Stage stage = getStage();
-			
+
 			Event.fireEvent(stage, new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
 		});
-
 		menuItemExit.setOnAction(event -> exitButtonPressed());
+		menuItemChkDisplayBalloon.setOnAction(ae -> showMessageOnMinimize = ((CheckMenuItem) ae.getSource()).isSelected());
+		menuItemChkAllUsers.setOnAction(handleStartWithWindowsClick(true, menuItemChkThisUserOnly));
+		menuItemChkThisUserOnly.setOnAction(handleStartWithWindowsClick(false, menuItemChkAllUsers));
 		menuItemUpdate.setOnAction(event -> checkForUpdates(false));
 		menuItemAbout.setOnAction(event -> showAboutWindow());
+	}
+
+	private EventHandler<ActionEvent> handleStartWithWindowsClick(boolean allUsers, CheckMenuItem otherItem)
+	{
+		return ae ->
+		{
+			try
+			{
+				StartWithWindowsRegistryUtils.setRegistryToStartWithWindows(((CheckMenuItem) ae.getSource()).isSelected(), allUsers);
+			}
+			catch (IOException ioe)
+			{
+				logger.log(Level.SEVERE, "Unable to modify the registry for the \"start with Windows\" setting", ioe);
+				new Alert(AlertType.ERROR, "Unable to modify the registry for the \"start with Windows\" setting").showAndWait();
+			}
+
+			otherItem.setSelected(false); //if one is selected, the other one has to be unselected. if the click is to de-select, the other one was already unselected as well anyway.	
+		};
 	}
 
 	private void createNICRadioButtons()
@@ -304,7 +347,7 @@ public class GUIController implements Initializable
 
 			vboxNICs.getChildren().add(btn);
 		}
-		
+
 		vboxNICs.setPrefHeight(listOfDevices.size() * 30); //to resize, in case we'll need a vertical scroller
 
 		tglGrpNIC.selectToggle(tglGrpNIC.getToggles().get(0)); //select the first button
@@ -343,6 +386,9 @@ public class GUIController implements Initializable
 
 		props.put(propsNICIndex, selectedNic.toString());
 		props.put(propsTraceAddress, textTrace.getText());
+		props.put(propsShowMessageOnMinimize, String.valueOf(showMessageOnMinimize));
+		props.put(propsStartMinimized, String.valueOf(menuItemChkStartMinimized.isSelected()));
+		props.put(propsIgnoreRunPathDiff, String.valueOf(ignoreRunPathDiff));
 
 		try
 		{
@@ -365,7 +411,7 @@ public class GUIController implements Initializable
 
 		try
 		{
-			in = (lastRun.exists() ? new FileInputStream(lastRun) : this.getClass().getResourceAsStream(defaultPropsResource));
+			in = ((lastRun.exists() && lastRun.length() > 0) ? new FileInputStream(lastRun) : this.getClass().getResourceAsStream(defaultPropsResource));
 
 			props.load(in);
 			in.close();
@@ -386,9 +432,68 @@ public class GUIController implements Initializable
 
 		textTrace.setText(props.getProperty(propsTraceAddress));
 
+		showMessageOnMinimize = PropertiesByType.getBoolProperty(props, propsShowMessageOnMinimize, true);
+		menuItemChkDisplayBalloon.setSelected(showMessageOnMinimize);
+
+		boolean startMinimized = PropertiesByType.getBoolProperty(props, propsStartMinimized, false);
+		menuItemChkStartMinimized.setSelected(startMinimized);
+		if (startMinimized)
+			Platform.runLater(() -> menuItemMinimize.fire());
+
+		ignoreRunPathDiff = PropertiesByType.getBoolProperty(props, propsIgnoreRunPathDiff, false);
+		loadStartWithWindowsSetting();
+
 		appearanceCounterUI.loadLastRunConfig(props);
 		pingToSpeechUI.loadLastRunConfig(props);
 		watchdogUI.loadLastRunConfig(props);
+	}
+
+	private void loadStartWithWindowsSetting()
+	{
+		try
+		{
+			String allUsers = StartWithWindowsRegistryUtils.getExecutableLocationToStartWithWindows(true);
+			String currentUser = StartWithWindowsRegistryUtils.getExecutableLocationToStartWithWindows(false);
+
+			if (allUsers != null || currentUser != null) //only one or none of these are supposed to be set. Never both.
+			{
+				String locationToStartFrom = (allUsers == null ? currentUser : allUsers); 
+				String currentRunLocation = System.getProperty("user.dir") + "\\" + Main.getExecutablefilename();
+
+				if (!ignoreRunPathDiff && !currentRunLocation.equalsIgnoreCase(locationToStartFrom))
+				{
+					boolean forAllUsers = allUsers != null;
+					String message = Main.getAppName() + " is set to run when Windows starts, but you are currently running it from a different path than the one Windows is set to run it from.\n" + 
+															"Current path: " + currentRunLocation + "\nWindows is set to run it from: " + locationToStartFrom + "\n\nPlease choose how to proceed:";
+					
+					ButtonType btnModify = new ButtonType("Set to run from current path");
+					ButtonType btnDelete = new ButtonType("Don't run when Windows starts");
+					ButtonType btnIgnore = new ButtonType("Ignore this in the future");
+
+					Optional<ButtonType> result = new Alert(AlertType.CONFIRMATION, message, btnModify, btnDelete, btnIgnore).showAndWait();
+					ButtonType chosenButton = result.get();
+					
+					if (chosenButton == btnModify)
+						StartWithWindowsRegistryUtils.setRegistryToStartWithWindows(true, forAllUsers);
+					else
+						if (chosenButton == btnDelete)
+						{
+							StartWithWindowsRegistryUtils.setRegistryToStartWithWindows(false, forAllUsers);
+							return; //don't setSelected
+						}
+						else
+							if (chosenButton == btnIgnore)
+								ignoreRunPathDiff = true;
+				}
+			}
+
+			menuItemChkAllUsers.setSelected(allUsers != null);
+			menuItemChkThisUserOnly.setSelected(currentUser != null);
+		}
+		catch (IOException ioe)
+		{
+			logger.log(Level.SEVERE, "Failed querying the registry for StartWithWindows values", ioe);
+		}
 	}
 
 	private void shutdownApp()
@@ -460,13 +565,13 @@ public class GUIController implements Initializable
 		FlowPane fp = new FlowPane();
 		Label lbl = new Label(text);
 		Hyperlink link = new Hyperlink(url);
-		
+
 		link.setOnAction(event ->
 		{
 			Main.openInBrowser(link.getText());
 			alert.close();
 		});
-		
+
 		fp.getChildren().addAll(lbl, link);
 
 		alert.getDialogPane().contentProperty().set(fp);
@@ -568,7 +673,7 @@ public class GUIController implements Initializable
 	{
 		return columnNotes;
 	}
-	
+
 	public TableColumn<IPInfoRowModel, String> getColumnOwner()
 	{
 		return columnOwner;
@@ -768,7 +873,7 @@ public class GUIController implements Initializable
 	{
 		return tglGrpNIC;
 	}
-	
+
 	public Button getBtnExportTableToCSV()
 	{
 		return btnExportTableToCSV;
@@ -778,9 +883,9 @@ public class GUIController implements Initializable
 	{
 		return hotkeyRegistry;
 	}
-	
+
 	public Stage getStage()
 	{
-		return (Stage)tabPane.getScene().getWindow();
+		return (Stage) tabPane.getScene().getWindow();
 	}
 }
