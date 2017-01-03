@@ -3,6 +3,7 @@ package whowhatwhere.controller.watchdog;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,6 +20,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
 import whowhatwhere.model.ipsniffer.firstsight.IPToMatch;
 import whowhatwhere.view.SecondaryFXMLScreen;
@@ -26,7 +28,6 @@ import whowhatwhere.view.SecondaryFXMLScreen;
 public class ManageListScreen extends SecondaryFXMLScreen
 {
 	private final static String watchdogListAddEditFormLocation = "/whowhatwhere/view/WatchdogListAddEdit.fxml";
-	private final static String watchdogSavePresetFormLocation = "/whowhatwhere/view/WatchdogSavePreset.fxml";
 	private final static Logger logger = Logger.getLogger(ManageListScreen.class.getPackage().getName());
 
 	private ListController watchdogListController;
@@ -81,20 +82,37 @@ public class ManageListScreen extends SecondaryFXMLScreen
 
 		watchdogListController.getBtnSavePreset().setOnAction(event ->
 		{
-			SavePresetScreen screen;
-			Stage stage = getPostCloseStage();
+			TextInputDialog dialog = new TextInputDialog();
+			dialog.setTitle("Save Preset");
+			dialog.setHeaderText("Save this preset for future use");
+			dialog.setContentText("Please enter preset name:");
 
-			try
-			{
-				screen = new SavePresetScreen(watchdogSavePresetFormLocation, stage, stage.getScene(), watchdogUIController, watchdogListController);
-			}
-			catch (IOException e)
-			{
-				logger.log(Level.SEVERE, "Unable to load watchdog save preset screen", e);
-				return;
-			}
+			Optional<String> result = dialog.showAndWait();
 
-			screen.showScreenOnNewStage("Save preset", screen.getCloseButton());
+			result.ifPresent(filename -> 
+			{
+	           	TextField textMessage = watchdogUIController.getTextMessage();
+            	ObservableList<IPToMatch> entryList = watchdogUIController.getEntryList();
+            	
+				try
+				{
+					WatchdogUI.saveListToFile(entryList, textMessage.getText(), filename + WatchdogUI.presetExtension);
+				}
+				catch (IOException ioe)
+				{
+					new Alert(AlertType.ERROR, "Unable to save preset: " + ioe.getMessage()).showAndWait();
+					return;
+				}
+
+				MenuItem menuItem = ManageListScreen.createMenuItem(entryList, textMessage, filename);
+				
+				ObservableList<MenuItem> items = watchdogListController.getMenuBtnLoadPreset().getItems();
+				
+				if (items.get(0).isDisable()) //it only contains the disabled "none found " item, remove it before adding new one
+					items.clear();
+					
+				items.add(menuItem);
+			});
 		});
 
 		initMenuButton();
