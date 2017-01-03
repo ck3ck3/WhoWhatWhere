@@ -142,13 +142,16 @@ public class TraceCommandScreen extends CommandScreen
 
 		for (int i = 3; i < lines.length - 2; i++) //first few lines and last line are not relevant
 		{
-			String ip = extractIPFromLine(lines[i]);
+			if (lines[i].isEmpty())
+				continue;
 			
-			if (ip.equals("out.")) //"request timed out"
+			String ip = extractIPFromLine(lines[i]);
+			char lastChar = ip.charAt(ip.length() - 1);
+			
+			if (lastChar != ']' && !Character.isDigit(lastChar)) //this means this line is a "request timed out" since it doesn't end with an ip or a hostname
 				continue;
 
-			if (!lines[i].isEmpty())
-				listOfIPs.add(lines[i]);
+			listOfIPs.add(lines[i]);
 		}
 
 		return listOfIPs;

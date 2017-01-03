@@ -282,7 +282,7 @@ public class IPSniffer
 	 * @param ip - IP to ping
 	 * @param timeout - timeout in ms. -1 for default timeout
 	 * @return The string "X milliseconds" (where X is the ping result).
-	 * If the ping timed out, returns "Timeout". If an error occurred, returns "Error".
+	 * If the ping timed out, returns "Timeout". If an error occurred, returns "Error"
 	 */
 	public static String pingAsString(String ip, int timeout)
 	{
@@ -295,16 +295,13 @@ public class IPSniffer
 			exec = Runtime.getRuntime().exec(command);
 			List<String> readLines = IOUtils.readLines(exec.getInputStream());
 			String results = readLines.get(readLines.size() - 1);
-			results = results.substring(results.lastIndexOf(' '));
+			results = results.substring(results.lastIndexOf(' ')).trim();
 			String ping;
 			
-			if (results.contains("loss"))
+			if (!results.contains("ms"))
 				ping = "Timeout";
 			else
-				if (results.contains("ms"))
-					ping = results.replace("ms", " milliseconds").substring(1); //replace ms to milliseconds for user-friendly TTS, and eat up a leading space.
-				else
-					ping = "Error";
+				ping = results.replace("ms", " milliseconds"); //replace ms to milliseconds for a more user-friendly string
 
 			return ping;
 		}
