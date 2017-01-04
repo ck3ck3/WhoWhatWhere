@@ -135,12 +135,12 @@ public class WatchdogUI implements FirstSightListener
 		
 		btnManageList.setOnAction(event ->
 		{
-			ManageListScreen watchdogManageListScreen;
+			ManageListScreen manageListScreen;
 			Stage stage = (Stage) controller.getTabPane().getScene().getWindow();
 
 			try
 			{
-				watchdogManageListScreen = new ManageListScreen(listFormLocation, stage, stage.getScene(), thisObj);
+				manageListScreen = new ManageListScreen(listFormLocation, stage, stage.getScene(), thisObj);
 			}
 			catch (IOException e)
 			{
@@ -148,7 +148,7 @@ public class WatchdogUI implements FirstSightListener
 				return;
 			}
 
-			watchdogManageListScreen.showScreenOnNewStage("Manage Watchdog list", watchdogManageListScreen.getCloseButton());
+			manageListScreen.showScreenOnNewStage("Manage Watchdog list", manageListScreen.getCloseButton());
 		});
 
 		btnPreview.setOnAction(event -> tts.speak(textMessage.getText()));

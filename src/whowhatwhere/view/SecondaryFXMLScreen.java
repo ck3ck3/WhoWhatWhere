@@ -45,12 +45,14 @@ public abstract class SecondaryFXMLScreen
 	 * 
 	 * @param buttonsToClose
 	 *            - list of buttons that close this window. The buttons'
-	 *            onAction doesn't have to implement anything, but if it does,
-	 *            that implementation will be called before closing the window.
-	 *            In case the window shouldn't be closed (if there's an input
-	 *            error on a form for example), the onAction method can throw an
-	 *            IllegalArgumentException, which will then leave the window
-	 *            open.
+	 *            onAction doesn't have to implement anything, not even closing
+	 *            the screen. If onAction is implemented, it MUST to be done in
+	 *            the constructor of the inheriting class, and then that
+	 *            implementation will be called before closing the window. In
+	 *            case the window shouldn't be closed (if there's an input error
+	 *            on a form for example), the inheriting class' onAction method
+	 *            implementation should throw an IllegalArgumentException, which
+	 *            will then not close the window.
 	 */
 	public void showScreenOnExistingStage(Stage existingStage, Button... buttonsToClose)
 	{
@@ -85,13 +87,15 @@ public abstract class SecondaryFXMLScreen
 	 * Shows the screen on a new stage
 	 * 
 	 * @param buttonsToClose
-	 *            - list of buttons that close this window. The buttons' doesn't
-	 *            have to implement anything, but if it does, that
+	 *            - list of buttons that close this window. The buttons'
+	 *            onAction doesn't have to implement anything, not even closing
+	 *            the screen. If onAction is implemented, it MUST to be done in
+	 *            the constructor of the inheriting class, and then that
 	 *            implementation will be called before closing the window. In
 	 *            case the window shouldn't be closed (if there's an input error
-	 *            on a form for example), the onAction method can throw an
-	 *            IllegalArgumentException, which will then leave the window
-	 *            open.
+	 *            on a form for example), the inheriting class' onAction method
+	 *            implementation should throw an IllegalArgumentException, which
+	 *            will then not close the window.
 	 * @param title
 	 *            - Title for the new stage
 	 */

@@ -55,6 +55,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import whowhatwhere.Main;
+import whowhatwhere.controller.appearancecounter.AppearanceCounterUI;
+import whowhatwhere.controller.appearancecounter.IPInfoRowModel;
+import whowhatwhere.controller.utilities.PingToSpeechUI;
 import whowhatwhere.controller.watchdog.WatchdogUI;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.TextToSpeech;
@@ -206,6 +209,8 @@ public class GUIController implements Initializable
 	private CheckMenuItem menuItemChkThisUserOnly;
 	@FXML
 	private CheckMenuItem menuItemChkAllUsers;
+	@FXML
+	private MenuItem menuItemManageNotes;
 
 	private NumberTextField numFieldCaptureTimeout;
 	private NumberTextField numFieldRowsToRead;
@@ -224,7 +229,7 @@ public class GUIController implements Initializable
 	private AppearanceCounterUI appearanceCounterUI;
 	private PingToSpeechUI pingToSpeechUI;
 	private WatchdogUI watchdogUI;
-
+	
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
@@ -289,6 +294,7 @@ public class GUIController implements Initializable
 
 	private void initMenuBar()
 	{
+		menuItemManageNotes.setOnAction(event -> appearanceCounterUI.openManageUserNotesScreen());
 		menuItemMinimize.setOnAction(event ->
 		{
 			Stage stage = getStage();

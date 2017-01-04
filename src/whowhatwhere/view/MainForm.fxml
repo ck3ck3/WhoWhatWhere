@@ -11,7 +11,9 @@
         <menus>
           <Menu mnemonicParsing="false" text="File">
             <items>
+                  <MenuItem fx:id="menuItemManageNotes" mnemonicParsing="false" text="Manage user notes" />
                   <MenuItem fx:id="menuItemMinimize" mnemonicParsing="false" text="Minimize to tray" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
               <MenuItem fx:id="menuItemExit" mnemonicParsing="false" text="Exit" />
             </items>
           </Menu>
@@ -89,11 +91,11 @@
                            </children>
                         </HBox>
                         <Label layoutX="15.0" layoutY="289.0" text="Results:" />
-                        <TableView fx:id="tableResults" editable="true" layoutY="315.0" prefHeight="210.0" prefWidth="992.0" stylesheets="whowhatwhere/view/tableResults.css" AnchorPane.bottomAnchor="168.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="315.0">
+                        <TableView fx:id="tableResults" editable="true" layoutY="315.0" prefHeight="210.0" prefWidth="992.0" stylesheets="whowhatwhere/view/tableResults.css" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="168.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="315.0">
                            <columns>
-                              <TableColumn fx:id="columnPacketCount" editable="false" prefWidth="94.0" sortType="DESCENDING" text="Packet Count" />
-                              <TableColumn fx:id="columnIP" minWidth="8.0" prefWidth="122.0" text="IP Address" />
-                              <TableColumn fx:id="columnNotes" prefWidth="160.0" text="User Notes" />
+                              <TableColumn fx:id="columnPacketCount" editable="false" prefWidth="115.0" sortType="DESCENDING" text="Packet Count" />
+                              <TableColumn fx:id="columnIP" minWidth="8.0" prefWidth="115.0" text="IP Address" />
+                              <TableColumn fx:id="columnNotes" prefWidth="146.0" text="User Notes" />
                               <TableColumn fx:id="columnOwner" editable="false" minWidth="1.0" prefWidth="188.0" text="Owner" />
                               <TableColumn fx:id="columnPing" prefWidth="128.0" text="Ping" />
                               <TableColumn fx:id="columnCountry" editable="false" minWidth="0.0" prefWidth="166.0" text="Country" />

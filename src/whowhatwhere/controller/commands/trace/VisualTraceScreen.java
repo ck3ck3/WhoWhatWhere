@@ -24,7 +24,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import whowhatwhere.Main;
-import whowhatwhere.controller.VisualTraceController;
+import whowhatwhere.controller.utilities.VisualTraceController;
 import whowhatwhere.model.geoipresolver.GeoIPInfo;
 import whowhatwhere.model.geoipresolver.GeoIPResolver;
 import whowhatwhere.view.SecondaryFXMLScreen;

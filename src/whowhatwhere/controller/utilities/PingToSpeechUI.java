@@ -1,4 +1,4 @@
-package whowhatwhere.controller;
+package whowhatwhere.controller.utilities;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +14,8 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
+import whowhatwhere.controller.GUIController;
+import whowhatwhere.controller.HotkeyRegistry;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.ipsniffer.IPSniffer;

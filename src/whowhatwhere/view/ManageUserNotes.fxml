@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="429.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.appearancecounter.ManageUserNotesController">
+   <children>
+      <TableView fx:id="tableEntries" editable="true" layoutX="15.0" layoutY="14.0" prefHeight="335.0" prefWidth="398.0" AnchorPane.bottomAnchor="51.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="16.0" AnchorPane.topAnchor="14.0">
+        <columns>
+          <TableColumn fx:id="columnIP" prefWidth="121.0" text="IP Address" />
+          <TableColumn fx:id="columnNotes" minWidth="0.0" prefWidth="275.0" text="User Notes" />
+        </columns>
+      </TableView>
+      <Button fx:id="btnClose" layoutX="368.0" layoutY="361.0" mnemonicParsing="false" text="Done" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="16.0" />
+      <AnchorPane layoutX="15.0" layoutY="361.0" prefHeight="26.0" prefWidth="282.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="15.0">
+         <children>
+            <Button fx:id="btnAddRow" layoutX="-1.0" layoutY="1.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="83.0" text="Add entry" />
+            <Button fx:id="btnRemoveRow" layoutX="90.0" layoutY="1.0" mnemonicParsing="false" text="Remove entry" />
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>

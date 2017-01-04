@@ -1,4 +1,4 @@
-package whowhatwhere.controller;
+package whowhatwhere.controller.appearancecounter;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,6 +26,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -40,7 +41,6 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.Clipboard;
@@ -51,6 +51,8 @@ import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import whowhatwhere.Main;
+import whowhatwhere.controller.GUIController;
+import whowhatwhere.controller.HotkeyRegistry;
 import whowhatwhere.controller.commands.ping.PingCommandScreen;
 import whowhatwhere.controller.commands.trace.TraceCommandScreen;
 import whowhatwhere.model.PropertiesByType;
@@ -66,6 +68,7 @@ import whowhatwhere.view.NumberTextField;
 public class AppearanceCounterUI implements CaptureStartListener
 {
 	private final static Logger logger = Logger.getLogger(AppearanceCounterUI.class.getPackage().getName());
+	private final static String manageUserNotesFormLocation = "/whowhatwhere/view/ManageUserNotes.fxml";
 
 	private final static String propsChkboxUDP = "chkboxUDP";
 	private final static String propsChkboxTCP = "chkboxTCP";
@@ -369,6 +372,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private void initTable()
 	{
 		tableResults.setPlaceholder(new Label()); //remove default string on empty table
+		tableResults.getSortOrder().add(columnPacketCount);
 
 		columnPacketCount.setCellValueFactory(new PropertyValueFactory<>("packetCount"));
 		columnIP.setCellValueFactory(new PropertyValueFactory<>("ipAddress"));
@@ -387,12 +391,12 @@ public class AppearanceCounterUI implements CaptureStartListener
 			
 			rowModel.getRowValue().setNotes(newContent);
 
-			if (newContent.equals(emptyNotesString))
+			if (newContent.equals(emptyNotesString)) //if user deleted an existing note
 				userNotes.remove(ipAddress); //doesn't do anything if the key didn't exist
 			else
 				userNotes.put(ipAddress, newContent);
 			
-			saveUserNotes();
+			saveUserNotes(userNotes);
 		});
 
 		generatePopupMenus();
@@ -982,22 +986,40 @@ public class AppearanceCounterUI implements CaptureStartListener
 		for (CheckBox box : chkboxListColumns)
 			props.put(propsTTSCheckBox + box.getText(), ((Boolean) box.isSelected()).toString());
 		
-		saveUserNotes();
+		saveUserNotes(userNotes);
 		props.put(propsExportCSVPath, suggestedPathForCSVFile);
 	}
 
-	private void saveUserNotes()
+	public static void saveUserNotes(Properties props)
 	{
 		try
 		{
 			FileOutputStream out = new FileOutputStream(userNotesFilename);
-			userNotes.store(out, "Last run configuration");
+			props.store(out, "User notes");
 			out.close();
 		}
 		catch (IOException e)
 		{
 			logger.log(Level.SEVERE, "Unable to save user notes file " + userNotesFilename, e);
 		}
+	}
+
+	public void openManageUserNotesScreen()
+	{
+		ManageUserNotesScreen userNotesScreen;
+		Stage stage = (Stage) controller.getTabPane().getScene().getWindow();
+
+		try
+		{
+			userNotesScreen = new ManageUserNotesScreen(manageUserNotesFormLocation, stage, stage.getScene(), userNotes);
+		}
+		catch (IOException e)
+		{
+			logger.log(Level.SEVERE, "Unable to load user notes management screen", e);
+			return;
+		}
+
+		userNotesScreen.showScreenOnNewStage("Manage User Notes", userNotesScreen.getCloseButton());
 	}
 
 }

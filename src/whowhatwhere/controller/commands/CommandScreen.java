@@ -8,7 +8,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import whowhatwhere.controller.CmdGUIController;
 import whowhatwhere.model.cmd.CmdLiveOutput;
 import whowhatwhere.model.cmd.LiveOutputListener;
 import whowhatwhere.view.SecondaryFXMLScreen;

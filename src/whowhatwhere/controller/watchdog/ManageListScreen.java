@@ -48,7 +48,6 @@ public class ManageListScreen extends SecondaryFXMLScreen
 		table.setItems(entryList);
 
 		initButtonHandlers();
-
 		setTableRowDoubleClickToEdit();
 	}
 
