@@ -28,7 +28,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 	private NumberTextField numTextSrcPort;
 	private NumberTextField numTextDstPort;
 
-	public ListAddEditScreen(String fxmlLocation, Stage stage, Scene scene, TableView<IPToMatch> table, boolean isEdit) throws IOException
+	public ListAddEditScreen(String fxmlLocation, Stage stage, Scene scene, TableView<IPToMatch> table, boolean isEdit) throws IOException, IllegalStateException
 	{
 		super(fxmlLocation, stage, scene);
 

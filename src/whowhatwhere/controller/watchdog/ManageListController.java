@@ -17,7 +17,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import whowhatwhere.model.ipsniffer.firstsight.IPToMatch;
 
-public class ListController implements Initializable
+public class ManageListController implements Initializable
 {
 	@FXML
 	private Button btnAddRow;

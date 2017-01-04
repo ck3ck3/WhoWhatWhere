@@ -30,24 +30,22 @@ public class ManageListScreen extends SecondaryFXMLScreen
 	private final static String watchdogListAddEditFormLocation = "/whowhatwhere/view/WatchdogListAddEdit.fxml";
 	private final static Logger logger = Logger.getLogger(ManageListScreen.class.getPackage().getName());
 
-	private ListController watchdogListController;
-	private WatchdogUI watchdogUIController;
+	private ManageListController watchdogListController;
 	private TableView<IPToMatch> table;
-	private ObservableList<IPToMatch> list;
+	private ObservableList<IPToMatch> entryList;
 	private TextField textToSay;
 
 	public ManageListScreen(String fxmlLocation, Stage stage, Scene scene, WatchdogUI uiController) throws IOException
 	{
 		super(fxmlLocation, stage, scene);
 
-		this.list = uiController.getEntryList();
-		this.textToSay = uiController.getTextMessage();
+		entryList = uiController.getEntryList();
+		textToSay = uiController.getTextMessage();
 
-		watchdogListController = getLoader().<ListController> getController();
-		this.watchdogUIController = uiController;
+		watchdogListController = getLoader().<ManageListController> getController();
 		table = watchdogListController.getTable();
 
-		table.setItems(list);
+		table.setItems(entryList);
 
 		initButtonHandlers();
 
@@ -77,7 +75,7 @@ public class ManageListScreen extends SecondaryFXMLScreen
 		{
 			ObservableList<IPToMatch> selectedItems = table.getSelectionModel().getSelectedItems();
 
-			list.removeAll(selectedItems);
+			entryList.removeAll(selectedItems);
 		});
 
 		watchdogListController.getBtnSavePreset().setOnAction(event ->
@@ -91,12 +89,9 @@ public class ManageListScreen extends SecondaryFXMLScreen
 
 			result.ifPresent(filename -> 
 			{
-	           	TextField textMessage = watchdogUIController.getTextMessage();
-            	ObservableList<IPToMatch> entryList = watchdogUIController.getEntryList();
-            	
 				try
 				{
-					WatchdogUI.saveListToFile(entryList, textMessage.getText(), filename + WatchdogUI.presetExtension);
+					WatchdogUI.saveListToFile(entryList, textToSay.getText(), filename + WatchdogUI.presetExtension);
 				}
 				catch (IOException ioe)
 				{
@@ -104,7 +99,7 @@ public class ManageListScreen extends SecondaryFXMLScreen
 					return;
 				}
 
-				MenuItem menuItem = ManageListScreen.createMenuItem(entryList, textMessage, filename);
+				MenuItem menuItem = ManageListScreen.createMenuItem(entryList, textToSay, filename);
 				
 				ObservableList<MenuItem> items = watchdogListController.getMenuBtnLoadPreset().getItems();
 				
@@ -128,7 +123,7 @@ public class ManageListScreen extends SecondaryFXMLScreen
 		File[] files = dir.listFiles(fileFilter);
 
 		for (File file : files)
-			items.add(createMenuItem(list, textToSay, file.getName().replace(WatchdogUI.presetExtension, "")));
+			items.add(createMenuItem(entryList, textToSay, file.getName().replace(WatchdogUI.presetExtension, "")));
 		
 		if (items.isEmpty())
 		{
