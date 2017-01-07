@@ -3,80 +3,178 @@ package whowhatwhere.controller.watchdog;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
+import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
+import whowhatwhere.model.ipsniffer.IPSniffer;
 import whowhatwhere.model.ipsniffer.firstsight.IPToMatch;
-import whowhatwhere.view.SecondaryFXMLScreen;
+import whowhatwhere.view.SecondaryFXMLWithCRUDTableScreen;
 
-public class ManageListScreen extends SecondaryFXMLScreen
+public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<IPToMatch>
 {
-	private final static String watchdogListAddEditFormLocation = "/whowhatwhere/view/WatchdogListAddEdit.fxml";
-	private final static Logger logger = Logger.getLogger(ManageListScreen.class.getPackage().getName());
-
 	private ManageListController watchdogListController;
-	private TableView<IPToMatch> table;
 	private ObservableList<IPToMatch> entryList;
 	private TextField textToSay;
+	private TableColumn<IPToMatch, String> columnIP;
+	private TableColumn<IPToMatch, String> columnProtocol;
+	private TableColumn<IPToMatch, String> columnSrcPort;
+	private TableColumn<IPToMatch, String> columnDstPort;
+	
+	private final static String emptyCellString = "(Click to edit)";
+	
 
 	public ManageListScreen(String fxmlLocation, Stage stage, Scene scene, WatchdogUI uiController) throws IOException
 	{
 		super(fxmlLocation, stage, scene);
-
+		
+		watchdogListController = (ManageListController) controller;
 		entryList = uiController.getEntryList();
 		textToSay = uiController.getTextMessage();
+		
+		columnIP = watchdogListController.getColumnIP();
+		columnProtocol = watchdogListController.getColumnProtocol();
+		columnSrcPort = watchdogListController.getColumnSrcPort();
+		columnDstPort = watchdogListController.getColumnDstPort();
 
-		watchdogListController = getLoader().<ManageListController> getController();
-		table = watchdogListController.getTable();
+		initPresetButtonHandlers();
+		initGUI();
+	}
+	
 
-		table.setItems(entryList);
-
-		initButtonHandlers();
-		setTableRowDoubleClickToEdit();
+	@Override
+	protected SecondaryFXMLWithCRUDTableController<IPToMatch> initController()
+	{
+		return getLoader().<ManageListController> getController();
 	}
 
-	private void setTableRowDoubleClickToEdit()
+	@Override
+	protected ObservableList<IPToMatch> getInitialTableItems()
 	{
-		table.setRowFactory(param ->
+		return entryList;
+	}
+
+	@Override
+	protected void setOnEditCommit()
+	{
+		columnIP.setOnEditCommit(rowModel -> 
 		{
-			TableRow<IPToMatch> row = new TableRow<>();
-			row.setOnMouseClicked(event ->
+			String newContent = rowModel.getNewValue();
+			String previousValue = rowModel.getOldValue();
+			boolean isNewContentValid = isValidIPValue(newContent);
+			IPToMatch rowValue = rowModel.getRowValue();
+			
+			rowValue.setIpAddress(isNewContentValid ? newContent : previousValue);
+			
+			if (!isNewContentValid)
+				new Alert(AlertType.ERROR, "Please enter a valid IP address. If you want to delete this row, please select it and press the \"" + watchdogListController.getBtnRemoveRow().getText() + "\" button.").showAndWait();
+			
+			table.refresh();
+		});
+		
+		columnProtocol.setOnEditCommit(rowModel -> rowModel.getRowValue().setProtocol(rowModel.getNewValue()));
+			
+		columnSrcPort.setOnEditCommit(getPortOnEditCommit(true));
+		
+		columnDstPort.setOnEditCommit(getPortOnEditCommit(false));
+	}
+	
+	private EventHandler<CellEditEvent<IPToMatch, String>> getPortOnEditCommit(boolean srcPort)
+	{
+		return rowModel -> 
+		{
+			String newContent = rowModel.getNewValue();
+			String previousValue = rowModel.getOldValue();
+			boolean isNewContentValid = isValidPortValue(newContent);
+			IPToMatch rowValue = rowModel.getRowValue();
+			
+			if (srcPort)
+				rowValue.setSrcPort(isNewContentValid ? newContent : previousValue);
+			else
+				rowValue.setDstPort(isNewContentValid ? newContent : previousValue);
+			
+			if (!isNewContentValid)
+				new Alert(AlertType.ERROR, "Port numbers must be between 1-65535. Please enter a valid port number or \"" + IPToMatch.protocol_ANY + "\" to check any port.").showAndWait();
+			
+			table.refresh();
+		};
+	}
+	
+	private boolean isValidIPValue(String ip)
+	{
+		return IPSniffer.isValidIPv4(ip);
+	}
+	
+	private boolean isValidPortValue(String port)
+	{
+		if (port.equals(IPToMatch.port_ANY))
+			return true;
+		
+		int value;
+		
+		try
+		{
+			value = Integer.parseInt(port);
+		}
+		catch(NumberFormatException nfe)
+		{
+			return false;
+		}
+		
+		return value >= 1 && value <= 65535;
+	}
+
+	@Override
+	protected IPToMatch newEmptyTableRow()
+	{
+		return new IPToMatch(emptyCellString, IPToMatch.protocol_ANY, IPToMatch.port_ANY, IPToMatch.port_ANY);
+	}
+
+	@Override
+	protected String filterRowsToDelete(ObservableList<IPToMatch> initialSelectionOfRowsToDelete)
+	{
+		return null;
+	}
+
+	@Override
+	protected void performForDeleteRows(List<IPToMatch> listOfDeletedRows) {}
+
+	@Override
+	protected void performOnCloseButton() throws IllegalArgumentException 
+	{
+		boolean invalidLines = false;
+		
+		for (IPToMatch row : entryList)
+		{
+			if (!isValidIPValue(row.ipAddressProperty().getValue()))
 			{
-				if (event.getClickCount() == 2 && (!row.isEmpty()))
-					watchdogListController.getBtnEditRow().fire();
-			});
-
-			return row;
-		});
-	}
-
-	private void initButtonHandlers()
-	{
-		watchdogListController.getBtnAddRow().setOnAction(generateAddEditEventHandler(false));
-		watchdogListController.getBtnEditRow().setOnAction(generateAddEditEventHandler(true));
-		watchdogListController.getBtnRemoveRow().setOnAction(event ->
+				invalidLines = true;
+				break;
+			}
+		}
+		
+		if (invalidLines)
 		{
-			ObservableList<IPToMatch> selectedItems = table.getSelectionModel().getSelectedItems();
-
-			entryList.removeAll(selectedItems);
-		});
-
+			new Alert(AlertType.ERROR, "At least one row's IP column wasn't set. Please set a valid IP address in it or remove that row.").showAndWait();
+			throw new IllegalArgumentException(); //don't close the window
+		}
+	}
+	
+	private void initPresetButtonHandlers()
+	{
 		watchdogListController.getBtnSavePreset().setOnAction(event ->
 		{
 			TextInputDialog dialog = new TextInputDialog();
@@ -109,10 +207,10 @@ public class ManageListScreen extends SecondaryFXMLScreen
 			});
 		});
 
-		initMenuButton();
+		initLoadPresetButton();
 	}
-
-	private void initMenuButton()
+	
+	private void initLoadPresetButton()
 	{
 		ObservableList<MenuItem> items = watchdogListController.getMenuBtnLoadPreset().getItems();
 		items.clear();
@@ -132,7 +230,7 @@ public class ManageListScreen extends SecondaryFXMLScreen
 			items.add(none);
 		}
 	}
-
+	
 	public static MenuItem createMenuItem(ObservableList<IPToMatch> list, TextField textToSay, String filename)
 	{
 		MenuItem menuItem = new MenuItem(filename);
@@ -150,40 +248,5 @@ public class ManageListScreen extends SecondaryFXMLScreen
 		});
 		
 		return menuItem;
-	}
-
-	private EventHandler<ActionEvent> generateAddEditEventHandler(boolean isEdit)
-	{
-		return new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				ListAddEditScreen watchdogListAddEditScreen;
-				Stage stage = getPostCloseStage();
-
-				try
-				{
-					watchdogListAddEditScreen = new ListAddEditScreen(watchdogListAddEditFormLocation, stage, stage.getScene(), table, isEdit);
-				}
-				catch (IOException e)
-				{
-					logger.log(Level.SEVERE, "Unable to load watchdog list add/edit screen", e);
-					return;
-				}
-				catch (IllegalStateException ise)
-				{
-					new Alert(AlertType.ERROR, ise.getMessage()).showAndWait();
-					return;
-				}
-
-				watchdogListAddEditScreen.showScreenOnNewStage((isEdit ? "Edit" : "Add") + " an entry", watchdogListAddEditScreen.getCloseButton());
-			}
-		};
-	}
-
-	public Button getCloseButton()
-	{
-		return watchdogListController.getBtnClose();
 	}
 }

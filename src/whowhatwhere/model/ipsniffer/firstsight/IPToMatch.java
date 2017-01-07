@@ -13,7 +13,7 @@ public class IPToMatch implements Serializable
 	public final static String protocol_ANY = "ANY";
 	public final static String port_ANY = "ANY";
 	
-	transient private SimpleStringProperty ip;
+	transient private SimpleStringProperty ipAddress;
 	private String ipToSerialize;
 	
 	transient private SimpleStringProperty protocol;
@@ -37,7 +37,7 @@ public class IPToMatch implements Serializable
 	
 	public void init(String ip, String protocol, String srcPort, String dstPort)
 	{
-		setIP(ip);
+		setIpAddress(ip);
 		setProtocol(protocol);
 		setSrcPort(srcPort);
 		setDstPort(dstPort);
@@ -45,23 +45,23 @@ public class IPToMatch implements Serializable
 	
 	public void initAfterSerialization()
 	{
-		setIP(ipToSerialize);
+		setIpAddress(ipToSerialize);
 		setProtocol(protocolToSerialize);
 		setSrcPort(srcPortToSerialize);
 		setDstPort(dstPortToSerialize);
 	}
 	
-	public SimpleStringProperty ipProperty()
+	public SimpleStringProperty ipAddressProperty()
 	{
-		return ip;
+		return ipAddress;
 	}
 
-	public void setIP(String ip)
+	public void setIpAddress(String ip)
 	{
-		if (this.ip == null)
-			this.ip = (ip != null ? new SimpleStringProperty(ip) : new SimpleStringProperty());
+		if (this.ipAddress == null)
+			this.ipAddress = (ip != null ? new SimpleStringProperty(ip) : new SimpleStringProperty());
 		else
-			this.ip.setValue(ip);
+			this.ipAddress.setValue(ip);
 		
 		this.ipToSerialize = ip;
 	}
@@ -120,7 +120,7 @@ public class IPToMatch implements Serializable
 	{
 		Map<String, String> map = new HashMap<>();
 		
-		map.put("ip", ip.getValue());
+		map.put("ip", ipAddress.getValue());
 		map.put("protocol", protocol.getValue());
 		map.put("srcPort", srcPort.getValue());
 		map.put("dstPort", dstPort.getValue());

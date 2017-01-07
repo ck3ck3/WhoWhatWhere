@@ -44,6 +44,8 @@ public class IPSniffer
 	public static final int HTTP_PROTOCOL = Http.ID;
 	public static final int IPv4_PROTOCOL = Ip4.ID;
 	
+	public static final String[] supportedProtocols = {"ICMP", "UDP", "TCP", "HTTP"};
+	
 	private static TreeBidiMap protocolBidiMap;
 	static
 	{

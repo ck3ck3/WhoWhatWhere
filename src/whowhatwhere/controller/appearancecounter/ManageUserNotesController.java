@@ -4,15 +4,15 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
 
-public class ManageUserNotesController implements Initializable
+public class ManageUserNotesController extends SecondaryFXMLWithCRUDTableController<UserNotesRowModel>
 {
 	@FXML
 	private TableView<UserNotesRowModel> tableEntries;
@@ -27,11 +27,13 @@ public class ManageUserNotesController implements Initializable
 	@FXML
 	private Button btnRemoveRow;
 	
+	
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
 		columnIP.setCellValueFactory(new PropertyValueFactory<UserNotesRowModel, String>("ipAddress"));
 		columnIP.setCellFactory(TextFieldTableCell.forTableColumn());
+		
 		columnNotes.setCellValueFactory(new PropertyValueFactory<UserNotesRowModel, String>("notes"));
 		columnNotes.setCellFactory(TextFieldTableCell.forTableColumn());
 		

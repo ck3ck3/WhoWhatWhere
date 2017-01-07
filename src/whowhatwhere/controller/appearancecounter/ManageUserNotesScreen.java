@@ -1,6 +1,7 @@
 package whowhatwhere.controller.appearancecounter;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 import javafx.collections.FXCollections;
@@ -8,60 +9,77 @@ import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.stage.Stage;
+import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
 import whowhatwhere.model.ipsniffer.IPSniffer;
-import whowhatwhere.view.SecondaryFXMLScreen;
+import whowhatwhere.view.SecondaryFXMLWithCRUDTableScreen;
 
-public class ManageUserNotesScreen extends SecondaryFXMLScreen
+public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<UserNotesRowModel>
 {
-	private final static String emptyCellString = "(Click to edit)";
-	
 	private ManageUserNotesController userNotesController;
 	private Properties propsNotes;
-	private TableView<UserNotesRowModel> table;
-	private ObservableList<UserNotesRowModel> entryList;
 	private TableColumn<UserNotesRowModel, String> columnIP;
 	private TableColumn<UserNotesRowModel, String> columnNotes;
+	
+	private final static String emptyCellString = "(Click to edit)";
 
 	public ManageUserNotesScreen(String fxmlLocation, Stage stage, Scene scene, Properties propsNotes) throws IOException
 	{
 		super(fxmlLocation, stage, scene);
-		
-		userNotesController = getLoader().<ManageUserNotesController> getController();
-		table = userNotesController.getTable();
+
 		this.propsNotes = propsNotes;
+		userNotesController = (ManageUserNotesController) controller;
 		columnIP = userNotesController.getColumnIP();
 		columnNotes = userNotesController.getColumnNotes();
 		
 		table.getSortOrder().add(columnIP);
-		
-		entryList = propertiesToObservableList(propsNotes);
-		table.setItems(entryList);
-
-		initButtonHandlers();
-		setOnEditCommit();
+		initGUI();
+	}
+	
+	@Override
+	protected SecondaryFXMLWithCRUDTableController<UserNotesRowModel> initController()
+	{
+		return getLoader().<ManageUserNotesController> getController();
 	}
 
-	private void setOnEditCommit()
+	@Override
+	protected ObservableList<UserNotesRowModel> getInitialTableItems()
+	{
+		return propertiesToObservableList(propsNotes);
+	}
+
+	@Override
+	protected void setOnEditCommit()
 	{
 		columnIP.setOnEditCommit(rowModel -> 
 		{
 			String newContent = rowModel.getNewValue();
 			String previousValue = rowModel.getOldValue();
-			boolean isNewContentValid = IPSniffer.isValidIPv4(newContent);
+			boolean isNewContentValid = isValidIPValue(newContent);
+			UserNotesRowModel rowValue = rowModel.getRowValue();
+			boolean ipAlreadyExists = propsNotes.containsKey(newContent);
 			
-			rowModel.getRowValue().setIpAddress(isNewContentValid ? newContent : previousValue);
-			
-			if (isNewContentValid)
+			if (ipAlreadyExists)
 			{
-				propsNotes.remove(previousValue);
-				propsNotes.put(newContent, rowModel.getRowValue().notesProperty().getValue());
+				new Alert(AlertType.ERROR, "This IP address already has a note.").showAndWait();
+				rowValue.setIpAddress(previousValue);
 			}
 			else
-				new Alert(AlertType.ERROR, "Please enter a valid IP address. If you want to delete this row, please select it and press the \"" + userNotesController.getBtnRemoveRow().getText() + "\" button.").showAndWait();
+			{
+				rowValue.setIpAddress(isNewContentValid ? newContent : previousValue);
+				
+				if (isNewContentValid)
+				{
+					if (isValidNotesValue(rowValue.notesProperty().getValue()))
+					{
+						propsNotes.remove(previousValue);
+						propsNotes.put(newContent, rowValue.notesProperty().getValue());
+					}
+				}
+				else
+					new Alert(AlertType.ERROR, "Please enter a valid IP address. If you want to delete this row, please select it and press the \"" + userNotesController.getBtnRemoveRow().getText() + "\" button.").showAndWait();
+			}
 			
 			table.refresh();
 		});
@@ -69,13 +87,17 @@ public class ManageUserNotesScreen extends SecondaryFXMLScreen
 		columnNotes.setOnEditCommit(rowModel -> 
 		{
 			String newContent = rowModel.getNewValue();
-			boolean isNewContentValid = !newContent.isEmpty() && !newContent.equals(emptyCellString);
+			boolean isNewContentValid = isValidNotesValue(newContent);
+			UserNotesRowModel rowValue = rowModel.getRowValue();
 			
-			rowModel.getRowValue().setNotes(isNewContentValid ? newContent : rowModel.getOldValue());
+			rowValue.setNotes(isNewContentValid ? newContent : rowModel.getOldValue());
 			
 			if (isNewContentValid)
 			{
-				propsNotes.put(rowModel.getRowValue().ipAddressProperty().getValue(), newContent);
+				String ipAddressValue = rowValue.ipAddressProperty().getValue();
+				
+				if (isValidIPValue(ipAddressValue))
+					propsNotes.put(ipAddressValue, newContent);
 			}
 			else
 				new Alert(AlertType.ERROR, "Please enter a non-empty, non-default note. If you want to delete this row, please select it and press the \"" + userNotesController.getBtnRemoveRow().getText() + "\" button.").showAndWait();
@@ -84,32 +106,39 @@ public class ManageUserNotesScreen extends SecondaryFXMLScreen
 		});		
 	}
 	
-	public Button getCloseButton()
+	private boolean isValidIPValue(String ip)
 	{
-		return userNotesController.getCloseButton();
+		return IPSniffer.isValidIPv4(ip);
 	}
 	
-	private void initButtonHandlers()
+	private boolean isValidNotesValue(String notes)
 	{
-		userNotesController.getBtnAddRow().setOnAction(event -> table.getItems().add(new UserNotesRowModel(emptyCellString, emptyCellString)));
-		userNotesController.getBtnRemoveRow().setOnAction(event ->
-		{
-			ObservableList<UserNotesRowModel> selectedItems = table.getSelectionModel().getSelectedItems();
+		return !notes.isEmpty() && !notes.equals(emptyCellString);
+	}
 
-			if (selectedItems.isEmpty())
-			{
-				new Alert(AlertType.ERROR, "No lines selected.").showAndWait();
-				return;
-			}
-			
-			for (UserNotesRowModel row : selectedItems)
-				propsNotes.remove(row.ipAddressProperty().getValue());
-			
-			entryList.removeAll(selectedItems);
-			
-		});
-		
-		userNotesController.getCloseButton().setOnAction(event -> AppearanceCounterUI.saveUserNotes(propsNotes));
+	@Override
+	protected UserNotesRowModel newEmptyTableRow()
+	{
+		return new UserNotesRowModel(emptyCellString, emptyCellString);
+	}
+
+	@Override
+	protected String filterRowsToDelete(ObservableList<UserNotesRowModel> initialSelectionOfRowsToDelete)
+	{
+		return null;
+	}
+
+	@Override
+	protected void performForDeleteRows(List<UserNotesRowModel> listOfDeletedRows)
+	{
+		for (UserNotesRowModel row : listOfDeletedRows)
+			propsNotes.remove(row.ipAddressProperty().getValue());
+	}
+
+	@Override
+	protected void performOnCloseButton() throws IllegalArgumentException
+	{
+		AppearanceCounterUI.saveUserNotes(propsNotes);
 	}
 	
 	private ObservableList<UserNotesRowModel> propertiesToObservableList(Properties props)

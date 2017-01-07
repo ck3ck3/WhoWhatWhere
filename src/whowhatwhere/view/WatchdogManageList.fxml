@@ -6,7 +6,7 @@
 
 <AnchorPane fx:id="paneRoot" prefHeight="282.0" prefWidth="553.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.watchdog.ManageListController">
    <children>
-      <TableView fx:id="tableEntries" layoutX="14.0" layoutY="14.0" prefHeight="175.0" prefWidth="527.0" AnchorPane.bottomAnchor="93.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="14.0">
+      <TableView fx:id="tableEntries" editable="true" layoutX="14.0" layoutY="14.0" prefHeight="175.0" prefWidth="527.0" AnchorPane.bottomAnchor="93.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="14.0">
          <columns>
             <TableColumn fx:id="columnIP" prefWidth="155.0" text="IP address" />
             <TableColumn fx:id="columnProtocol" prefWidth="136.0" text="Protocol" />
@@ -17,8 +17,7 @@
       <AnchorPane layoutX="14.0" layoutY="199.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0">
          <children>
             <Button fx:id="btnAddRow" mnemonicParsing="false" prefHeight="25.0" prefWidth="83.0" text="Add entry" />
-            <Button fx:id="btnEditRow" layoutX="90.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="83.0" text="Edit entry" />
-            <Button fx:id="btnRemoveRow" layoutX="181.0" mnemonicParsing="false" text="Remove entry" />
+            <Button fx:id="btnRemoveRow" layoutX="90.0" mnemonicParsing="false" text="Remove entry" />
             <Button fx:id="btnSavePreset" layoutX="102.0" layoutY="44.0" mnemonicParsing="false" text="Save as preset" />
             <MenuButton fx:id="menubtnLoadPreset" layoutY="44.0" mnemonicParsing="false" text="Load preset" />
          </children>

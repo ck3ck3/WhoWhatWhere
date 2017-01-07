@@ -27,7 +27,7 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 
 		for (IPToMatch ipToMatch : ipList)
 		{
-			String ip = ipToMatch.ipProperty().getValue();
+			String ip = ipToMatch.ipAddressProperty().getValue();
 
 			if (ip == null)
 				throw new IllegalArgumentException("IP address must be set");

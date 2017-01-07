@@ -5,24 +5,25 @@ import java.util.ResourceBundle;
 
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
+import whowhatwhere.model.ipsniffer.IPSniffer;
 import whowhatwhere.model.ipsniffer.firstsight.IPToMatch;
 
-public class ManageListController implements Initializable
+public class ManageListController extends SecondaryFXMLWithCRUDTableController<IPToMatch>
 {
 	@FXML
 	private Button btnAddRow;
-	@FXML
-	private Button btnEditRow;
 	@FXML
 	private Button btnRemoveRow;
 	@FXML
@@ -47,10 +48,22 @@ public class ManageListController implements Initializable
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
-		columnIP.setCellValueFactory(new PropertyValueFactory<IPToMatch, String>("ip"));
+		columnIP.setCellValueFactory(new PropertyValueFactory<IPToMatch, String>("ipAddress"));
+		columnIP.setCellFactory(TextFieldTableCell.forTableColumn());
+		
 		columnProtocol.setCellValueFactory(new PropertyValueFactory<>("protocol"));
+
+		String[] protocols = new String[IPSniffer.supportedProtocols.length + 1];
+		protocols[0] = IPToMatch.protocol_ANY;
+		System.arraycopy(IPSniffer.supportedProtocols, 0, protocols, 1, IPSniffer.supportedProtocols.length); //add the rest of the protocols
+		
+		columnProtocol.setCellFactory(ComboBoxTableCell.forTableColumn(protocols));
+		
 		columnSrcPort.setCellValueFactory(new PropertyValueFactory<>("srcPort"));
+		columnSrcPort.setCellFactory(TextFieldTableCell.forTableColumn());
+		
 		columnDstPort.setCellValueFactory(new PropertyValueFactory<>("dstPort"));
+		columnDstPort.setCellFactory(TextFieldTableCell.forTableColumn());
 
 		tableEntries.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		
@@ -64,22 +77,20 @@ public class ManageListController implements Initializable
 		tableEntries.setOnKeyPressed(enterKeyEventHandler);
 	}
 
+	@Override
 	public Button getBtnAddRow()
 	{
 		return btnAddRow;
 	}
 
-	public Button getBtnEditRow()
-	{
-		return btnEditRow;
-	}
-
+	@Override
 	public Button getBtnRemoveRow()
 	{
 		return btnRemoveRow;
 	}
-
-	public Button getBtnClose()
+	
+	@Override
+	public Button getCloseButton()
 	{
 		return btnClose;
 	}
@@ -94,8 +105,29 @@ public class ManageListController implements Initializable
 		return btnSavePreset;
 	}
 
+	@Override
 	public TableView<IPToMatch> getTable()
 	{
 		return tableEntries;
+	}
+
+	public TableColumn<IPToMatch, String> getColumnIP()
+	{
+		return columnIP;
+	}
+	
+	public TableColumn<IPToMatch, String> getColumnProtocol()
+	{
+		return columnProtocol;
+	}
+	
+	public TableColumn<IPToMatch, String> getColumnSrcPort()
+	{
+		return columnSrcPort;
+	}
+	
+	public TableColumn<IPToMatch, String> getColumnDstPort()
+	{
+		return columnDstPort;
 	}
 }
