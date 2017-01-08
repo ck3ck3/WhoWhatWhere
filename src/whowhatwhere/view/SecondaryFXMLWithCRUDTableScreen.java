@@ -22,7 +22,7 @@ import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
  * That controller is defined in this abstract class as<br> 
  * {@code protected SecondaryFXMLWithCRUDTableController<T> controller;}<br>
  *  and assigned in the constructor: {@code controller = initController();}<br>
- *  The inheriting class <b>must</b> call {@code initGUI()} in order to initialize the GUI. 
+ *  <b>The inheriting class must call {@code initGUI()} in its constructor </b> in order to initialize the GUI. 
  *  This is not done in this class' constructor in order to allow to initialize the inheriting class' members first, so they can be used in methods like {@code getInitialTableItems(), setOnEditCommit()}.
  * @param <T> - the type of the table's data model.
  */
@@ -49,17 +49,18 @@ public abstract class SecondaryFXMLWithCRUDTableScreen<T> extends SecondaryFXMLS
 		controller = initController();
 		table = controller.getTable();
 		
-		setButtonActionHandlersToCheckGUIInit();
+		setButtonActionHandlersToCheckGUIInit(); //if initGUI() will be called from the deriving class, it will override these handlers. Otherwise, these handlers will throw an exception about not calling initGUI()
 	}
 	
-	private void setButtonActionHandlersToCheckGUIInit()
+	private void setButtonActionHandlersToCheckGUIInit() throws IllegalStateException
 	{
-		String errorMessage = "The method initGUI() was not called! It must be called by the deriving class before the GUI can be used!";
+		String errorMessage = "The method initGUI() was not called! It must be called by the deriving class' constructor before the GUI can be used.";
 		
 		controller.getBtnAddRow().setOnAction(event -> {throw new IllegalStateException(errorMessage);});
 		controller.getBtnRemoveRow().setOnAction(event -> {throw new IllegalStateException(errorMessage);});
+		controller.getCloseButton().setOnAction(event -> {throw new IllegalStateException(errorMessage);});
 	}
-
+	
 	/**
 	 * Typically implemented as follows:<br> {@code return getLoader().<ControllerClass> getController();}<br>
 	 * where {@code ControllerClass} is the implemented controller class that inherits from {@code SecondaryFXMLWithCRUDTableController<T>}
@@ -117,7 +118,7 @@ public abstract class SecondaryFXMLWithCRUDTableScreen<T> extends SecondaryFXMLS
 	}
 	
 	/**
-	 * <b>Must be called</b> by deriving classes in order to initialize the GUI (set initial table items, button handlers, onEditCommit etc)
+	 * <b>Must be called by the deriving class' constructor</b> in order to initialize the GUI (set initial table items, button handlers, onEditCommit etc)
 	 */
 	protected void initGUI()
 	{
