@@ -211,6 +211,10 @@ public class GUIController implements Initializable
 	private CheckMenuItem menuItemChkAllUsers;
 	@FXML
 	private MenuItem menuItemManageNotes;
+	@FXML
+	private CheckBox chkboxWatchdogUseTTS;
+	@FXML
+	private CheckBox chkboxWatchdogUseAlert;
 
 	private NumberTextField numFieldCaptureTimeout;
 	private NumberTextField numFieldRowsToRead;
@@ -893,5 +897,15 @@ public class GUIController implements Initializable
 	public Stage getStage()
 	{
 		return (Stage) tabPane.getScene().getWindow();
+	}
+	
+	public CheckBox getChkboxWatchdogUseTTS()
+	{
+		return chkboxWatchdogUseTTS;
+	}
+	
+	public CheckBox getChkboxWatchdogUseAlert()
+	{
+		return chkboxWatchdogUseAlert;
 	}
 }

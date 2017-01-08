@@ -12,6 +12,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -44,6 +46,8 @@ public class WatchdogUI implements FirstSightListener
 	private final static String propsChkboxHotkey = "chkboxWatchdogHotkey";
 	private final static String propsHotkeyKeycode = "watchdogHotkeyKeycode";
 	private final static String propsHotkeyModifiers = "watchdogHotkeyModifiers";
+	private final static String propsChkboxUseTTS = "chkboxWatchdogUseTTS";
+	private final static String propsChkboxUseAlert = "chkboxWatchdogUseAlert";
 
 	private GUIController controller;
 
@@ -58,6 +62,8 @@ public class WatchdogUI implements FirstSightListener
 	private Button btnPreview;
 	private Label labelEntryCount;
 	private Button activeButton;
+	private CheckBox chkboxUseTTS;
+	private CheckBox chkboxUseAlert;
 
 	private int hotkeyKeyCode;
 	private int hotkeyModifiers;
@@ -122,6 +128,8 @@ public class WatchdogUI implements FirstSightListener
 		btnManageList = controller.getBtnWatchdogManageList();
 		btnPreview = controller.getBtnWatchdogPreview();
 		labelEntryCount = controller.getLabelWatchdogEntryCount();
+		chkboxUseTTS = controller.getChkboxWatchdogUseTTS();
+		chkboxUseAlert = controller.getChkboxWatchdogUseAlert();
 	}
 
 	private void initButtonHandlers()
@@ -152,6 +160,20 @@ public class WatchdogUI implements FirstSightListener
 		});
 
 		btnPreview.setOnAction(event -> tts.speak(textMessage.getText()));
+		
+		String bothUncheckedError = "If both checkboxes are unchecked, you will not be informed when a match is found. Please select at least one of the checkboxes.";
+		
+		chkboxUseTTS.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
+		{
+			if (!newValue && !chkboxUseAlert.isSelected())
+				new Alert(AlertType.WARNING, bothUncheckedError).showAndWait();
+		});
+		
+		chkboxUseAlert.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
+		{
+			if (!newValue && !chkboxUseTTS.isSelected())
+				new Alert(AlertType.WARNING, bothUncheckedError).showAndWait();
+		});
 
 		btnStart.setOnAction(event ->
 		{
@@ -199,7 +221,10 @@ public class WatchdogUI implements FirstSightListener
 	@Override
 	public void firstSightOfIP(IPToMatch ipInfo)
 	{
-		tts.speak(textMessage.getText());
+		if (chkboxUseTTS.isSelected())
+			tts.speak(textMessage.getText());
+		if (chkboxUseAlert.isSelected())
+			Platform.runLater(() -> new Alert(AlertType.INFORMATION, textMessage.getText()).showAndWait());
 
 		activeButton = btnStart;
 		btnStop.setDisable(true);
@@ -255,6 +280,8 @@ public class WatchdogUI implements FirstSightListener
 		props.put(propsChkboxHotkey, ((Boolean) chkboxHotkey.isSelected()).toString());
 		props.put(propsHotkeyKeycode, Integer.toString(hotkeyRegistry.getHotkeyKeycode(hotkeyID)));
 		props.put(propsHotkeyModifiers, Integer.toString(hotkeyRegistry.getHotkeyModifiers(hotkeyID)));
+		props.put(propsChkboxUseTTS, ((Boolean) chkboxUseTTS.isSelected()).toString());
+		props.put(propsChkboxUseAlert, ((Boolean) chkboxUseAlert.isSelected()).toString());
 
 		try
 		{
@@ -269,6 +296,9 @@ public class WatchdogUI implements FirstSightListener
 	public void loadLastRunConfig(Properties props)
 	{
 		setWatchdogHotkey(props);
+		
+		chkboxUseTTS.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseTTS, true));
+		chkboxUseAlert.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseAlert, false));		
 
 		try
 		{

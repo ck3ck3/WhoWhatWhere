@@ -140,7 +140,7 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="14.0" prefHeight="145.0" prefWidth="570.0" text="Ping-to-speech">
+                        <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="14.0" prefHeight="145.0" prefWidth="583.0" text="Ping-to-speech">
                           <content>
                             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="119.0" prefWidth="533.0">
                                  <children>
@@ -157,29 +157,31 @@
                               </AnchorPane>
                           </content>
                         </TitledPane>
-                        <TitledPane collapsible="false" layoutX="14.0" layoutY="174.0" prefHeight="153.0" prefWidth="570.0" text="Watchdog">
+                        <TitledPane collapsible="false" layoutX="14.0" layoutY="174.0" prefHeight="219.0" prefWidth="571.0" text="Watchdog">
                            <content>
-                              <AnchorPane prefHeight="122.0" prefWidth="508.0">
+                              <AnchorPane prefHeight="122.0" prefWidth="569.0">
                                  <children>
-                                    <CheckBox fx:id="chkboxWatchdogHotkey" layoutX="14.0" layoutY="133.0" mnemonicParsing="false" selected="true" text="Enable hotkey" />
-                                    <AnchorPane fx:id="paneWatchdogHotkeyConfig" layoutX="119.0" layoutY="129.0" prefHeight="25.0" prefWidth="366.0">
+                                    <CheckBox fx:id="chkboxWatchdogHotkey" layoutX="14.0" layoutY="155.0" mnemonicParsing="false" selected="true" text="Enable hotkey" />
+                                    <AnchorPane fx:id="paneWatchdogHotkeyConfig" layoutX="119.0" layoutY="151.0" prefHeight="25.0" prefWidth="366.0">
                                        <children>
                                           <Button fx:id="btnWatchdogConfigureHotkey" mnemonicParsing="false" text="Configure hotkey" />
                                           <Label fx:id="labelWatchdogCurrHotkey" layoutX="117.0" layoutY="4.0" prefHeight="17.0" prefWidth="244.0" text="Current hotkey: " />
                                        </children>
                                     </AnchorPane>
-                                    <Button fx:id="btnWatchdogStart" layoutX="14.0" layoutY="87.0" mnemonicParsing="false" text="Start waiting for match" />
-                                    <Button fx:id="btnWatchdogStop" disable="true" layoutX="164.0" layoutY="87.0" mnemonicParsing="false" text="Stop waiting for match" />
-                                    <Label layoutX="14.0" layoutY="53.0" text="When a match is found, say this message:" />
-                                    <TextField fx:id="textWatchdogMessage" layoutX="245.0" layoutY="49.0" prefHeight="25.0" prefWidth="187.0" />
+                                    <Button fx:id="btnWatchdogStart" layoutX="14.0" layoutY="109.0" mnemonicParsing="false" text="Start waiting for match" />
+                                    <Button fx:id="btnWatchdogStop" disable="true" layoutX="164.0" layoutY="109.0" mnemonicParsing="false" text="Stop waiting for match" />
+                                    <Label layoutX="14.0" layoutY="53.0" text="When a match is found, output this message:" />
+                                    <TextField fx:id="textWatchdogMessage" layoutX="257.0" layoutY="49.0" prefHeight="25.0" prefWidth="187.0" />
                                     <Button fx:id="btnWatchdogManageList" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" text="Manage match list" />
-                                    <Button fx:id="btnWatchdogPreview" layoutX="442.0" layoutY="49.0" mnemonicParsing="false" text="Preview message" />
+                                    <Button fx:id="btnWatchdogPreview" layoutX="454.0" layoutY="49.0" mnemonicParsing="false" text="Preview message" />
                                     <Label fx:id="labelWatchdogEntryCount" layoutX="137.0" layoutY="18.0" prefHeight="17.0" prefWidth="204.0" text="Match list contains 0 entries" />
+                                    <CheckBox fx:id="chkboxWatchdogUseTTS" layoutX="14.0" layoutY="80.0" mnemonicParsing="false" text="Say message with Text-to-Speech" />
+                                    <CheckBox fx:id="chkboxWatchdogUseAlert" layoutX="221.0" layoutY="80.0" mnemonicParsing="false" text="Show message in an alert dialog" />
                                  </children>
                               </AnchorPane>
                            </content>
                         </TitledPane>
-                        <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="389.0" prefHeight="78.0" prefWidth="570.0" text="Visual Trace">
+                        <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="409.0" prefHeight="78.0" prefWidth="584.0" text="Visual Trace">
                           <content>
                             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                  <children>
