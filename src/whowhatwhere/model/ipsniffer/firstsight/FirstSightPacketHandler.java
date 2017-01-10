@@ -4,6 +4,8 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
@@ -15,15 +17,27 @@ import whowhatwhere.model.ipsniffer.IPSniffer;
 
 public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 {
+	private boolean isRepeated;
+	private Integer cooldownInSecs;
+	private boolean isCooldownPeriod = false;
+	private ScheduledThreadPoolExecutor timer;
 	private FirstSightListener listener;
 	private IPSniffer sniffer;
 	private Map<Integer, IPToMatch> ipMap;
 
-	public FirstSightPacketHandler(List<IPToMatch> ipList, FirstSightListener listener, IPSniffer sniffer) throws IllegalArgumentException, UnknownHostException
+	public FirstSightPacketHandler(List<IPToMatch> ipList, boolean isRepeated, Integer cooldownInSecs, FirstSightListener listener, IPSniffer sniffer)
+			throws IllegalArgumentException, UnknownHostException
 	{
+		this.isRepeated = isRepeated;
+		this.cooldownInSecs = cooldownInSecs;
 		this.listener = listener;
 		this.sniffer = sniffer;
 		ipMap = new HashMap<>();
+		
+		if (isRepeated && cooldownInSecs == null)
+			throw new IllegalArgumentException("A repeated task cannot have a null cooldownInSecs");
+		
+		timer = new ScheduledThreadPoolExecutor(1);
 
 		for (IPToMatch ipToMatch : ipList)
 		{
@@ -42,14 +56,25 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 	@Override
 	public void nextPacket(PcapPacket packet, Void nothing)
 	{
-		if (packet.hasHeader(IPSniffer.IPv4_PROTOCOL))
+		if (!isCooldownPeriod && packet.hasHeader(IPSniffer.IPv4_PROTOCOL))
 		{
 			IPToMatch ipInfo = getMatchingIP(packet);
 
 			if (ipInfo != null)
 			{
+				if (isRepeated)
+				{
+					isCooldownPeriod = true;
+					
+					timer.schedule(() ->
+					{
+						isCooldownPeriod = false;			
+					}, cooldownInSecs, TimeUnit.SECONDS);
+				}
+				else
+					sniffer.stopCapture();
+				
 				listener.firstSightOfIP(ipInfo);
-				sniffer.stopCapture();
 			}
 		}
 	}
@@ -106,10 +131,10 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 						return null;
 			}
 
-//			if (ipHeader.length() > 300)
-				return ipToMatch;
-//			else
-//				return null;
+			//			if (ipHeader.length() > 300)
+			return ipToMatch;
+			//			else
+			//				return null;
 		}
 		else
 			return null;

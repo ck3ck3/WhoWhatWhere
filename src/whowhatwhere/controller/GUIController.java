@@ -65,6 +65,7 @@ import whowhatwhere.model.ipsniffer.DeviceIPAndDescription;
 import whowhatwhere.model.ipsniffer.IPSniffer;
 import whowhatwhere.model.startwithwindows.StartWithWindowsRegistryUtils;
 import whowhatwhere.view.NumberTextField;
+import javafx.scene.control.Spinner;
 
 public class GUIController implements Initializable
 {
@@ -215,7 +216,19 @@ public class GUIController implements Initializable
 	private CheckBox chkboxWatchdogUseTTS;
 	@FXML
 	private CheckBox chkboxWatchdogUseAlert;
-
+	@FXML
+	private RadioButton radioWatchdogStopAfterMatch;
+	@FXML
+	private ToggleGroup tglWatchdogStopOrContinue;
+	@FXML
+	private RadioButton radioWatchdogKeepLooking;
+	@FXML
+	private AnchorPane paneWatchdogCooldown;
+	@FXML 
+	private Spinner<Integer> spinnerWatchdogCooldown;
+	@FXML
+	private AnchorPane paneWatchdogConfig;
+	
 	private NumberTextField numFieldCaptureTimeout;
 	private NumberTextField numFieldRowsToRead;
 	private NumberTextField numberFieldPingTimeout;
@@ -233,6 +246,7 @@ public class GUIController implements Initializable
 	private AppearanceCounterUI appearanceCounterUI;
 	private PingToSpeechUI pingToSpeechUI;
 	private WatchdogUI watchdogUI;
+	
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
@@ -907,5 +921,30 @@ public class GUIController implements Initializable
 	public CheckBox getChkboxWatchdogUseAlert()
 	{
 		return chkboxWatchdogUseAlert;
+	}
+	
+	public RadioButton getRadioWatchdogStopAfterMatch()
+	{
+		return radioWatchdogStopAfterMatch;
+	}
+	
+	public RadioButton getRadioWatchdogKeepLooking()
+	{
+		return radioWatchdogKeepLooking;
+	}
+	
+	public AnchorPane getPaneWatchdogCooldown()
+	{
+		return paneWatchdogCooldown;
+	}
+	
+	public Spinner<Integer> getSpinnerWatchdogCooldown()
+	{
+		return spinnerWatchdogCooldown;
+	}
+	
+	public AnchorPane getPaneWatchdogConfig()
+	{
+		return paneWatchdogConfig;
 	}
 }

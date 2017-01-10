@@ -237,9 +237,9 @@ public class IPSniffer
 		return new AppearanceCounterResults(filteredCounterPH);
 	}
 
-	public void startFirstSightCapture(String deviceIP, List<IPToMatch> ipList, FirstSightListener listener, StringBuilder errbuf) throws IllegalArgumentException, UnknownHostException
+	public void startFirstSightCapture(String deviceIP, List<IPToMatch> ipList, boolean isRepeated, Integer cooldownInSecs, FirstSightListener listener, StringBuilder errbuf) throws IllegalArgumentException, UnknownHostException
 	{
-		FirstSightPacketHandler firstSightPH = new FirstSightPacketHandler(ipList, listener, this);
+		FirstSightPacketHandler firstSightPH = new FirstSightPacketHandler(ipList, isRepeated, cooldownInSecs, listener, this);
 
 		startCapture(deviceIP, firstSightPH, errbuf);
 	}

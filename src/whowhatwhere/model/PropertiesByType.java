@@ -50,12 +50,28 @@ public class PropertiesByType
 		return Integer.valueOf(value);
 	}
 	
-	private static String getProperty(Properties props, String key)
+	public static String getProperty(Properties props, String key)
 	{
 		String value = props.getProperty(key);
 
 		if (value == null)
 			throw new IllegalArgumentException("The key \"" + key + "\" doesn't exist");
+		
+		return value;
+	}
+	
+	public static String getProperty(Properties props, String key, String defaultIfNoKey)
+	{
+		String value;
+		
+		try
+		{
+			value = getProperty(props, key);
+		}
+		catch(IllegalArgumentException iae)
+		{
+			return defaultIfNoKey;
+		}
 		
 		return value;
 	}

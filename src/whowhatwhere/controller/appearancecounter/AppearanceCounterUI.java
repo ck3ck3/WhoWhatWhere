@@ -875,12 +875,12 @@ public class AppearanceCounterUI implements CaptureStartListener
 			hotkeyRegistry.addHotkey(captureHotkeyID, captureHotkeyModifiers, captureHotkeyKeyCode, labelCurrCaptureHotkey, captureHotkeyPressed);
 
 		chkboxUseTTS.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseTTS, false));
-		numFieldRowsToRead.setText(props.getProperty(propsNumFieldRowsToRead));
+		numFieldRowsToRead.setText(PropertiesByType.getProperty(props, propsNumFieldRowsToRead));
 
 		chkboxFilterResults.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxFilterResults, false));
-		textColumnContains.setText(props.getProperty(propsTextColumnContains));
+		textColumnContains.setText(PropertiesByType.getProperty(props, propsTextColumnContains, ""));
 
-		String comboValue = props.getProperty(propsComboColumnsSelection);
+		String comboValue = PropertiesByType.getProperty(props, propsComboColumnsSelection, "");
 		if (!comboValue.isEmpty())
 			comboColumns.setValue(comboValue);
 
@@ -891,11 +891,11 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private void setCaptureOptionsPane(Properties props)
 	{
 		radioTimedCapture.setSelected(PropertiesByType.getBoolProperty(props, propsRadioTimedCapture, false));
-		numFieldCaptureTimeout.setText(props.getProperty(propsNumFieldCaptureTimeout));
+		numFieldCaptureTimeout.setText(PropertiesByType.getProperty(props, propsNumFieldCaptureTimeout));
 		radioManual.setSelected(PropertiesByType.getBoolProperty(props, propsRadioManual, false));
 		chkboxGetLocation.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxGetLocation, false));
 		chkboxPing.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxPing, false));
-		numberFieldPingTimeout.setText(props.getProperty(propsNumberFieldPingTimeout));
+		numberFieldPingTimeout.setText(PropertiesByType.getProperty(props, propsNumberFieldPingTimeout));
 	}
 
 	private void setProtocolCheckboxes(Properties props)
@@ -959,7 +959,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		setCaptureHotkeyAndPane(props);
 		setDisabledPanes();
 		
-		suggestedPathForCSVFile = props.getProperty(propsExportCSVPath, System.getProperty("user.dir"));
+		suggestedPathForCSVFile = PropertiesByType.getProperty(props, propsExportCSVPath, System.getProperty("user.dir"));
 	}
 
 	public void saveCurrentRunValuesToProperties(Properties props)

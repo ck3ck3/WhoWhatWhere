@@ -22,6 +22,9 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
@@ -42,12 +45,18 @@ public class WatchdogUI implements FirstSightListener
 	public static final String presetExtension = ".watchdogPreset";
 	private static final String lastRunFilename = "Last run" + presetExtension;
 	private final static String voiceForTTS = "kevin16";
+	private final static int minCooldownValue = 3;
+	private final static int maxCooldownValue = Integer.MAX_VALUE;
+	
 
 	private final static String propsChkboxHotkey = "chkboxWatchdogHotkey";
 	private final static String propsHotkeyKeycode = "watchdogHotkeyKeycode";
 	private final static String propsHotkeyModifiers = "watchdogHotkeyModifiers";
 	private final static String propsChkboxUseTTS = "chkboxWatchdogUseTTS";
 	private final static String propsChkboxUseAlert = "chkboxWatchdogUseAlert";
+	private final static String propsRadioStopAfterMatch = "radioStopAfterMatch";
+	private final static String propsRadioKeepLooking = "radioKeepLooking";
+	private final static String propsSpinnerCooldown = "spinnerCooldown";
 
 	private GUIController controller;
 
@@ -64,6 +73,11 @@ public class WatchdogUI implements FirstSightListener
 	private Button activeButton;
 	private CheckBox chkboxUseTTS;
 	private CheckBox chkboxUseAlert;
+	private RadioButton radioStopAfterMatch;
+	private RadioButton radioKeepLooking;
+	private Spinner<Integer> spinnerCooldown;
+	private AnchorPane paneCooldown;
+	private AnchorPane paneWatchdogConfig;
 
 	private int hotkeyKeyCode;
 	private int hotkeyModifiers;
@@ -88,16 +102,12 @@ public class WatchdogUI implements FirstSightListener
 					return;
 
 				line = "Starting watchdog";
-				activeButton = btnStop;
-				btnStart.setDisable(true);
-				btnStop.setDisable(false);
+				changeUIAccordingToListeningState(true);
 			}
 			else
 			{
 				line = "Stopping watchdog";
-				activeButton = btnStart;
-				btnStop.setDisable(true);
-				btnStart.setDisable(false);
+				changeUIAccordingToListeningState(false);
 			}
 
 			tts.speak(line);
@@ -112,6 +122,23 @@ public class WatchdogUI implements FirstSightListener
 		initButtonHandlers();
 
 		entryList.addListener((ListChangeListener<IPToMatch>) change -> labelEntryCount.setText("Match list contains " + change.getList().size() + " entries"));
+		spinnerCooldown.setValueFactory(new IntegerSpinnerValueFactory(minCooldownValue, maxCooldownValue));
+		spinnerCooldown.focusedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
+		{
+			if (!newValue) //when losing focus
+			{
+				try
+				{
+					Integer.parseInt(spinnerCooldown.getEditor().getText());
+				}
+				catch(NumberFormatException nfe)
+				{
+					new Alert(AlertType.INFORMATION, "Invalid value").showAndWait();
+					spinnerCooldown.requestFocus();
+				}
+			}
+		});
+
 	}
 
 	private void initUIElementsFromController()
@@ -130,6 +157,11 @@ public class WatchdogUI implements FirstSightListener
 		labelEntryCount = controller.getLabelWatchdogEntryCount();
 		chkboxUseTTS = controller.getChkboxWatchdogUseTTS();
 		chkboxUseAlert = controller.getChkboxWatchdogUseAlert();
+		radioKeepLooking = controller.getRadioWatchdogKeepLooking();
+		radioStopAfterMatch = controller.getRadioWatchdogStopAfterMatch();
+		spinnerCooldown = controller.getSpinnerWatchdogCooldown();
+		paneCooldown = controller.getPaneWatchdogCooldown();
+		paneWatchdogConfig = controller.getPaneWatchdogConfig();
 	}
 
 	private void initButtonHandlers()
@@ -159,21 +191,33 @@ public class WatchdogUI implements FirstSightListener
 			manageListScreen.showScreenOnNewStage("Manage Watchdog list", manageListScreen.getCloseButton());
 		});
 
-		btnPreview.setOnAction(event -> tts.speak(textMessage.getText()));
+		String bothAlertMethodsUncheckedError = "If both checkboxes are unchecked, you will not be informed when a match is found. Please select at least one of the checkboxes.";
 		
-		String bothUncheckedError = "If both checkboxes are unchecked, you will not be informed when a match is found. Please select at least one of the checkboxes.";
+		btnPreview.setOnAction(event ->
+		{
+			boolean useTTS = chkboxUseTTS.isSelected();
+			boolean useAlert = chkboxUseAlert.isSelected(); 
+			
+			outputMessage();
+			
+			if (!useTTS && !useAlert)
+				new Alert(AlertType.WARNING, bothAlertMethodsUncheckedError).showAndWait();
+		});
 		
 		chkboxUseTTS.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
 		{
 			if (!newValue && !chkboxUseAlert.isSelected())
-				new Alert(AlertType.WARNING, bothUncheckedError).showAndWait();
+				new Alert(AlertType.WARNING, bothAlertMethodsUncheckedError).showAndWait();
 		});
 		
 		chkboxUseAlert.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
 		{
 			if (!newValue && !chkboxUseTTS.isSelected())
-				new Alert(AlertType.WARNING, bothUncheckedError).showAndWait();
+				new Alert(AlertType.WARNING, bothAlertMethodsUncheckedError).showAndWait();
 		});
+		
+		radioStopAfterMatch.setOnAction(event -> paneCooldown.setDisable(true));
+		radioKeepLooking.setOnAction(event -> paneCooldown.setDisable(false));
 
 		btnStart.setOnAction(event ->
 		{
@@ -191,7 +235,7 @@ public class WatchdogUI implements FirstSightListener
 				{
 					try
 					{
-						sniffer.startFirstSightCapture(deviceIP, entryList, thisObj, new StringBuilder());
+						sniffer.startFirstSightCapture(deviceIP, entryList, radioKeepLooking.isSelected(), spinnerCooldown.getValue(), thisObj, new StringBuilder());
 					}
 					catch (IllegalArgumentException | UnknownHostException e)
 					{
@@ -201,16 +245,12 @@ public class WatchdogUI implements FirstSightListener
 				}
 			}).start();
 
-			activeButton = btnStop;
-			btnStop.setDisable(false);
-			btnStart.setDisable(true);
+			changeUIAccordingToListeningState(true);
 		});
 
 		btnStop.setOnAction(event ->
 		{
-			activeButton = btnStart;
-			btnStop.setDisable(true);
-			btnStart.setDisable(false);
+			changeUIAccordingToListeningState(false);
 
 			sniffer.stopCapture();
 		});
@@ -221,14 +261,29 @@ public class WatchdogUI implements FirstSightListener
 	@Override
 	public void firstSightOfIP(IPToMatch ipInfo)
 	{
-		if (chkboxUseTTS.isSelected())
-			tts.speak(textMessage.getText());
-		if (chkboxUseAlert.isSelected())
-			Platform.runLater(() -> new Alert(AlertType.INFORMATION, textMessage.getText()).showAndWait());
+		outputMessage();
 
-		activeButton = btnStart;
-		btnStop.setDisable(true);
-		btnStart.setDisable(false);
+		if (radioStopAfterMatch.isSelected()) 
+			changeUIAccordingToListeningState(false);
+	}
+	
+	private void changeUIAccordingToListeningState(boolean listening)
+	{
+		activeButton = (listening ? btnStop : btnStart);
+		
+		btnStop.setDisable(!listening);
+		btnStart.setDisable(listening);
+		paneWatchdogConfig.setDisable(listening);		
+	}
+	
+	private void outputMessage()
+	{
+		String msg = textMessage.getText();
+		
+		if (chkboxUseTTS.isSelected())
+			tts.speak(msg);
+		if (chkboxUseAlert.isSelected())
+			Platform.runLater(() -> new Alert(AlertType.INFORMATION, msg).showAndWait());
 	}
 
 	public static void saveListToFile(List<IPToMatch> list, String msgToSay, String filename) throws IOException
@@ -282,6 +337,9 @@ public class WatchdogUI implements FirstSightListener
 		props.put(propsHotkeyModifiers, Integer.toString(hotkeyRegistry.getHotkeyModifiers(hotkeyID)));
 		props.put(propsChkboxUseTTS, ((Boolean) chkboxUseTTS.isSelected()).toString());
 		props.put(propsChkboxUseAlert, ((Boolean) chkboxUseAlert.isSelected()).toString());
+		props.put(propsRadioStopAfterMatch, ((Boolean) radioStopAfterMatch.isSelected()).toString());
+		props.put(propsRadioKeepLooking, ((Boolean) radioKeepLooking.isSelected()).toString());
+		props.put(propsSpinnerCooldown, Integer.toString(spinnerCooldown.getValue()));
 
 		try
 		{
@@ -298,7 +356,13 @@ public class WatchdogUI implements FirstSightListener
 		setWatchdogHotkey(props);
 		
 		chkboxUseTTS.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseTTS, true));
-		chkboxUseAlert.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseAlert, false));		
+		chkboxUseAlert.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseAlert, false));
+		spinnerCooldown.getEditor().setText(PropertiesByType.getProperty(props, propsSpinnerCooldown, String.valueOf(minCooldownValue)));
+		
+		if (PropertiesByType.getBoolProperty(props, propsRadioStopAfterMatch, true))
+			radioStopAfterMatch.fire(); //this way it activates the button handler
+		if (PropertiesByType.getBoolProperty(props, propsRadioKeepLooking, false))
+			radioKeepLooking.fire(); //this way it activates the button handler
 
 		try
 		{
