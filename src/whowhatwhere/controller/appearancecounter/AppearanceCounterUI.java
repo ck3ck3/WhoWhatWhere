@@ -40,7 +40,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.Clipboard;
@@ -50,6 +49,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
@@ -63,7 +63,6 @@ import whowhatwhere.model.ipsniffer.CaptureStartListener;
 import whowhatwhere.model.ipsniffer.IPSniffer;
 import whowhatwhere.model.ipsniffer.appearancecounter.AppearanceCounterResults;
 import whowhatwhere.model.ipsniffer.appearancecounter.IpAppearancesCounter;
-import whowhatwhere.view.NumberTextField;
 
 public class AppearanceCounterUI implements CaptureStartListener
 {
@@ -79,7 +78,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private final static String propsRadioManual = "radioManual";
 	private final static String propsChkboxGetLocation = "chkboxGetLocation";
 	private final static String propsChkboxPing = "chkboxPing";
-	private final static String propsNumberFieldPingTimeout = "numberFieldPingTimeout";
+	private final static String propsNumFieldPingTimeout = "numFieldPingTimeout";
 	private final static String propsChkboxUseCaptureHotkey = "chkboxUseCaptureHotkey";
 	private final static String propsCaptureHotkeyKeycode = "captureHotkeyKeycode";
 	private final static String propsCaptureHotkeyModifiers = "captureHotkeyModifiers";
@@ -91,9 +90,6 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private final static String propsTTSCheckBox = "TTSCheckBox ";
 	private final static String propsExportCSVPath = "Export to CSV path";
 
-	private final static int defaultCaptureTimeout = 10;
-	private final static int defaultPingTimeout = 300;
-	private final static int defaultRowsToRead = 3;
 	private final static int maxPingTimeout = 3000;
 	private final static String statusIdle = "Status: Idle";
 	private final static String statusGettingReady = "Status: Getting ready to start capture...";
@@ -112,14 +108,13 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private Button btnStart;
 	private Button btnStop;
 	private NumberTextField numFieldCaptureTimeout;
-	private NumberTextField numberFieldPingTimeout;
+	private NumberTextField numFieldPingTimeout;
 	private NumberTextField numFieldRowsToRead;
 	private RadioButton radioManual;
 	private RadioButton radioTimedCapture;
 	private AnchorPane paneCaptureOptions;
 	private AnchorPane paneUseTTS;
 	private CheckBox chkboxPing;
-	private Label labelReadFirstRows;
 	private CheckBox chkboxGetLocation;
 	private TableView<IPInfoRowModel> tableResults;
 	private Button btnExportTableToCSV;
@@ -151,7 +146,6 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private HotkeyRegistry hotkeyRegistry;
 	
 	private Button activeButton;
-	private ToggleGroup tglGrpCaptureOptions = new ToggleGroup();
 	private List<CheckBox> chkboxListColumns;
 	private Timer timer;
 	private TimerTask timerTask;
@@ -188,10 +182,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 		activeButton = btnStart;
 
-		createNumTextFields();
-
-		radioManual.setToggleGroup(tglGrpCaptureOptions);
-		radioTimedCapture.setToggleGroup(tglGrpCaptureOptions);
+		setNumTextFieldsRanges();
 
 		btnStop.setDisable(true);
 
@@ -227,14 +218,13 @@ public class AppearanceCounterUI implements CaptureStartListener
 		btnStart = controller.getBtnStart();
 		btnStop = controller.getBtnStop();
 		numFieldCaptureTimeout = controller.getNumFieldCaptureTimeout();
-		numberFieldPingTimeout = controller.getNumberFieldPingTimeout();
+		numFieldPingTimeout = controller.getNumberFieldPingTimeout();
 		numFieldRowsToRead = controller.getNumFieldRowsToRead();
 		radioManual = controller.getRadioManual();
 		radioTimedCapture = controller.getRadioTimedCapture();
 		paneCaptureOptions = controller.getPaneCaptureOptions();
 		paneUseTTS = controller.getPaneUseTTS();
 		chkboxPing = controller.getChkboxPing();
-		labelReadFirstRows = controller.getLabelReadFirstRows();
 		chkboxGetLocation = controller.getChkboxGetLocation();
 		tableResults = controller.getTableResults();
 		btnExportTableToCSV = controller.getBtnExportTableToCSV();
@@ -276,7 +266,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		btnConfigCaptureHotkey.setOnAction(hotkeyRegistry.generateEventHandlerForHotkeyConfigButton(captureHotkeyID));
 
 		chkboxFilterResults.selectedProperty().addListener((ov, old_val, new_val) -> paneFilterResults.setDisable(!new_val));
-		chkboxPing.selectedProperty().addListener((ov, old_val, new_val) -> numberFieldPingTimeout.setDisable(!new_val));
+		chkboxPing.selectedProperty().addListener((ov, old_val, new_val) -> numFieldPingTimeout.setDisable(!new_val));
 
 		radioManual.setOnAction(event -> numFieldCaptureTimeout.setDisable(true));
 		radioTimedCapture.setOnAction(event -> numFieldCaptureTimeout.setDisable(false));
@@ -339,34 +329,12 @@ public class AppearanceCounterUI implements CaptureStartListener
 				chkboxUseCaptureHotkey, labelCurrCaptureHotkey, paneEnableCaptureHotkey, captureHotkeyPressed));
 	}
 
-	private void createNumTextFields()
+	private void setNumTextFieldsRanges()
 	{
-		numFieldCaptureTimeout = new NumberTextField(String.valueOf(defaultCaptureTimeout), 1);
-
-		numFieldCaptureTimeout.setPrefSize(45, 25);
-		numFieldCaptureTimeout.setLayoutX(208);
-		numFieldCaptureTimeout.setLayoutY(radioTimedCapture.getLayoutY() - 2);
-
-		numFieldCaptureTimeout.focusedProperty().addListener((arg0, oldPropertyValue, newPropertyValue) ->
-		{
-			if (newPropertyValue)
-				radioTimedCapture.setSelected(true);
-		});
-
-		numberFieldPingTimeout = new NumberTextField(String.valueOf(defaultPingTimeout), 1, maxPingTimeout);
-		numberFieldPingTimeout.setPrefSize(45, 25);
-		numberFieldPingTimeout.setLayoutX(217);
-		numberFieldPingTimeout.setLayoutY(chkboxPing.getLayoutY() - 2);
-
-		paneCaptureOptions.getChildren().addAll(numFieldCaptureTimeout, numberFieldPingTimeout);
-
-		numFieldRowsToRead = new NumberTextField(String.valueOf(defaultRowsToRead), 1);
-
-		numFieldRowsToRead.setPrefSize(35, 25);
-		numFieldRowsToRead.setLayoutX(77);
-		numFieldRowsToRead.setLayoutY(labelReadFirstRows.getLayoutY() - 2);
-
-		paneUseTTS.getChildren().add(numFieldRowsToRead);
+//		numFieldCaptureTimeout.setMinValue(1);
+//		numFieldPingTimeout.setMinValue(1);
+		numFieldPingTimeout.setMaxValue(maxPingTimeout);
+//		numFieldRowsToRead.setMinValue(1);
 	}
 
 	private void initTable()
@@ -831,7 +799,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			}
 
 			if (chkboxPing.isSelected())
-				ping = IPSniffer.pingAsString(ip, numberFieldPingTimeout.getValue());
+				ping = IPSniffer.pingAsString(ip, numFieldPingTimeout.getValue());
 			
 			notes = userNotes.getProperty(ip, emptyNotesString);
 
@@ -895,7 +863,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		radioManual.setSelected(PropertiesByType.getBoolProperty(props, propsRadioManual, false));
 		chkboxGetLocation.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxGetLocation, false));
 		chkboxPing.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxPing, false));
-		numberFieldPingTimeout.setText(PropertiesByType.getProperty(props, propsNumberFieldPingTimeout));
+		numFieldPingTimeout.setText(PropertiesByType.getProperty(props, propsNumFieldPingTimeout));
 	}
 
 	private void setProtocolCheckboxes(Properties props)
@@ -937,7 +905,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			numFieldCaptureTimeout.setDisable(true);
 
 		if (!chkboxPing.isSelected())
-			numberFieldPingTimeout.setDisable(true);
+			numFieldPingTimeout.setDisable(true);
 
 		if (!chkboxUseCaptureHotkey.isSelected())
 			paneEnableCaptureHotkey.setDisable(true);
@@ -973,7 +941,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		props.put(propsRadioManual, ((Boolean) radioManual.isSelected()).toString());
 		props.put(propsChkboxGetLocation, ((Boolean) chkboxGetLocation.isSelected()).toString());
 		props.put(propsChkboxPing, ((Boolean) chkboxPing.isSelected()).toString());
-		props.put(propsNumberFieldPingTimeout, numberFieldPingTimeout.getText());
+		props.put(propsNumFieldPingTimeout, numFieldPingTimeout.getText());
 		props.put(propsChkboxUseCaptureHotkey, ((Boolean) chkboxUseCaptureHotkey.isSelected()).toString());
 		props.put(propsCaptureHotkeyKeycode, Integer.toString(hotkeyRegistry.getHotkeyKeycode(captureHotkeyID)));
 		props.put(propsCaptureHotkeyModifiers, Integer.toString(hotkeyRegistry.getHotkeyModifiers(captureHotkeyID)));

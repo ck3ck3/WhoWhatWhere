@@ -20,11 +20,11 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
 import whowhatwhere.controller.commands.CommandScreen;
 import whowhatwhere.model.geoipresolver.GeoIPResolver;
 import whowhatwhere.model.ipsniffer.IPSniffer;
-import whowhatwhere.view.NumberTextField;
 
 public class TraceCommandScreen extends CommandScreen
 {
@@ -32,7 +32,7 @@ public class TraceCommandScreen extends CommandScreen
 	private Button btnStart = new Button("Start trace");
 	private CheckBox chkboxResolveNames = new CheckBox("Resolve hostnames");
 	private Label labelTimeout = new Label("Ping timeout (in milliseconds)");
-	private NumberTextField numFieldTimeout = new NumberTextField("200", 1);
+	private NumberTextField numFieldTimeout = new NumberTextField("200", 1, 3000);
 	private Button btnVisualTrace = new Button("Show visual trace");
 
 	private String ip;

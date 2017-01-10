@@ -1,4 +1,4 @@
-package whowhatwhere.controller.utilities;
+package whowhatwhere.controller.commands.trace;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;

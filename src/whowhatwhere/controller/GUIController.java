@@ -54,6 +54,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
 import whowhatwhere.controller.appearancecounter.AppearanceCounterUI;
 import whowhatwhere.controller.appearancecounter.IPInfoRowModel;
@@ -64,8 +65,6 @@ import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.ipsniffer.DeviceIPAndDescription;
 import whowhatwhere.model.ipsniffer.IPSniffer;
 import whowhatwhere.model.startwithwindows.StartWithWindowsRegistryUtils;
-import whowhatwhere.view.NumberTextField;
-import javafx.scene.control.Spinner;
 
 public class GUIController implements Initializable
 {
@@ -98,8 +97,6 @@ public class GUIController implements Initializable
 	private RadioButton radioManual;
 	@FXML
 	private RadioButton radioTimedCapture;
-	@FXML
-	private NumberTextField textFieldTimeout;
 	@FXML
 	private Button btnStart;
 	@FXML
@@ -225,13 +222,18 @@ public class GUIController implements Initializable
 	@FXML
 	private AnchorPane paneWatchdogCooldown;
 	@FXML 
-	private Spinner<Integer> spinnerWatchdogCooldown;
+	private NumberTextField numFieldWatchdogCooldown;
 	@FXML
-	private AnchorPane paneWatchdogConfig;
-	
+	private AnchorPane paneWatchdogConfig;	
+	@FXML
 	private NumberTextField numFieldCaptureTimeout;
+	@FXML
 	private NumberTextField numFieldRowsToRead;
-	private NumberTextField numberFieldPingTimeout;
+	@FXML
+	private NumberTextField numFieldPingTimeout;
+	@FXML
+	private ToggleGroup tglGrpCaptureOptions;
+	
 
 	private ToggleGroup tglGrpNIC = new ToggleGroup();
 	private IPSniffer sniffer;
@@ -246,7 +248,7 @@ public class GUIController implements Initializable
 	private AppearanceCounterUI appearanceCounterUI;
 	private PingToSpeechUI pingToSpeechUI;
 	private WatchdogUI watchdogUI;
-	
+
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
@@ -648,11 +650,6 @@ public class GUIController implements Initializable
 		return radioTimedCapture;
 	}
 
-	public NumberTextField getTextFieldTimeout()
-	{
-		return textFieldTimeout;
-	}
-
 	public Button getBtnStart()
 	{
 		return btnStart;
@@ -740,7 +737,7 @@ public class GUIController implements Initializable
 
 	public NumberTextField getNumberFieldPingTimeout()
 	{
-		return numberFieldPingTimeout;
+		return numFieldPingTimeout;
 	}
 
 	public CheckBox getChkboxUseCaptureHotkey()
@@ -771,11 +768,6 @@ public class GUIController implements Initializable
 	public HBox getHboxColumnNames()
 	{
 		return hboxColumnNames;
-	}
-
-	public Label getLabelReadFirstRows()
-	{
-		return labelReadFirstRows;
 	}
 
 	public CheckBox getChkboxPing()
@@ -938,9 +930,9 @@ public class GUIController implements Initializable
 		return paneWatchdogCooldown;
 	}
 	
-	public Spinner<Integer> getSpinnerWatchdogCooldown()
+	public NumberTextField getNumFieldWatchdogCooldown()
 	{
-		return spinnerWatchdogCooldown;
+		return numFieldWatchdogCooldown;
 	}
 	
 	public AnchorPane getPaneWatchdogConfig()

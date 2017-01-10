@@ -23,11 +23,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
-import javafx.scene.control.Spinner;
-import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import numbertextfield.NumberTextField;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
 import whowhatwhere.model.PropertiesByType;
@@ -56,7 +55,7 @@ public class WatchdogUI implements FirstSightListener
 	private final static String propsChkboxUseAlert = "chkboxWatchdogUseAlert";
 	private final static String propsRadioStopAfterMatch = "radioStopAfterMatch";
 	private final static String propsRadioKeepLooking = "radioKeepLooking";
-	private final static String propsSpinnerCooldown = "spinnerCooldown";
+	private final static String propsNumFieldCooldown = "numFieldCooldown";
 
 	private GUIController controller;
 
@@ -75,7 +74,7 @@ public class WatchdogUI implements FirstSightListener
 	private CheckBox chkboxUseAlert;
 	private RadioButton radioStopAfterMatch;
 	private RadioButton radioKeepLooking;
-	private Spinner<Integer> spinnerCooldown;
+	private NumberTextField numFieldCooldown;
 	private AnchorPane paneCooldown;
 	private AnchorPane paneWatchdogConfig;
 
@@ -122,23 +121,8 @@ public class WatchdogUI implements FirstSightListener
 		initButtonHandlers();
 
 		entryList.addListener((ListChangeListener<IPToMatch>) change -> labelEntryCount.setText("Match list contains " + change.getList().size() + " entries"));
-		spinnerCooldown.setValueFactory(new IntegerSpinnerValueFactory(minCooldownValue, maxCooldownValue));
-		spinnerCooldown.focusedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
-		{
-			if (!newValue) //when losing focus
-			{
-				try
-				{
-					Integer.parseInt(spinnerCooldown.getEditor().getText());
-				}
-				catch(NumberFormatException nfe)
-				{
-					new Alert(AlertType.INFORMATION, "Invalid value").showAndWait();
-					spinnerCooldown.requestFocus();
-				}
-			}
-		});
-
+		numFieldCooldown.setMinValue(minCooldownValue);
+		numFieldCooldown.setMaxValue(maxCooldownValue);
 	}
 
 	private void initUIElementsFromController()
@@ -159,7 +143,7 @@ public class WatchdogUI implements FirstSightListener
 		chkboxUseAlert = controller.getChkboxWatchdogUseAlert();
 		radioKeepLooking = controller.getRadioWatchdogKeepLooking();
 		radioStopAfterMatch = controller.getRadioWatchdogStopAfterMatch();
-		spinnerCooldown = controller.getSpinnerWatchdogCooldown();
+		numFieldCooldown = controller.getNumFieldWatchdogCooldown();
 		paneCooldown = controller.getPaneWatchdogCooldown();
 		paneWatchdogConfig = controller.getPaneWatchdogConfig();
 	}
@@ -235,7 +219,7 @@ public class WatchdogUI implements FirstSightListener
 				{
 					try
 					{
-						sniffer.startFirstSightCapture(deviceIP, entryList, radioKeepLooking.isSelected(), spinnerCooldown.getValue(), thisObj, new StringBuilder());
+						sniffer.startFirstSightCapture(deviceIP, entryList, radioKeepLooking.isSelected(), numFieldCooldown.getValue(), thisObj, new StringBuilder());
 					}
 					catch (IllegalArgumentException | UnknownHostException e)
 					{
@@ -339,7 +323,7 @@ public class WatchdogUI implements FirstSightListener
 		props.put(propsChkboxUseAlert, ((Boolean) chkboxUseAlert.isSelected()).toString());
 		props.put(propsRadioStopAfterMatch, ((Boolean) radioStopAfterMatch.isSelected()).toString());
 		props.put(propsRadioKeepLooking, ((Boolean) radioKeepLooking.isSelected()).toString());
-		props.put(propsSpinnerCooldown, Integer.toString(spinnerCooldown.getValue()));
+		props.put(propsNumFieldCooldown, Integer.toString(numFieldCooldown.getValue()));
 
 		try
 		{
@@ -357,7 +341,7 @@ public class WatchdogUI implements FirstSightListener
 		
 		chkboxUseTTS.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseTTS, true));
 		chkboxUseAlert.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseAlert, false));
-		spinnerCooldown.getEditor().setText(PropertiesByType.getProperty(props, propsSpinnerCooldown, String.valueOf(minCooldownValue)));
+		numFieldCooldown.setText(PropertiesByType.getProperty(props, propsNumFieldCooldown, String.valueOf(minCooldownValue)));
 		
 		if (PropertiesByType.getBoolProperty(props, propsRadioStopAfterMatch, true))
 			radioStopAfterMatch.fire(); //this way it activates the button handler

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import numbertextfield.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import java.lang.*?>
@@ -74,11 +75,16 @@
                                                 <CheckBox fx:id="chkboxHTTP" layoutX="266.0" layoutY="30.0" mnemonicParsing="false" text="HTTP" />
                                                 <Label layoutX="260.0" layoutY="70.0" text="seconds" />
                                                 <CheckBox fx:id="chkboxGetLocation" layoutY="127.0" mnemonicParsing="false" selected="true" text="Get location info for each IP address" />
-                                                <RadioButton fx:id="radioManual" layoutY="95.0" mnemonicParsing="false" text="Stop capture manually" />
-                                                <RadioButton fx:id="radioTimedCapture" layoutY="70.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="203.0" text="Automatically stop capturing after" />
+                                                <RadioButton fx:id="radioManual" layoutY="95.0" mnemonicParsing="false" text="Stop capture manually">
+                                                   <toggleGroup>
+                                                      <ToggleGroup fx:id="tglGrpCaptureOptions" />
+                                                   </toggleGroup></RadioButton>
+                                                <RadioButton fx:id="radioTimedCapture" layoutY="70.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="203.0" text="Automatically stop capturing after" toggleGroup="$tglGrpCaptureOptions" />
                                                 <CheckBox fx:id="chkboxPing" layoutY="155.0" mnemonicParsing="false" selected="true" text="Ping each IP address" />
                                                 <Label layoutX="139.0" layoutY="155.0" text="Ping timeout:" />
                                                 <Label layoutX="268.0" layoutY="155.0" text="milliseconds" />
+                                                <NumberTextField fx:id="numFieldCaptureTimeout" layoutX="207.0" layoutY="66.0" minValue="1" prefHeight="25.0" prefWidth="49.0" />
+                                                <NumberTextField fx:id="numFieldPingTimeout" layoutX="216.0" layoutY="151.0" minValue="1" prefHeight="25.0" prefWidth="47.0" />
                                              </children>
                                           </AnchorPane>
                                           <Button fx:id="btnStart" layoutX="7.0" layoutY="204.0" mnemonicParsing="false" text="Start capturing" />
@@ -127,6 +133,7 @@
                                           <TextField fx:id="textColumnContains" layoutX="207.0" />
                                        </children>
                                     </Pane>
+                                    <NumberTextField fx:id="numFieldRowsToRead" layoutX="76.0" layoutY="-4.0" minValue="1" prefHeight="19.0" prefWidth="38.0" />
                                  </children>
                               </AnchorPane>
                            </children>
@@ -140,7 +147,7 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="14.0" prefHeight="145.0" prefWidth="694.0" text="Ping-to-speech">
+                        <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="14.0" prefHeight="145.0" prefWidth="657.0" text="Ping-to-speech">
                           <content>
                             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="119.0" prefWidth="533.0">
                                  <children>
@@ -157,7 +164,7 @@
                               </AnchorPane>
                           </content>
                         </TitledPane>
-                        <TitledPane collapsible="false" layoutX="14.0" layoutY="174.0" prefHeight="255.0" prefWidth="658.0" text="Watchdog">
+                        <TitledPane collapsible="false" layoutX="14.0" layoutY="174.0" prefHeight="255.0" prefWidth="624.0" text="Watchdog">
                            <content>
                               <AnchorPane prefHeight="229.0" prefWidth="697.0">
                                  <children>
@@ -170,7 +177,7 @@
                                     </AnchorPane>
                                     <Button fx:id="btnWatchdogStart" layoutX="14.0" layoutY="142.0" mnemonicParsing="false" text="Start waiting for match" />
                                     <Button fx:id="btnWatchdogStop" disable="true" layoutX="164.0" layoutY="142.0" mnemonicParsing="false" text="Stop waiting for match" />
-                                    <AnchorPane fx:id="paneWatchdogConfig" layoutX="14.0" layoutY="14.0" prefHeight="120.0" prefWidth="656.0">
+                                    <AnchorPane fx:id="paneWatchdogConfig" layoutX="14.0" layoutY="14.0" prefHeight="120.0" prefWidth="621.0">
                                        <children>
                                           <Label layoutY="39.0" text="When a match is found, output this message:" />
                                           <TextField fx:id="textWatchdogMessage" layoutX="243.0" layoutY="35.0" prefHeight="25.0" prefWidth="187.0" />
@@ -185,11 +192,11 @@
                                              </toggleGroup>
                                           </RadioButton>
                                           <RadioButton fx:id="radioWatchdogKeepLooking" layoutX="175.0" layoutY="99.0" mnemonicParsing="false" text="Keep looking for matches " toggleGroup="$tglWatchdogStopOrContinue" />
-                                          <AnchorPane fx:id="paneWatchdogCooldown" layoutX="343.0" layoutY="95.0" prefHeight="25.0" prefWidth="316.0">
+                                          <AnchorPane fx:id="paneWatchdogCooldown" layoutX="343.0" layoutY="95.0" prefHeight="25.0" prefWidth="280.0">
                                              <children>
                                                 <Label layoutY="4.0" text="Cooldown period between alerts: " />
-                                                <Spinner fx:id="spinnerWatchdogCooldown" editable="true" layoutX="179.0" prefHeight="25.0" prefWidth="78.0" />
-                                                <Label layoutX="263.0" layoutY="4.0" text="seconds" />
+                                                <Label layoutX="231.0" layoutY="4.0" text="seconds" />
+                                                <NumberTextField fx:id="numFieldWatchdogCooldown" layoutX="179.0" maxValue="0" prefHeight="25.0" prefWidth="46.0" />
                                              </children>
                                           </AnchorPane>
                                        </children>
@@ -198,7 +205,7 @@
                               </AnchorPane>
                            </content>
                         </TitledPane>
-                        <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="445.0" prefHeight="78.0" prefWidth="697.0" text="Visual Trace">
+                        <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="445.0" prefHeight="78.0" prefWidth="660.0" text="Visual Trace">
                           <content>
                             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                  <children>
