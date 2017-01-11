@@ -182,7 +182,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 		activeButton = btnStart;
 
-		setNumTextFieldsRanges();
+		numFieldPingTimeout.setMaxValue(maxPingTimeout);
 
 		btnStop.setDisable(true);
 
@@ -327,14 +327,6 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 		chkboxUseCaptureHotkey.selectedProperty().addListener(hotkeyRegistry.generateChangeListenerForHotkeyCheckbox(captureHotkeyID, captureHotkeyModifiers, captureHotkeyKeyCode,
 				chkboxUseCaptureHotkey, labelCurrCaptureHotkey, paneEnableCaptureHotkey, captureHotkeyPressed));
-	}
-
-	private void setNumTextFieldsRanges()
-	{
-//		numFieldCaptureTimeout.setMinValue(1);
-//		numFieldPingTimeout.setMinValue(1);
-		numFieldPingTimeout.setMaxValue(maxPingTimeout);
-//		numFieldRowsToRead.setMinValue(1);
 	}
 
 	private void initTable()
@@ -901,23 +893,14 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 	private void setDisabledPanes()
 	{
-		if (!radioTimedCapture.isSelected())
-			numFieldCaptureTimeout.setDisable(true);
+		numFieldCaptureTimeout.setDisable(!radioTimedCapture.isSelected());
+		numFieldPingTimeout.setDisable(!chkboxPing.isSelected());
+		paneEnableCaptureHotkey.setDisable(!chkboxUseCaptureHotkey.isSelected());
+		paneFilterResults.setDisable(!chkboxFilterResults.isSelected());
 
-		if (!chkboxPing.isSelected())
-			numFieldPingTimeout.setDisable(true);
-
-		if (!chkboxUseCaptureHotkey.isSelected())
-			paneEnableCaptureHotkey.setDisable(true);
-
-		if (!chkboxFilterResults.isSelected())
-			paneFilterResults.setDisable(true);
-
-		if (!chkboxUseTTS.isSelected())
-		{
-			paneUseTTS.setDisable(true);
-			tts.setMuted(true);
-		}
+		boolean useTTS = chkboxUseTTS.isSelected();
+		paneUseTTS.setDisable(!useTTS);
+		tts.setMuted(!useTTS);
 	}
 
 	public void loadLastRunConfig(Properties props)

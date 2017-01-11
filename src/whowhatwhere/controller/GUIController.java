@@ -492,24 +492,10 @@ public class GUIController implements Initializable
 					String message = Main.getAppName() + " is set to run when Windows starts, but you are currently running it from a different path than the one Windows is set to run it from.\n" + 
 															"Current path: " + currentRunLocation + "\nWindows is set to run it from: " + locationToStartFrom + "\n\nPlease choose how to proceed:";
 					
-					ButtonType btnModify = new ButtonType("Set to run from current path");
-					ButtonType btnDelete = new ButtonType("Don't run when Windows starts");
-					ButtonType btnIgnore = new ButtonType("Ignore this in the future");
-
-					Optional<ButtonType> result = new Alert(AlertType.CONFIRMATION, message, btnModify, btnDelete, btnIgnore).showAndWait();
-					ButtonType chosenButton = result.get();
+					boolean userChoseDelete = showStartupPathConflictDialog(forAllUsers, message);
 					
-					if (chosenButton == btnModify)
-						StartWithWindowsRegistryUtils.setRegistryToStartWithWindows(true, forAllUsers);
-					else
-						if (chosenButton == btnDelete)
-						{
-							StartWithWindowsRegistryUtils.setRegistryToStartWithWindows(false, forAllUsers);
-							return; //don't setSelected
-						}
-						else
-							if (chosenButton == btnIgnore)
-								ignoreRunPathDiff = true;
+					if (userChoseDelete)
+						return; //don't setSelected
 				}
 			}
 
@@ -520,6 +506,36 @@ public class GUIController implements Initializable
 		{
 			logger.log(Level.SEVERE, "Failed querying the registry for StartWithWindows values", ioe);
 		}
+	}
+	
+	/**
+	 * @param forAllUsers - true if the startup setting is for all users, false if for current user only
+	 * @param message - the message to display in the dialog
+	 * @return true if the user chose to delete the program from startup, false otherwise.
+	 * @throws IOException - if there was a problem modifying the registry
+	 */
+	private boolean showStartupPathConflictDialog(boolean forAllUsers, String message) throws IOException
+	{
+		ButtonType btnModify = new ButtonType("Set to run from current path");
+		ButtonType btnDelete = new ButtonType("Don't run when Windows starts");
+		ButtonType btnIgnore = new ButtonType("Ignore this in the future");
+
+		Optional<ButtonType> result = new Alert(AlertType.CONFIRMATION, message, btnModify, btnDelete, btnIgnore).showAndWait();
+		ButtonType chosenButton = result.get();
+		
+		if (chosenButton == btnModify)
+			StartWithWindowsRegistryUtils.setRegistryToStartWithWindows(true, forAllUsers);
+		else
+			if (chosenButton == btnDelete)
+			{
+				StartWithWindowsRegistryUtils.setRegistryToStartWithWindows(false, forAllUsers);
+				return true; 
+			}
+			else
+				if (chosenButton == btnIgnore)
+					ignoreRunPathDiff = true;
+		
+		return false;
 	}
 
 	private void shutdownApp()
