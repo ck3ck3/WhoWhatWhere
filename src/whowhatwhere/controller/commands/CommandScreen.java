@@ -35,12 +35,18 @@ public abstract class CommandScreen extends SecondaryFXMLScreen implements LiveO
 		super(commandFormLocation, stage, scene);
 		this.setCommandStr(commandStr);
 		cmdController = getLoader().<CmdGUIController> getController();
+		cmdController.getHboxBottom().setSpacing(10);
 	}
 
 	public void runCommand()
 	{
 		cmdLiveOutput = new CmdLiveOutput(commandStr, this);
 		cmdLiveOutput.runCommand();
+	}
+	
+	public void stopCommand()
+	{
+		cmdLiveOutput.stopCommand();
 	}
 
 	@Override

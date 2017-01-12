@@ -10,6 +10,7 @@ public class CmdLiveOutput
 {
 	private String command;
 	private LiveOutputListener outputListener;
+	private Thread commandThread;
 	private static final Logger logger = Logger.getLogger(CmdLiveOutput.class.getPackage().getName());
 
 	public CmdLiveOutput()
@@ -32,7 +33,7 @@ public class CmdLiveOutput
 		if (command == null)
 			return;
 
-		new Thread(() ->
+		commandThread = new Thread(() ->
 		{
 			Process process;
 			try
@@ -41,7 +42,7 @@ public class CmdLiveOutput
 				BufferedReader inputStream = new BufferedReader(new InputStreamReader(process.getInputStream()));
 				String line;
 
-				while ((line = inputStream.readLine()) != null)
+				while ((line = inputStream.readLine()) != null && !commandThread.isInterrupted())
 					if (outputListener != null)
 						outputListener.lineReady(line);
 			}
@@ -55,7 +56,14 @@ public class CmdLiveOutput
 					outputListener.endOfOutput();
 			}
 
-		}).start();
+		});
+		
+		commandThread.start();
+	}
+	
+	public void stopCommand()
+	{
+		commandThread.interrupt();
 	}
 
 	public LiveOutputListener getOutputListener()

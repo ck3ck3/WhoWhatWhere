@@ -30,6 +30,9 @@ public class TraceCommandScreen extends CommandScreen
 {
 
 	private Button btnStart = new Button("Start trace");
+	private Button btnStop = new Button("Stop trace");
+	private boolean endedGracefully;
+	private HBox innerHBox = new HBox();
 	private CheckBox chkboxResolveNames = new CheckBox("Resolve hostnames");
 	private Label labelTimeout = new Label("Ping timeout (in milliseconds)");
 	private NumberTextField numFieldTimeout = new NumberTextField("200", 1, 3000);
@@ -57,10 +60,22 @@ public class TraceCommandScreen extends CommandScreen
 		btnStart.setOnAction(event ->
 		{
 			textArea.setText(introMsg);
-			bottomHBox.setDisable(true);
+			btnStart.setDisable(true);
+			btnStop.setDisable(false);
+			innerHBox.setDisable(true);
 			setCommandStr(generateCommandString());
+			endedGracefully = true;
 			runCommand();
 		});
+		
+		btnStop.setOnAction(event ->
+		{
+			endedGracefully = false;
+			btnStop.setDisable(true);
+			stopCommand();
+		});
+		
+		btnStop.setDisable(true);
 
 		numFieldTimeout.setPrefSize(45, 25);
 
@@ -71,8 +86,10 @@ public class TraceCommandScreen extends CommandScreen
 		AnchorPane aPane = new AnchorPane(chkboxResolveNames);
 		chkboxResolveNames.setLayoutY(4);
 		labelTimeout.setPadding(new Insets(4, 0, 0, 0));
-
-		bottomHBox.getChildren().addAll(btnStart, aPane, labelTimeout, numFieldTimeout, btnVisualTrace);
+		innerHBox.setSpacing(10);
+		
+		innerHBox.getChildren().addAll(aPane, labelTimeout, numFieldTimeout, btnVisualTrace);
+		bottomHBox.getChildren().addAll(btnStart, btnStop, innerHBox);
 
 		textArea.setText(introMsg);
 
@@ -105,8 +122,9 @@ public class TraceCommandScreen extends CommandScreen
 	public void endOfOutput()
 	{
 		btnStart.setDisable(false);
+		btnStop.setDisable(true);
 		btnVisualTrace.setDisable(false);
-		getBottomHBox().setDisable(false);
+		innerHBox.setDisable(false);
 	}
 
 	private String generateCommandString()
@@ -139,8 +157,9 @@ public class TraceCommandScreen extends CommandScreen
 	{
 		List<String> listOfIPs = new ArrayList<>();
 		String lines[] = getTextArea().getText().split(introMarker)[1].split("\n"); //get actual command output, after our intro string
+		int lastLineToRead = lines.length - (endedGracefully ? 2 : 0); //if ended gracefully, the last two lines are not relevant
 
-		for (int i = 3; i < lines.length - 2; i++) //first few lines and last line are not relevant
+		for (int i = 3; i < lastLineToRead; i++) //first few lines are not relevant
 		{
 			if (lines[i].isEmpty())
 				continue;
