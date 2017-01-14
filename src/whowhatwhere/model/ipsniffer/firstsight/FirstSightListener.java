@@ -1,6 +1,11 @@
 package whowhatwhere.model.ipsniffer.firstsight;
 
+import org.jnetpcap.packet.PcapPacket;
+
 public interface FirstSightListener
 {
-	public void firstSightOfIP(IPToMatch ipInfo);
+	/**
+	 * @param packet - the packet that matched the rule
+	 */
+	public void firstSightOfIP(PcapPacket packet);
 }

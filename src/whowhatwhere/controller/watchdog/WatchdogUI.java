@@ -12,6 +12,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.jnetpcap.packet.PcapPacket;
+
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
@@ -243,7 +245,7 @@ public class WatchdogUI implements FirstSightListener
 	}
 
 	@Override
-	public void firstSightOfIP(IPToMatch ipInfo)
+	public void firstSightOfIP(PcapPacket packetThatMatched)
 	{
 		outputMessage();
 

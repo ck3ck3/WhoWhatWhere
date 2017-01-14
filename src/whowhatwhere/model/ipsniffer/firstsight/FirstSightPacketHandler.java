@@ -1,18 +1,20 @@
 package whowhatwhere.model.ipsniffer.firstsight;
 
 import java.net.UnknownHostException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
-import org.jnetpcap.protocol.network.Ip4;
-import org.jnetpcap.protocol.tcpip.Tcp;
-import org.jnetpcap.protocol.tcpip.Udp;
 
+import whowhatwhere.model.criteria.AndCriteria;
+import whowhatwhere.model.criteria.Criteria;
+import whowhatwhere.model.criteria.CriteriaIP;
+import whowhatwhere.model.criteria.CriteriaPort;
+import whowhatwhere.model.criteria.CriteriaProtocol;
+import whowhatwhere.model.criteria.OrCriteria;
 import whowhatwhere.model.ipsniffer.IPSniffer;
 
 public class FirstSightPacketHandler implements PcapPacketHandler<Void>
@@ -23,7 +25,8 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 	private ScheduledThreadPoolExecutor timer;
 	private FirstSightListener listener;
 	private IPSniffer sniffer;
-	private Map<Integer, IPToMatch> ipMap;
+	
+	Criteria<PcapPacket, Boolean> criteria;
 
 	public FirstSightPacketHandler(List<IPToMatch> ipList, boolean isRepeated, Integer cooldownInSecs, FirstSightListener listener, IPSniffer sniffer)
 			throws IllegalArgumentException, UnknownHostException
@@ -32,25 +35,16 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 		this.cooldownInSecs = cooldownInSecs;
 		this.listener = listener;
 		this.sniffer = sniffer;
-		ipMap = new HashMap<>();
 		
 		if (isRepeated && cooldownInSecs == null)
 			throw new IllegalArgumentException("A repeated task cannot have a null cooldownInSecs");
 		
 		timer = new ScheduledThreadPoolExecutor(1);
 
-		for (IPToMatch ipToMatch : ipList)
-		{
-			String ip = ipToMatch.ipAddressProperty().getValue();
-
-			if (ip == null)
-				throw new IllegalArgumentException("IP address must be set");
-
-			ipMap.put(IPSniffer.stringToIntIp(ip), ipToMatch);
-		}
-
-		if (ipMap.isEmpty())
-			throw new IllegalArgumentException("No valid criteria was found");
+		convertIPToMatchListToCriteria(ipList);
+		
+		if (criteria == null)
+			throw new IllegalArgumentException("No criteria was set");
 	}
 
 	@Override
@@ -58,9 +52,7 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 	{
 		if (!isCooldownPeriod && packet.hasHeader(IPSniffer.IPv4_PROTOCOL))
 		{
-			IPToMatch ipInfo = getMatchingIP(packet);
-
-			if (ipInfo != null)
+			if (criteria.meetCriteria(packet))
 			{
 				if (isRepeated)
 				{
@@ -74,69 +66,51 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 				else
 					sniffer.stopCapture();
 				
-				listener.firstSightOfIP(ipInfo);
+				listener.firstSightOfIP(packet);
 			}
 		}
 	}
 
-	private IPToMatch getMatchingIP(PcapPacket packet)
+	private void convertIPToMatchListToCriteria(List<IPToMatch> ipList)
 	{
-		Ip4 ipHeader = new Ip4();
-		ipHeader = packet.getHeader(ipHeader);
-		int sourceInt = ipHeader.sourceToInt();
-
-		IPToMatch ipToMatch = ipMap.get(sourceInt);
-
-		if (ipToMatch != null)
+		List<Criteria<PcapPacket, Boolean>> criteriasToOR = new ArrayList<Criteria<PcapPacket, Boolean>>();
+		
+		for (IPToMatch item : ipList)
 		{
-			Integer protocol = ipToMatch.protocolAsInt();
-			String srcPort = ipToMatch.srcPortProperty().getValue();
-			String dstPort = ipToMatch.dstPortProperty().getValue();
-
-			if (protocol != null && !packet.hasHeader(protocol)) //if a protocol was specified, but this packet doesn't have it
-				return null;
-
-			boolean checkSrcPort = (srcPort != null && !srcPort.equals(IPToMatch.port_ANY));
-			boolean checkDstPort = (dstPort != null && !dstPort.equals(IPToMatch.port_ANY));
-
-			if (checkSrcPort || checkDstPort)
-			{
-				int intSrcPort = Integer.valueOf(srcPort);
-				int intdstPort = Integer.valueOf(dstPort);
-
-				if (packet.hasHeader(IPSniffer.TCP_PROTOCOL))
-				{
-					Tcp tcp = new Tcp();
-					tcp = packet.getHeader(tcp);
-
-					if (checkSrcPort && intSrcPort != tcp.source())
-						return null;
-
-					if (checkDstPort && intdstPort != tcp.destination())
-						return null;
-				}
-				else
-					if (packet.hasHeader(IPSniffer.UDP_PROTOCOL))
-					{
-						Udp udp = new Udp();
-						udp = packet.getHeader(udp);
-
-						if (checkSrcPort && intSrcPort != udp.source())
-							return null;
-
-						if (checkDstPort && intdstPort != udp.destination())
-							return null;
-					}
-					else //port specified, but unable to check ports on this packet
-						return null;
-			}
-
-			//			if (ipHeader.length() > 300)
-			return ipToMatch;
-			//			else
-			//				return null;
+			List<Criteria<PcapPacket, Boolean>> criteriasToAND = new ArrayList<Criteria<PcapPacket, Boolean>>();
+			
+			//right now ip is mandatory (and default mask), otherwise we'd check for it
+			criteriasToAND.add(new CriteriaIP(item.ipAddressProperty().get(), "255.255.255.255"));
+			
+			if (!item.protocolProperty().get().equals(IPToMatch.protocol_ANY))
+				criteriasToAND.add(new CriteriaProtocol(item.protocolAsInt()));
+			
+			if (!item.srcPortProperty().get().equals(IPToMatch.port_ANY))
+				criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.srcPortProperty().get()), true));
+			
+			if (!item.dstPortProperty().get().equals(IPToMatch.port_ANY))
+				criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.dstPortProperty().get()), false));
+			
+			Criteria<PcapPacket, Boolean> andCriteria = null;
+			
+			if (criteriasToAND.size() > 0)
+				andCriteria = criteriasToAND.get(0);
+			
+			for (int i = 1; i < criteriasToAND.size(); i++)
+				andCriteria = new AndCriteria<PcapPacket>(andCriteria, criteriasToAND.get(i));
+			
+			if (criteriasToAND.size() > 0)
+				criteriasToOR.add(andCriteria);
 		}
-		else
-			return null;
+		
+		Criteria<PcapPacket, Boolean> orCriteria = null;
+		
+		if (criteriasToOR.size() > 0)
+			orCriteria = criteriasToOR.get(0);
+		
+		for (int i = 1; i < criteriasToOR.size(); i++)
+			orCriteria = new OrCriteria<PcapPacket>(orCriteria, criteriasToOR.get(i));
+		
+		criteria = orCriteria;
 	}
 }

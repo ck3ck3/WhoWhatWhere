@@ -34,6 +34,8 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<IPToMatch
 	private TableColumn<IPToMatch, String> columnSrcPort;
 	private TableColumn<IPToMatch, String> columnDstPort;
 	
+	private final IPToMatch emptyRow = newEmptyTableRow();
+	
 	private final static String emptyCellString = "(Click to edit)";
 	
 
@@ -159,7 +161,7 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<IPToMatch
 		
 		for (IPToMatch row : entryList)
 		{
-			if (!isValidIPValue(row.ipAddressProperty().getValue()))
+			if (isOnlyUnsetValues(row))
 			{
 				invalidLines = true;
 				break;
@@ -168,9 +170,14 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<IPToMatch
 		
 		if (invalidLines)
 		{
-			new Alert(AlertType.ERROR, "At least one row's IP column wasn't set. Please set a valid IP address in it or remove that row.").showAndWait();
+			new Alert(AlertType.ERROR, "At least one row's values are all un-set. Please set a value in at least one column.").showAndWait();
 			throw new IllegalArgumentException(); //don't close the window
 		}
+	}
+	
+	private boolean isOnlyUnsetValues(IPToMatch entry)
+	{
+		return emptyRow.isSameValuesAs(entry);
 	}
 	
 	private void initPresetButtonHandlers()

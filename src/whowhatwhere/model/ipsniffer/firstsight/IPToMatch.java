@@ -127,4 +127,21 @@ public class IPToMatch implements Serializable
 		
 		return map;
 	}
+	
+	public boolean isSameValuesAs(IPToMatch otherEntry)
+	{
+		if (!ipAddress.get().equals(otherEntry.ipAddress.get()))
+			return false;
+		
+		if (!protocol.get().equals(otherEntry.protocol.get()))
+			return false;
+		
+		if (!srcPort.get().equals(otherEntry.srcPort.get()))
+			return false;
+		
+		if (!dstPort.get().equals(otherEntry.dstPort.get()))
+			return false;
+		
+		return true;
+	}
 }
