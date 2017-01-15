@@ -12,10 +12,14 @@ import org.jnetpcap.packet.PcapPacketHandler;
 import whowhatwhere.model.criteria.AndCriteria;
 import whowhatwhere.model.criteria.Criteria;
 import whowhatwhere.model.criteria.CriteriaIP;
+import whowhatwhere.model.criteria.CriteriaPacketDirection;
+import whowhatwhere.model.criteria.CriteriaPacketSize;
 import whowhatwhere.model.criteria.CriteriaPort;
 import whowhatwhere.model.criteria.CriteriaProtocol;
 import whowhatwhere.model.criteria.OrCriteria;
+import whowhatwhere.model.criteria.RelativeToValue;
 import whowhatwhere.model.ipsniffer.IPSniffer;
+import whowhatwhere.model.ipsniffer.PacketDirection;
 
 public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 {
@@ -25,23 +29,25 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 	private ScheduledThreadPoolExecutor timer;
 	private FirstSightListener listener;
 	private IPSniffer sniffer;
+	private byte[] ownMACAddress;
 	
 	Criteria<PcapPacket, Boolean> criteria;
 
-	public FirstSightPacketHandler(List<IPToMatch> ipList, boolean isRepeated, Integer cooldownInSecs, FirstSightListener listener, IPSniffer sniffer)
+	public FirstSightPacketHandler(List<PacketTypeToMatch> packetTypeList, boolean isRepeated, Integer cooldownInSecs, FirstSightListener listener, IPSniffer sniffer, byte[] ownMACAddress)
 			throws IllegalArgumentException, UnknownHostException
 	{
 		this.isRepeated = isRepeated;
 		this.cooldownInSecs = cooldownInSecs;
 		this.listener = listener;
 		this.sniffer = sniffer;
+		this.ownMACAddress = ownMACAddress;
 		
 		if (isRepeated && cooldownInSecs == null)
 			throw new IllegalArgumentException("A repeated task cannot have a null cooldownInSecs");
 		
 		timer = new ScheduledThreadPoolExecutor(1);
 
-		convertIPToMatchListToCriteria(ipList);
+		convertIPToMatchListToCriteria(packetTypeList);
 		
 		if (criteria == null)
 			throw new IllegalArgumentException("No criteria was set");
@@ -71,25 +77,51 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 		}
 	}
 
-	private void convertIPToMatchListToCriteria(List<IPToMatch> ipList)
+	private void convertIPToMatchListToCriteria(List<PacketTypeToMatch> ipList)
 	{
 		List<Criteria<PcapPacket, Boolean>> criteriasToOR = new ArrayList<Criteria<PcapPacket, Boolean>>();
 		
-		for (IPToMatch item : ipList)
+		for (PacketTypeToMatch item : ipList)
 		{
 			List<Criteria<PcapPacket, Boolean>> criteriasToAND = new ArrayList<Criteria<PcapPacket, Boolean>>();
 			
-			//right now ip is mandatory (and default mask), otherwise we'd check for it
-			criteriasToAND.add(new CriteriaIP(item.ipAddressProperty().get(), "255.255.255.255"));
+			if (!item.packetDirectionProperty().get().equals(PacketTypeToMatch.packetDirection_ANY))
+				criteriasToAND.add(new CriteriaPacketDirection(PacketDirection.valueOf(item.packetDirectionProperty().get()), ownMACAddress));
 			
-			if (!item.protocolProperty().get().equals(IPToMatch.protocol_ANY))
+			if (!item.ipAddressProperty().get().equals(PacketTypeToMatch.IP_ANY))
+				criteriasToAND.add(new CriteriaIP(item.ipAddressProperty().get(), item.netmaskProperty().get()));
+			
+			//TODO convert user notes to ip criteria
+			
+			if (!item.packetSizeSmallerProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
+				criteriasToAND.add(new CriteriaPacketSize(Integer.valueOf(item.packetSizeSmallerProperty().get()), RelativeToValue.valueOf(item.packetSizeSmallerProperty().get())));
+			
+			if (!item.packetSizeEqualsProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
+				criteriasToAND.add(new CriteriaPacketSize(Integer.valueOf(item.packetSizeEqualsProperty().get()), RelativeToValue.valueOf(item.packetSizeEqualsProperty().get())));
+			
+			if (!item.packetSizeGreaterProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
+				criteriasToAND.add(new CriteriaPacketSize(Integer.valueOf(item.packetSizeGreaterProperty().get()), RelativeToValue.valueOf(item.packetSizeGreaterProperty().get())));
+			
+			if (!item.protocolProperty().get().equals(PacketTypeToMatch.protocol_ANY))
 				criteriasToAND.add(new CriteriaProtocol(item.protocolAsInt()));
 			
-			if (!item.srcPortProperty().get().equals(IPToMatch.port_ANY))
-				criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.srcPortProperty().get()), true));
+			if (!item.srcPortSmallerProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
+				criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.srcPortSmallerProperty().get()), RelativeToValue.valueOf(item.srcPortSmallerProperty().get()), true));
 			
-			if (!item.dstPortProperty().get().equals(IPToMatch.port_ANY))
-				criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.dstPortProperty().get()), false));
+			if (!item.srcPortEqualsProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
+				criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.srcPortEqualsProperty().get()), RelativeToValue.valueOf(item.srcPortEqualsProperty().get()), true));
+			
+			if (!item.srcPortGreaterProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
+				criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.srcPortGreaterProperty().get()), RelativeToValue.valueOf(item.srcPortGreaterProperty().get()), true));
+
+			if (!item.dstPortSmallerProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
+				criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.dstPortSmallerProperty().get()), RelativeToValue.valueOf(item.dstPortSmallerProperty().get()), false));
+			
+			if (!item.dstPortEqualsProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
+				criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.dstPortEqualsProperty().get()), RelativeToValue.valueOf(item.dstPortEqualsProperty().get()), false));
+			
+			if (!item.dstPortGreaterProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
+				criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.dstPortGreaterProperty().get()), RelativeToValue.valueOf(item.dstPortGreaterProperty().get()), false));
 			
 			Criteria<PcapPacket, Boolean> andCriteria = null;
 			

@@ -32,7 +32,7 @@ import whowhatwhere.model.ipsniffer.appearancecounter.AppearanceCounterPacketHan
 import whowhatwhere.model.ipsniffer.appearancecounter.AppearanceCounterResults;
 import whowhatwhere.model.ipsniffer.firstsight.FirstSightListener;
 import whowhatwhere.model.ipsniffer.firstsight.FirstSightPacketHandler;
-import whowhatwhere.model.ipsniffer.firstsight.IPToMatch;
+import whowhatwhere.model.ipsniffer.firstsight.PacketTypeToMatch;
 
 public class IPSniffer
 {
@@ -71,7 +71,7 @@ public class IPSniffer
 
 	private Pcap pcap;
 	private Map<String, PcapIf> ipToDevice = new HashMap<>();
-	private List<DeviceIPAndDescription> ipAndDescList = new ArrayList<>();
+	private List<DeviceAddressesAndDescription> ipAndDescList = new ArrayList<>();
 
 	public IPSniffer()
 	{
@@ -141,7 +141,7 @@ public class IPSniffer
 		return true;
 	}
 	
-	public List<DeviceIPAndDescription> getListOfDevices()
+	public List<DeviceAddressesAndDescription> getListOfDevices()
 	{
 		return ipAndDescList;
 	}
@@ -162,23 +162,34 @@ public class IPSniffer
 		for (PcapIf device : alldevs)
 		{
 			String description = (device.getDescription() != null) ? device.getDescription() : "No description available";
-			String IP = null;
+			String ip = null;
 			for (PcapAddr pcapAddr : device.getAddresses())
 			{
 				String temp = pcapAddr.getAddr().toString();
 
 				if (temp.contains(Ipv4Prefix))
 				{
-					IP = temp.replace(Ipv4Prefix, "");
+					ip = temp.replace(Ipv4Prefix, "");
 					break;
 				}
 			}
 
-			if (IP == null)
+			if (ip == null)
 				continue;
 
-			ipAndDescList.add(new DeviceIPAndDescription(IP, description));
-			ipToDevice.put(IP, device);
+			byte[] hardwareAddress;
+			
+			try
+			{
+				hardwareAddress = device.getHardwareAddress();
+			}
+			catch(IOException ioe)
+			{
+				hardwareAddress = new byte[8];
+			}
+			
+			ipAndDescList.add(new DeviceAddressesAndDescription(ip, hardwareAddress, description));
+			ipToDevice.put(ip, device);
 		}
 	}
 
@@ -237,11 +248,11 @@ public class IPSniffer
 		return new AppearanceCounterResults(filteredCounterPH);
 	}
 
-	public void startFirstSightCapture(String deviceIP, List<IPToMatch> ipList, boolean isRepeated, Integer cooldownInSecs, FirstSightListener listener, StringBuilder errbuf) throws IllegalArgumentException, UnknownHostException
+	public void startFirstSightCapture(DeviceAddressesAndDescription deviceInfo, List<PacketTypeToMatch> ipList, boolean isRepeated, Integer cooldownInSecs, FirstSightListener listener, StringBuilder errbuf) throws IllegalArgumentException, UnknownHostException
 	{
-		FirstSightPacketHandler firstSightPH = new FirstSightPacketHandler(ipList, isRepeated, cooldownInSecs, listener, this);
+		FirstSightPacketHandler firstSightPH = new FirstSightPacketHandler(ipList, isRepeated, cooldownInSecs, listener, this, deviceInfo.getMACAddress());
 
-		startCapture(deviceIP, firstSightPH, errbuf);
+		startCapture(deviceInfo.getIP(), firstSightPH, errbuf);
 	}
 
 	private void startCapture(String deviceIp, PcapPacketHandler<Void> packetHandler, StringBuilder errbuf)

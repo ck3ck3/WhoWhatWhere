@@ -60,6 +60,7 @@ import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.geoipresolver.GeoIPInfo;
 import whowhatwhere.model.geoipresolver.GeoIPResolver;
 import whowhatwhere.model.ipsniffer.CaptureStartListener;
+import whowhatwhere.model.ipsniffer.DeviceAddressesAndDescription;
 import whowhatwhere.model.ipsniffer.IPSniffer;
 import whowhatwhere.model.ipsniffer.appearancecounter.AppearanceCounterResults;
 import whowhatwhere.model.ipsniffer.appearancecounter.IpAppearancesCounter;
@@ -152,7 +153,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private boolean isTimedTaskRunning = false;
 	private boolean isAHotkeyResult = false;
 	private int protocolBoxesChecked = 0;
-	private Map<RadioButton, String> buttonToIpMap;
+	private Map<RadioButton, DeviceAddressesAndDescription> buttonToIpMap;
 	private IPSniffer sniffer = new IPSniffer();
 	private int captureHotkeyKeyCode;
 	private int captureHotkeyModifiers;
@@ -489,7 +490,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private void startButtonPressed()
 	{
 		StringBuilder errbuf = new StringBuilder();
-		String deviceIP = buttonToIpMap.get(controller.getTglGrpNIC().getSelectedToggle());
+		String deviceIP = buttonToIpMap.get(controller.getTglGrpNIC().getSelectedToggle()).getIP();
 		final CaptureStartListener thisObj = this;
 
 		changeGuiTemplate(true);
@@ -973,4 +974,30 @@ public class AppearanceCounterUI implements CaptureStartListener
 		userNotesScreen.showScreenOnNewStage("Manage User Notes", userNotesScreen.getCloseButton());
 	}
 
+	/**
+	 * @return a map that maps user note to a list of IPs that have that note 
+	 */
+	public Map<String, List<String>> getUserNotesReverseMap()
+	{
+		Map<String, List<String>> reverseMap = new HashMap<String, List<String>>();
+		
+		for (Object ipObj : userNotes.keySet())
+		{
+			String ip = (String) ipObj;
+			String note = userNotes.getProperty(ip);
+			
+			List<String> listOfIPs = reverseMap.get(note);
+			
+			if (listOfIPs == null) //first ip for that note
+			{
+				listOfIPs = new ArrayList<String>();
+				listOfIPs.add(ip);
+				reverseMap.put(note, listOfIPs);
+			}
+			else //there's already a list of ips for this note
+				listOfIPs.add(ip);
+		}
+		
+		return reverseMap;
+	}
 }

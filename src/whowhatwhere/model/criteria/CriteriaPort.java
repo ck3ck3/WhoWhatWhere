@@ -9,15 +9,18 @@ import whowhatwhere.model.ipsniffer.IPSniffer;
 public class CriteriaPort implements Criteria<PcapPacket, Boolean>
 {
 	private int portNumber;
+	private RelativeToValue sign;
 	private boolean isSourcePort;
 
 	/**
 	 * @param portNumber - the port number
+	 * @param sign - less than (<), equals (==), greater than (>)
 	 * @param isSourcePort - true if it's the source port, false if it's the destination port
 	 */
-	public CriteriaPort(int portNumber, boolean isSourcePort)
+	public CriteriaPort(int portNumber, RelativeToValue sign, boolean isSourcePort)
 	{
 		this.portNumber = portNumber;
+		this.sign = sign;
 		this.isSourcePort = isSourcePort;
 	}
 
@@ -30,7 +33,7 @@ public class CriteriaPort implements Criteria<PcapPacket, Boolean>
 			tcp = itemToCheck.getHeader(tcp);
 			int portToCheck = isSourcePort ? tcp.source() : tcp.destination();
 
-			return portNumber == portToCheck;
+			return evaluate(portToCheck);
 		}
 		
 		if (itemToCheck.hasHeader(IPSniffer.UDP_PROTOCOL))
@@ -39,7 +42,7 @@ public class CriteriaPort implements Criteria<PcapPacket, Boolean>
 			udp = itemToCheck.getHeader(udp);
 			int portToCheck = isSourcePort ? udp.source() : udp.destination();
 
-			return portNumber == portToCheck;
+			return evaluate(portToCheck);
 		}
 
 		return false;
@@ -48,6 +51,18 @@ public class CriteriaPort implements Criteria<PcapPacket, Boolean>
 	@Override
 	public String getCriteriaAsText()
 	{
-		return "(Port == " + portNumber + ")";
+		return "(Port " + sign.getSign() + " " + portNumber + ")";
+	}
+	
+	private Boolean evaluate(int portToCheck)
+	{
+		switch(sign)
+		{
+			case LESS_THAN:		return portNumber < portToCheck;
+			case EQUALS:		return portNumber == portToCheck;
+			case GREATER_THAN:	return portNumber > portToCheck;
+			
+			default:			return null; //never gets here
+		}
 	}
 }

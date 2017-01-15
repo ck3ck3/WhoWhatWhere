@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,9 +34,10 @@ import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.TextToSpeech;
+import whowhatwhere.model.ipsniffer.DeviceAddressesAndDescription;
 import whowhatwhere.model.ipsniffer.IPSniffer;
 import whowhatwhere.model.ipsniffer.firstsight.FirstSightListener;
-import whowhatwhere.model.ipsniffer.firstsight.IPToMatch;
+import whowhatwhere.model.ipsniffer.firstsight.PacketTypeToMatch;
 
 public class WatchdogUI implements FirstSightListener
 {
@@ -82,7 +84,7 @@ public class WatchdogUI implements FirstSightListener
 
 	private int hotkeyKeyCode;
 	private int hotkeyModifiers;
-	private ObservableList<IPToMatch> entryList = FXCollections.observableArrayList();
+	private ObservableList<PacketTypeToMatch> entryList = FXCollections.observableArrayList();
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 	private IPSniffer sniffer = new IPSniffer();
 	private HotkeyRegistry hotkeyRegistry;
@@ -122,7 +124,7 @@ public class WatchdogUI implements FirstSightListener
 		initUIElementsFromController();
 		initButtonHandlers();
 
-		entryList.addListener((ListChangeListener<IPToMatch>) change -> labelEntryCount.setText("Match list contains " + change.getList().size() + " entries"));
+		entryList.addListener((ListChangeListener<PacketTypeToMatch>) change -> labelEntryCount.setText("Match list contains " + change.getList().size() + " entries"));
 		numFieldCooldown.setMinValue(minCooldownValue);
 		numFieldCooldown.setMaxValue(maxCooldownValue);
 	}
@@ -213,7 +215,7 @@ public class WatchdogUI implements FirstSightListener
 				return;
 			}
 
-			String deviceIP = controller.getButtonToIpMap().get(controller.getTglGrpNIC().getSelectedToggle());
+			DeviceAddressesAndDescription deviceInfo = controller.getButtonToIpMap().get(controller.getTglGrpNIC().getSelectedToggle());
 			new Thread(new Runnable()
 			{
 				@Override
@@ -221,7 +223,7 @@ public class WatchdogUI implements FirstSightListener
 				{
 					try
 					{
-						sniffer.startFirstSightCapture(deviceIP, entryList, radioKeepLooking.isSelected(), numFieldCooldown.getValue(), thisObj, new StringBuilder());
+						sniffer.startFirstSightCapture(deviceInfo, entryList, radioKeepLooking.isSelected(), numFieldCooldown.getValue(), thisObj, new StringBuilder());
 					}
 					catch (IllegalArgumentException | UnknownHostException e)
 					{
@@ -272,7 +274,7 @@ public class WatchdogUI implements FirstSightListener
 			Platform.runLater(() -> new Alert(AlertType.INFORMATION, msg).showAndWait());
 	}
 
-	public static void saveListToFile(List<IPToMatch> list, String msgToSay, String filename) throws IOException
+	public static void saveListToFile(List<PacketTypeToMatch> list, String msgToSay, String filename) throws IOException
 	{
 		FileOutputStream fout = new FileOutputStream(filename);
 		ObjectOutputStream oos = new ObjectOutputStream(fout);
@@ -285,12 +287,12 @@ public class WatchdogUI implements FirstSightListener
 	}
 
 	@SuppressWarnings("unchecked")
-	public static void loadListFromFile(ObservableList<IPToMatch> listToLoadInto, TextField messageField, String filename) throws IOException, ClassNotFoundException
+	public static void loadListFromFile(ObservableList<PacketTypeToMatch> listToLoadInto, TextField messageField, String filename) throws IOException, ClassNotFoundException
 	{
 		FileInputStream fin = new FileInputStream(filename);
 		ObjectInputStream ois = new ObjectInputStream(fin);
 
-		ArrayList<IPToMatch> temp = (ArrayList<IPToMatch>) ois.readObject();
+		ArrayList<PacketTypeToMatch> temp = (ArrayList<PacketTypeToMatch>) ois.readObject();
 
 		listToLoadInto.clear();
 		listToLoadInto.addAll(temp);
@@ -300,7 +302,7 @@ public class WatchdogUI implements FirstSightListener
 		ois.close();
 		fin.close();
 
-		for (IPToMatch entry : listToLoadInto)
+		for (PacketTypeToMatch entry : listToLoadInto)
 			entry.initAfterSerialization();
 	}
 
@@ -359,7 +361,7 @@ public class WatchdogUI implements FirstSightListener
 		}
 	}
 
-	public ObservableList<IPToMatch> getEntryList()
+	public ObservableList<PacketTypeToMatch> getEntryList()
 	{
 		return entryList;
 	}
@@ -367,5 +369,13 @@ public class WatchdogUI implements FirstSightListener
 	public TextField getTextMessage()
 	{
 		return textMessage;
+	}
+	
+	/**
+	 * @return a map that maps user note to a list of IPs that have that note 
+	 */
+	public Map<String, List<String>> getUserNotesReverseMap()
+	{
+		return controller.getUserNotesReverseMap();
 	}
 }

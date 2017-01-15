@@ -4,9 +4,11 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.io.filefilter.WildcardFileFilter;
+import org.apache.commons.net.util.SubnetUtils;
 
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
@@ -20,23 +22,36 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
 import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
+import whowhatwhere.model.criteria.RelativeToValue;
 import whowhatwhere.model.ipsniffer.IPSniffer;
-import whowhatwhere.model.ipsniffer.firstsight.IPToMatch;
+import whowhatwhere.model.ipsniffer.firstsight.PacketTypeToMatch;
 import whowhatwhere.view.SecondaryFXMLWithCRUDTableScreen;
 
-public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<IPToMatch>
+public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTypeToMatch>
 {
 	private ManageListController watchdogListController;
-	private ObservableList<IPToMatch> entryList;
+	private ObservableList<PacketTypeToMatch> entryList;
 	private TextField textToSay;
-	private TableColumn<IPToMatch, String> columnIP;
-	private TableColumn<IPToMatch, String> columnProtocol;
-	private TableColumn<IPToMatch, String> columnSrcPort;
-	private TableColumn<IPToMatch, String> columnDstPort;
+	private TableColumn<PacketTypeToMatch, String> columnPacketDirection;
+	private TableColumn<PacketTypeToMatch, String> columnIP;
+	private TableColumn<PacketTypeToMatch, String> columnNetmask;
+	private TableColumn<PacketTypeToMatch, String> columnUserNotes;
+//	private TableColumn<IPToMatch, String> columnPacketSize;
+	private TableColumn<PacketTypeToMatch, String> columnPacketSizeSmaller;
+	private TableColumn<PacketTypeToMatch, String> columnPacketSizeEquals;
+	private TableColumn<PacketTypeToMatch, String> columnPacketSizeGreater;
+	private TableColumn<PacketTypeToMatch, String> columnProtocol;
+	private TableColumn<PacketTypeToMatch, String> columnSrcPortSmaller;
+	private TableColumn<PacketTypeToMatch, String> columnSrcPortEquals;
+	private TableColumn<PacketTypeToMatch, String> columnSrcPortGreater;
+//	private TableColumn<IPToMatch, String> columnSrcPort;
+//	private TableColumn<IPToMatch, String> columnDstPort;
+	private TableColumn<PacketTypeToMatch, String> columnDstPortSmaller;
+	private TableColumn<PacketTypeToMatch, String> columnDstPortEquals;
+	private TableColumn<PacketTypeToMatch, String> columnDstPortGreater;	
+	private Map<String, List<String>> userNotesToIPListMap;
 	
-	private final IPToMatch emptyRow = newEmptyTableRow();
-	
-	private final static String emptyCellString = "(Click to edit)";
+	private final PacketTypeToMatch emptyRow = newEmptyTableRow();
 	
 
 	public ManageListScreen(String fxmlLocation, Stage stage, Scene scene, WatchdogUI uiController) throws IOException
@@ -46,25 +61,36 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<IPToMatch
 		watchdogListController = (ManageListController) controller;
 		entryList = uiController.getEntryList();
 		textToSay = uiController.getTextMessage();
+		userNotesToIPListMap = uiController.getUserNotesReverseMap();
+		watchdogListController.setUserNotesComboValues(userNotesToIPListMap.keySet().toArray());
 		
+		columnPacketDirection = watchdogListController.getColumnPacketDirection();
 		columnIP = watchdogListController.getColumnIP();
+		columnNetmask = watchdogListController.getColumnNetmask();
+		columnUserNotes = watchdogListController.getColumnUserNotes();
+		columnPacketSizeSmaller = watchdogListController.getColumnPacketSizeSmaller();
+		columnPacketSizeEquals = watchdogListController.getColumnPacketSizeEquals();
+		columnPacketSizeGreater = watchdogListController.getColumnPacketSizeGreater();
 		columnProtocol = watchdogListController.getColumnProtocol();
-		columnSrcPort = watchdogListController.getColumnSrcPort();
-		columnDstPort = watchdogListController.getColumnDstPort();
+		columnSrcPortSmaller = watchdogListController.getColumnSrcPortSmaller();
+		columnSrcPortEquals = watchdogListController.getColumnSrcPortEquals();
+		columnSrcPortGreater = watchdogListController.getColumnSrcPortGreater();
+		columnDstPortSmaller = watchdogListController.getColumnDstPortSmaller();
+		columnDstPortEquals = watchdogListController.getColumnDstPortEquals();
+		columnDstPortGreater = watchdogListController.getColumnDstPortGreater();
 
 		initPresetButtonHandlers();
 		initGUI();
 	}
-	
 
 	@Override
-	protected SecondaryFXMLWithCRUDTableController<IPToMatch> initController()
+	protected SecondaryFXMLWithCRUDTableController<PacketTypeToMatch> initController()
 	{
 		return getLoader().<ManageListController> getController();
 	}
 
 	@Override
-	protected ObservableList<IPToMatch> getInitialTableItems()
+	protected ObservableList<PacketTypeToMatch> getInitialTableItems()
 	{
 		return entryList;
 	}
@@ -72,44 +98,134 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<IPToMatch
 	@Override
 	protected void setOnEditCommit()
 	{
+		columnPacketDirection.setOnEditCommit(rowModel -> rowModel.getRowValue().setPacketDirection(rowModel.getNewValue()));
+		
 		columnIP.setOnEditCommit(rowModel -> 
 		{
 			String newContent = rowModel.getNewValue();
 			String previousValue = rowModel.getOldValue();
 			boolean isNewContentValid = isValidIPValue(newContent);
-			IPToMatch rowValue = rowModel.getRowValue();
+			PacketTypeToMatch rowValue = rowModel.getRowValue();
 			
 			rowValue.setIpAddress(isNewContentValid ? newContent : previousValue);
 			
+			if (isNewContentValid && rowValue.netmaskProperty().get().equals(PacketTypeToMatch.netmask_ANY)) //if the ip is valid and no netmask is set, set netmask for specific ip
+				rowValue.setNetmask("255.255.255.255");
+				
+			
 			if (!isNewContentValid)
-				new Alert(AlertType.ERROR, "Please enter a valid IP address. If you want to delete this row, please select it and press the \"" + watchdogListController.getBtnRemoveRow().getText() + "\" button.").showAndWait();
+				new Alert(AlertType.ERROR, "Please enter a valid IP address.").showAndWait();
 			
 			table.refresh();
 		});
 		
+		columnNetmask.setOnEditCancel(rowModel -> 
+		{
+			PacketTypeToMatch rowValue = rowModel.getRowValue();
+			String ipAddress = rowValue.ipAddressProperty().get();
+			boolean isNewContentValid = !ipAddress.equals(PacketTypeToMatch.IP_ANY); //first check, was an ip entered?
+			String newContent = rowModel.getNewValue();
+			String previousValue = rowModel.getOldValue();
+			
+			if (!isNewContentValid)
+				new Alert(AlertType.ERROR, "Please enter an IP address first.").showAndWait();
+			
+			if (isNewContentValid)
+			{
+				try
+				{
+					 new SubnetUtils(ipAddress, newContent); //second check, is the subnet valid
+				}
+				catch(IllegalArgumentException iae)
+				{
+					isNewContentValid = false;
+					new Alert(AlertType.ERROR, "Invalid netmask.").showAndWait();
+				}
+			}
+			
+			rowValue.setNetmask(isNewContentValid ? newContent : previousValue);
+			table.refresh();
+		});
+		
+		columnUserNotes.setOnEditCommit(rowModel -> rowModel.getRowValue().setUserNotes(rowModel.getNewValue()));
+		
+		columnPacketSizeSmaller.setOnEditCommit(getPacketSizeOnEditCommit(RelativeToValue.LESS_THAN));
+		columnPacketSizeEquals.setOnEditCommit(getPacketSizeOnEditCommit(RelativeToValue.EQUALS));
+		columnPacketSizeGreater.setOnEditCommit(getPacketSizeOnEditCommit(RelativeToValue.GREATER_THAN));
+		
 		columnProtocol.setOnEditCommit(rowModel -> rowModel.getRowValue().setProtocol(rowModel.getNewValue()));
 			
-		columnSrcPort.setOnEditCommit(getPortOnEditCommit(true));
+		columnSrcPortSmaller.setOnEditCommit(getPortOnEditCommit(true, RelativeToValue.LESS_THAN));
+		columnSrcPortEquals.setOnEditCommit(getPortOnEditCommit(true, RelativeToValue.EQUALS));
+		columnSrcPortGreater.setOnEditCommit(getPortOnEditCommit(true, RelativeToValue.GREATER_THAN));
 		
-		columnDstPort.setOnEditCommit(getPortOnEditCommit(false));
+		columnDstPortSmaller.setOnEditCommit(getPortOnEditCommit(false, RelativeToValue.LESS_THAN));
+		columnDstPortEquals.setOnEditCommit(getPortOnEditCommit(false, RelativeToValue.EQUALS));
+		columnDstPortGreater.setOnEditCommit(getPortOnEditCommit(false, RelativeToValue.GREATER_THAN));
 	}
 	
-	private EventHandler<CellEditEvent<IPToMatch, String>> getPortOnEditCommit(boolean srcPort)
+	/**
+	 * @param isSrcPort - true if it's for source port, false if it's for destination port
+	 * @param sign - the sign of the column (<, =, >)
+	 * @return an EventHandler to be used for OnEditCommit
+	 */
+	private EventHandler<CellEditEvent<PacketTypeToMatch, String>> getPortOnEditCommit(boolean isSrcPort, RelativeToValue sign)
 	{
 		return rowModel -> 
 		{
 			String newContent = rowModel.getNewValue();
 			String previousValue = rowModel.getOldValue();
 			boolean isNewContentValid = isValidPortValue(newContent);
-			IPToMatch rowValue = rowModel.getRowValue();
+			PacketTypeToMatch rowValue = rowModel.getRowValue();
 			
-			if (srcPort)
-				rowValue.setSrcPort(isNewContentValid ? newContent : previousValue);
+			if (isSrcPort)
+			{
+				switch(sign)
+				{
+					case LESS_THAN:		rowValue.setSrcPortSmaller(isNewContentValid ? newContent : previousValue);	break;
+					case EQUALS:		rowValue.setSrcPortEquals(isNewContentValid ? newContent : previousValue);	break;
+					case GREATER_THAN:	rowValue.setSrcPortGreater(isNewContentValid ? newContent : previousValue);	break;
+				}
+			}
 			else
-				rowValue.setDstPort(isNewContentValid ? newContent : previousValue);
+			{
+				switch(sign)
+				{
+					case LESS_THAN:		rowValue.setDstPortSmaller(isNewContentValid ? newContent : previousValue);	break;
+					case EQUALS:		rowValue.setDstPortEquals(isNewContentValid ? newContent : previousValue);	break;
+					case GREATER_THAN:	rowValue.setDstPortGreater(isNewContentValid ? newContent : previousValue);	break;
+				}
+			}
 			
 			if (!isNewContentValid)
-				new Alert(AlertType.ERROR, "Port numbers must be between 1-65535. Please enter a valid port number or \"" + IPToMatch.protocol_ANY + "\" to check any port.").showAndWait();
+				new Alert(AlertType.ERROR, "Port numbers must be between 1-65535. Please enter a valid port number or leave this field empty.").showAndWait();
+			
+			table.refresh();
+		};
+	}
+	
+	/**
+	 * @param sign - the sign of the column (<, =, >)
+	 * @return an EventHandler to be used for OnEditCommit
+	 */
+	private EventHandler<CellEditEvent<PacketTypeToMatch, String>> getPacketSizeOnEditCommit(RelativeToValue sign)
+	{
+		return rowModel -> 
+		{
+			String newContent = rowModel.getNewValue();
+			String previousValue = rowModel.getOldValue();
+			boolean isNewContentValid = isValidPacketSizeValue(newContent);
+			PacketTypeToMatch rowValue = rowModel.getRowValue();
+			
+			switch(sign)
+			{
+				case LESS_THAN:		rowValue.setPacketSizeSmaller(isNewContentValid ? newContent : previousValue);	break;
+				case EQUALS:		rowValue.setPacketSizeEquals(isNewContentValid ? newContent : previousValue);	break;
+				case GREATER_THAN:	rowValue.setPacketSizeGreater(isNewContentValid ? newContent : previousValue);	break;
+			}
+			
+			if (!isNewContentValid)
+				new Alert(AlertType.ERROR, "Packet size must be a number >= 0. Please enter a valid packet size or leave this field empty.").showAndWait();
 			
 			table.refresh();
 		};
@@ -122,7 +238,7 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<IPToMatch
 	
 	private boolean isValidPortValue(String port)
 	{
-		if (port.equals(IPToMatch.port_ANY))
+		if (port.equals(PacketTypeToMatch.packetOrPort_ANY))
 			return true;
 		
 		int value;
@@ -138,28 +254,49 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<IPToMatch
 		
 		return value >= 1 && value <= 65535;
 	}
-
-	@Override
-	protected IPToMatch newEmptyTableRow()
+	
+	private boolean isValidPacketSizeValue(String size)
 	{
-		return new IPToMatch(emptyCellString, IPToMatch.protocol_ANY, IPToMatch.port_ANY, IPToMatch.port_ANY);
+		if (size.equals(PacketTypeToMatch.packetOrPort_ANY))
+			return true;
+		
+		int value;
+		
+		try
+		{
+			value = Integer.parseInt(size);
+		}
+		catch(NumberFormatException nfe)
+		{
+			return false;
+		}
+		
+		return value >= 0;
 	}
 
 	@Override
-	protected String filterRowsToDelete(ObservableList<IPToMatch> initialSelectionOfRowsToDelete)
+	protected PacketTypeToMatch newEmptyTableRow()
+	{
+		return new PacketTypeToMatch(PacketTypeToMatch.packetDirection_ANY, PacketTypeToMatch.IP_ANY, PacketTypeToMatch.netmask_ANY, PacketTypeToMatch.userNotes_ANY, 
+				PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.protocol_ANY, 
+				PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY);
+	}
+
+	@Override
+	protected String filterRowsToDelete(ObservableList<PacketTypeToMatch> initialSelectionOfRowsToDelete)
 	{
 		return null;
 	}
 
 	@Override
-	protected void performForDeleteRows(List<IPToMatch> listOfDeletedRows) {}
+	protected void performForDeleteRows(List<PacketTypeToMatch> listOfDeletedRows) {}
 
 	@Override
 	protected void performOnCloseButton() throws IllegalArgumentException 
 	{
 		boolean invalidLines = false;
 		
-		for (IPToMatch row : entryList)
+		for (PacketTypeToMatch row : entryList)
 		{
 			if (isOnlyUnsetValues(row))
 			{
@@ -175,7 +312,7 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<IPToMatch
 		}
 	}
 	
-	private boolean isOnlyUnsetValues(IPToMatch entry)
+	private boolean isOnlyUnsetValues(PacketTypeToMatch entry)
 	{
 		return emptyRow.isSameValuesAs(entry);
 	}
@@ -238,7 +375,7 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<IPToMatch
 		}
 	}
 	
-	public static MenuItem createMenuItem(ObservableList<IPToMatch> list, TextField textToSay, String filename)
+	public static MenuItem createMenuItem(ObservableList<PacketTypeToMatch> list, TextField textToSay, String filename)
 	{
 		MenuItem menuItem = new MenuItem(filename);
 

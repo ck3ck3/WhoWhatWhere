@@ -62,7 +62,7 @@ import whowhatwhere.controller.utilities.PingToSpeechUI;
 import whowhatwhere.controller.watchdog.WatchdogUI;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.TextToSpeech;
-import whowhatwhere.model.ipsniffer.DeviceIPAndDescription;
+import whowhatwhere.model.ipsniffer.DeviceAddressesAndDescription;
 import whowhatwhere.model.ipsniffer.IPSniffer;
 import whowhatwhere.model.startwithwindows.StartWithWindowsRegistryUtils;
 
@@ -237,8 +237,8 @@ public class GUIController implements Initializable
 
 	private ToggleGroup tglGrpNIC = new ToggleGroup();
 	private IPSniffer sniffer;
-	private List<DeviceIPAndDescription> listOfDevices;
-	private Map<RadioButton, String> buttonToIpMap = new HashMap<>();
+	private List<DeviceAddressesAndDescription> listOfDevices;
+	private Map<RadioButton, DeviceAddressesAndDescription> buttonToIpMap = new HashMap<>();
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 	private HotkeyRegistry hotkeyRegistry = new HotkeyRegistry(tabPane);
 	private boolean isExitAlreadyAddedToSystray = false;
@@ -362,14 +362,14 @@ public class GUIController implements Initializable
 
 		int index = 1; //index of radio button in the vbox. starts at 1 because we already added a label earlier
 
-		for (DeviceIPAndDescription deviceInfo : listOfDevices)
+		for (DeviceAddressesAndDescription deviceInfo : listOfDevices)
 		{
 			RadioButton btn = new RadioButton(deviceInfo.getDescription() + " " + deviceInfo.getIP());
 			btn.setTooltip(new Tooltip(btn.getText())); // so we don't need a horizontal scroller
 			btn.setUserData(index++);
 			btn.setToggleGroup(tglGrpNIC);
 			btn.setPadding(new Insets(0, 0, 0, 10));
-			buttonToIpMap.put(btn, deviceInfo.getIP());
+			buttonToIpMap.put(btn, deviceInfo);
 
 			vboxNICs.getChildren().add(btn);
 		}
@@ -896,7 +896,7 @@ public class GUIController implements Initializable
 		return tabUtils;
 	}
 
-	public Map<RadioButton, String> getButtonToIpMap()
+	public Map<RadioButton, DeviceAddressesAndDescription> getButtonToIpMap()
 	{
 		return buttonToIpMap;
 	}
@@ -954,5 +954,13 @@ public class GUIController implements Initializable
 	public AnchorPane getPaneWatchdogConfig()
 	{
 		return paneWatchdogConfig;
+	}
+	
+	/**
+	 * @return a map that maps user note to a list of IPs that have that note 
+	 */
+	public Map<String, List<String>> getUserNotesReverseMap()
+	{
+		return appearanceCounterUI.getUserNotesReverseMap();
 	}
 }

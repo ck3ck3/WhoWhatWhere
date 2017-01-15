@@ -4,14 +4,34 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="paneRoot" prefHeight="282.0" prefWidth="553.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.watchdog.ManageListController">
+<AnchorPane fx:id="paneRoot" prefHeight="282.0" prefWidth="1132.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.watchdog.ManageListController">
    <children>
-      <TableView fx:id="tableEntries" editable="true" layoutX="14.0" layoutY="14.0" prefHeight="175.0" prefWidth="527.0" AnchorPane.bottomAnchor="93.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="14.0">
+      <TableView fx:id="tableEntries" editable="true" layoutX="14.0" layoutY="14.0" prefHeight="175.0" prefWidth="1104.0" stylesheets="@watchdogTable.css" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="93.0" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0">
          <columns>
-            <TableColumn fx:id="columnIP" prefWidth="155.0" text="IP address" />
-            <TableColumn fx:id="columnProtocol" prefWidth="136.0" text="Protocol" />
-            <TableColumn fx:id="columnSrcPort" prefWidth="122.0" text="Source port" />
-            <TableColumn fx:id="columnDstPort" prefWidth="111.0" text="Destination port" />
+            <TableColumn fx:id="columnPacketDirection" prefWidth="105.0" text="Packet direction" />
+            <TableColumn fx:id="columnIP" prefWidth="110.0" text="IP address" />
+            <TableColumn fx:id="columnNetmask" prefWidth="95.0" text="Netmask" />
+            <TableColumn fx:id="columnUserNotes" prefWidth="138.0" text="User notes" />
+            <TableColumn fx:id="columnPacketSize" prefWidth="242.0" text="Total packet size">
+               <columns>
+                  <TableColumn fx:id="columnPacketSizeSmaller" prefWidth="60.0" text="&lt;" />
+                  <TableColumn fx:id="columnPacketSizeEquals" prefWidth="60.0" text="=" />
+                  <TableColumn fx:id="columnPacketSizeGreater" prefWidth="60.0" text="&gt;" />
+               </columns>
+            </TableColumn>
+            <TableColumn fx:id="columnProtocol" prefWidth="86.0" text="Protocol" />
+            <TableColumn fx:id="columnSrcPort" prefWidth="249.0" text="Source port">
+               <columns>
+                  <TableColumn fx:id="columnSrcPortSmaller" prefWidth="60.0" text="&lt;" />
+                  <TableColumn fx:id="columnSrcPortEquals" prefWidth="60.0" text="=" />
+                  <TableColumn fx:id="columnSrcPortGreater" prefWidth="75.0" text="&gt;" />
+               </columns></TableColumn>
+            <TableColumn fx:id="columnDstPort" prefWidth="122.0" text="Destination port">
+               <columns>
+                  <TableColumn fx:id="columnDstPortSmaller" prefWidth="60.0" text="&lt;" />
+                  <TableColumn fx:id="columnDstPortEquals" prefWidth="60.0" text="=" />
+                  <TableColumn fx:id="columnDstPortGreater" prefWidth="60.0" text="&gt;" />
+               </columns></TableColumn>
          </columns>
       </TableView>
       <AnchorPane layoutX="14.0" layoutY="199.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0">
