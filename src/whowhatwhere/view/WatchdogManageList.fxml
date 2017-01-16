@@ -6,12 +6,12 @@
 
 <AnchorPane fx:id="paneRoot" prefHeight="282.0" prefWidth="1132.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.watchdog.ManageListController">
    <children>
-      <TableView fx:id="tableEntries" editable="true" layoutX="14.0" layoutY="14.0" prefHeight="175.0" prefWidth="1104.0" stylesheets="@watchdogTable.css" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="93.0" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0">
+      <TableView fx:id="tableEntries" editable="true" layoutX="14.0" layoutY="14.0" prefHeight="175.0" prefWidth="1104.0" stylesheets="@watchdogTable.css" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="93.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0">
          <columns>
             <TableColumn fx:id="columnPacketDirection" prefWidth="105.0" text="Packet direction" />
             <TableColumn fx:id="columnIP" prefWidth="110.0" text="IP address" />
-            <TableColumn fx:id="columnNetmask" prefWidth="95.0" text="Netmask" />
-            <TableColumn fx:id="columnUserNotes" prefWidth="138.0" text="User notes" />
+            <TableColumn fx:id="columnNetmask" prefWidth="110.0" text="Netmask" />
+            <TableColumn fx:id="columnUserNotes" prefWidth="123.0" text="User notes" />
             <TableColumn fx:id="columnPacketSize" prefWidth="242.0" text="Total packet size">
                <columns>
                   <TableColumn fx:id="columnPacketSizeSmaller" prefWidth="60.0" text="&lt;" />

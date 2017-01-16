@@ -14,6 +14,7 @@ import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
@@ -106,12 +107,41 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 			String previousValue = rowModel.getOldValue();
 			boolean isNewContentValid = isValidIPValue(newContent);
 			PacketTypeToMatch rowValue = rowModel.getRowValue();
+			boolean cancel = false;
+
+			if (isNewContentValid && !newContent.equals(PacketTypeToMatch.IP_ANY) && !rowValue.userNotesProperty().get().equals(PacketTypeToMatch.userNotes_ANY)) //if user notes is already set 
+			{
+				Alert alert = new Alert(AlertType.CONFIRMATION, "You already set a user note to match. If you set an IP address to match, that will disable matching by the selected user note." +
+						"\n\nPress OK to match by IP/netmask and clear the user notes field.\nPress Cancel to match by user note and clear the IP/netmask fields.");
+				
+				alert.setHeaderText("Cannot set IP address and user notes simultaneously");
+				
+				Optional<ButtonType> result = alert.showAndWait();
+				if (result.get() == ButtonType.OK)
+				{
+					rowValue.setUserNotes(PacketTypeToMatch.userNotes_ANY);
+				}
+				else //cancel
+				{
+					newContent = PacketTypeToMatch.IP_ANY;
+					cancel = true;
+				}
+				
+				table.refresh();
+			}
 			
 			rowValue.setIpAddress(isNewContentValid ? newContent : previousValue);
 			
-			if (isNewContentValid && rowValue.netmaskProperty().get().equals(PacketTypeToMatch.netmask_ANY)) //if the ip is valid and no netmask is set, set netmask for specific ip
-				rowValue.setNetmask("255.255.255.255");
+			if (!cancel && isNewContentValid)
+			{
+				boolean isIPempty = newContent.equals(PacketTypeToMatch.IP_ANY);
 				
+				if (!isIPempty && rowValue.netmaskProperty().get().equals(PacketTypeToMatch.netmask_ANY)) //if the ip is valid and no netmask is set, set netmask for specific ip
+					rowValue.setNetmask("255.255.255.255");
+				
+				if (isIPempty) //if deleting ip, delete netmask too
+					rowValue.setNetmask(PacketTypeToMatch.netmask_ANY);
+			}
 			
 			if (!isNewContentValid)
 				new Alert(AlertType.ERROR, "Please enter a valid IP address.").showAndWait();
@@ -119,7 +149,7 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 			table.refresh();
 		});
 		
-		columnNetmask.setOnEditCancel(rowModel -> 
+		columnNetmask.setOnEditCommit(rowModel -> 
 		{
 			PacketTypeToMatch rowValue = rowModel.getRowValue();
 			String ipAddress = rowValue.ipAddressProperty().get();
@@ -139,7 +169,7 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 				catch(IllegalArgumentException iae)
 				{
 					isNewContentValid = false;
-					new Alert(AlertType.ERROR, "Invalid netmask.").showAndWait();
+					new Alert(AlertType.ERROR, "Invalid netmask. If you want to delete the netmask, you must delete the IP address.").showAndWait();
 				}
 			}
 			
@@ -147,7 +177,36 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 			table.refresh();
 		});
 		
-		columnUserNotes.setOnEditCommit(rowModel -> rowModel.getRowValue().setUserNotes(rowModel.getNewValue()));
+		columnUserNotes.setOnEditCommit(rowModel -> 
+		{
+			PacketTypeToMatch rowValue = rowModel.getRowValue();
+			String newValue = rowModel.getNewValue();
+			
+			if (!newValue.equals(PacketTypeToMatch.userNotes_ANY) && !rowValue.ipAddressProperty().get().equals(PacketTypeToMatch.IP_ANY)) //if an ip address is already set 
+			{
+				Alert alert = new Alert(AlertType.CONFIRMATION, "You already set an IP address to match. If you set a user note to match, that will disable matching by the entered IP address." +
+						"\n\nPress OK to match by user note and clear the IP/netmask fields.\nPress Cancel to match by IP/netmask and clear the user note field.");
+				
+				alert.setHeaderText("Cannot set IP address and user notes simultaneously");
+				
+				Optional<ButtonType> result = alert.showAndWait();
+				if (result.get() == ButtonType.OK)
+				{
+					rowValue.setIpAddress(PacketTypeToMatch.IP_ANY);
+					rowValue.setNetmask(PacketTypeToMatch.netmask_ANY);
+				}
+				else //cancel
+				{
+					newValue = PacketTypeToMatch.userNotes_ANY;
+				}
+				
+				table.refresh();
+			}
+			
+			rowValue.setUserNotes(newValue);
+			List<String> listOfIPs = newValue.equals(PacketTypeToMatch.userNotes_ANY) ? null : userNotesToIPListMap.get(newValue);
+			rowValue.setIPsFromUserNotes(listOfIPs);			
+		});
 		
 		columnPacketSizeSmaller.setOnEditCommit(getPacketSizeOnEditCommit(RelativeToValue.LESS_THAN));
 		columnPacketSizeEquals.setOnEditCommit(getPacketSizeOnEditCommit(RelativeToValue.EQUALS));
@@ -225,7 +284,7 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 			}
 			
 			if (!isNewContentValid)
-				new Alert(AlertType.ERROR, "Packet size must be a number >= 0. Please enter a valid packet size or leave this field empty.").showAndWait();
+				new Alert(AlertType.ERROR, "Packet size must be a number between 20 and 65535. Please enter a valid packet size or leave this field empty.").showAndWait();
 			
 			table.refresh();
 		};
@@ -233,7 +292,7 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 	
 	private boolean isValidIPValue(String ip)
 	{
-		return IPSniffer.isValidIPv4(ip);
+		return IPSniffer.isValidIPv4(ip) || ip.equals(PacketTypeToMatch.IP_ANY);
 	}
 	
 	private boolean isValidPortValue(String port)
@@ -271,9 +330,9 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 			return false;
 		}
 		
-		return value >= 0;
+		return value >= 20 && value <= 65535;
 	}
-
+	
 	@Override
 	protected PacketTypeToMatch newEmptyTableRow()
 	{

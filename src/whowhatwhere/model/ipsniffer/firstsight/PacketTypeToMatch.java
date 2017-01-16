@@ -1,6 +1,7 @@
 package whowhatwhere.model.ipsniffer.firstsight;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javafx.beans.property.SimpleStringProperty;
 import whowhatwhere.model.ipsniffer.IPSniffer;
@@ -8,7 +9,7 @@ import whowhatwhere.model.ipsniffer.PacketDirection;
 
 public class PacketTypeToMatch implements Serializable
 {
-	private static final long serialVersionUID = -3179277661727414250L; //auto-generated, modify if changes to the class are not backwards-compatible
+	private static final long serialVersionUID = 3372220438667121322L; //auto-generated, modify if changes to the class are not backwards-compatible
 	
 	public final static String packetDirection_ANY = PacketDirection.ANY.name();
 	public final static String IP_ANY = "";
@@ -28,6 +29,7 @@ public class PacketTypeToMatch implements Serializable
 	
 	transient private SimpleStringProperty userNotes;
 	private String userNotesToSerialize;
+	private List<String> ipsFromUserNotes;
 	
 	transient private SimpleStringProperty packetSizeSmaller;
 	private String packetSizeSmallerToSerialize;
@@ -357,5 +359,15 @@ public class PacketTypeToMatch implements Serializable
 			this.dstPortGreater.setValue(dstPortGreater);
 		
 		this.dstPortGreaterToSerialize = dstPortGreater;
+	}
+
+	public List<String> getIPsFromUserNotes()
+	{
+		return ipsFromUserNotes;
+	}
+
+	public void setIPsFromUserNotes(List<String> ipsFromUserNotes)
+	{
+		this.ipsFromUserNotes = ipsFromUserNotes;
 	}
 }
