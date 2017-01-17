@@ -1,4 +1,4 @@
-package whowhatwhere.model.ipsniffer.firstsight;
+package whowhatwhere.model.networksniffer.watchdog;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -18,22 +18,22 @@ import whowhatwhere.model.criteria.CriteriaPort;
 import whowhatwhere.model.criteria.CriteriaProtocol;
 import whowhatwhere.model.criteria.OrCriteria;
 import whowhatwhere.model.criteria.RelativeToValue;
-import whowhatwhere.model.ipsniffer.IPSniffer;
-import whowhatwhere.model.ipsniffer.PacketDirection;
+import whowhatwhere.model.networksniffer.NetworkSniffer;
+import whowhatwhere.model.networksniffer.PacketDirection;
 
-public class FirstSightPacketHandler implements PcapPacketHandler<Void>
+public class WatchdogPacketHandler implements PcapPacketHandler<Void>
 {
 	private boolean isRepeated;
 	private Integer cooldownInSecs;
 	private boolean isCooldownPeriod = false;
 	private ScheduledThreadPoolExecutor timer;
-	private FirstSightListener listener;
-	private IPSniffer sniffer;
+	private WatchdogListener listener;
+	private NetworkSniffer sniffer;
 	private byte[] ownMACAddress;
 	
 	Criteria<PcapPacket, Boolean> criteria;
 
-	public FirstSightPacketHandler(List<PacketTypeToMatch> packetTypeList, boolean isRepeated, Integer cooldownInSecs, FirstSightListener listener, IPSniffer sniffer, byte[] ownMACAddress)
+	public WatchdogPacketHandler(List<PacketTypeToMatch> packetTypeList, boolean isRepeated, Integer cooldownInSecs, WatchdogListener listener, NetworkSniffer sniffer, byte[] ownMACAddress)
 			throws IllegalArgumentException, UnknownHostException
 	{
 		this.isRepeated = isRepeated;
@@ -51,12 +51,14 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 		
 		if (criteria == null)
 			throw new IllegalArgumentException("No criteria was set");
+
+//		System.out.println(criteria.getCriteriaAsText()); //for debugging		
 	}
 
 	@Override
 	public void nextPacket(PcapPacket packet, Void nothing)
 	{
-		if (!isCooldownPeriod && packet.hasHeader(IPSniffer.IPv4_PROTOCOL))
+		if (!isCooldownPeriod && packet.hasHeader(NetworkSniffer.IPv4_PROTOCOL))
 		{
 			if (criteria.meetCriteria(packet))
 			{
@@ -72,7 +74,7 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 				else
 					sniffer.stopCapture();
 				
-				listener.firstSightOfIP(packet);
+				listener.watchdogFoundMatchingPacket(packet);
 			}
 		}
 	}
@@ -115,7 +117,7 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 			criteriasToAND.add(new CriteriaPacketDirection(PacketDirection.valueOf(item.packetDirectionProperty().get()), ownMACAddress));
 		
 		if (!item.ipAddressProperty().get().equals(PacketTypeToMatch.IP_ANY))
-			criteriasToAND.add(new CriteriaIP(item.ipAddressProperty().get(), item.netmaskProperty().get()));
+			criteriasToAND.add(new CriteriaIP(item.ipAddressProperty().get(), item.netmaskProperty().get(), PacketDirection.valueOf(item.packetDirectionProperty().get())));
 		
 		if (!item.userNotesProperty().get().equals(PacketTypeToMatch.userNotes_ANY))
 		{
@@ -124,45 +126,45 @@ public class FirstSightPacketHandler implements PcapPacketHandler<Void>
 			
 			if (ipsToAdd > 0)
 			{
-				CriteriaIP criteriaIP = new CriteriaIP(ipsFromUserNotes.get(0), "255.255.255.255");
+				CriteriaIP criteriaIP = new CriteriaIP(ipsFromUserNotes.get(0), "255.255.255.255", PacketDirection.valueOf(item.packetDirectionProperty().get()));
 				Criteria<PcapPacket, Boolean> orBetweenIPs = criteriaIP;
 					
 				for (int i = 1; i < ipsToAdd; i++)
-					orBetweenIPs = new OrCriteria<PcapPacket>(orBetweenIPs, new CriteriaIP(ipsFromUserNotes.get(i), "255.255.255.255"));
+					orBetweenIPs = new OrCriteria<PcapPacket>(orBetweenIPs, new CriteriaIP(ipsFromUserNotes.get(i), "255.255.255.255", PacketDirection.valueOf(item.packetDirectionProperty().get())));
 					
 				criteriasToAND.add(orBetweenIPs);
 			}
 		}
 		
-		if (!item.packetSizeSmallerProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
-			criteriasToAND.add(new CriteriaPacketSize(Integer.valueOf(item.packetSizeSmallerProperty().get()), RelativeToValue.valueOf(item.packetSizeSmallerProperty().get())));
+		if (!item.packetSizeGreaterProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
+			criteriasToAND.add(new CriteriaPacketSize(Integer.valueOf(item.packetSizeGreaterProperty().get()), RelativeToValue.GREATER_THAN));
 		
 		if (!item.packetSizeEqualsProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
-			criteriasToAND.add(new CriteriaPacketSize(Integer.valueOf(item.packetSizeEqualsProperty().get()), RelativeToValue.valueOf(item.packetSizeEqualsProperty().get())));
+			criteriasToAND.add(new CriteriaPacketSize(Integer.valueOf(item.packetSizeEqualsProperty().get()), RelativeToValue.EQUALS));
 		
-		if (!item.packetSizeGreaterProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
-			criteriasToAND.add(new CriteriaPacketSize(Integer.valueOf(item.packetSizeGreaterProperty().get()), RelativeToValue.valueOf(item.packetSizeGreaterProperty().get())));
+		if (!item.packetSizeSmallerProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
+			criteriasToAND.add(new CriteriaPacketSize(Integer.valueOf(item.packetSizeSmallerProperty().get()), RelativeToValue.LESS_THAN));
 		
 		if (!item.protocolProperty().get().equals(PacketTypeToMatch.protocol_ANY))
 			criteriasToAND.add(new CriteriaProtocol(item.protocolAsInt()));
 		
-		if (!item.srcPortSmallerProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
-			criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.srcPortSmallerProperty().get()), RelativeToValue.valueOf(item.srcPortSmallerProperty().get()), true));
+		if (!item.srcPortGreaterProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
+			criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.srcPortGreaterProperty().get()), RelativeToValue.GREATER_THAN, true));
 		
 		if (!item.srcPortEqualsProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
-			criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.srcPortEqualsProperty().get()), RelativeToValue.valueOf(item.srcPortEqualsProperty().get()), true));
+			criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.srcPortEqualsProperty().get()), RelativeToValue.EQUALS, true));
 		
-		if (!item.srcPortGreaterProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
-			criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.srcPortGreaterProperty().get()), RelativeToValue.valueOf(item.srcPortGreaterProperty().get()), true));
+		if (!item.srcPortSmallerProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
+			criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.srcPortSmallerProperty().get()), RelativeToValue.LESS_THAN, true));
 
-		if (!item.dstPortSmallerProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
-			criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.dstPortSmallerProperty().get()), RelativeToValue.valueOf(item.dstPortSmallerProperty().get()), false));
+		if (!item.dstPortGreaterProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
+			criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.dstPortGreaterProperty().get()), RelativeToValue.GREATER_THAN, false));
 		
 		if (!item.dstPortEqualsProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
-			criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.dstPortEqualsProperty().get()), RelativeToValue.valueOf(item.dstPortEqualsProperty().get()), false));
+			criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.dstPortEqualsProperty().get()), RelativeToValue.EQUALS, false));
 		
-		if (!item.dstPortGreaterProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
-			criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.dstPortGreaterProperty().get()), RelativeToValue.valueOf(item.dstPortGreaterProperty().get()), false));
+		if (!item.dstPortSmallerProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
+			criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.dstPortSmallerProperty().get()), RelativeToValue.LESS_THAN, false));
 		
 		return criteriasToAND;
 	}

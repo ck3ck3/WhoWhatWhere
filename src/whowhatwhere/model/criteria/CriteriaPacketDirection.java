@@ -5,7 +5,7 @@ import java.util.Arrays;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.lan.Ethernet;
 
-import whowhatwhere.model.ipsniffer.PacketDirection;
+import whowhatwhere.model.networksniffer.PacketDirection;
 
 public class CriteriaPacketDirection implements Criteria<PcapPacket, Boolean>
 {
@@ -29,7 +29,7 @@ public class CriteriaPacketDirection implements Criteria<PcapPacket, Boolean>
 			if (!itemToCheck.hasHeader(Ethernet.ID))
 				return false;
 			
-			Ethernet eth = null;
+			Ethernet eth = new Ethernet();
 			eth = itemToCheck.getHeader(eth);
 			
 			switch(direction)

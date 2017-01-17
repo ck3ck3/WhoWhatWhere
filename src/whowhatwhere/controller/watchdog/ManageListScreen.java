@@ -14,8 +14,8 @@ import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellEditEvent;
@@ -24,8 +24,8 @@ import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
 import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
 import whowhatwhere.model.criteria.RelativeToValue;
-import whowhatwhere.model.ipsniffer.IPSniffer;
-import whowhatwhere.model.ipsniffer.firstsight.PacketTypeToMatch;
+import whowhatwhere.model.networksniffer.NetworkSniffer;
+import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
 import whowhatwhere.view.SecondaryFXMLWithCRUDTableScreen;
 
 public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTypeToMatch>
@@ -37,7 +37,6 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 	private TableColumn<PacketTypeToMatch, String> columnIP;
 	private TableColumn<PacketTypeToMatch, String> columnNetmask;
 	private TableColumn<PacketTypeToMatch, String> columnUserNotes;
-//	private TableColumn<IPToMatch, String> columnPacketSize;
 	private TableColumn<PacketTypeToMatch, String> columnPacketSizeSmaller;
 	private TableColumn<PacketTypeToMatch, String> columnPacketSizeEquals;
 	private TableColumn<PacketTypeToMatch, String> columnPacketSizeGreater;
@@ -45,8 +44,6 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 	private TableColumn<PacketTypeToMatch, String> columnSrcPortSmaller;
 	private TableColumn<PacketTypeToMatch, String> columnSrcPortEquals;
 	private TableColumn<PacketTypeToMatch, String> columnSrcPortGreater;
-//	private TableColumn<IPToMatch, String> columnSrcPort;
-//	private TableColumn<IPToMatch, String> columnDstPort;
 	private TableColumn<PacketTypeToMatch, String> columnDstPortSmaller;
 	private TableColumn<PacketTypeToMatch, String> columnDstPortEquals;
 	private TableColumn<PacketTypeToMatch, String> columnDstPortGreater;	
@@ -236,28 +233,58 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 			String previousValue = rowModel.getOldValue();
 			boolean isNewContentValid = isValidPortValue(newContent);
 			PacketTypeToMatch rowValue = rowModel.getRowValue();
+			boolean isValidRange = true;
 			
 			if (isSrcPort)
 			{
+				Integer intNewContent = stringToInt(newContent);
+				Integer intSmaller = stringToInt(rowValue.srcPortSmallerProperty().get());
+				Integer intEquals = stringToInt(rowValue.srcPortEqualsProperty().get());
+				Integer intGreater = stringToInt(rowValue.srcPortGreaterProperty().get());
+				
 				switch(sign)
 				{
-					case LESS_THAN:		rowValue.setSrcPortSmaller(isNewContentValid ? newContent : previousValue);	break;
-					case EQUALS:		rowValue.setSrcPortEquals(isNewContentValid ? newContent : previousValue);	break;
-					case GREATER_THAN:	rowValue.setSrcPortGreater(isNewContentValid ? newContent : previousValue);	break;
+					case LESS_THAN:		isValidRange = isValidRange(intNewContent, intEquals, intGreater); 		
+										rowValue.setSrcPortSmaller(isNewContentValid && isValidRange ? newContent : previousValue);	
+										break;
+										
+					case EQUALS:		isValidRange = isValidRange(intSmaller, intNewContent, intGreater);
+										rowValue.setSrcPortEquals(isNewContentValid && isValidRange ? newContent : previousValue);	
+										break;
+					
+					case GREATER_THAN:	isValidRange = isValidRange(intSmaller, intEquals, intNewContent);
+										rowValue.setSrcPortGreater(isNewContentValid && isValidRange ? newContent : previousValue);	
+										break;
 				}
 			}
 			else
 			{
+				Integer intNewContent = stringToInt(newContent);
+				Integer intSmaller = stringToInt(rowValue.dstPortSmallerProperty().get());
+				Integer intEquals = stringToInt(rowValue.dstPortEqualsProperty().get());
+				Integer intGreater = stringToInt(rowValue.dstPortGreaterProperty().get());
+				
 				switch(sign)
 				{
-					case LESS_THAN:		rowValue.setDstPortSmaller(isNewContentValid ? newContent : previousValue);	break;
-					case EQUALS:		rowValue.setDstPortEquals(isNewContentValid ? newContent : previousValue);	break;
-					case GREATER_THAN:	rowValue.setDstPortGreater(isNewContentValid ? newContent : previousValue);	break;
+					case LESS_THAN:		isValidRange = isValidRange(intNewContent, intEquals, intGreater);		
+										rowValue.setDstPortSmaller(isNewContentValid && isValidRange ? newContent : previousValue);	
+										break;
+										
+					case EQUALS:		isValidRange = isValidRange(intSmaller, intNewContent, intGreater);
+										rowValue.setDstPortEquals(isNewContentValid && isValidRange ? newContent : previousValue);	
+										break;
+					
+					case GREATER_THAN:	isValidRange = isValidRange(intSmaller, intEquals, intNewContent);
+										rowValue.setDstPortGreater(isNewContentValid && isValidRange ? newContent : previousValue);	
+										break;
 				}
 			}
 			
 			if (!isNewContentValid)
 				new Alert(AlertType.ERROR, "Port numbers must be between 1-65535. Please enter a valid port number or leave this field empty.").showAndWait();
+			else
+				if (!isValidRange)
+					new Alert(AlertType.ERROR, "Invalid port range. Please make sure the range makes sense.").showAndWait();
 			
 			table.refresh();
 		};
@@ -275,24 +302,56 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 			String previousValue = rowModel.getOldValue();
 			boolean isNewContentValid = isValidPacketSizeValue(newContent);
 			PacketTypeToMatch rowValue = rowModel.getRowValue();
+			boolean isValidRange = true;
+			Integer intNewContent = stringToInt(newContent);
+			Integer intSmaller = stringToInt(rowValue.packetSizeSmallerProperty().get());
+			Integer intEquals = stringToInt(rowValue.packetSizeEqualsProperty().get());
+			Integer intGreater = stringToInt(rowValue.packetSizeGreaterProperty().get());
 			
 			switch(sign)
 			{
-				case LESS_THAN:		rowValue.setPacketSizeSmaller(isNewContentValid ? newContent : previousValue);	break;
-				case EQUALS:		rowValue.setPacketSizeEquals(isNewContentValid ? newContent : previousValue);	break;
-				case GREATER_THAN:	rowValue.setPacketSizeGreater(isNewContentValid ? newContent : previousValue);	break;
+				case LESS_THAN:		isValidRange = isValidRange(intNewContent, intEquals, intGreater);
+									rowValue.setPacketSizeSmaller(isNewContentValid && isValidRange ? newContent : previousValue);	
+									break;
+									
+				case EQUALS:		isValidRange = isValidRange(intSmaller, intNewContent, intGreater);
+									rowValue.setPacketSizeEquals(isNewContentValid && isValidRange ? newContent : previousValue);	
+									break;
+									
+				case GREATER_THAN:	isValidRange = isValidRange(intSmaller, intEquals, intNewContent);
+									rowValue.setPacketSizeGreater(isNewContentValid && isValidRange ? newContent : previousValue);	
+									break;
 			}
 			
 			if (!isNewContentValid)
 				new Alert(AlertType.ERROR, "Packet size must be a number between 20 and 65535. Please enter a valid packet size or leave this field empty.").showAndWait();
+			else
+				if (!isValidRange)
+					new Alert(AlertType.ERROR, "Invalid packet size range. Please make sure the range makes sense.").showAndWait();
 			
 			table.refresh();
 		};
 	}
 	
+	private Integer stringToInt(String str)
+	{
+		Integer value;
+		
+		try
+		{
+			value = Integer.valueOf(str);
+		}
+		catch(NumberFormatException nfe)
+		{
+			return null;
+		}
+		
+		return value;
+	}
+	
 	private boolean isValidIPValue(String ip)
 	{
-		return IPSniffer.isValidIPv4(ip) || ip.equals(PacketTypeToMatch.IP_ANY);
+		return NetworkSniffer.isValidIPv4(ip) || ip.equals(PacketTypeToMatch.IP_ANY);
 	}
 	
 	private boolean isValidPortValue(String port)
@@ -331,6 +390,23 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 		}
 		
 		return value >= 20 && value <= 65535;
+	}
+	
+	private boolean isValidRange(Integer smaller, Integer equals, Integer greater)
+	{
+		if (equals != null && (smaller != null || greater != null)) //if "equals" has a value, no other value can co-exist
+			return false;
+		
+		if (smaller != null && greater != null)
+		{
+			if (smaller.equals(greater)) //smaller == greater, x < 3 && x >3
+				return false;
+			
+			if (smaller < greater) //x < 100 && x > 200
+				return false;
+		}		
+		
+		return true;
 	}
 	
 	@Override

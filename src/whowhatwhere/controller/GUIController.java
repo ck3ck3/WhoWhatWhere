@@ -62,8 +62,8 @@ import whowhatwhere.controller.utilities.PingToSpeechUI;
 import whowhatwhere.controller.watchdog.WatchdogUI;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.TextToSpeech;
-import whowhatwhere.model.ipsniffer.DeviceAddressesAndDescription;
-import whowhatwhere.model.ipsniffer.IPSniffer;
+import whowhatwhere.model.networksniffer.DeviceAddressesAndDescription;
+import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.startwithwindows.StartWithWindowsRegistryUtils;
 
 public class GUIController implements Initializable
@@ -236,7 +236,7 @@ public class GUIController implements Initializable
 	
 
 	private ToggleGroup tglGrpNIC = new ToggleGroup();
-	private IPSniffer sniffer;
+	private NetworkSniffer sniffer;
 	private List<DeviceAddressesAndDescription> listOfDevices;
 	private Map<RadioButton, DeviceAddressesAndDescription> buttonToIpMap = new HashMap<>();
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
@@ -253,7 +253,7 @@ public class GUIController implements Initializable
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
-		sniffer = new IPSniffer();
+		sniffer = new NetworkSniffer();
 
 		createNICRadioButtons();
 		vboxNICs.setSpacing(10);

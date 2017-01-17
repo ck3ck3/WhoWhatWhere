@@ -17,9 +17,9 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
-import whowhatwhere.model.ipsniffer.IPSniffer;
-import whowhatwhere.model.ipsniffer.PacketDirection;
-import whowhatwhere.model.ipsniffer.firstsight.PacketTypeToMatch;
+import whowhatwhere.model.networksniffer.NetworkSniffer;
+import whowhatwhere.model.networksniffer.PacketDirection;
+import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
 
 public class ManageListController extends SecondaryFXMLWithCRUDTableController<PacketTypeToMatch>
 {
@@ -96,9 +96,9 @@ public class ManageListController extends SecondaryFXMLWithCRUDTableController<P
 		columnPacketSizeGreater.setCellFactory(TextFieldTableCell.forTableColumn());
 
 		columnProtocol.setCellValueFactory(new PropertyValueFactory<>("protocol"));
-		String[] protocols = new String[IPSniffer.supportedProtocols.length + 1];
+		String[] protocols = new String[NetworkSniffer.supportedProtocols.length + 1];
 		protocols[0] = PacketTypeToMatch.protocol_ANY;
-		System.arraycopy(IPSniffer.supportedProtocols, 0, protocols, 1, IPSniffer.supportedProtocols.length); //add the rest of the protocols
+		System.arraycopy(NetworkSniffer.supportedProtocols, 0, protocols, 1, NetworkSniffer.supportedProtocols.length); //add the rest of the protocols
 		columnProtocol.setCellFactory(ComboBoxTableCell.forTableColumn(protocols));
 		
 		columnSrcPortSmaller.setCellValueFactory(new PropertyValueFactory<PacketTypeToMatch, String>("srcPortSmaller"));

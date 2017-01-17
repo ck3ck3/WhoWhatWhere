@@ -14,23 +14,23 @@
             <TableColumn fx:id="columnUserNotes" prefWidth="123.0" text="User notes" />
             <TableColumn fx:id="columnPacketSize" prefWidth="242.0" text="Total packet size">
                <columns>
-                  <TableColumn fx:id="columnPacketSizeSmaller" prefWidth="60.0" text="&lt;" />
-                  <TableColumn fx:id="columnPacketSizeEquals" prefWidth="60.0" text="=" />
                   <TableColumn fx:id="columnPacketSizeGreater" prefWidth="60.0" text="&gt;" />
+                  <TableColumn fx:id="columnPacketSizeEquals" prefWidth="60.0" text="=" />
+                  <TableColumn fx:id="columnPacketSizeSmaller" prefWidth="60.0" text="&lt;" />
                </columns>
             </TableColumn>
             <TableColumn fx:id="columnProtocol" prefWidth="86.0" text="Protocol" />
             <TableColumn fx:id="columnSrcPort" prefWidth="249.0" text="Source port">
                <columns>
-                  <TableColumn fx:id="columnSrcPortSmaller" prefWidth="60.0" text="&lt;" />
-                  <TableColumn fx:id="columnSrcPortEquals" prefWidth="60.0" text="=" />
                   <TableColumn fx:id="columnSrcPortGreater" prefWidth="75.0" text="&gt;" />
+                  <TableColumn fx:id="columnSrcPortEquals" prefWidth="60.0" text="=" />
+                  <TableColumn fx:id="columnSrcPortSmaller" prefWidth="60.0" text="&lt;" />
                </columns></TableColumn>
             <TableColumn fx:id="columnDstPort" prefWidth="122.0" text="Destination port">
                <columns>
-                  <TableColumn fx:id="columnDstPortSmaller" prefWidth="60.0" text="&lt;" />
-                  <TableColumn fx:id="columnDstPortEquals" prefWidth="60.0" text="=" />
                   <TableColumn fx:id="columnDstPortGreater" prefWidth="60.0" text="&gt;" />
+                  <TableColumn fx:id="columnDstPortEquals" prefWidth="60.0" text="=" />
+                  <TableColumn fx:id="columnDstPortSmaller" prefWidth="60.0" text="&lt;" />
                </columns></TableColumn>
          </columns>
       </TableView>

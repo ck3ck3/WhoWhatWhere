@@ -2,7 +2,7 @@ package whowhatwhere.model.criteria;
 
 import org.jnetpcap.packet.PcapPacket;
 
-import whowhatwhere.model.ipsniffer.IPSniffer;
+import whowhatwhere.model.networksniffer.NetworkSniffer;
 
 public class CriteriaProtocol implements Criteria<PcapPacket, Boolean>
 {
@@ -22,6 +22,6 @@ public class CriteriaProtocol implements Criteria<PcapPacket, Boolean>
 	@Override
 	public String getCriteriaAsText()
 	{
-		return "(Protocol == " + IPSniffer.intProtocolToString(protocol) + ")";
+		return "(Protocol == " + NetworkSniffer.intProtocolToString(protocol) + ")";
 	}
 }

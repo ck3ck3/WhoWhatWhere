@@ -18,7 +18,7 @@ import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.TextToSpeech;
-import whowhatwhere.model.ipsniffer.IPSniffer;
+import whowhatwhere.model.networksniffer.NetworkSniffer;
 
 public class PingToSpeechUI
 {
@@ -58,7 +58,7 @@ public class PingToSpeechUI
 			if (!items.contains(address))
 				items.add(address);
 
-			String ping = IPSniffer.pingAsString(address, -1); //default timeout
+			String ping = NetworkSniffer.pingAsString(address, -1); //default timeout
 
 			if (ping.contains("milliseconds"))
 				tts.speak(ping);

@@ -1,11 +1,11 @@
-package whowhatwhere.model.ipsniffer.firstsight;
+package whowhatwhere.model.networksniffer.watchdog;
 
 import java.io.Serializable;
 import java.util.List;
 
 import javafx.beans.property.SimpleStringProperty;
-import whowhatwhere.model.ipsniffer.IPSniffer;
-import whowhatwhere.model.ipsniffer.PacketDirection;
+import whowhatwhere.model.networksniffer.NetworkSniffer;
+import whowhatwhere.model.networksniffer.PacketDirection;
 
 public class PacketTypeToMatch implements Serializable
 {
@@ -131,7 +131,7 @@ public class PacketTypeToMatch implements Serializable
 	
 	public Integer protocolAsInt()
 	{
-		return (protocol == null || protocol.getValue().isEmpty() || protocol.getValue().equals(protocol_ANY) ? null : IPSniffer.stringProtocolToInt(protocol.getValue()));
+		return (protocol == null || protocol.getValue().isEmpty() || protocol.getValue().equals(protocol_ANY) ? null : NetworkSniffer.stringProtocolToInt(protocol.getValue()));
 	}
 	
 	public boolean isSameValuesAs(PacketTypeToMatch otherEntry)

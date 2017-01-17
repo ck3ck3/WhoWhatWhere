@@ -59,11 +59,11 @@ import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.geoipresolver.GeoIPInfo;
 import whowhatwhere.model.geoipresolver.GeoIPResolver;
-import whowhatwhere.model.ipsniffer.CaptureStartListener;
-import whowhatwhere.model.ipsniffer.DeviceAddressesAndDescription;
-import whowhatwhere.model.ipsniffer.IPSniffer;
-import whowhatwhere.model.ipsniffer.appearancecounter.AppearanceCounterResults;
-import whowhatwhere.model.ipsniffer.appearancecounter.IpAppearancesCounter;
+import whowhatwhere.model.networksniffer.CaptureStartListener;
+import whowhatwhere.model.networksniffer.DeviceAddressesAndDescription;
+import whowhatwhere.model.networksniffer.NetworkSniffer;
+import whowhatwhere.model.networksniffer.appearancecounter.AppearanceCounterResults;
+import whowhatwhere.model.networksniffer.appearancecounter.IpAppearancesCounter;
 
 public class AppearanceCounterUI implements CaptureStartListener
 {
@@ -154,7 +154,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private boolean isAHotkeyResult = false;
 	private int protocolBoxesChecked = 0;
 	private Map<RadioButton, DeviceAddressesAndDescription> buttonToIpMap;
-	private IPSniffer sniffer = new IPSniffer();
+	private NetworkSniffer sniffer = new NetworkSniffer();
 	private int captureHotkeyKeyCode;
 	private int captureHotkeyModifiers;
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
@@ -528,16 +528,16 @@ public class AppearanceCounterUI implements CaptureStartListener
 				ArrayList<Integer> protocols = new ArrayList<>();
 
 				if (chkboxUDP.isSelected())
-					protocols.add(IPSniffer.UDP_PROTOCOL);
+					protocols.add(NetworkSniffer.UDP_PROTOCOL);
 
 				if (chkboxTCP.isSelected())
-					protocols.add(IPSniffer.TCP_PROTOCOL);
+					protocols.add(NetworkSniffer.TCP_PROTOCOL);
 
 				if (chkboxICMP.isSelected())
-					protocols.add(IPSniffer.ICMP_PROTOCOL);
+					protocols.add(NetworkSniffer.ICMP_PROTOCOL);
 
 				if (chkboxHTTP.isSelected())
-					protocols.add(IPSniffer.HTTP_PROTOCOL);
+					protocols.add(NetworkSniffer.HTTP_PROTOCOL);
 
 				return protocols;
 			}
@@ -792,7 +792,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			}
 
 			if (chkboxPing.isSelected())
-				ping = IPSniffer.pingAsString(ip, numFieldPingTimeout.getValue());
+				ping = NetworkSniffer.pingAsString(ip, numFieldPingTimeout.getValue());
 			
 			notes = userNotes.getProperty(ip, emptyNotesString);
 

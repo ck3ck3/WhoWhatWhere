@@ -1,4 +1,4 @@
-package whowhatwhere.model.ipsniffer;
+package whowhatwhere.model.networksniffer;
 
 public enum PacketDirection
 {

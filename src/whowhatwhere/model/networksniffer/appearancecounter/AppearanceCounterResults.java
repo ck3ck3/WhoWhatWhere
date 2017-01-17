@@ -1,4 +1,4 @@
-package whowhatwhere.model.ipsniffer.appearancecounter;
+package whowhatwhere.model.networksniffer.appearancecounter;
 
 import java.util.List;
 

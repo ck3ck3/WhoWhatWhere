@@ -4,7 +4,7 @@ import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
 
-import whowhatwhere.model.ipsniffer.IPSniffer;
+import whowhatwhere.model.networksniffer.NetworkSniffer;
 
 public class CriteriaPort implements Criteria<PcapPacket, Boolean>
 {
@@ -27,7 +27,7 @@ public class CriteriaPort implements Criteria<PcapPacket, Boolean>
 	@Override
 	public Boolean meetCriteria(PcapPacket itemToCheck)
 	{
-		if (itemToCheck.hasHeader(IPSniffer.TCP_PROTOCOL))
+		if (itemToCheck.hasHeader(NetworkSniffer.TCP_PROTOCOL))
 		{
 			Tcp tcp = new Tcp();
 			tcp = itemToCheck.getHeader(tcp);
@@ -36,7 +36,7 @@ public class CriteriaPort implements Criteria<PcapPacket, Boolean>
 			return evaluate(portToCheck);
 		}
 		
-		if (itemToCheck.hasHeader(IPSniffer.UDP_PROTOCOL))
+		if (itemToCheck.hasHeader(NetworkSniffer.UDP_PROTOCOL))
 		{
 			Udp udp = new Udp();
 			udp = itemToCheck.getHeader(udp);
@@ -51,16 +51,16 @@ public class CriteriaPort implements Criteria<PcapPacket, Boolean>
 	@Override
 	public String getCriteriaAsText()
 	{
-		return "(Port " + sign.getSign() + " " + portNumber + ")";
+		return "(" + (isSourcePort ? "Source" : "Destination") + " port " + sign.getSign() + " " + portNumber + ")";
 	}
 	
 	private Boolean evaluate(int portToCheck)
 	{
 		switch(sign)
 		{
-			case LESS_THAN:		return portNumber < portToCheck;
-			case EQUALS:		return portNumber == portToCheck;
-			case GREATER_THAN:	return portNumber > portToCheck;
+			case LESS_THAN:		return portToCheck < portNumber;
+			case EQUALS:		return portToCheck == portNumber;
+			case GREATER_THAN:	return portToCheck > portNumber;
 			
 			default:			return null; //never gets here
 		}

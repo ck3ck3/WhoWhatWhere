@@ -20,9 +20,9 @@ public class CriteriaPacketSize implements Criteria<PcapPacket, Boolean>
 		
 		switch (sign)
 		{
-			case LESS_THAN:		return size < currPacketSize;
-			case EQUALS:		return size == currPacketSize;
-			case GREATER_THAN:	return size > currPacketSize;
+			case LESS_THAN:		return currPacketSize < size;
+			case EQUALS:		return currPacketSize == size;
+			case GREATER_THAN:	return currPacketSize > size;
 			
 			default:			return null; //never gets here
 		}

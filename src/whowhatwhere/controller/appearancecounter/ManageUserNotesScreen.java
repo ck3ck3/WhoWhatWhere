@@ -12,7 +12,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TableColumn;
 import javafx.stage.Stage;
 import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
-import whowhatwhere.model.ipsniffer.IPSniffer;
+import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.view.SecondaryFXMLWithCRUDTableScreen;
 
 public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<UserNotesRowModel>
@@ -108,7 +108,7 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 	
 	private boolean isValidIPValue(String ip)
 	{
-		return IPSniffer.isValidIPv4(ip);
+		return NetworkSniffer.isValidIPv4(ip);
 	}
 	
 	private boolean isValidNotesValue(String notes)
@@ -138,6 +138,13 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 	@Override
 	protected void performOnCloseButton() throws IllegalArgumentException
 	{
+		for (UserNotesRowModel item : table.getItems())
+			if (item.ipAddressProperty().get().equals(emptyCellString) || item.notesProperty().get().equals(emptyCellString))
+			{
+				new Alert(AlertType.ERROR, "At least one row is missing an IP address or note (or both). Either fill the missing data or delete the row.").showAndWait();
+				throw new IllegalArgumentException();
+			}
+		
 		AppearanceCounterUI.saveUserNotes(propsNotes);
 	}
 	

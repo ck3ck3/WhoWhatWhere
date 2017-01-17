@@ -1,4 +1,4 @@
-package whowhatwhere.model.ipsniffer;
+package whowhatwhere.model.networksniffer;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,15 +28,15 @@ import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
 
 import whowhatwhere.Main;
-import whowhatwhere.model.ipsniffer.appearancecounter.AppearanceCounterPacketHandler;
-import whowhatwhere.model.ipsniffer.appearancecounter.AppearanceCounterResults;
-import whowhatwhere.model.ipsniffer.firstsight.FirstSightListener;
-import whowhatwhere.model.ipsniffer.firstsight.FirstSightPacketHandler;
-import whowhatwhere.model.ipsniffer.firstsight.PacketTypeToMatch;
+import whowhatwhere.model.networksniffer.appearancecounter.AppearanceCounterPacketHandler;
+import whowhatwhere.model.networksniffer.appearancecounter.AppearanceCounterResults;
+import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
+import whowhatwhere.model.networksniffer.watchdog.WatchdogListener;
+import whowhatwhere.model.networksniffer.watchdog.WatchdogPacketHandler;
 
-public class IPSniffer
+public class NetworkSniffer
 {
-	private static final Logger logger = Logger.getLogger(IPSniffer.class.getPackage().getName());
+	private static final Logger logger = Logger.getLogger(NetworkSniffer.class.getPackage().getName());
 	
 	public static final int ICMP_PROTOCOL = Icmp.ID;
 	public static final int UDP_PROTOCOL = Udp.ID;
@@ -73,7 +73,7 @@ public class IPSniffer
 	private Map<String, PcapIf> ipToDevice = new HashMap<>();
 	private List<DeviceAddressesAndDescription> ipAndDescList = new ArrayList<>();
 
-	public IPSniffer()
+	public NetworkSniffer()
 	{
 		generateListOfDevices();
 	}
@@ -248,11 +248,11 @@ public class IPSniffer
 		return new AppearanceCounterResults(filteredCounterPH);
 	}
 
-	public void startFirstSightCapture(DeviceAddressesAndDescription deviceInfo, List<PacketTypeToMatch> ipList, boolean isRepeated, Integer cooldownInSecs, FirstSightListener listener, StringBuilder errbuf) throws IllegalArgumentException, UnknownHostException
+	public void startWatchdogCapture(DeviceAddressesAndDescription deviceInfo, List<PacketTypeToMatch> packetTypeList, boolean isRepeated, Integer cooldownInSecs, WatchdogListener listener, StringBuilder errbuf) throws IllegalArgumentException, UnknownHostException
 	{
-		FirstSightPacketHandler firstSightPH = new FirstSightPacketHandler(ipList, isRepeated, cooldownInSecs, listener, this, deviceInfo.getMACAddress());
+		WatchdogPacketHandler watchdogPH = new WatchdogPacketHandler(packetTypeList, isRepeated, cooldownInSecs, listener, this, deviceInfo.getMACAddress());
 
-		startCapture(deviceInfo.getIP(), firstSightPH, errbuf);
+		startCapture(deviceInfo.getIP(), watchdogPH, errbuf);
 	}
 
 	private void startCapture(String deviceIp, PcapPacketHandler<Void> packetHandler, StringBuilder errbuf)

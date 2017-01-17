@@ -34,12 +34,12 @@ import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.TextToSpeech;
-import whowhatwhere.model.ipsniffer.DeviceAddressesAndDescription;
-import whowhatwhere.model.ipsniffer.IPSniffer;
-import whowhatwhere.model.ipsniffer.firstsight.FirstSightListener;
-import whowhatwhere.model.ipsniffer.firstsight.PacketTypeToMatch;
+import whowhatwhere.model.networksniffer.DeviceAddressesAndDescription;
+import whowhatwhere.model.networksniffer.NetworkSniffer;
+import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
+import whowhatwhere.model.networksniffer.watchdog.WatchdogListener;
 
-public class WatchdogUI implements FirstSightListener
+public class WatchdogUI implements WatchdogListener
 {
 	private final static Logger logger = Logger.getLogger(WatchdogUI.class.getPackage().getName());
 
@@ -86,7 +86,7 @@ public class WatchdogUI implements FirstSightListener
 	private int hotkeyModifiers;
 	private ObservableList<PacketTypeToMatch> entryList = FXCollections.observableArrayList();
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
-	private IPSniffer sniffer = new IPSniffer();
+	private NetworkSniffer sniffer = new NetworkSniffer();
 	private HotkeyRegistry hotkeyRegistry;
 
 	private Runnable hotkeyPressed = new Runnable()
@@ -223,12 +223,12 @@ public class WatchdogUI implements FirstSightListener
 				{
 					try
 					{
-						sniffer.startFirstSightCapture(deviceInfo, entryList, radioKeepLooking.isSelected(), numFieldCooldown.getValue(), thisObj, new StringBuilder());
+						sniffer.startWatchdogCapture(deviceInfo, entryList, radioKeepLooking.isSelected(), numFieldCooldown.getValue(), thisObj, new StringBuilder());
 					}
 					catch (IllegalArgumentException | UnknownHostException e)
 					{
 						logger.log(Level.SEVERE, "Unable to build Watchdog list", e);
-						new Alert(AlertType.ERROR, "Unable to build Watchdog list: " + e.getMessage()).showAndWait();
+						Platform.runLater(() -> new Alert(AlertType.ERROR, "Unable to build Watchdog list: " + e.getMessage()).showAndWait());
 					}
 				}
 			}).start();
@@ -247,7 +247,7 @@ public class WatchdogUI implements FirstSightListener
 	}
 
 	@Override
-	public void firstSightOfIP(PcapPacket packetThatMatched)
+	public void watchdogFoundMatchingPacket(PcapPacket packetThatMatched)
 	{
 		outputMessage();
 

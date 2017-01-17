@@ -24,7 +24,7 @@ import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
 import whowhatwhere.controller.commands.CommandScreen;
 import whowhatwhere.model.geoipresolver.GeoIPResolver;
-import whowhatwhere.model.ipsniffer.IPSniffer;
+import whowhatwhere.model.networksniffer.NetworkSniffer;
 
 public class TraceCommandScreen extends CommandScreen
 {
@@ -98,7 +98,7 @@ public class TraceCommandScreen extends CommandScreen
 		{
 			String selectedText = textArea.getSelectedText();
 
-			if (IPSniffer.isValidIPv4(selectedText))
+			if (NetworkSniffer.isValidIPv4(selectedText))
 				Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + selectedText);
 			else
 				new Alert(AlertType.ERROR, "The selected text \"" + selectedText + "\" is not an IP address").showAndWait();
