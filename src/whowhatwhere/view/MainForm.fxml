@@ -164,35 +164,30 @@
                               </AnchorPane>
                           </content>
                         </TitledPane>
-                        <TitledPane collapsible="false" layoutX="14.0" layoutY="174.0" prefHeight="255.0" prefWidth="624.0" text="Watchdog">
+                        <TitledPane collapsible="false" layoutX="14.0" layoutY="174.0" prefHeight="187.0" prefWidth="659.0" text="Watchdog">
                            <content>
                               <AnchorPane prefHeight="229.0" prefWidth="697.0">
                                  <children>
-                                    <CheckBox fx:id="chkboxWatchdogHotkey" layoutX="14.0" layoutY="188.0" mnemonicParsing="false" selected="true" text="Enable hotkey" />
-                                    <AnchorPane fx:id="paneWatchdogHotkeyConfig" layoutX="119.0" layoutY="184.0" prefHeight="25.0" prefWidth="366.0">
+                                    <CheckBox fx:id="chkboxWatchdogHotkey" layoutX="14.0" layoutY="124.0" mnemonicParsing="false" selected="true" text="Enable hotkey" />
+                                    <AnchorPane fx:id="paneWatchdogHotkeyConfig" layoutX="119.0" layoutY="120.0" prefHeight="25.0" prefWidth="366.0">
                                        <children>
                                           <Button fx:id="btnWatchdogConfigureHotkey" mnemonicParsing="false" text="Configure hotkey" />
                                           <Label fx:id="labelWatchdogCurrHotkey" layoutX="117.0" layoutY="4.0" prefHeight="17.0" prefWidth="244.0" text="Current hotkey: " />
                                        </children>
                                     </AnchorPane>
-                                    <Button fx:id="btnWatchdogStart" layoutX="14.0" layoutY="142.0" mnemonicParsing="false" text="Start waiting for match" />
-                                    <Button fx:id="btnWatchdogStop" disable="true" layoutX="164.0" layoutY="142.0" mnemonicParsing="false" text="Stop waiting for match" />
-                                    <AnchorPane fx:id="paneWatchdogConfig" layoutX="14.0" layoutY="14.0" prefHeight="120.0" prefWidth="621.0">
+                                    <Button fx:id="btnWatchdogStart" layoutX="14.0" layoutY="78.0" mnemonicParsing="false" text="Start waiting for match" />
+                                    <Button fx:id="btnWatchdogStop" disable="true" layoutX="164.0" layoutY="78.0" mnemonicParsing="false" text="Stop waiting for match" />
+                                    <AnchorPane fx:id="paneWatchdogConfig" layoutX="14.0" layoutY="14.0" prefHeight="71.0" prefWidth="623.0">
                                        <children>
-                                          <Label layoutY="39.0" text="When a match is found, output this message:" />
-                                          <TextField fx:id="textWatchdogMessage" layoutX="243.0" layoutY="35.0" prefHeight="25.0" prefWidth="187.0" />
                                           <Button fx:id="btnWatchdogManageList" mnemonicParsing="false" text="Manage match list" />
-                                          <Button fx:id="btnWatchdogPreview" layoutX="440.0" layoutY="35.0" mnemonicParsing="false" text="Preview message" />
                                           <Label fx:id="labelWatchdogEntryCount" layoutX="123.0" layoutY="4.0" prefHeight="17.0" prefWidth="204.0" text="Match list contains 0 entries" />
-                                          <CheckBox fx:id="chkboxWatchdogUseTTS" layoutY="69.0" mnemonicParsing="false" text="Say message with Text-to-Speech" />
-                                          <CheckBox fx:id="chkboxWatchdogUseAlert" layoutX="207.0" layoutY="69.0" mnemonicParsing="false" text="Show message in an alert dialog" />
-                                          <RadioButton fx:id="radioWatchdogStopAfterMatch" layoutY="99.0" mnemonicParsing="false" text="Stop once a match is found">
+                                          <RadioButton fx:id="radioWatchdogStopAfterMatch" layoutY="36.0" mnemonicParsing="false" text="Stop once a match is found">
                                              <toggleGroup>
                                                 <ToggleGroup fx:id="tglWatchdogStopOrContinue" />
                                              </toggleGroup>
                                           </RadioButton>
-                                          <RadioButton fx:id="radioWatchdogKeepLooking" layoutX="175.0" layoutY="99.0" mnemonicParsing="false" text="Keep looking for matches " toggleGroup="$tglWatchdogStopOrContinue" />
-                                          <AnchorPane fx:id="paneWatchdogCooldown" layoutX="343.0" layoutY="95.0" prefHeight="25.0" prefWidth="280.0">
+                                          <RadioButton fx:id="radioWatchdogKeepLooking" layoutX="175.0" layoutY="36.0" mnemonicParsing="false" text="Keep looking for matches " toggleGroup="$tglWatchdogStopOrContinue" />
+                                          <AnchorPane fx:id="paneWatchdogCooldown" layoutX="343.0" layoutY="32.0" prefHeight="25.0" prefWidth="280.0">
                                              <children>
                                                 <Label layoutY="4.0" text="Cooldown period between alerts: " />
                                                 <Label layoutX="231.0" layoutY="4.0" text="seconds" />
@@ -205,7 +200,7 @@
                               </AnchorPane>
                            </content>
                         </TitledPane>
-                        <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="445.0" prefHeight="78.0" prefWidth="660.0" text="Visual Trace">
+                        <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="382.0" prefHeight="78.0" prefWidth="660.0" text="Visual Trace">
                           <content>
                             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                  <children>

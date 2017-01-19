@@ -4,8 +4,6 @@ import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
 
-import whowhatwhere.model.networksniffer.NetworkSniffer;
-
 public class CriteriaPort implements Criteria<PcapPacket, Boolean>
 {
 	private int portNumber;
@@ -27,7 +25,7 @@ public class CriteriaPort implements Criteria<PcapPacket, Boolean>
 	@Override
 	public Boolean meetCriteria(PcapPacket itemToCheck)
 	{
-		if (itemToCheck.hasHeader(NetworkSniffer.TCP_PROTOCOL))
+		if (itemToCheck.hasHeader(Tcp.ID))
 		{
 			Tcp tcp = new Tcp();
 			tcp = itemToCheck.getHeader(tcp);
@@ -36,7 +34,7 @@ public class CriteriaPort implements Criteria<PcapPacket, Boolean>
 			return evaluate(portToCheck);
 		}
 		
-		if (itemToCheck.hasHeader(NetworkSniffer.UDP_PROTOCOL))
+		if (itemToCheck.hasHeader(Udp.ID))
 		{
 			Udp udp = new Udp();
 			udp = itemToCheck.getHeader(udp);

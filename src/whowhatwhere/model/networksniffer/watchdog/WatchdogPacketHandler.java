@@ -2,7 +2,9 @@ package whowhatwhere.model.networksniffer.watchdog;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -31,7 +33,8 @@ public class WatchdogPacketHandler implements PcapPacketHandler<Void>
 	private NetworkSniffer sniffer;
 	private byte[] ownMACAddress;
 	
-	Criteria<PcapPacket, Boolean> criteria;
+	private List<Criteria<PcapPacket, Boolean>> criteriaList;
+	private Map<Criteria<PcapPacket, Boolean>, WatchdogMessage> criteriaToMsgMap = new HashMap<Criteria<PcapPacket, Boolean>, WatchdogMessage>();
 
 	public WatchdogPacketHandler(List<PacketTypeToMatch> packetTypeList, boolean isRepeated, Integer cooldownInSecs, WatchdogListener listener, NetworkSniffer sniffer, byte[] ownMACAddress)
 			throws IllegalArgumentException, UnknownHostException
@@ -47,41 +50,42 @@ public class WatchdogPacketHandler implements PcapPacketHandler<Void>
 		
 		timer = new ScheduledThreadPoolExecutor(1);
 
-		criteria = convertPacketTypeToMatchListToCriteria(packetTypeList);
+		criteriaList = convertPacketTypeToMatchListToCriteria(packetTypeList);
 		
-		if (criteria == null)
+		if (criteriaList.size() == 0)
 			throw new IllegalArgumentException("No criteria was set");
-
-//		System.out.println(criteria.getCriteriaAsText()); //for debugging		
 	}
 
 	@Override
 	public void nextPacket(PcapPacket packet, Void nothing)
 	{
-		if (!isCooldownPeriod && packet.hasHeader(NetworkSniffer.IPv4_PROTOCOL))
+		if (!isCooldownPeriod)
 		{
-			if (criteria.meetCriteria(packet))
+			for (Criteria<PcapPacket, Boolean> criteria : criteriaList)
 			{
-				if (isRepeated)
+				if (criteria.meetCriteria(packet))
 				{
-					isCooldownPeriod = true;
-					
-					timer.schedule(() ->
+					if (isRepeated)
 					{
-						isCooldownPeriod = false;			
-					}, cooldownInSecs, TimeUnit.SECONDS);
+						isCooldownPeriod = true;
+						
+						timer.schedule(() ->
+						{
+							isCooldownPeriod = false;			
+						}, cooldownInSecs, TimeUnit.SECONDS);
+					}
+					else
+						sniffer.stopCapture();
+					
+					listener.watchdogFoundMatchingPacket(packet, criteriaToMsgMap.get(criteria));
 				}
-				else
-					sniffer.stopCapture();
-				
-				listener.watchdogFoundMatchingPacket(packet);
 			}
 		}
 	}
 
-	private Criteria<PcapPacket, Boolean> convertPacketTypeToMatchListToCriteria(List<PacketTypeToMatch> packetTypeList)
+	private List<Criteria<PcapPacket, Boolean>> convertPacketTypeToMatchListToCriteria(List<PacketTypeToMatch> packetTypeList)
 	{
-		List<Criteria<PcapPacket, Boolean>> criteriasToOR = new ArrayList<Criteria<PcapPacket, Boolean>>();
+		List<Criteria<PcapPacket, Boolean>> criterias = new ArrayList<Criteria<PcapPacket, Boolean>>();
 		
 		for (PacketTypeToMatch item : packetTypeList)
 		{
@@ -95,18 +99,13 @@ public class WatchdogPacketHandler implements PcapPacketHandler<Void>
 				andCriteria = new AndCriteria<PcapPacket>(andCriteria, criteriasToAND.get(i));
 			
 			if (criteriasToAND.size() > 0)
-				criteriasToOR.add(andCriteria);
+			{
+				criterias.add(andCriteria);
+				criteriaToMsgMap.put(andCriteria, new WatchdogMessage(item.messageTextProperty().get(), OutputMethod.stringToEnum(item.messageOutputMethodProperty().get())));
+			}
 		}
 		
-		Criteria<PcapPacket, Boolean> orCriteria = null;
-		
-		if (criteriasToOR.size() > 0)
-			orCriteria = criteriasToOR.get(0);
-		
-		for (int i = 1; i < criteriasToOR.size(); i++)
-			orCriteria = new OrCriteria<PcapPacket>(orCriteria, criteriasToOR.get(i));
-		
-		return orCriteria;
+		return criterias;
 	}
 	
 	private List<Criteria<PcapPacket, Boolean>> generateCriteriasToAND(PacketTypeToMatch item)

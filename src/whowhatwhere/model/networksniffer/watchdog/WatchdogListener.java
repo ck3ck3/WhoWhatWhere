@@ -7,5 +7,5 @@ public interface WatchdogListener
 	/**
 	 * @param packet - the packet that matched the rule
 	 */
-	public void watchdogFoundMatchingPacket(PcapPacket packet);
+	public void watchdogFoundMatchingPacket(PcapPacket packet, WatchdogMessage message);
 }

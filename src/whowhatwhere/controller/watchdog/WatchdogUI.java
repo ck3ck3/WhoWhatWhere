@@ -16,7 +16,6 @@ import java.util.logging.Logger;
 import org.jnetpcap.packet.PcapPacket;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -26,7 +25,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
@@ -38,6 +36,7 @@ import whowhatwhere.model.networksniffer.DeviceAddressesAndDescription;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
 import whowhatwhere.model.networksniffer.watchdog.WatchdogListener;
+import whowhatwhere.model.networksniffer.watchdog.WatchdogMessage;
 
 public class WatchdogUI implements WatchdogListener
 {
@@ -55,8 +54,6 @@ public class WatchdogUI implements WatchdogListener
 	private final static String propsChkboxHotkey = "chkboxWatchdogHotkey";
 	private final static String propsHotkeyKeycode = "watchdogHotkeyKeycode";
 	private final static String propsHotkeyModifiers = "watchdogHotkeyModifiers";
-	private final static String propsChkboxUseTTS = "chkboxWatchdogUseTTS";
-	private final static String propsChkboxUseAlert = "chkboxWatchdogUseAlert";
 	private final static String propsRadioStopAfterMatch = "radioStopAfterMatch";
 	private final static String propsRadioKeepLooking = "radioKeepLooking";
 	private final static String propsNumFieldCooldown = "numFieldCooldown";
@@ -69,13 +66,9 @@ public class WatchdogUI implements WatchdogListener
 	private Label labelCurrHotkey;
 	private Button btnStart;
 	private Button btnStop;
-	private TextField textMessage;
 	private Button btnManageList;
-	private Button btnPreview;
 	private Label labelEntryCount;
 	private Button activeButton;
-	private CheckBox chkboxUseTTS;
-	private CheckBox chkboxUseAlert;
 	private RadioButton radioStopAfterMatch;
 	private RadioButton radioKeepLooking;
 	private NumberTextField numFieldCooldown;
@@ -137,14 +130,10 @@ public class WatchdogUI implements WatchdogListener
 		paneHotkeyConfig = controller.getPaneWatchdogHotkeyConfig();
 		btnConfigureHotkey = controller.getBtnWatchdogConfigureHotkey();
 		labelCurrHotkey = controller.getLabelWatchdogCurrHotkey();
+		labelEntryCount = controller.getLabelWatchdogEntryCount();
 		btnStart = controller.getBtnWatchdogStart();
 		btnStop = controller.getBtnWatchdogStop();
-		textMessage = controller.getTextWatchdogMessage();
 		btnManageList = controller.getBtnWatchdogManageList();
-		btnPreview = controller.getBtnWatchdogPreview();
-		labelEntryCount = controller.getLabelWatchdogEntryCount();
-		chkboxUseTTS = controller.getChkboxWatchdogUseTTS();
-		chkboxUseAlert = controller.getChkboxWatchdogUseAlert();
 		radioKeepLooking = controller.getRadioWatchdogKeepLooking();
 		radioStopAfterMatch = controller.getRadioWatchdogStopAfterMatch();
 		numFieldCooldown = controller.getNumFieldWatchdogCooldown();
@@ -179,31 +168,6 @@ public class WatchdogUI implements WatchdogListener
 			manageListScreen.showScreenOnNewStage("Manage Watchdog list", manageListScreen.getCloseButton());
 		});
 
-		String bothAlertMethodsUncheckedError = "If both checkboxes are unchecked, you will not be informed when a match is found. Please select at least one of the checkboxes.";
-		
-		btnPreview.setOnAction(event ->
-		{
-			boolean useTTS = chkboxUseTTS.isSelected();
-			boolean useAlert = chkboxUseAlert.isSelected(); 
-			
-			outputMessage();
-			
-			if (!useTTS && !useAlert)
-				new Alert(AlertType.WARNING, bothAlertMethodsUncheckedError).showAndWait();
-		});
-		
-		chkboxUseTTS.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
-		{
-			if (!newValue && !chkboxUseAlert.isSelected())
-				new Alert(AlertType.WARNING, bothAlertMethodsUncheckedError).showAndWait();
-		});
-		
-		chkboxUseAlert.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
-		{
-			if (!newValue && !chkboxUseTTS.isSelected())
-				new Alert(AlertType.WARNING, bothAlertMethodsUncheckedError).showAndWait();
-		});
-		
 		radioStopAfterMatch.setOnAction(event -> paneCooldown.setDisable(true));
 		radioKeepLooking.setOnAction(event -> paneCooldown.setDisable(false));
 
@@ -247,9 +211,9 @@ public class WatchdogUI implements WatchdogListener
 	}
 
 	@Override
-	public void watchdogFoundMatchingPacket(PcapPacket packetThatMatched)
+	public void watchdogFoundMatchingPacket(PcapPacket packetThatMatched, WatchdogMessage message)
 	{
-		outputMessage();
+		outputMessage(message);
 
 		if (radioStopAfterMatch.isSelected()) 
 			changeUIAccordingToListeningState(false);
@@ -264,30 +228,33 @@ public class WatchdogUI implements WatchdogListener
 		paneWatchdogConfig.setDisable(listening);		
 	}
 	
-	private void outputMessage()
+	private void outputMessage(WatchdogMessage message)
 	{
-		String msg = textMessage.getText();
+		String msg = message.getMessage();
 		
-		if (chkboxUseTTS.isSelected())
-			tts.speak(msg);
-		if (chkboxUseAlert.isSelected())
-			Platform.runLater(() -> new Alert(AlertType.INFORMATION, msg).showAndWait());
+		switch(message.getMethod())
+		{
+			case TTS:	tts.speak(msg); break;
+			case POPUP:	Platform.runLater(() -> new Alert(AlertType.INFORMATION, msg).showAndWait()); break;
+			case BOTH: 	tts.speak(msg);
+						Platform.runLater(() -> new Alert(AlertType.INFORMATION, msg).showAndWait());
+						break;
+		}
 	}
 
-	public static void saveListToFile(List<PacketTypeToMatch> list, String msgToSay, String filename) throws IOException
+	public static void saveListToFile(List<PacketTypeToMatch> list, String filename) throws IOException
 	{
 		FileOutputStream fout = new FileOutputStream(filename);
 		ObjectOutputStream oos = new ObjectOutputStream(fout);
 
 		oos.writeObject(new ArrayList<>(list));
-		oos.writeUTF(msgToSay);
 
 		oos.close();
 		fout.close();
 	}
 
 	@SuppressWarnings("unchecked")
-	public static void loadListFromFile(ObservableList<PacketTypeToMatch> listToLoadInto, TextField messageField, String filename) throws IOException, ClassNotFoundException
+	public static void loadListFromFile(ObservableList<PacketTypeToMatch> listToLoadInto, String filename) throws IOException, ClassNotFoundException
 	{
 		FileInputStream fin = new FileInputStream(filename);
 		ObjectInputStream ois = new ObjectInputStream(fin);
@@ -296,8 +263,6 @@ public class WatchdogUI implements WatchdogListener
 
 		listToLoadInto.clear();
 		listToLoadInto.addAll(temp);
-
-		messageField.setText(ois.readUTF());
 
 		ois.close();
 		fin.close();
@@ -323,15 +288,13 @@ public class WatchdogUI implements WatchdogListener
 		props.put(propsChkboxHotkey, ((Boolean) chkboxHotkey.isSelected()).toString());
 		props.put(propsHotkeyKeycode, Integer.toString(hotkeyRegistry.getHotkeyKeycode(hotkeyID)));
 		props.put(propsHotkeyModifiers, Integer.toString(hotkeyRegistry.getHotkeyModifiers(hotkeyID)));
-		props.put(propsChkboxUseTTS, ((Boolean) chkboxUseTTS.isSelected()).toString());
-		props.put(propsChkboxUseAlert, ((Boolean) chkboxUseAlert.isSelected()).toString());
 		props.put(propsRadioStopAfterMatch, ((Boolean) radioStopAfterMatch.isSelected()).toString());
 		props.put(propsRadioKeepLooking, ((Boolean) radioKeepLooking.isSelected()).toString());
 		props.put(propsNumFieldCooldown, Integer.toString(numFieldCooldown.getValue()));
 
 		try
 		{
-			saveListToFile(entryList, textMessage.getText(), lastRunFilename);
+			saveListToFile(entryList, lastRunFilename);
 		}
 		catch (IOException ioe)
 		{
@@ -343,8 +306,6 @@ public class WatchdogUI implements WatchdogListener
 	{
 		setWatchdogHotkey(props);
 		
-		chkboxUseTTS.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseTTS, true));
-		chkboxUseAlert.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseAlert, false));
 		numFieldCooldown.setText(PropertiesByType.getProperty(props, propsNumFieldCooldown, String.valueOf(minCooldownValue)));
 		
 		if (PropertiesByType.getBoolProperty(props, propsRadioStopAfterMatch, true))
@@ -354,7 +315,7 @@ public class WatchdogUI implements WatchdogListener
 
 		try
 		{
-			loadListFromFile(entryList, textMessage, lastRunFilename);
+			loadListFromFile(entryList, lastRunFilename);
 		}
 		catch (IOException | ClassNotFoundException ioe) //ignore, don't load
 		{
@@ -364,11 +325,6 @@ public class WatchdogUI implements WatchdogListener
 	public ObservableList<PacketTypeToMatch> getEntryList()
 	{
 		return entryList;
-	}
-
-	public TextField getTextMessage()
-	{
-		return textMessage;
 	}
 	
 	/**

@@ -19,7 +19,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellEditEvent;
-import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
 import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
@@ -32,7 +31,8 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 {
 	private ManageListController watchdogListController;
 	private ObservableList<PacketTypeToMatch> entryList;
-	private TextField textToSay;
+	private TableColumn<PacketTypeToMatch, String> columnMsgText;
+	private TableColumn<PacketTypeToMatch, String> columnMsgOutputMethod;
 	private TableColumn<PacketTypeToMatch, String> columnPacketDirection;
 	private TableColumn<PacketTypeToMatch, String> columnIP;
 	private TableColumn<PacketTypeToMatch, String> columnNetmask;
@@ -46,7 +46,8 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 	private TableColumn<PacketTypeToMatch, String> columnSrcPortGreater;
 	private TableColumn<PacketTypeToMatch, String> columnDstPortSmaller;
 	private TableColumn<PacketTypeToMatch, String> columnDstPortEquals;
-	private TableColumn<PacketTypeToMatch, String> columnDstPortGreater;	
+	private TableColumn<PacketTypeToMatch, String> columnDstPortGreater;
+	
 	private Map<String, List<String>> userNotesToIPListMap;
 	
 	private final PacketTypeToMatch emptyRow = newEmptyTableRow();
@@ -58,10 +59,11 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 		
 		watchdogListController = (ManageListController) controller;
 		entryList = uiController.getEntryList();
-		textToSay = uiController.getTextMessage();
 		userNotesToIPListMap = uiController.getUserNotesReverseMap();
 		watchdogListController.setUserNotesComboValues(userNotesToIPListMap.keySet().toArray());
 		
+		columnMsgText = watchdogListController.getColumnMsgText();
+		columnMsgOutputMethod = watchdogListController.getColumnMsgOutputMethod();
 		columnPacketDirection = watchdogListController.getColumnPacketDirection();
 		columnIP = watchdogListController.getColumnIP();
 		columnNetmask = watchdogListController.getColumnNetmask();
@@ -96,6 +98,10 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 	@Override
 	protected void setOnEditCommit()
 	{
+		columnMsgText.setOnEditCommit(rowModel -> rowModel.getRowValue().setMessageText(rowModel.getNewValue()));
+		
+		columnMsgOutputMethod.setOnEditCommit(rowModel -> rowModel.getRowValue().setMessageOutputMethod(rowModel.getNewValue()));
+		
 		columnPacketDirection.setOnEditCommit(rowModel -> rowModel.getRowValue().setPacketDirection(rowModel.getNewValue()));
 		
 		columnIP.setOnEditCommit(rowModel -> 
@@ -412,9 +418,10 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 	@Override
 	protected PacketTypeToMatch newEmptyTableRow()
 	{
-		return new PacketTypeToMatch(PacketTypeToMatch.packetDirection_ANY, PacketTypeToMatch.IP_ANY, PacketTypeToMatch.netmask_ANY, PacketTypeToMatch.userNotes_ANY, 
-				PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.protocol_ANY, 
-				PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY);
+		return new PacketTypeToMatch(PacketTypeToMatch.message_empty, PacketTypeToMatch.outputMethod_default, PacketTypeToMatch.packetDirection_ANY, PacketTypeToMatch.IP_ANY, 
+				PacketTypeToMatch.netmask_ANY, PacketTypeToMatch.userNotes_ANY,	PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, 
+				PacketTypeToMatch.protocol_ANY,	PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, 
+				PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY);
 	}
 
 	@Override
@@ -430,6 +437,7 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 	protected void performOnCloseButton() throws IllegalArgumentException 
 	{
 		boolean invalidLines = false;
+		boolean missingMessage = false;
 		
 		for (PacketTypeToMatch row : entryList)
 		{
@@ -438,11 +446,18 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 				invalidLines = true;
 				break;
 			}
+			
+			if (row.messageTextProperty().get().equals(PacketTypeToMatch.message_empty))
+			{
+				missingMessage = true;
+				break;
+			}
 		}
 		
-		if (invalidLines)
+		if (invalidLines || missingMessage)
 		{
-			new Alert(AlertType.ERROR, "At least one row's values are all un-set. Please set a value in at least one column.").showAndWait();
+			String message = invalidLines ? "At least one row's values are all un-set. Please set a value in at least one column." : "At least one row is missing a text message to output "; 
+			new Alert(AlertType.ERROR, message).showAndWait();
 			throw new IllegalArgumentException(); //don't close the window
 		}
 	}
@@ -467,7 +482,7 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 			{
 				try
 				{
-					WatchdogUI.saveListToFile(entryList, textToSay.getText(), filename + WatchdogUI.presetExtension);
+					WatchdogUI.saveListToFile(entryList, filename + WatchdogUI.presetExtension);
 				}
 				catch (IOException ioe)
 				{
@@ -475,7 +490,7 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 					return;
 				}
 
-				MenuItem menuItem = ManageListScreen.createMenuItem(entryList, textToSay, filename);
+				MenuItem menuItem = ManageListScreen.createMenuItem(entryList, filename);
 				
 				ObservableList<MenuItem> items = watchdogListController.getMenuBtnLoadPreset().getItems();
 				
@@ -499,7 +514,7 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 		File[] files = dir.listFiles(fileFilter);
 
 		for (File file : files)
-			items.add(createMenuItem(entryList, textToSay, file.getName().replace(WatchdogUI.presetExtension, "")));
+			items.add(createMenuItem(entryList, file.getName().replace(WatchdogUI.presetExtension, "")));
 		
 		if (items.isEmpty())
 		{
@@ -510,7 +525,7 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 		}
 	}
 	
-	public static MenuItem createMenuItem(ObservableList<PacketTypeToMatch> list, TextField textToSay, String filename)
+	public static MenuItem createMenuItem(ObservableList<PacketTypeToMatch> list, String filename)
 	{
 		MenuItem menuItem = new MenuItem(filename);
 
@@ -518,7 +533,7 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 		{
 			try
 			{
-				WatchdogUI.loadListFromFile(list, textToSay, filename + WatchdogUI.presetExtension);
+				WatchdogUI.loadListFromFile(list, filename + WatchdogUI.presetExtension);
 			}
 			catch (ClassNotFoundException | IOException e)
 			{

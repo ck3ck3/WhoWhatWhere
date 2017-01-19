@@ -19,6 +19,7 @@ import javafx.scene.layout.AnchorPane;
 import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.PacketDirection;
+import whowhatwhere.model.networksniffer.watchdog.OutputMethod;
 import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
 
 public class ManageListController extends SecondaryFXMLWithCRUDTableController<PacketTypeToMatch>
@@ -35,6 +36,10 @@ public class ManageListController extends SecondaryFXMLWithCRUDTableController<P
 	private Button btnSavePreset;
 	@FXML
 	private TableView<PacketTypeToMatch> tableEntries;
+	@FXML
+	private TableColumn<PacketTypeToMatch, String> columnMsgText;
+	@FXML
+	private TableColumn<PacketTypeToMatch, String> columnMsgOutputMethod;
 	@FXML
 	private TableColumn<PacketTypeToMatch, String> columnPacketDirection;
 	@FXML
@@ -75,6 +80,12 @@ public class ManageListController extends SecondaryFXMLWithCRUDTableController<P
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
+		columnMsgText.setCellValueFactory(new PropertyValueFactory<PacketTypeToMatch, String>("messageText"));
+		columnMsgText.setCellFactory(TextFieldTableCell.forTableColumn());
+		
+		columnMsgOutputMethod.setCellValueFactory(new PropertyValueFactory<PacketTypeToMatch, String>("messageOutputMethod"));
+		columnMsgOutputMethod.setCellFactory(ComboBoxTableCell.forTableColumn(OutputMethod.getChoice()));
+		
 		columnPacketDirection.setCellValueFactory(new PropertyValueFactory<PacketTypeToMatch, String>("packetDirection"));
 		columnPacketDirection.setCellFactory(ComboBoxTableCell.forTableColumn(PacketDirection.getPacketDirectionStrings()));
 		
@@ -118,7 +129,7 @@ public class ManageListController extends SecondaryFXMLWithCRUDTableController<P
 		
 		columnDstPortGreater.setCellValueFactory(new PropertyValueFactory<PacketTypeToMatch, String>("dstPortGreater"));
 		columnDstPortGreater.setCellFactory(TextFieldTableCell.forTableColumn());
-
+		
 		tableEntries.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
 		EventHandler<KeyEvent> enterKeyEventHandler = ke ->
@@ -241,5 +252,15 @@ public class ManageListController extends SecondaryFXMLWithCRUDTableController<P
 	public TableColumn<PacketTypeToMatch, String> getColumnDstPortGreater()
 	{
 		return columnDstPortGreater;
+	}
+	
+	public TableColumn<PacketTypeToMatch, String> getColumnMsgText()
+	{
+		return columnMsgText;
+	}
+	
+	public TableColumn<PacketTypeToMatch, String> getColumnMsgOutputMethod()
+	{
+		return columnMsgOutputMethod;
 	}
 }

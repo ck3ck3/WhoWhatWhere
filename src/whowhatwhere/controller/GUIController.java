@@ -186,11 +186,7 @@ public class GUIController implements Initializable
 	@FXML
 	private Button btnWatchdogStop;
 	@FXML
-	private TextField textWatchdogMessage;
-	@FXML
 	private Button btnWatchdogManageList;
-	@FXML
-	private Button btnWatchdogPreview;
 	@FXML
 	private Label labelWatchdogEntryCount;
 	@FXML
@@ -209,10 +205,6 @@ public class GUIController implements Initializable
 	private CheckMenuItem menuItemChkAllUsers;
 	@FXML
 	private MenuItem menuItemManageNotes;
-	@FXML
-	private CheckBox chkboxWatchdogUseTTS;
-	@FXML
-	private CheckBox chkboxWatchdogUseAlert;
 	@FXML
 	private RadioButton radioWatchdogStopAfterMatch;
 	@FXML
@@ -866,19 +858,9 @@ public class GUIController implements Initializable
 		return btnWatchdogStop;
 	}
 
-	public TextField getTextWatchdogMessage()
-	{
-		return textWatchdogMessage;
-	}
-
 	public Button getBtnWatchdogManageList()
 	{
 		return btnWatchdogManageList;
-	}
-
-	public Button getBtnWatchdogPreview()
-	{
-		return btnWatchdogPreview;
 	}
 
 	public Label getLabelWatchdogEntryCount()
@@ -919,16 +901,6 @@ public class GUIController implements Initializable
 	public Stage getStage()
 	{
 		return (Stage) tabPane.getScene().getWindow();
-	}
-	
-	public CheckBox getChkboxWatchdogUseTTS()
-	{
-		return chkboxWatchdogUseTTS;
-	}
-	
-	public CheckBox getChkboxWatchdogUseAlert()
-	{
-		return chkboxWatchdogUseAlert;
 	}
 	
 	public RadioButton getRadioWatchdogStopAfterMatch()

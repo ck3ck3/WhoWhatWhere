@@ -5,7 +5,6 @@ import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.network.Ip4;
 
-import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.PacketDirection;
 
 public class CriteriaIP implements Criteria<PcapPacket, Boolean>
@@ -28,7 +27,7 @@ public class CriteriaIP implements Criteria<PcapPacket, Boolean>
 	@Override
 	public Boolean meetCriteria(PcapPacket itemToCheck)
 	{
-		if (!itemToCheck.hasHeader(NetworkSniffer.IPv4_PROTOCOL))
+		if (!itemToCheck.hasHeader(Ip4.ID))
 			return false;
 		
 		Ip4 ipHeader = new Ip4();

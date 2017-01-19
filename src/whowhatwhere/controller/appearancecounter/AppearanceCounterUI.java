@@ -528,16 +528,16 @@ public class AppearanceCounterUI implements CaptureStartListener
 				ArrayList<Integer> protocols = new ArrayList<>();
 
 				if (chkboxUDP.isSelected())
-					protocols.add(NetworkSniffer.UDP_PROTOCOL);
+					protocols.add(NetworkSniffer.stringProtocolToInt("UDP"));
 
 				if (chkboxTCP.isSelected())
-					protocols.add(NetworkSniffer.TCP_PROTOCOL);
+					protocols.add(NetworkSniffer.stringProtocolToInt("TCP"));
 
 				if (chkboxICMP.isSelected())
-					protocols.add(NetworkSniffer.ICMP_PROTOCOL);
+					protocols.add(NetworkSniffer.stringProtocolToInt("ICMP"));
 
 				if (chkboxHTTP.isSelected())
-					protocols.add(NetworkSniffer.HTTP_PROTOCOL);
+					protocols.add(NetworkSniffer.stringProtocolToInt("HTTP"));
 
 				return protocols;
 			}

@@ -9,14 +9,22 @@ import whowhatwhere.model.networksniffer.PacketDirection;
 
 public class PacketTypeToMatch implements Serializable
 {
-	private static final long serialVersionUID = 3372220438667121322L; //auto-generated, modify if changes to the class are not backwards-compatible
+	private static final long serialVersionUID = -580431496478620381L; //auto-generated, modify if changes to the class are not backwards-compatible
 	
-	public final static String packetDirection_ANY = PacketDirection.ANY.name();
+	public final static String packetDirection_ANY = PacketDirection.getPacketDirectionStrings()[0];
 	public final static String IP_ANY = "";
 	public final static String netmask_ANY = "";
 	public final static String userNotes_ANY = "";
 	public final static String packetOrPort_ANY = "";
 	public final static String protocol_ANY = "ANY";
+	public final static String message_empty = "";
+	public final static String outputMethod_default = OutputMethod.getChoice()[0];
+	
+	transient private SimpleStringProperty messageText;
+	private String messageTextToSerialize;
+	
+	transient private SimpleStringProperty messageOutputMethod;
+	private String messageOutputMethodToSerialize;
 	
 	transient private SimpleStringProperty packetDirection;
 	private String packetDirectionToSerialize;
@@ -62,9 +70,12 @@ public class PacketTypeToMatch implements Serializable
 	private String dstPortGreaterToSerialize;
 	
 
-	public PacketTypeToMatch(String packetDirection, String ipAddress, String netmask, String userNotes, String packetSizeSmaller, String packetSizeEquals, String packetSizeGreater, String protocol, 
+	public PacketTypeToMatch(String message, String outputMethod, String packetDirection, String ipAddress, String netmask, String userNotes, String packetSizeSmaller, String packetSizeEquals, String packetSizeGreater, String protocol, 
 			String srcPortSmaller, String srcPortEquals, String srcPortGreater, String dstPortSmaller, String dstPortEquals, String dstPortGreater)
 	{
+		
+		setMessageText(message);
+		setMessageOutputMethod(outputMethod);
 		setPacketDirection(packetDirection);
 		setIpAddress(ipAddress);
 		setNetmask(netmask);
@@ -83,6 +94,8 @@ public class PacketTypeToMatch implements Serializable
 	
 	public void initAfterSerialization()
 	{
+		setMessageText(messageTextToSerialize);
+		setMessageOutputMethod(messageOutputMethodToSerialize);
 		setPacketDirection(packetDirectionToSerialize);
 		setIpAddress(ipAddressToSerialize);
 		setNetmask(netmaskToSerialize);
@@ -97,6 +110,51 @@ public class PacketTypeToMatch implements Serializable
 		setDstPortSmaller(dstPortSmallerToSerialize);
 		setDstPortEquals(dstPortEqualsToSerialize);
 		setDstPortGreater(dstPortGreaterToSerialize);
+	}
+	
+	public SimpleStringProperty messageTextProperty()
+	{
+		return messageText;
+	}
+
+	public void setMessageText(String message)
+	{
+		if (this.messageText == null)
+			this.messageText = new SimpleStringProperty(message);
+		else
+			this.messageText.setValue(message);
+		
+		this.messageTextToSerialize = message;
+	}
+	
+	public SimpleStringProperty messageOutputMethodProperty()
+	{
+		return messageOutputMethod;
+	}
+
+	public void setMessageOutputMethod(String outputMethod)
+	{
+		if (this.messageOutputMethod == null)
+			this.messageOutputMethod = new SimpleStringProperty(outputMethod);
+		else
+			this.messageOutputMethod.setValue(outputMethod);
+		
+		this.messageOutputMethodToSerialize = outputMethod;
+	}
+	
+	public SimpleStringProperty packetDirectionProperty()
+	{
+		return packetDirection;
+	}
+
+	public void setPacketDirection(String packetDirection)
+	{
+		if (this.packetDirection == null)
+			this.packetDirection = new SimpleStringProperty(packetDirection);
+		else
+			this.packetDirection.setValue(packetDirection);
+		
+		packetDirectionToSerialize = packetDirection;
 	}
 	
 	public SimpleStringProperty ipAddressProperty()
@@ -181,21 +239,6 @@ public class PacketTypeToMatch implements Serializable
 		return true;
 	}
 
-	public SimpleStringProperty packetDirectionProperty()
-	{
-		return packetDirection;
-	}
-
-	public void setPacketDirection(String packetDirection)
-	{
-		if (this.packetDirection == null)
-			this.packetDirection = new SimpleStringProperty(packetDirection);
-		else
-			this.packetDirection.setValue(packetDirection);
-		
-		packetDirectionToSerialize = packetDirection;
-	}
-	
 	public SimpleStringProperty netmaskProperty()
 	{
 		return netmask;

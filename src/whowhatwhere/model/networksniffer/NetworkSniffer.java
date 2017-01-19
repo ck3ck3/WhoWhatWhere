@@ -22,7 +22,6 @@ import org.jnetpcap.PcapAddr;
 import org.jnetpcap.PcapIf;
 import org.jnetpcap.packet.PcapPacketHandler;
 import org.jnetpcap.protocol.network.Icmp;
-import org.jnetpcap.protocol.network.Ip4;
 import org.jnetpcap.protocol.tcpip.Http;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
@@ -38,23 +37,17 @@ public class NetworkSniffer
 {
 	private static final Logger logger = Logger.getLogger(NetworkSniffer.class.getPackage().getName());
 	
-	public static final int ICMP_PROTOCOL = Icmp.ID;
-	public static final int UDP_PROTOCOL = Udp.ID;
-	public static final int TCP_PROTOCOL = Tcp.ID;
-	public static final int HTTP_PROTOCOL = Http.ID;
-	public static final int IPv4_PROTOCOL = Ip4.ID;
-	
 	public static final String[] supportedProtocols = {"ICMP", "UDP", "TCP", "HTTP"};
 	
 	private static TreeBidiMap protocolBidiMap;
 	static
 	{
 		protocolBidiMap = new TreeBidiMap();
-		protocolBidiMap.put("ICMP", ICMP_PROTOCOL);
-		protocolBidiMap.put("UDP", UDP_PROTOCOL);
-		protocolBidiMap.put("TCP", TCP_PROTOCOL);
-		protocolBidiMap.put("HTTP", HTTP_PROTOCOL);
-			
+		protocolBidiMap.put("ICMP", Icmp.ID);
+		protocolBidiMap.put("UDP", Udp.ID);
+		protocolBidiMap.put("TCP", Tcp.ID);
+		protocolBidiMap.put("HTTP", Http.ID);
+		
 		if (!loadJnetpcapDll(Main.jnetpcapDLLx86Location, Main.jnetpcapDLLx64Location)) //modify locations if needed
 			logger.log(Level.SEVERE, "Unable to load jnetpcap.dll. See log for more details.");
 	}
