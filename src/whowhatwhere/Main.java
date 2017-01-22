@@ -6,18 +6,17 @@ import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 
 import javafx.application.Application;
@@ -32,10 +31,8 @@ import javafx.stage.Stage;
 
 public class Main extends Application
 {
-	private final static String releaseVersion = "1.00";
+	private final static String releaseVersion = "1.10";
 	private final static String urlForLatestRelease = "https://api.github.com/repos/ck3ck3/WhoWhatWhere/releases/latest";
-	private static final int connectionTimeout = 5000;
-	private static final int readTimeout = 5000;
 
 	private static final String website = "http://ck3ck3.github.io/WhoWhatWhere/";
 
@@ -95,12 +92,8 @@ public class Main extends Application
 			return false;
 		else
 		{
-			primaryStage.getIcons().addAll(
-					new Image(Main.class.getResourceAsStream(iconResource16)), 
-					new Image(Main.class.getResourceAsStream(iconResource32)),
-					new Image(Main.class.getResourceAsStream(iconResource48)), 
-					new Image(Main.class.getResourceAsStream(iconResource256))
-			);
+			primaryStage.getIcons().addAll(new Image(Main.class.getResourceAsStream(iconResource16)), new Image(Main.class.getResourceAsStream(iconResource32)),
+					new Image(Main.class.getResourceAsStream(iconResource48)), new Image(Main.class.getResourceAsStream(iconResource256)));
 
 			tray = SystemTray.getSystemTray();
 			java.awt.Image image = Toolkit.getDefaultToolkit().getImage(Main.class.getResource(iconResource16));
@@ -108,7 +101,7 @@ public class Main extends Application
 			Platform.setImplicitExit(false); //needed to keep the app running while minimized to tray
 
 			trayIcon = new TrayIcon(image, appTitle);
-			
+
 			Runnable restoreApplication = () ->
 			{
 				primaryStage.show();
@@ -116,12 +109,12 @@ public class Main extends Application
 			};
 
 			trayIcon.addActionListener(ae -> Platform.runLater(restoreApplication));
-			
+
 			PopupMenu popupMenu = new PopupMenu();
 			MenuItem restore = new MenuItem("Restore");
-			
+
 			restore.addActionListener(al -> Platform.runLater(restoreApplication));
-			
+
 			popupMenu.add(restore);
 			trayIcon.setPopupMenu(popupMenu);
 
@@ -148,20 +141,11 @@ public class Main extends Application
 
 	public static boolean isUpdateAvailable() throws IOException
 	{
-		URLConnection serviceURL;
-		BufferedReader streamReader;
-		String inputStr;
-		StringBuilder responseStrBuilder = new StringBuilder();
+		InputStream inputStream = new URL(urlForLatestRelease).openStream();
+		String response = IOUtils.toString(inputStream);
+		IOUtils.closeQuietly(inputStream);
 
-		serviceURL = new URL(urlForLatestRelease).openConnection();
-		serviceURL.setConnectTimeout(connectionTimeout);
-		serviceURL.setReadTimeout(readTimeout);
-		streamReader = new BufferedReader(new InputStreamReader(serviceURL.getInputStream()));
-
-		while ((inputStr = streamReader.readLine()) != null)
-			responseStrBuilder.append(inputStr);
-
-		JSONObject jsonObject = new JSONObject(responseStrBuilder.toString());
+		JSONObject jsonObject = new JSONObject(response);
 		String version = (String) jsonObject.get("tag_name");
 
 		return !version.equals(getReleaseVersion());

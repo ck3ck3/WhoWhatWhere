@@ -20,6 +20,7 @@
           </Menu>
             <Menu mnemonicParsing="false" text="Options">
                <items>
+                  <CheckMenuItem fx:id="menuItemChkCheckUpdateStartup" mnemonicParsing="false" text="Check for updates on startup" />
                   <CheckMenuItem fx:id="menuItemChkDisplayBalloon" mnemonicParsing="false" text="Display info balloon after minimizing" />
                   <CheckMenuItem fx:id="menuItemChkStartMinimized" mnemonicParsing="false" text="Start minimized" />
                   <Menu mnemonicParsing="false" text="Start with Windows">

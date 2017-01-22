@@ -75,6 +75,7 @@ public class GUIController implements Initializable
 	private final static String propsShowMessageOnMinimize = "showMinimizeMessage";
 	private final static String propsStartMinimized = "startMinimized";
 	private final static String propsIgnoreRunPathDiff = "ignorePathDiff";
+	private final static String propsCheckForUpdatesOnStartup = "checkForUpdatesOnStartup"; 
 	private final static String voiceForTTS = "kevin16";
 
 	private final static Logger logger = Logger.getLogger(GUIController.class.getPackage().getName());
@@ -196,6 +197,8 @@ public class GUIController implements Initializable
 	@FXML
 	private Button btnExportTableToCSV;
 	@FXML
+	private CheckMenuItem menuItemChkCheckUpdateStartup;
+	@FXML
 	private CheckMenuItem menuItemChkDisplayBalloon;
 	@FXML
 	private CheckMenuItem menuItemChkStartMinimized;
@@ -236,11 +239,12 @@ public class GUIController implements Initializable
 	private boolean isExitAlreadyAddedToSystray = false;
 	private boolean showMessageOnMinimize;
 	private boolean ignoreRunPathDiff;
+	private boolean checkForUpdatesOnStartup;
 
 	private AppearanceCounterUI appearanceCounterUI;
 	private PingToSpeechUI pingToSpeechUI;
 	private WatchdogUI watchdogUI;
-
+	
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
@@ -260,7 +264,8 @@ public class GUIController implements Initializable
 
 		loadLastRunConfig();
 
-		checkForUpdates(true); //only show a message if there is a new version
+		if (checkForUpdatesOnStartup)
+			checkForUpdates(true); //only show a message if there is a new version
 	}
 
 	private void addExitToSystrayIcon()
@@ -314,9 +319,12 @@ public class GUIController implements Initializable
 			Event.fireEvent(stage, new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
 		});
 		menuItemExit.setOnAction(event -> exitButtonPressed());
+		
+		menuItemChkCheckUpdateStartup.setOnAction(ae -> checkForUpdatesOnStartup = ((CheckMenuItem) ae.getSource()).isSelected());
 		menuItemChkDisplayBalloon.setOnAction(ae -> showMessageOnMinimize = ((CheckMenuItem) ae.getSource()).isSelected());
 		menuItemChkAllUsers.setOnAction(handleStartWithWindowsClick(true, menuItemChkThisUserOnly));
 		menuItemChkThisUserOnly.setOnAction(handleStartWithWindowsClick(false, menuItemChkAllUsers));
+		
 		menuItemUpdate.setOnAction(event -> checkForUpdates(false));
 		menuItemAbout.setOnAction(event -> showAboutWindow());
 	}
@@ -404,6 +412,7 @@ public class GUIController implements Initializable
 
 		props.put(propsNICIndex, selectedNic.toString());
 		props.put(propsTraceAddress, textTrace.getText());
+		props.put(propsCheckForUpdatesOnStartup, String.valueOf(checkForUpdatesOnStartup));
 		props.put(propsShowMessageOnMinimize, String.valueOf(showMessageOnMinimize));
 		props.put(propsStartMinimized, String.valueOf(menuItemChkStartMinimized.isSelected()));
 		props.put(propsIgnoreRunPathDiff, String.valueOf(ignoreRunPathDiff));
@@ -450,6 +459,9 @@ public class GUIController implements Initializable
 
 		textTrace.setText(props.getProperty(propsTraceAddress));
 
+		checkForUpdatesOnStartup = PropertiesByType.getBoolProperty(props, propsCheckForUpdatesOnStartup, true);
+		menuItemChkCheckUpdateStartup.setSelected(checkForUpdatesOnStartup);
+		
 		showMessageOnMinimize = PropertiesByType.getBoolProperty(props, propsShowMessageOnMinimize, true);
 		menuItemChkDisplayBalloon.setSelected(showMessageOnMinimize);
 
