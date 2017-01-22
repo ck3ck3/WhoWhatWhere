@@ -3,11 +3,8 @@
 	<!--this file was created by Eclipse Runnable JAR file Export Wizard-->
 	<!--ANT 1.7 is required-->
 	<!--define folder properties-->
-	<property name="dir.buildfile" value="." />
-	<property name="dir.workspace" value="${dir.buildfile}" />
-
-	<property name="dir.maven_repo" value="E:/.m2/repository" />
-	<!-- HARDCODED PATH, MODIFY IF NEEDED -->
+	<property name="dir.resources" value="../../resources" /> <!-- HARDCODED PATH, MODIFY IF NEEDED -->
+	<property name="dir.maven_repo" value="E:/.m2/repository" /> <!-- HARDCODED PATH, MODIFY IF NEEDED -->
 
 	<property name="dir.jarfile" value="WhoWhatWhere" />
 	<target name="create_dist_rar">
@@ -16,11 +13,12 @@
 				<attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader" />
 				<attribute name="Rsrc-Main-Class" value="whowhatwhere.Main" />
 				<attribute name="Class-Path" value="." />
-				<attribute name="Rsrc-Class-Path" value="./ org.eclipse.fx.ide.css.jfx8_2.1.0.201508240705.jar jnativehook-2.0.2.jar freetts-1.2.2.jar jnetpcap-1.4.r1425-1f.jar commons-io-2.4.jar json-20151123.jar commons-collections-3.0.jar" />
+				<attribute name="Rsrc-Class-Path" value="./ org.eclipse.fx.ide.css.jfx8_2.1.0.201508240705.jar NumberTextField.jar jnativehook-2.0.2.jar freetts-1.2.2.jar jnetpcap-1.4.r1425-1f.jar commons-io-2.4.jar json-20151123.jar commons-collections-3.0.jar commons-net-3.5.jar" />
 			</manifest>
 			<zipfileset src="jar-in-jar-loader.zip" />
 			<fileset dir="../../target/classes" />
 			<zipfileset dir="." includes="org.eclipse.fx.ide.css.jfx8_2.1.0.201508240705.jar" />
+			<zipfileset dir="${dir.resources}" includes="NumberTextField.jar" />
 
 			<zipfileset dir="${dir.maven_repo}/commons-io/commons-io/2.4" includes="commons-io-2.4.jar" />
 			<zipfileset dir="${dir.maven_repo}/com/1stleg/jnativehook/2.0.2" includes="jnativehook-2.0.2.jar" />
@@ -28,7 +26,7 @@
 			<zipfileset dir="${dir.maven_repo}/jnetpcap/jnetpcap/1.4.r1425-1f" includes="jnetpcap-1.4.r1425-1f.jar" />
 			<zipfileset dir="${dir.maven_repo}/org/json/json/20151123" includes="json-20151123.jar" />
 			<zipfileset dir="${dir.maven_repo}/commons-collections/commons-collections/3.0" includes="commons-collections-3.0.jar" />
-
+			<zipfileset dir="${dir.maven_repo}/commons-net/commons-net/3.5" includes="commons-net-3.5.jar" />
 		</jar>
 		<mkdir dir="WhoWhatWhere" />
 		<exec executable="cmd">
@@ -37,7 +35,7 @@
 			<arg value="WhoWhatWhere-launch4j.xml" />
 		</exec>
 		<delete file="WhoWhatWhere/WhoWhatWhere.jar" />
-		<copy file="../../NBA2K Europe MyPark.watchdogPreset" toDir="WhoWhatWhere" />
+		<copy file="../../NBA2K Europe.watchdogPreset" toDir="WhoWhatWhere" />
 		<exec executable="cmd">
 			<arg value="/c" />
 			<arg value="rar" />

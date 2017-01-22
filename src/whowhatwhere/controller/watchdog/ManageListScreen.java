@@ -480,9 +480,25 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 
 			result.ifPresent(filename -> 
 			{
+				String fullName = filename + WatchdogUI.presetExtension;
+				boolean alreadyExists = false;
+				
+				if (new File(fullName).exists()) //if filename already exists
+				{
+					Alert overwriteDialog = new Alert(AlertType.CONFIRMATION, "A preset with that name already exists. Press \"OK\" to overwrite the preset or \"Cancel\" to close this dialog without saving the new preset.");
+					overwriteDialog.setTitle("Preset name already exists");
+					overwriteDialog.setHeaderText("Overwrite existing preset?");
+
+					Optional<ButtonType> overwriteResult = overwriteDialog.showAndWait();
+					if (overwriteResult.get() == ButtonType.CANCEL)
+						return;
+					
+					alreadyExists = true;
+				}
+				
 				try
 				{
-					WatchdogUI.saveListToFile(entryList, filename + WatchdogUI.presetExtension);
+					WatchdogUI.saveListToFile(entryList, fullName);
 				}
 				catch (IOException ioe)
 				{
@@ -493,6 +509,9 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 				MenuItem menuItem = ManageListScreen.createMenuItem(entryList, filename);
 				
 				ObservableList<MenuItem> items = watchdogListController.getMenuBtnLoadPreset().getItems();
+				
+				if (alreadyExists)
+					return;
 				
 				if (items.get(0).isDisable()) //it only contains the disabled "none found " item, remove it before adding new one
 					items.clear();

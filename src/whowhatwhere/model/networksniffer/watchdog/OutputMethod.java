@@ -4,7 +4,7 @@ import org.apache.commons.collections.bidimap.TreeBidiMap;
 
 public enum OutputMethod
 {
-	TTS, POPUP, BOTH;
+	TTS, POPUP, TTS_AND_POPUP;
 	
 	private static TreeBidiMap bidiMap = new TreeBidiMap();
 	
@@ -12,12 +12,12 @@ public enum OutputMethod
 	{
 		bidiMap.put(TTS, "Say with text-to-speech");
 		bidiMap.put(POPUP, "Show a pop-up message");
-		bidiMap.put(BOTH, "Say with TTS and show pop-up");
+		bidiMap.put(TTS_AND_POPUP, "Say with TTS and show pop-up");
 	}
 	
-	public static String[] getChoice()
+	public static String[] getValuesAsStrings()
 	{
-		String[] methods = {(String) bidiMap.get(TTS), (String) bidiMap.get(POPUP), (String) bidiMap.get(BOTH)};
+		String[] methods = {(String) bidiMap.get(TTS), (String) bidiMap.get(POPUP), (String) bidiMap.get(TTS_AND_POPUP)};
 		
 		return methods;
 	}
@@ -25,5 +25,10 @@ public enum OutputMethod
 	public static OutputMethod stringToEnum(String str)
 	{
 		return (OutputMethod) bidiMap.getKey(str);
+	}
+	
+	public static String enumToString(OutputMethod outputMethod)
+	{
+		return (String) bidiMap.get(outputMethod);
 	}
 }

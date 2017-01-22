@@ -1,8 +1,13 @@
 package whowhatwhere.controller.watchdog;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -10,6 +15,7 @@ import javafx.scene.control.MenuButton;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TableView.TableViewSelectionModel;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -35,7 +41,7 @@ public class ManageListController extends SecondaryFXMLWithCRUDTableController<P
 	@FXML
 	private Button btnSavePreset;
 	@FXML
-	private TableView<PacketTypeToMatch> tableEntries;
+	private TableView<PacketTypeToMatch> table;
 	@FXML
 	private TableColumn<PacketTypeToMatch, String> columnMsgText;
 	@FXML
@@ -76,18 +82,79 @@ public class ManageListController extends SecondaryFXMLWithCRUDTableController<P
 	private TableColumn<PacketTypeToMatch, String> columnDstPortGreater;
 	@FXML
 	private AnchorPane paneRoot;
+	@FXML
+	private Button btnMoveUp;
+	@FXML
+	private Button btnMoveDown;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
+	{
+		setColumnCellFactories();
+		
+		table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+		EventHandler<KeyEvent> enterKeyEventHandler = ke ->
+		{
+			if (ke.getCode().equals(KeyCode.ENTER))
+				btnClose.fire();
+		};
+
+		paneRoot.setOnKeyPressed(enterKeyEventHandler);
+		table.setOnKeyPressed(enterKeyEventHandler);
+		
+		btnMoveUp.setOnAction(generateRowMovementButtonHandlers(true));
+		btnMoveDown.setOnAction(generateRowMovementButtonHandlers(false));
+	}
+
+	/**
+	 * @param isUp - true if it's for the up button, false if for the down button
+	 * @return an EventHandler for the row movement buttons
+	 */
+	private EventHandler<ActionEvent> generateRowMovementButtonHandlers(boolean isUp)
+	{
+		int moveToPosition = isUp ? -1 : 1;
+		
+		return event ->
+		{
+			ObservableList<PacketTypeToMatch> items = table.getItems();
+			TableViewSelectionModel<PacketTypeToMatch> selectionModel = table.getSelectionModel();
+			List<Integer> modifiableIndices = new ArrayList<Integer>(selectionModel.getSelectedIndices());
+			int[] reSelectRows = new int[modifiableIndices.size()];
+			int i = 0;
+			
+			if (!isUp) //if we are moving down, we should start from the last index and go backwards
+				Collections.reverse(modifiableIndices);
+			
+			for (Integer selectedIndex : modifiableIndices)
+			{
+				if (selectedIndex == (isUp ? 0 : items.size() - 1)) //if it's the first or last row (depending on movement direction), don't do anything
+				{
+					reSelectRows[i++] = selectedIndex;
+					continue;
+				}
+				
+				PacketTypeToMatch itemToReplace = items.set(selectedIndex + moveToPosition, items.get(selectedIndex));
+				items.set(selectedIndex, itemToReplace);
+				reSelectRows[i++] = selectedIndex + moveToPosition;
+			}
+			
+			selectionModel.clearSelection();
+			selectionModel.selectIndices(reSelectRows[0], reSelectRows);
+			table.refresh();
+		};		
+	}
+
+	private void setColumnCellFactories()
 	{
 		columnMsgText.setCellValueFactory(new PropertyValueFactory<PacketTypeToMatch, String>("messageText"));
 		columnMsgText.setCellFactory(TextFieldTableCell.forTableColumn());
 		
 		columnMsgOutputMethod.setCellValueFactory(new PropertyValueFactory<PacketTypeToMatch, String>("messageOutputMethod"));
-		columnMsgOutputMethod.setCellFactory(ComboBoxTableCell.forTableColumn(OutputMethod.getChoice()));
+		columnMsgOutputMethod.setCellFactory(ComboBoxTableCell.forTableColumn(OutputMethod.getValuesAsStrings()));
 		
 		columnPacketDirection.setCellValueFactory(new PropertyValueFactory<PacketTypeToMatch, String>("packetDirection"));
-		columnPacketDirection.setCellFactory(ComboBoxTableCell.forTableColumn(PacketDirection.getPacketDirectionStrings()));
+		columnPacketDirection.setCellFactory(ComboBoxTableCell.forTableColumn(PacketDirection.getValuesAsStrings()));
 		
 		columnIP.setCellValueFactory(new PropertyValueFactory<PacketTypeToMatch, String>("ipAddress"));
 		columnIP.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -129,17 +196,6 @@ public class ManageListController extends SecondaryFXMLWithCRUDTableController<P
 		
 		columnDstPortGreater.setCellValueFactory(new PropertyValueFactory<PacketTypeToMatch, String>("dstPortGreater"));
 		columnDstPortGreater.setCellFactory(TextFieldTableCell.forTableColumn());
-		
-		tableEntries.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-
-		EventHandler<KeyEvent> enterKeyEventHandler = ke ->
-		{
-			if (ke.getCode().equals(KeyCode.ENTER))
-				btnClose.fire();
-		};
-
-		paneRoot.setOnKeyPressed(enterKeyEventHandler);
-		tableEntries.setOnKeyPressed(enterKeyEventHandler);
 	}
 	
 	public void setUserNotesComboValues(Object[] values)
@@ -181,7 +237,7 @@ public class ManageListController extends SecondaryFXMLWithCRUDTableController<P
 	@Override
 	public TableView<PacketTypeToMatch> getTable()
 	{
-		return tableEntries;
+		return table;
 	}
 	
 	public TableColumn<PacketTypeToMatch, String> getColumnPacketDirection()
@@ -262,5 +318,15 @@ public class ManageListController extends SecondaryFXMLWithCRUDTableController<P
 	public TableColumn<PacketTypeToMatch, String> getColumnMsgOutputMethod()
 	{
 		return columnMsgOutputMethod;
+	}
+	
+	public Button getBtnMoveUp()
+	{
+		return btnMoveUp;
+	}
+	
+	public Button getBtnMoveDown()
+	{
+		return btnMoveDown;
 	}
 }

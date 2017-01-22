@@ -9,25 +9,25 @@ import whowhatwhere.model.networksniffer.PacketDirection;
 
 public class PacketTypeToMatch implements Serializable
 {
-	private static final long serialVersionUID = -580431496478620381L; //auto-generated, modify if changes to the class are not backwards-compatible
+	private static final long serialVersionUID = -7741791299979590040L;	//auto-generated, modify if changes to the class are not backwards-compatible
 	
-	public final static String packetDirection_ANY = PacketDirection.getPacketDirectionStrings()[0];
+	public final static String packetDirection_ANY = PacketDirection.enumToString(PacketDirection.ANY);
 	public final static String IP_ANY = "";
 	public final static String netmask_ANY = "";
 	public final static String userNotes_ANY = "";
 	public final static String packetOrPort_ANY = "";
 	public final static String protocol_ANY = "ANY";
 	public final static String message_empty = "";
-	public final static String outputMethod_default = OutputMethod.getChoice()[0];
+	public final static String outputMethod_default = OutputMethod.enumToString(OutputMethod.TTS);
 	
 	transient private SimpleStringProperty messageText;
 	private String messageTextToSerialize;
 	
 	transient private SimpleStringProperty messageOutputMethod;
-	private String messageOutputMethodToSerialize;
+	private OutputMethod messageOutputMethodToSerialize;
 	
 	transient private SimpleStringProperty packetDirection;
-	private String packetDirectionToSerialize;
+	private PacketDirection packetDirectionToSerialize;
 	
 	transient private SimpleStringProperty ipAddress;
 	private String ipAddressToSerialize;
@@ -95,8 +95,8 @@ public class PacketTypeToMatch implements Serializable
 	public void initAfterSerialization()
 	{
 		setMessageText(messageTextToSerialize);
-		setMessageOutputMethod(messageOutputMethodToSerialize);
-		setPacketDirection(packetDirectionToSerialize);
+		setMessageOutputMethod(OutputMethod.enumToString(messageOutputMethodToSerialize));
+		setPacketDirection(PacketDirection.enumToString(packetDirectionToSerialize));
 		setIpAddress(ipAddressToSerialize);
 		setNetmask(netmaskToSerialize);
 		setUserNotes(userNotesToSerialize);
@@ -139,7 +139,7 @@ public class PacketTypeToMatch implements Serializable
 		else
 			this.messageOutputMethod.setValue(outputMethod);
 		
-		this.messageOutputMethodToSerialize = outputMethod;
+		this.messageOutputMethodToSerialize = OutputMethod.stringToEnum(outputMethod);
 	}
 	
 	public SimpleStringProperty packetDirectionProperty()
@@ -154,7 +154,7 @@ public class PacketTypeToMatch implements Serializable
 		else
 			this.packetDirection.setValue(packetDirection);
 		
-		packetDirectionToSerialize = packetDirection;
+		packetDirectionToSerialize = PacketDirection.stringToEnum(packetDirection);
 	}
 	
 	public SimpleStringProperty ipAddressProperty()

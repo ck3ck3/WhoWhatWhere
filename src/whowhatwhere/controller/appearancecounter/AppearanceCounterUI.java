@@ -595,7 +595,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 					String colValue = columnMapping.get(colName);
 
-					if (colValue.isEmpty())
+					if (colValue.isEmpty() || (colName.equals(columnNotes.getText()) && colValue.equals(emptyNotesString)))
 						continue;
 
 					lines[i].append(colName + ": " + colValue + ". ");

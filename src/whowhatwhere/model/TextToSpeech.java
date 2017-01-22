@@ -17,17 +17,8 @@ public class TextToSpeech
 
 	public void speak(String line)
 	{
-		if (!isMuted())
-		{
-			new Thread(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					voice.speak(line); //blocks the calling thread
-				}
-			}).start();
-		}
+		if (!isMuted() && line != null)
+			new Thread(() -> voice.speak(line)).start();
 	}
 
 	public boolean isMuted()

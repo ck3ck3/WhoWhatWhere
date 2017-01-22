@@ -236,7 +236,7 @@ public class WatchdogUI implements WatchdogListener
 		{
 			case TTS:	tts.speak(msg); break;
 			case POPUP:	Platform.runLater(() -> new Alert(AlertType.INFORMATION, msg).showAndWait()); break;
-			case BOTH: 	tts.speak(msg);
+			case TTS_AND_POPUP: 	tts.speak(msg);
 						Platform.runLater(() -> new Alert(AlertType.INFORMATION, msg).showAndWait());
 						break;
 		}
