@@ -19,7 +19,7 @@
 			<h1>Who What Where</h1>
 		</div>
 
-		<p><strong>Analyze your network traffic to find what IP addresses are used and where they're from. Additional utilities include Ping-to-Speech, Visual Trace, and Watchdog that monitors incoming packets.</strong></p>
+		<p><strong>Analyze your network traffic to find what IP addresses are used and where they're from. Additional utilities include Ping-to-Speech, Visual Trace, and Watchdog that notifies when a pre-defined type of packet is sent or received.</strong></p>
 
 		<div class="links">
 			<a href="https://github.com/ck3ck3/WhoWhatWhere/releases">Download Here</a>
@@ -44,8 +44,9 @@
 
 	      <li>
 	      	<h2><a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/Watchdog.png">Watchdog</a></h2>
-	      	<p>Inspects network traffic and waits for a packet from a predefined list of IP addresses and source/destination ports and several protocols. Upon finding a match, a predefined message will be read out by text-to-speech. This feature can be used as
-	        a notifier for an incoming connection, for example.</p>
+			<p>Inspects network traffic and checks if any packet matches a predefined filter. Filters include packet direction (incoming/outgoing), IP address or ranges (subnets), user notes, packet size (including ranges) and source/destination ports ranges. Upon finding a match, a predefined message will be read out by text-to-speech or displayed in a pop-up message.
+			<br>This feature can be used as a notifier for an incoming connection, for example.
+			</p>
 	      </li>
 
 	      <li>
@@ -79,11 +80,11 @@
 
 
 	    <h2>How to Use</h2> 
-	    <p>Who What Where can be minimized to the systrem tray by pressing the 'x' (close window) button. In order to exit for the program, press the Exit button or use the menu bar "File".
+	    <p>Who What Where can be minimized to the systrem tray by pressing the 'x' (close window) button. In order to exit for the program, press the Exit button or right-click the icon in the system-tray and choose "Exit".</p>
 
 	    <h3>Pick your network adapter: </h3> 
 	    <p>In the top-left pane there should be a list with at least one network adapter (<a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/NetworkAdapter.png">example</a>). Select the adapter your want to listen to. If you're not
-	    sure which one to choose (the name would often have "ethernet" or "wireless" in it), just try and see which one works.
+	    sure which one to choose (the name would often have "ethernet" or "wireless" in it), just try and see which one works.</p>
 
 	    <h3>Who What Where</h3> 
 	    <p>Who What Where listens to (aka "captures") your internet traffic and shows you which IP addresses were contacted, as well as some additional info such as ping time and geographical location of the IP address. Set your preferred settings, start and
@@ -91,33 +92,37 @@
 		<br><br>
 	    <a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/CaptureOptions.png">Capture Options:</a>
 	    <ul>
-	      <li><p>Protocol selection: If no protocol is selected, then all protocols will be counted. Otherwise, only packets of the selected protocols will be counted.</li>
-	      <li><p>Automatically/manually stop capture: Choose if you'd like to stop the capture yourself, or let it stop automatically after a certain amount of time.</li>
+	      <li><p>Protocol selection: If no protocol is selected, then all protocols will be counted. Otherwise, only packets of the selected protocols will be counted.</p></li>
+	      <li><p>Automatically/manually stop capture: Choose if you'd like to stop the capture yourself, or let it stop automatically after a certain amount of time.</p></li>
 	      <li><p>Extra information:
 
-	        <i>Get location info for each IP address</i> - If checked, every IP address entry will also show its geographical location information (see <a href="#GeoIPLimitations">limitations</a>). If unchecked, the results will be displayed a bit quicker.
+	        <br><i>Get location info for each IP address</i> - If checked, every IP address entry will also show its geographical location information (see <a href="#GeoIPLimitations">limitations</a>). If unchecked, the results will be displayed a bit quicker.
 
-	        <i>Ping each IP address</i> - If checked, each IP address entry will also show the ping result to that IP. There is also a configurable timeout. If unchecked, the results will be displayed a bit quicker.
+	        <br><i>Ping each IP address</i> - If checked, each IP address entry will also show the ping result to that IP. There is also a configurable timeout. If unchecked, the results will be displayed a bit quicker.</p>
 	      </li>
 	    </ul>
 
-	    <p><strong>Right-clicking on a result in the table</strong> opens a <a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/TableRightClick.png">pop-up menu</a> with several options: "See more GeoIP results in the browser" loads a GeoIP service
+	    <a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/TableRightClick.png">Right-clicking on a result in the table opens a pop-up menu</a> with several options: "See more GeoIP results in the browser" loads a GeoIP service
 	    results in the default web-browser. This site might have more (or different) results than what's shown in the table. See <a href="#GeoIPLimitations">GeoIP Limitations</a>.
-
+		<br><br>
+		<a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/UserNotesWWW.png">User notes:</a> Allows users to associate notes with IP addresses. Either add a note from the results table by clicking the user notes cell on a row, or manage all of the user notes from the menu "File" -> "Manage user notes". 
+		<br>User notes can help remember what's the IP address used for, and can also be used as a filter in Watchdog.
 		<br><br>
 	    <a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/HotkeyOptions.png">Hotkey and Text-To-Speech Options:</a> Instead of manually pressing the start/stop buttons, you can use a hotkey. The hotkey is active globally, meaning
 	    you can press it while using any other application and even when Who What Where is minimized to the system tray. If a capture is running, the hotkey will stop it. Otherwise, it will start a new capture. If the text-to-speech feature is enabled and
 	    you use the hotkey to start or stop the capture, the results will be read out ot you - so you don't have the look at the application screen. This is useful when you already know what you're looking for. You can also filter out what is read to you,
 	    the first X rows or only rows that contain a certain value in a certain column. You can also select which column values to read out.
-
+		</p>
 
 	    <h3>Ping to Speech</h3> <p>Put in any IP or hostname, and press the hotkey. The ping result will be read out. The hotkey is configurable, and the default one (Ctrl+NumPad 0) requires the numlock on your keyboard to be on.
 
 
-	    <h3>Watchdog</h3> <p>Watchdog listens to your network traffic and informs you when a packet arrives from a certain IP/port/protocol. Click "Manage match list" to add entries to the list, or load an existing preset. After clicking "Done", write a message to read out when
-	    a match from the list is found. You can preview the message with the preview button. Once the list and message are set, click "Start waiting for match" or press the hotkey. The default hotkey (Ctrl+NumPad 1) requires the numlock on your keyboard to
-	    be on.
-
+	    <h3>Watchdog</h3> <p>Watchdog listens to your network traffic and informs you when a packet matches a certain filter that you set. You can set filters based on packet direction (incoming/outgoing), IP address or ranges (subnets), user notes, packet size (including ranges) and source/destination ports ranges.
+		<br>Click "Manage match list" to add entries to the filters list, or load a saved preset. When a match is found, the message you wrote for that filter will be read out by text-to-speech or displayed as a pop-up on the screen, according to your selection. Once the filters and messages are set, press Done.
+		<br>Select a radiobutton to indicate if Watchdog should just wait for the first packet of this type and inform you, or keep watching for these packets until you stop it. If you choose to keep looking for matches, specify
+		a cooldown period. A cooldown period is the minimal amount of time between getting a Watchdog alert, its purpose is to avoid flooding you with messages. Minimal cooldown period is 3 seconds.
+		<br>To start the Watchdog, click "Start waiting for match" or press the hotkey. The default hotkey (Ctrl+NumPad 1) requires the numlock on your keyboard to be on.
+		</p>
 	    <h3>Visual Trace</h3> <p>Put in any IP or hostname, and click "Trace". A trace window opens, where you can configure a ping timeout and whether or not to resolve hostnames. Click "Start trace" and wait for the trace to <a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/Trace.png">complete</a>.
 	    Then click "Show visual trace". In the <a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/VisualTrace.png">Visual Trace screen</a> you can check/uncheck any hop on the route and see the changes on the map. You can also
 	    click "Focus map here" to see the exact location of the hop zoomed in, or you can click "GeoIP Info" to view info from another GeoIP source on your default browser.
