@@ -815,8 +815,9 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 			if (isTimedTaskRunning)
 			{
-				timer.schedule(timerTask, numFieldCaptureTimeout.getValue() * 1000);
-				timerExpires = " Timer set to expire at " + LocalDateTime.now().toString().split("T")[1].split("\\.")[0];
+				Integer secondsToCapture = numFieldCaptureTimeout.getValue();
+				timer.schedule(timerTask, secondsToCapture * 1000);
+				timerExpires = " Timer set to expire at " + LocalDateTime.now().plusSeconds(secondsToCapture).toString().split("T")[1].split("\\.")[0];
 			}
 
 			labelStatus.setText(statusCapturing + timerExpires);
@@ -861,32 +862,12 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 	private void setProtocolCheckboxes(Properties props)
 	{
-		boolean isChecked;
 		protocolBoxesChecked = 0;
 
-		isChecked = PropertiesByType.getBoolProperty(props, propsChkboxUDP, false);
-		if (isChecked)
-			protocolBoxesChecked++;
-
-		chkboxUDP.setSelected(isChecked);
-
-		isChecked = PropertiesByType.getBoolProperty(props, propsChkboxTCP, false);
-		if (isChecked)
-			protocolBoxesChecked++;
-
-		chkboxTCP.setSelected(isChecked);
-
-		isChecked = PropertiesByType.getBoolProperty(props, propsChkboxICMP, false);
-		if (isChecked)
-			protocolBoxesChecked++;
-
-		chkboxICMP.setSelected(isChecked);
-
-		isChecked = PropertiesByType.getBoolProperty(props, propsChkboxHTTP, false);
-		if (isChecked)
-			protocolBoxesChecked++;
-
-		chkboxHTTP.setSelected(isChecked);
+		chkboxUDP.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUDP, false));
+		chkboxTCP.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxTCP, false));
+		chkboxICMP.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxICMP, false));
+		chkboxHTTP.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxHTTP, false));
 
 		if (protocolBoxesChecked == 0)
 			chkboxAnyProtocol.setSelected(true);
