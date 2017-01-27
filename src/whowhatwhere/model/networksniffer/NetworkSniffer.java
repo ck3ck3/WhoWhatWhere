@@ -36,10 +36,12 @@ import whowhatwhere.model.networksniffer.watchdog.WatchdogPacketHandler;
 public class NetworkSniffer
 {
 	private static final Logger logger = Logger.getLogger(NetworkSniffer.class.getPackage().getName());
-	
+	private static TreeBidiMap protocolBidiMap;
+	private static boolean initSuccessful;
+	private static List<String> errorList = new ArrayList<String>();
+
 	public static final String[] supportedProtocols = {"ICMP", "UDP", "TCP", "HTTP"};
 	
-	private static TreeBidiMap protocolBidiMap;
 	static
 	{
 		protocolBidiMap = new TreeBidiMap();
@@ -48,8 +50,10 @@ public class NetworkSniffer
 		protocolBidiMap.put("TCP", Tcp.ID);
 		protocolBidiMap.put("HTTP", Http.ID);
 		
-		if (!loadJnetpcapDll(Main.jnetpcapDLLx86Location, Main.jnetpcapDLLx64Location)) //modify locations if needed
-			logger.log(Level.SEVERE, "Unable to load jnetpcap.dll. See log for more details.");
+		initSuccessful = loadJnetpcapDll(Main.jnetpcapDLLx86Location, Main.jnetpcapDLLx64Location);
+		
+		if (!initSuccessful)
+			logger.log(Level.SEVERE, "Unable to load jnetpcap.dll.");
 	}
 
 	private static int snaplen = 64 * 1024; // Capture all packets, no truncation
@@ -66,8 +70,11 @@ public class NetworkSniffer
 	private Map<String, PcapIf> ipToDevice = new HashMap<>();
 	private List<DeviceAddressesAndDescription> ipAndDescList = new ArrayList<>();
 
-	public NetworkSniffer()
+	public NetworkSniffer() throws IllegalStateException
 	{
+		if (!initSuccessful)
+			throw new IllegalStateException("Unable to load jnetpcap library. These errors were reported:\n" + String.join("\n", errorList));
+		
 		generateListOfDevices();
 	}
 
@@ -125,8 +132,10 @@ public class NetworkSniffer
 		}
 		catch (UnsatisfiedLinkError ule)
 		{
+			errorList.add("Trying to load " + copyDllFrom + " : " + ule.getMessage());
+			
 			if (logULE)
-				logger.log(Level.SEVERE, "Unable to load " + copyDllFrom, ule);
+				logger.log(Level.SEVERE, String.join("\n", errorList));
 
 			return false;
 		}

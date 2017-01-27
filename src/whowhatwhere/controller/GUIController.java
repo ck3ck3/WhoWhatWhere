@@ -249,7 +249,19 @@ public class GUIController implements Initializable
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
-		sniffer = new NetworkSniffer();
+		try
+		{
+			sniffer = new NetworkSniffer();
+		}
+		catch(IllegalStateException ise)
+		{
+			if (ise.getMessage().contains("Can't find dependent libraries"))
+				generateLabelAndLinkAlert(AlertType.ERROR, "Application cannot be started", "WinPcap is not installed!", "Please download and install WinPcap from", "http://www.winpcap.org/install/default.htm").showAndWait();
+			else
+				new Alert(AlertType.ERROR, "Critical error, application cannot be started:\n" + ise.getMessage()).showAndWait();
+			
+			shutdownApp();
+		}
 
 		createNICRadioButtons();
 		vboxNICs.setSpacing(10);
@@ -557,7 +569,7 @@ public class GUIController implements Initializable
 
 		Alert about = generateLabelAndLinkAlert(AlertType.INFORMATION, "About " + appName, appName + " version " + version, "For more information visit ", website);
 
-		about.show();
+		about.showAndWait();
 	}
 
 	/**
