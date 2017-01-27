@@ -66,7 +66,7 @@ import whowhatwhere.model.networksniffer.DeviceAddressesAndDescription;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.startwithwindows.StartWithWindowsRegistryUtils;
 
-public class GUIController implements Initializable
+public class GUIController implements Initializable, CheckForUpdatesResultHandler
 {
 	private final static String propsFileLocation = Main.getAppName() + ".properties";
 	private final static String defaultPropsResource = "/defaultLastRun.properties";
@@ -75,7 +75,7 @@ public class GUIController implements Initializable
 	private final static String propsShowMessageOnMinimize = "showMinimizeMessage";
 	private final static String propsStartMinimized = "startMinimized";
 	private final static String propsIgnoreRunPathDiff = "ignorePathDiff";
-	private final static String propsCheckForUpdatesOnStartup = "checkForUpdatesOnStartup"; 
+	private final static String propsCheckForUpdatesOnStartup = "checkForUpdatesOnStartup";
 	private final static String voiceForTTS = "kevin16";
 
 	private final static Logger logger = Logger.getLogger(GUIController.class.getPackage().getName());
@@ -95,9 +95,7 @@ public class GUIController implements Initializable
 	@FXML
 	private CheckBox chkboxHTTP;
 	@FXML
-	private RadioButton radioManual;
-	@FXML
-	private RadioButton radioTimedCapture;
+	private CheckBox chkboxTimedCapture;
 	@FXML
 	private Button btnStart;
 	@FXML
@@ -216,10 +214,10 @@ public class GUIController implements Initializable
 	private RadioButton radioWatchdogKeepLooking;
 	@FXML
 	private AnchorPane paneWatchdogCooldown;
-	@FXML 
+	@FXML
 	private NumberTextField numFieldWatchdogCooldown;
 	@FXML
-	private AnchorPane paneWatchdogConfig;	
+	private AnchorPane paneWatchdogConfig;
 	@FXML
 	private NumberTextField numFieldCaptureTimeout;
 	@FXML
@@ -228,7 +226,6 @@ public class GUIController implements Initializable
 	private NumberTextField numFieldPingTimeout;
 	@FXML
 	private ToggleGroup tglGrpCaptureOptions;
-	
 
 	private ToggleGroup tglGrpNIC = new ToggleGroup();
 	private NetworkSniffer sniffer;
@@ -253,13 +250,14 @@ public class GUIController implements Initializable
 		{
 			sniffer = new NetworkSniffer();
 		}
-		catch(IllegalStateException ise)
+		catch (IllegalStateException ise)
 		{
 			if (ise.getMessage().contains("Can't find dependent libraries"))
-				generateLabelAndLinkAlert(AlertType.ERROR, "Application cannot be started", "WinPcap is not installed!", "Please download and install WinPcap from", "http://www.winpcap.org/install/default.htm").showAndWait();
+				generateLabelAndLinkAlert(AlertType.ERROR, "Application cannot be started", "WinPcap is not installed!", "Please download and install WinPcap from",
+						"http://www.winpcap.org/install/default.htm").showAndWait();
 			else
 				new Alert(AlertType.ERROR, "Critical error, application cannot be started:\n" + ise.getMessage()).showAndWait();
-			
+
 			shutdownApp();
 		}
 
@@ -331,12 +329,12 @@ public class GUIController implements Initializable
 			Event.fireEvent(stage, new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
 		});
 		menuItemExit.setOnAction(event -> exitButtonPressed());
-		
+
 		menuItemChkCheckUpdateStartup.setOnAction(ae -> checkForUpdatesOnStartup = ((CheckMenuItem) ae.getSource()).isSelected());
 		menuItemChkDisplayBalloon.setOnAction(ae -> showMessageOnMinimize = ((CheckMenuItem) ae.getSource()).isSelected());
 		menuItemChkAllUsers.setOnAction(handleStartWithWindowsClick(true, menuItemChkThisUserOnly));
 		menuItemChkThisUserOnly.setOnAction(handleStartWithWindowsClick(false, menuItemChkAllUsers));
-		
+
 		menuItemUpdate.setOnAction(event -> checkForUpdates(false));
 		menuItemAbout.setOnAction(event -> showAboutWindow());
 	}
@@ -473,7 +471,7 @@ public class GUIController implements Initializable
 
 		checkForUpdatesOnStartup = PropertiesByType.getBoolProperty(props, propsCheckForUpdatesOnStartup, true);
 		menuItemChkCheckUpdateStartup.setSelected(checkForUpdatesOnStartup);
-		
+
 		showMessageOnMinimize = PropertiesByType.getBoolProperty(props, propsShowMessageOnMinimize, true);
 		menuItemChkDisplayBalloon.setSelected(showMessageOnMinimize);
 
@@ -499,17 +497,17 @@ public class GUIController implements Initializable
 
 			if (allUsers != null || currentUser != null) //only one or none of these are supposed to be set. Never both.
 			{
-				String locationToStartFrom = (allUsers == null ? currentUser : allUsers); 
+				String locationToStartFrom = (allUsers == null ? currentUser : allUsers);
 				String currentRunLocation = System.getProperty("user.dir") + "\\" + Main.getExecutablefilename();
 
 				if (!ignoreRunPathDiff && !currentRunLocation.equalsIgnoreCase(locationToStartFrom))
 				{
 					boolean forAllUsers = allUsers != null;
-					String message = Main.getAppName() + " is set to run when Windows starts, but you are currently running it from a different path than the one Windows is set to run it from.\n" + 
-															"Current path: " + currentRunLocation + "\nWindows is set to run it from: " + locationToStartFrom + "\n\nPlease choose how to proceed:";
-					
+					String message = Main.getAppName() + " is set to run when Windows starts, but you are currently running it from a different path than the one Windows is set to run it from.\n"
+							+ "Current path: " + currentRunLocation + "\nWindows is set to run it from: " + locationToStartFrom + "\n\nPlease choose how to proceed:";
+
 					boolean userChoseDelete = showStartupPathConflictDialog(forAllUsers, message);
-					
+
 					if (userChoseDelete)
 						return; //don't setSelected
 				}
@@ -523,12 +521,17 @@ public class GUIController implements Initializable
 			logger.log(Level.SEVERE, "Failed querying the registry for StartWithWindows values", ioe);
 		}
 	}
-	
+
 	/**
-	 * @param forAllUsers - true if the startup setting is for all users, false if for current user only
-	 * @param message - the message to display in the dialog
-	 * @return true if the user chose to delete the program from startup, false otherwise.
-	 * @throws IOException - if there was a problem modifying the registry
+	 * @param forAllUsers
+	 *            - true if the startup setting is for all users, false if for
+	 *            current user only
+	 * @param message
+	 *            - the message to display in the dialog
+	 * @return true if the user chose to delete the program from startup, false
+	 *         otherwise.
+	 * @throws IOException
+	 *             - if there was a problem modifying the registry
 	 */
 	private boolean showStartupPathConflictDialog(boolean forAllUsers, String message) throws IOException
 	{
@@ -538,19 +541,19 @@ public class GUIController implements Initializable
 
 		Optional<ButtonType> result = new Alert(AlertType.CONFIRMATION, message, btnModify, btnDelete, btnIgnore).showAndWait();
 		ButtonType chosenButton = result.get();
-		
+
 		if (chosenButton == btnModify)
 			StartWithWindowsRegistryUtils.setRegistryToStartWithWindows(true, forAllUsers);
 		else
 			if (chosenButton == btnDelete)
 			{
 				StartWithWindowsRegistryUtils.setRegistryToStartWithWindows(false, forAllUsers);
-				return true; 
+				return true;
 			}
 			else
 				if (chosenButton == btnIgnore)
 					ignoreRunPathDiff = true;
-		
+
 		return false;
 	}
 
@@ -579,14 +582,38 @@ public class GUIController implements Initializable
 	 */
 	private void checkForUpdates(boolean silent)
 	{
-		boolean updateAvailable = false;
-		Alert alert = null;
-
-		try
+		new Thread(() ->
 		{
-			updateAvailable = Main.isUpdateAvailable();
+			try
+			{
+				Main.isUpdateAvailable(this, silent);
+			}
+			catch (IOException e)
+			{
+				if (!silent)
+				{
+					Platform.runLater(() ->
+					{
+						Alert alert = new Alert(AlertType.ERROR);
+						alert.setHeaderText("Unable to check for updates");
+						alert.setContentText(e.getMessage());
+						alert.showAndWait();
+					});
+				}
 
-			if (updateAvailable)
+				logger.log(Level.SEVERE, "Failed to check for updates", e);	
+			}				
+		}).start();
+	}
+	
+	@Override
+	public void checkForUpdatesResult(boolean newVersionExists, boolean silent)
+	{
+		Platform.runLater(() ->
+		{
+			Alert alert;
+			
+			if (newVersionExists)
 				alert = generateLabelAndLinkAlert(AlertType.INFORMATION, "Check for updates", "New version available!", "Download the new version at ", Main.getWebsite());
 			else
 			{
@@ -595,23 +622,10 @@ public class GUIController implements Initializable
 				alert.setHeaderText("No new updates available.");
 				alert.setContentText("You are running the latest version.");
 			}
-		}
-		catch (Exception e)
-		{
-			if (!silent)
-			{
-				alert = new Alert(AlertType.ERROR);
-				alert.setHeaderText("Unable to check for updates");
-				alert.setHeaderText(e.getMessage());
-			}
-
-			logger.log(Level.SEVERE, "Failed to check for updates", e);
-		}
-		finally
-		{
-			if (updateAvailable || !silent)
+			
+			if (newVersionExists || !silent)
 				alert.showAndWait();
-		}
+		});
 	}
 
 	private Alert generateLabelAndLinkAlert(AlertType type, String title, String header, String text, String url)
@@ -672,14 +686,9 @@ public class GUIController implements Initializable
 		return chkboxHTTP;
 	}
 
-	public RadioButton getRadioManual()
+	public CheckBox getChkboxTimedCapture()
 	{
-		return radioManual;
-	}
-
-	public RadioButton getRadioTimedCapture()
-	{
-		return radioTimedCapture;
+		return chkboxTimedCapture;
 	}
 
 	public Button getBtnStart()
@@ -926,34 +935,34 @@ public class GUIController implements Initializable
 	{
 		return (Stage) tabPane.getScene().getWindow();
 	}
-	
+
 	public RadioButton getRadioWatchdogStopAfterMatch()
 	{
 		return radioWatchdogStopAfterMatch;
 	}
-	
+
 	public RadioButton getRadioWatchdogKeepLooking()
 	{
 		return radioWatchdogKeepLooking;
 	}
-	
+
 	public AnchorPane getPaneWatchdogCooldown()
 	{
 		return paneWatchdogCooldown;
 	}
-	
+
 	public NumberTextField getNumFieldWatchdogCooldown()
 	{
 		return numFieldWatchdogCooldown;
 	}
-	
+
 	public AnchorPane getPaneWatchdogConfig()
 	{
 		return paneWatchdogConfig;
 	}
-	
+
 	/**
-	 * @return a map that maps user note to a list of IPs that have that note 
+	 * @return a map that maps user note to a list of IPs that have that note
 	 */
 	public Map<String, List<String>> getUserNotesReverseMap()
 	{

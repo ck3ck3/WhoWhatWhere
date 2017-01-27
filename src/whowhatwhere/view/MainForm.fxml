@@ -47,11 +47,11 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <HBox prefHeight="275.0" prefWidth="1022.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="2.0">
+                        <HBox prefHeight="244.0" prefWidth="1188.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="2.0">
                            <children>
                               <ScrollPane hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
                                  <content>
-                                    <VBox fx:id="vboxNICs" fillWidth="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="190.0" minWidth="500.0" prefHeight="273.0" prefWidth="500.0">
+                                    <VBox fx:id="vboxNICs" fillWidth="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="190.0" minWidth="500.0" prefHeight="241.0" prefWidth="500.0">
                                        <children>
                                           <Label text="Choose your network adapter:">
                                              <padding>
@@ -74,31 +74,27 @@
                                                 <CheckBox fx:id="chkboxTCP" layoutX="157.0" layoutY="30.0" mnemonicParsing="false" text="TCP" />
                                                 <CheckBox fx:id="chkboxICMP" layoutX="207.0" layoutY="30.0" mnemonicParsing="false" text="ICMP" />
                                                 <CheckBox fx:id="chkboxHTTP" layoutX="266.0" layoutY="30.0" mnemonicParsing="false" text="HTTP" />
-                                                <Label layoutX="260.0" layoutY="70.0" text="seconds" />
-                                                <CheckBox fx:id="chkboxGetLocation" layoutY="127.0" mnemonicParsing="false" selected="true" text="Get location info for each IP address" />
-                                                <RadioButton fx:id="radioManual" layoutY="95.0" mnemonicParsing="false" text="Stop capture manually">
-                                                   <toggleGroup>
-                                                      <ToggleGroup fx:id="tglGrpCaptureOptions" />
-                                                   </toggleGroup></RadioButton>
-                                                <RadioButton fx:id="radioTimedCapture" layoutY="70.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="203.0" text="Automatically stop capturing after" toggleGroup="$tglGrpCaptureOptions" />
-                                                <CheckBox fx:id="chkboxPing" layoutY="155.0" mnemonicParsing="false" selected="true" text="Ping each IP address" />
-                                                <Label layoutX="139.0" layoutY="155.0" text="Ping timeout:" />
-                                                <Label layoutX="268.0" layoutY="155.0" text="milliseconds" />
-                                                <NumberTextField fx:id="numFieldCaptureTimeout" layoutX="207.0" layoutY="66.0" minValue="1" prefHeight="25.0" prefWidth="49.0" />
-                                                <NumberTextField fx:id="numFieldPingTimeout" layoutX="216.0" layoutY="151.0" minValue="1" prefHeight="25.0" prefWidth="47.0" />
+                                                <Label layoutX="260.0" layoutY="130.0" text="seconds" />
+                                                <CheckBox fx:id="chkboxGetLocation" layoutY="70.0" mnemonicParsing="false" selected="true" text="Get location info for each IP address" />
+                                                <CheckBox fx:id="chkboxTimedCapture" layoutY="130.0" mnemonicParsing="false" selected="true" text="Automatically stop capturing after" />
+                                                <CheckBox fx:id="chkboxPing" layoutY="98.0" mnemonicParsing="false" selected="true" text="Ping each IP address" />
+                                                <Label layoutX="139.0" layoutY="98.0" text="Ping timeout:" />
+                                                <Label layoutX="268.0" layoutY="98.0" text="milliseconds" />
+                                                <NumberTextField fx:id="numFieldCaptureTimeout" layoutX="207.0" layoutY="126.0" minValue="1" prefHeight="25.0" prefWidth="49.0" />
+                                                <NumberTextField fx:id="numFieldPingTimeout" layoutX="216.0" layoutY="94.0" minValue="1" prefHeight="25.0" prefWidth="47.0" />
                                              </children>
                                           </AnchorPane>
-                                          <Button fx:id="btnStart" layoutX="7.0" layoutY="204.0" mnemonicParsing="false" text="Start capturing" />
-                                          <Button fx:id="btnStop" layoutX="108.0" layoutY="204.0" mnemonicParsing="false" text="Stop capturing" />
-                                          <Label fx:id="labelStatus" layoutX="7.0" layoutY="249.0" text="Status: Idle" />
+                                          <Button fx:id="btnStart" layoutX="7.0" layoutY="174.0" mnemonicParsing="false" text="Start capturing" />
+                                          <Button fx:id="btnStop" layoutX="108.0" layoutY="174.0" mnemonicParsing="false" text="Stop capturing" />
+                                          <Label fx:id="labelStatus" layoutX="7.0" layoutY="219.0" text="Status: Idle" />
                                        </children>
                                     </AnchorPane>
                                  </content>
                               </ScrollPane>
                            </children>
                         </HBox>
-                        <Label layoutX="15.0" layoutY="289.0" text="Results:" />
-                        <TableView fx:id="tableResults" editable="true" layoutY="315.0" prefHeight="210.0" prefWidth="992.0" stylesheets="whowhatwhere/view/tableResults.css" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="168.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="315.0">
+                        <Label layoutX="15.0" layoutY="257.0" text="Results:" />
+                        <TableView fx:id="tableResults" editable="true" layoutY="280.0" prefHeight="245.0" prefWidth="1158.0" stylesheets="whowhatwhere/view/tableResults.css" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="168.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="280.0">
                            <columns>
                               <TableColumn fx:id="columnPacketCount" editable="false" prefWidth="115.0" sortType="DESCENDING" text="Packet Count" />
                               <TableColumn fx:id="columnIP" minWidth="8.0" prefWidth="115.0" text="IP Address" />

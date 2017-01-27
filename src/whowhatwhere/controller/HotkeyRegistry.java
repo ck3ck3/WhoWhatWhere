@@ -8,6 +8,7 @@ import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
@@ -41,10 +42,17 @@ public class HotkeyRegistry
 			{
 				hotkeyManager.setKeySelection(hotkeyID, true);
 				
+				alertChangeHotkey.setOnCloseRequest(dialogEvent -> 
+				{
+					if (hotkeyManager.isKeySelection()) //if the dialog is getting closed without setting a new hotkey, disable the new key selection
+						hotkeyManager.setKeySelection(hotkeyID, false);
+					
+				});
+				
 				if (nodeToDisableOnKeyConfig != null)
 					nodeToDisableOnKeyConfig.setDisable(true);
 				
-				alertChangeHotkey.show();
+				alertChangeHotkey.showAndWait();
 			}
 		};
 	}
@@ -159,6 +167,7 @@ public class HotkeyRegistry
 		alertChangeHotkey.setTitle("Change hotkey");
 		alertChangeHotkey.setHeaderText("Choose a new hotkey");
 		alertChangeHotkey.setContentText("Press the new hotkey");
+		alertChangeHotkey.getButtonTypes().add(new ButtonType("Cancel"));
 	}
 
 	private void closeHotkeyChangeAlert()

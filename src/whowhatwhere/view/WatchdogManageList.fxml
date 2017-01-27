@@ -47,8 +47,8 @@
             <Button fx:id="btnRemoveRow" layoutX="90.0" mnemonicParsing="false" text="Remove entry" />
             <Button fx:id="btnSavePreset" layoutX="102.0" layoutY="44.0" mnemonicParsing="false" text="Save as preset" />
             <MenuButton fx:id="menubtnLoadPreset" layoutY="44.0" mnemonicParsing="false" text="Load preset" />
-            <Button fx:id="btnMoveUp" layoutX="197.0" layoutY="2.0" mnemonicParsing="false" text="Move selected entry up" />
-            <Button fx:id="btnMoveDown" layoutX="344.0" layoutY="2.0" mnemonicParsing="false" text="Move selected entry down" />
+            <Button fx:id="btnMoveUp" layoutX="197.0" mnemonicParsing="false" text="Move selected entry up" />
+            <Button fx:id="btnMoveDown" layoutX="344.0" mnemonicParsing="false" text="Move selected entry down" />
          </children>
       </AnchorPane>
       <Button fx:id="btnClose" layoutX="1363.0" layoutY="446.0" mnemonicParsing="false" text="Done" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="16.0" />

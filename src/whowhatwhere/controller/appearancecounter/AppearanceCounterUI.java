@@ -74,9 +74,8 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private final static String propsChkboxTCP = "chkboxTCP";
 	private final static String propsChkboxICMP = "chkboxICMP";
 	private final static String propsChkboxHTTP = "chkboxHTTP";
-	private final static String propsRadioTimedCapture = "radioTimedCapture";
+	private final static String propsChkboxTimedCapture = "chkboxTimedCapture";
 	private final static String propsNumFieldCaptureTimeout = "numFieldCaptureTimeout";
-	private final static String propsRadioManual = "radioManual";
 	private final static String propsChkboxGetLocation = "chkboxGetLocation";
 	private final static String propsChkboxPing = "chkboxPing";
 	private final static String propsNumFieldPingTimeout = "numFieldPingTimeout";
@@ -98,7 +97,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private final static String statusStopping = "Status: Stopping capture...";
 	private final static String statusResults = "Status: Fetching results...";
 	private final static String msgTimerExpired = "Timer expired, stopping capture";
-	private final static String captureHotkeyID = "Mosed used IPs capture hotkey";
+	private final static String captureHotkeyID = "WhoWhatWhere capture hotkey";
 	private final static String voiceForTTS = "kevin16";
 	
 	private final static String emptyNotesString = "(Click to add notes)";
@@ -111,8 +110,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private NumberTextField numFieldCaptureTimeout;
 	private NumberTextField numFieldPingTimeout;
 	private NumberTextField numFieldRowsToRead;
-	private RadioButton radioManual;
-	private RadioButton radioTimedCapture;
+	private CheckBox chkboxTimedCapture;
 	private AnchorPane paneCaptureOptions;
 	private AnchorPane paneUseTTS;
 	private CheckBox chkboxPing;
@@ -221,8 +219,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		numFieldCaptureTimeout = controller.getNumFieldCaptureTimeout();
 		numFieldPingTimeout = controller.getNumberFieldPingTimeout();
 		numFieldRowsToRead = controller.getNumFieldRowsToRead();
-		radioManual = controller.getRadioManual();
-		radioTimedCapture = controller.getRadioTimedCapture();
+		chkboxTimedCapture = controller.getChkboxTimedCapture();
 		paneCaptureOptions = controller.getPaneCaptureOptions();
 		paneUseTTS = controller.getPaneUseTTS();
 		chkboxPing = controller.getChkboxPing();
@@ -269,8 +266,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		chkboxFilterResults.selectedProperty().addListener((ov, old_val, new_val) -> paneFilterResults.setDisable(!new_val));
 		chkboxPing.selectedProperty().addListener((ov, old_val, new_val) -> numFieldPingTimeout.setDisable(!new_val));
 
-		radioManual.setOnAction(event -> numFieldCaptureTimeout.setDisable(true));
-		radioTimedCapture.setOnAction(event -> numFieldCaptureTimeout.setDisable(false));
+		chkboxTimedCapture.selectedProperty().addListener((ov, old_val, new_val) -> numFieldCaptureTimeout.setDisable(!new_val));
 
 		ChangeListener<Boolean> protocolBoxes = (observable, oldValue, newValue) ->
 		{
@@ -543,13 +539,13 @@ public class AppearanceCounterUI implements CaptureStartListener
 			}
 		};
 
-		if (radioTimedCapture.isSelected())
+		if (chkboxTimedCapture.isSelected())
 		{
 			timerTask = initTimer();
 			timer = new Timer(true);
 		}
 
-		if (radioTimedCapture.isSelected())
+		if (chkboxTimedCapture.isSelected())
 			isTimedTaskRunning = true;
 
 		new Thread(workerThreadTask).start();
@@ -852,9 +848,8 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 	private void setCaptureOptionsPane(Properties props)
 	{
-		radioTimedCapture.setSelected(PropertiesByType.getBoolProperty(props, propsRadioTimedCapture, false));
+		chkboxTimedCapture.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxTimedCapture, false));
 		numFieldCaptureTimeout.setText(PropertiesByType.getProperty(props, propsNumFieldCaptureTimeout));
-		radioManual.setSelected(PropertiesByType.getBoolProperty(props, propsRadioManual, false));
 		chkboxGetLocation.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxGetLocation, false));
 		chkboxPing.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxPing, false));
 		numFieldPingTimeout.setText(PropertiesByType.getProperty(props, propsNumFieldPingTimeout));
@@ -875,7 +870,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 	private void setDisabledPanes()
 	{
-		numFieldCaptureTimeout.setDisable(!radioTimedCapture.isSelected());
+		numFieldCaptureTimeout.setDisable(!chkboxTimedCapture.isSelected());
 		numFieldPingTimeout.setDisable(!chkboxPing.isSelected());
 		paneEnableCaptureHotkey.setDisable(!chkboxUseCaptureHotkey.isSelected());
 		paneFilterResults.setDisable(!chkboxFilterResults.isSelected());
@@ -901,9 +896,8 @@ public class AppearanceCounterUI implements CaptureStartListener
 		props.put(propsChkboxTCP, ((Boolean) chkboxTCP.isSelected()).toString());
 		props.put(propsChkboxICMP, ((Boolean) chkboxICMP.isSelected()).toString());
 		props.put(propsChkboxHTTP, ((Boolean) chkboxHTTP.isSelected()).toString());
-		props.put(propsRadioTimedCapture, ((Boolean) radioTimedCapture.isSelected()).toString());
+		props.put(propsChkboxTimedCapture, ((Boolean) chkboxTimedCapture.isSelected()).toString());
 		props.put(propsNumFieldCaptureTimeout, numFieldCaptureTimeout.getText());
-		props.put(propsRadioManual, ((Boolean) radioManual.isSelected()).toString());
 		props.put(propsChkboxGetLocation, ((Boolean) chkboxGetLocation.isSelected()).toString());
 		props.put(propsChkboxPing, ((Boolean) chkboxPing.isSelected()).toString());
 		props.put(propsNumFieldPingTimeout, numFieldPingTimeout.getText());

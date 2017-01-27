@@ -28,6 +28,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import whowhatwhere.controller.CheckForUpdatesResultHandler;
 
 public class Main extends Application
 {
@@ -139,7 +140,7 @@ public class Main extends Application
 		}
 	}
 
-	public static boolean isUpdateAvailable() throws IOException
+	public static void isUpdateAvailable(CheckForUpdatesResultHandler resultHandler, boolean silent) throws IOException
 	{
 		InputStream inputStream = new URL(urlForLatestRelease).openStream();
 		String response = IOUtils.toString(inputStream);
@@ -148,7 +149,7 @@ public class Main extends Application
 		JSONObject jsonObject = new JSONObject(response);
 		String version = (String) jsonObject.get("tag_name");
 
-		return !version.equals(getReleaseVersion());
+		resultHandler.checkForUpdatesResult(!version.equals(getReleaseVersion()), silent);
 	}
 
 	public static void openInBrowser(String link)
