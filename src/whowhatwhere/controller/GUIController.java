@@ -76,6 +76,10 @@ public class GUIController implements Initializable, CheckForUpdatesResultHandle
 	private final static String propsStartMinimized = "startMinimized";
 	private final static String propsIgnoreRunPathDiff = "ignorePathDiff";
 	private final static String propsCheckForUpdatesOnStartup = "checkForUpdatesOnStartup";
+	private final static String propsWidth = "lastRunWidth";
+	private final static String propsHeight = "lastRunHeight";
+	private final static String propsX = "lastRunX";
+	private final static String propsY = "lastRunY";
 	private final static String voiceForTTS = "kevin16";
 
 	private final static Logger logger = Logger.getLogger(GUIController.class.getPackage().getName());
@@ -411,8 +415,9 @@ public class GUIController implements Initializable, CheckForUpdatesResultHandle
 
 	private void saveCurrentRunValuesToProperties()
 	{
+		Stage stage = getStage();
 		Properties props = new Properties();
-
+		
 		appearanceCounterUI.saveCurrentRunValuesToProperties(props);
 		pingToSpeechUI.saveCurrentRunValuesToProperties(props);
 		watchdogUI.saveCurrentRunValuesToProperties(props);
@@ -426,6 +431,10 @@ public class GUIController implements Initializable, CheckForUpdatesResultHandle
 		props.put(propsShowMessageOnMinimize, String.valueOf(showMessageOnMinimize));
 		props.put(propsStartMinimized, String.valueOf(menuItemChkStartMinimized.isSelected()));
 		props.put(propsIgnoreRunPathDiff, String.valueOf(ignoreRunPathDiff));
+		props.put(propsWidth, String.valueOf(stage.getWidth()));
+		props.put(propsHeight, String.valueOf(stage.getHeight()));
+		props.put(propsX, String.valueOf(stage.getX()));
+		props.put(propsY, String.valueOf(stage.getY()));
 
 		try
 		{
@@ -482,10 +491,37 @@ public class GUIController implements Initializable, CheckForUpdatesResultHandle
 
 		ignoreRunPathDiff = PropertiesByType.getBoolProperty(props, propsIgnoreRunPathDiff, false);
 		loadStartWithWindowsSetting();
+		
+		loadLastRunDimensions(props);
 
 		appearanceCounterUI.loadLastRunConfig(props);
 		pingToSpeechUI.loadLastRunConfig(props);
 		watchdogUI.loadLastRunConfig(props);
+	}
+	
+	private void loadLastRunDimensions(Properties props)
+	{
+		Platform.runLater(() -> 
+		{
+			Stage stage = getStage();
+			Double value;
+			
+			value = PropertiesByType.getDoubleProperty(props, propsWidth, Double.NaN);
+			if (value != Double.NaN)
+				stage.setWidth(value);
+			
+			value = PropertiesByType.getDoubleProperty(props, propsHeight, Double.NaN);
+			if (value != Double.NaN)
+				stage.setHeight(value);
+			
+			value = PropertiesByType.getDoubleProperty(props, propsX, Double.NaN);
+			if (value != Double.NaN)
+				stage.setX(value);
+			
+			value = PropertiesByType.getDoubleProperty(props, propsY, Double.NaN);
+			if (value != Double.NaN)
+				stage.setY(value);
+		});
 	}
 
 	private void loadStartWithWindowsSetting()

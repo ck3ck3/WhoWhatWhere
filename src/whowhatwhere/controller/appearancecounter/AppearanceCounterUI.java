@@ -833,12 +833,12 @@ public class AppearanceCounterUI implements CaptureStartListener
 			hotkeyRegistry.addHotkey(captureHotkeyID, captureHotkeyModifiers, captureHotkeyKeyCode, labelCurrCaptureHotkey, captureHotkeyPressed);
 
 		chkboxUseTTS.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseTTS, false));
-		numFieldRowsToRead.setText(PropertiesByType.getProperty(props, propsNumFieldRowsToRead));
+		numFieldRowsToRead.setText(PropertiesByType.getStringProperty(props, propsNumFieldRowsToRead));
 
 		chkboxFilterResults.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxFilterResults, false));
-		textColumnContains.setText(PropertiesByType.getProperty(props, propsTextColumnContains, ""));
+		textColumnContains.setText(PropertiesByType.getStringProperty(props, propsTextColumnContains, ""));
 
-		String comboValue = PropertiesByType.getProperty(props, propsComboColumnsSelection, "");
+		String comboValue = PropertiesByType.getStringProperty(props, propsComboColumnsSelection, "");
 		if (!comboValue.isEmpty())
 			comboColumns.setValue(comboValue);
 
@@ -849,10 +849,10 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private void setCaptureOptionsPane(Properties props)
 	{
 		chkboxTimedCapture.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxTimedCapture, false));
-		numFieldCaptureTimeout.setText(PropertiesByType.getProperty(props, propsNumFieldCaptureTimeout));
+		numFieldCaptureTimeout.setText(PropertiesByType.getStringProperty(props, propsNumFieldCaptureTimeout));
 		chkboxGetLocation.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxGetLocation, false));
 		chkboxPing.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxPing, false));
-		numFieldPingTimeout.setText(PropertiesByType.getProperty(props, propsNumFieldPingTimeout));
+		numFieldPingTimeout.setText(PropertiesByType.getStringProperty(props, propsNumFieldPingTimeout));
 	}
 
 	private void setProtocolCheckboxes(Properties props)
@@ -887,7 +887,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		setCaptureHotkeyAndPane(props);
 		setDisabledPanes();
 		
-		suggestedPathForCSVFile = PropertiesByType.getProperty(props, propsExportCSVPath, System.getProperty("user.dir"));
+		suggestedPathForCSVFile = PropertiesByType.getStringProperty(props, propsExportCSVPath, System.getProperty("user.dir"));
 	}
 
 	public void saveCurrentRunValuesToProperties(Properties props)
@@ -946,7 +946,12 @@ public class AppearanceCounterUI implements CaptureStartListener
 			return;
 		}
 
-		userNotesScreen.showScreenOnNewStage("Manage User Notes", userNotesScreen.getCloseButton());
+		Stage newStage = userNotesScreen.showScreenOnNewStage("Manage User Notes", userNotesScreen.getCloseButton());
+		newStage.setOnCloseRequest(windowEvent -> 
+		{
+			windowEvent.consume();
+			userNotesScreen.getCloseButton().fire();
+		});
 	}
 
 	/**

@@ -165,7 +165,12 @@ public class WatchdogUI implements WatchdogListener
 				return;
 			}
 
-			manageListScreen.showScreenOnNewStage("Manage Watchdog list", manageListScreen.getCloseButton());
+			Stage newStage = manageListScreen.showScreenOnNewStage("Manage Watchdog list", manageListScreen.getCloseButton());
+			newStage.setOnCloseRequest(windowEvent -> 
+			{
+				windowEvent.consume();
+				manageListScreen.getCloseButton().fire();
+			});
 		});
 
 		radioStopAfterMatch.setOnAction(event -> paneCooldown.setDisable(true));
@@ -306,7 +311,7 @@ public class WatchdogUI implements WatchdogListener
 	{
 		setWatchdogHotkey(props);
 		
-		numFieldCooldown.setText(PropertiesByType.getProperty(props, propsNumFieldCooldown, String.valueOf(minCooldownValue)));
+		numFieldCooldown.setText(PropertiesByType.getStringProperty(props, propsNumFieldCooldown, String.valueOf(minCooldownValue)));
 		
 		if (PropertiesByType.getBoolProperty(props, propsRadioStopAfterMatch, true))
 			radioStopAfterMatch.fire(); //this way it activates the button handler

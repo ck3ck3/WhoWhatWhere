@@ -20,9 +20,9 @@ public class PropertiesByType
 		return value;
 	}
 	
-	public static boolean getBoolProperty(Properties props, String key)
+	public static boolean getBoolProperty(Properties props, String key) throws IllegalArgumentException
 	{
-		String value = getProperty(props, key);
+		String value = getStringProperty(props, key);
 
 		return value.equals("true");
 	}
@@ -43,14 +43,37 @@ public class PropertiesByType
 		return value;
 	}
 	
-	public static Integer getIntProperty(Properties props, String key)
+	public static Integer getIntProperty(Properties props, String key) throws IllegalArgumentException
 	{
-		String value = getProperty(props, key);
+		String value = getStringProperty(props, key);
 
 		return Integer.valueOf(value);
 	}
 	
-	public static String getProperty(Properties props, String key)
+	public static Double getDoubleProperty(Properties props, String key) throws IllegalArgumentException
+	{
+		String value = getStringProperty(props, key);
+		
+		return Double.valueOf(value);
+	}
+	
+	public static Double getDoubleProperty(Properties props, String key, Double defaultIfNoKey)
+	{
+		Double value;
+		
+		try
+		{
+			value = getDoubleProperty(props, key);
+		}
+		catch(IllegalArgumentException iae)
+		{
+			return defaultIfNoKey;
+		}
+		
+		return value;
+	}
+	
+	public static String getStringProperty(Properties props, String key) throws IllegalArgumentException
 	{
 		String value = props.getProperty(key);
 
@@ -60,13 +83,13 @@ public class PropertiesByType
 		return value;
 	}
 	
-	public static String getProperty(Properties props, String key, String defaultIfNoKey)
+	public static String getStringProperty(Properties props, String key, String defaultIfNoKey)
 	{
 		String value;
 		
 		try
 		{
-			value = getProperty(props, key);
+			value = getStringProperty(props, key);
 		}
 		catch(IllegalArgumentException iae)
 		{

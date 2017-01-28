@@ -22,11 +22,13 @@ import org.json.JSONObject;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import whowhatwhere.controller.CheckForUpdatesResultHandler;
 
@@ -47,8 +49,6 @@ public class Main extends Application
 	private final static String appTitle = "Who What Where";
 	private final static String executableFilename = "WhoWhatWhere.exe";
 	private final static String mainFormLocation = "/whowhatwhere/view/MainForm.fxml";
-	private final static int windowSizeX = 1190;
-	private final static int windowSizeY = 790;
 
 	private static Logger logger = Logger.getLogger(Main.class.getPackage().getName());
 
@@ -65,10 +65,16 @@ public class Main extends Application
 			URL fxmlLocation = Main.class.getResource(mainFormLocation);
 			Parent root = FXMLLoader.load(fxmlLocation);
 
-			Scene scene = new Scene(root, windowSizeX, windowSizeY);
+			Scene scene = new Scene(root);
 			primaryStage.setTitle(appTitle);
 			primaryStage.setScene(scene);
 			primaryStage.show();
+			
+			double height = primaryStage.getHeight();
+			double width = primaryStage.getWidth();
+			Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
+			if (primaryScreenBounds.getHeight() < height || primaryScreenBounds.getWidth() < width)
+				primaryStage.setMaximized(true);
 		}
 		catch (IOException e)
 		{

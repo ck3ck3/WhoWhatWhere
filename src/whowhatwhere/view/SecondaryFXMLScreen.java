@@ -86,20 +86,23 @@ public abstract class SecondaryFXMLScreen
 	/**
 	 * Shows the screen on a new stage
 	 * 
+	 * @param title
+	 *            - Title for the new stage
 	 * @param buttonsToClose
 	 *            - list of buttons that close this window. The buttons'
 	 *            onAction doesn't have to implement anything, not even closing
-	 *            the screen. If onAction is implemented, it MUST to be done in
-	 *            the constructor of the inheriting class, and then that
+	 *            the screen. If onAction is implemented, it <b>MUST</b> to be
+	 *            done in the constructor of the inheriting class, and then that
 	 *            implementation will be called before closing the window. In
 	 *            case the window shouldn't be closed (if there's an input error
 	 *            on a form for example), the inheriting class' onAction method
 	 *            implementation should throw an IllegalArgumentException, which
 	 *            will then not close the window.
-	 * @param title
-	 *            - Title for the new stage
+	 * @return The new stage that was created for this screen. Users can then
+	 *         call setOnCloseRequest() on it to decide behavior on external
+	 *         (non {@code buttonsToClose}) close request
 	 */
-	public void showScreenOnNewStage(String title, Button... buttonsToClose)
+	public Stage showScreenOnNewStage(String title, Button... buttonsToClose)
 	{
 		Scene scene = new Scene(getLoadedFXML());
 		Stage stage = new Stage();
@@ -128,6 +131,8 @@ public abstract class SecondaryFXMLScreen
 		}
 		stage.setScene(scene);
 		stage.show();
+
+		return stage;
 	}
 
 	public Scene getPostCloseScene()
