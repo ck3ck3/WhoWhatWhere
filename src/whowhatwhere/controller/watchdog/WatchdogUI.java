@@ -32,7 +32,7 @@ import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.TextToSpeech;
-import whowhatwhere.model.networksniffer.DeviceAddressesAndDescription;
+import whowhatwhere.model.networksniffer.NICInfo;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
 import whowhatwhere.model.networksniffer.watchdog.WatchdogListener;
@@ -49,7 +49,6 @@ public class WatchdogUI implements WatchdogListener
 	private final static String voiceForTTS = "kevin16";
 	private final static int minCooldownValue = 3;
 	private final static int maxCooldownValue = Integer.MAX_VALUE;
-	
 
 	private final static String propsChkboxHotkey = "chkboxWatchdogHotkey";
 	private final static String propsHotkeyKeycode = "watchdogHotkeyKeycode";
@@ -125,7 +124,7 @@ public class WatchdogUI implements WatchdogListener
 	private void initUIElementsFromController()
 	{
 		hotkeyRegistry = controller.getHotkeyRegistry();
-		
+
 		chkboxHotkey = controller.getChkboxWatchdogHotkey();
 		paneHotkeyConfig = controller.getPaneWatchdogHotkeyConfig();
 		btnConfigureHotkey = controller.getBtnWatchdogConfigureHotkey();
@@ -144,16 +143,16 @@ public class WatchdogUI implements WatchdogListener
 	private void initButtonHandlers()
 	{
 		WatchdogUI thisObj = this;
-		
+
 		chkboxHotkey.selectedProperty()
 				.addListener(hotkeyRegistry.generateChangeListenerForHotkeyCheckbox(hotkeyID, hotkeyModifiers, hotkeyKeyCode, chkboxHotkey, labelCurrHotkey, paneHotkeyConfig, hotkeyPressed));
 
 		btnConfigureHotkey.setOnAction(hotkeyRegistry.generateEventHandlerForHotkeyConfigButton(hotkeyID));
-		
+
 		btnManageList.setOnAction(event ->
 		{
 			ManageListScreen manageListScreen;
-			Stage stage = (Stage) controller.getTabPane().getScene().getWindow();
+			Stage stage = controller.getStage();
 
 			try
 			{
@@ -165,8 +164,8 @@ public class WatchdogUI implements WatchdogListener
 				return;
 			}
 
-			Stage newStage = manageListScreen.showScreenOnNewStage("Manage Watchdog list", manageListScreen.getCloseButton());
-			newStage.setOnCloseRequest(windowEvent -> 
+			Stage newStage = manageListScreen.showScreenOnNewStage("Manage Watchdog list", null, manageListScreen.getCloseButton());
+			newStage.setOnCloseRequest(windowEvent ->
 			{
 				windowEvent.consume();
 				manageListScreen.getCloseButton().fire();
@@ -184,21 +183,19 @@ public class WatchdogUI implements WatchdogListener
 				return;
 			}
 
-			DeviceAddressesAndDescription deviceInfo = controller.getButtonToIpMap().get(controller.getTglGrpNIC().getSelectedToggle());
-			new Thread(new Runnable()
+			NICInfo deviceInfo = controller.getSelectedNIC();
+			new Thread(() ->
 			{
-				@Override
-				public void run()
+				StringBuilder errorBuffer = new StringBuilder();
+
+				try
 				{
-					try
-					{
-						sniffer.startWatchdogCapture(deviceInfo, entryList, radioKeepLooking.isSelected(), numFieldCooldown.getValue(), thisObj, new StringBuilder());
-					}
-					catch (IllegalArgumentException | UnknownHostException e)
-					{
-						logger.log(Level.SEVERE, "Unable to build Watchdog list", e);
-						Platform.runLater(() -> new Alert(AlertType.ERROR, "Unable to build Watchdog list: " + e.getMessage()).showAndWait());
-					}
+					sniffer.startWatchdogCapture(deviceInfo, entryList, radioKeepLooking.isSelected(), numFieldCooldown.getValue(), thisObj, errorBuffer);
+				}
+				catch (IllegalArgumentException | UnknownHostException e)
+				{
+					logger.log(Level.SEVERE, "Unable to build Watchdog list", e);
+					Platform.runLater(() -> new Alert(AlertType.ERROR, "Unable to build Watchdog list: " + e.getMessage() + "\nError buffer: " + errorBuffer.toString()).showAndWait());
 				}
 			}).start();
 
@@ -220,30 +217,35 @@ public class WatchdogUI implements WatchdogListener
 	{
 		outputMessage(message);
 
-		if (radioStopAfterMatch.isSelected()) 
+		if (radioStopAfterMatch.isSelected())
 			changeUIAccordingToListeningState(false);
 	}
-	
+
 	private void changeUIAccordingToListeningState(boolean listening)
 	{
 		activeButton = (listening ? btnStop : btnStart);
-		
+
 		btnStop.setDisable(!listening);
 		btnStart.setDisable(listening);
-		paneWatchdogConfig.setDisable(listening);		
+		paneWatchdogConfig.setDisable(listening);
 	}
-	
+
 	private void outputMessage(WatchdogMessage message)
 	{
 		String msg = message.getMessage();
-		
-		switch(message.getMethod())
+
+		switch (message.getMethod())
 		{
-			case TTS:	tts.speak(msg); break;
-			case POPUP:	Platform.runLater(() -> new Alert(AlertType.INFORMATION, msg).showAndWait()); break;
-			case TTS_AND_POPUP: 	tts.speak(msg);
-						Platform.runLater(() -> new Alert(AlertType.INFORMATION, msg).showAndWait());
-						break;
+			case TTS:
+				tts.speak(msg);
+				break;
+			case POPUP:
+				Platform.runLater(() -> new Alert(AlertType.INFORMATION, msg).showAndWait());
+				break;
+			case TTS_AND_POPUP:
+				tts.speak(msg);
+				Platform.runLater(() -> new Alert(AlertType.INFORMATION, msg).showAndWait());
+				break;
 		}
 	}
 
@@ -310,9 +312,9 @@ public class WatchdogUI implements WatchdogListener
 	public void loadLastRunConfig(Properties props)
 	{
 		setWatchdogHotkey(props);
-		
+
 		numFieldCooldown.setText(PropertiesByType.getStringProperty(props, propsNumFieldCooldown, String.valueOf(minCooldownValue)));
-		
+
 		if (PropertiesByType.getBoolProperty(props, propsRadioStopAfterMatch, true))
 			radioStopAfterMatch.fire(); //this way it activates the button handler
 		if (PropertiesByType.getBoolProperty(props, propsRadioKeepLooking, false))
@@ -331,9 +333,9 @@ public class WatchdogUI implements WatchdogListener
 	{
 		return entryList;
 	}
-	
+
 	/**
-	 * @return a map that maps user note to a list of IPs that have that note 
+	 * @return a map that maps user note to a list of IPs that have that note
 	 */
 	public Map<String, List<String>> getUserNotesReverseMap()
 	{

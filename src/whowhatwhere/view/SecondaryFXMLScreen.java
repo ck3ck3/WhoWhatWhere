@@ -8,6 +8,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public abstract class SecondaryFXMLScreen
@@ -88,6 +89,9 @@ public abstract class SecondaryFXMLScreen
 	 * 
 	 * @param title
 	 *            - Title for the new stage
+	 * @param modality
+	 *            - The modality of the new stage. If null, default modality is
+	 *            used ({@code Modality.NONE}).
 	 * @param buttonsToClose
 	 *            - list of buttons that close this window. The buttons'
 	 *            onAction doesn't have to implement anything, not even closing
@@ -102,7 +106,7 @@ public abstract class SecondaryFXMLScreen
 	 *         call setOnCloseRequest() on it to decide behavior on external
 	 *         (non {@code buttonsToClose}) close request
 	 */
-	public Stage showScreenOnNewStage(String title, Button... buttonsToClose)
+	public Stage showScreenOnNewStage(String title, Modality modality, Button... buttonsToClose)
 	{
 		Scene scene = new Scene(getLoadedFXML());
 		Stage stage = new Stage();
@@ -130,6 +134,10 @@ public abstract class SecondaryFXMLScreen
 			});
 		}
 		stage.setScene(scene);
+
+		if (modality != null)
+			stage.initModality(modality);
+
 		stage.show();
 
 		return stage;

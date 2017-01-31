@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="136.0" prefWidth="925.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.NICSelectionController">
+   <children>
+      <Label layoutX="14.0" layoutY="14.0" text="Please choose a network adapter to capture packets from:" />
+      <ComboBox fx:id="comboNIC" layoutX="330.0" layoutY="10.0" prefHeight="25.0" prefWidth="460.0" AnchorPane.leftAnchor="330.0" AnchorPane.rightAnchor="135.0" AnchorPane.topAnchor="10.0" />
+      <Pane layoutX="801.0" layoutY="10.0" AnchorPane.rightAnchor="19.0" AnchorPane.topAnchor="10.0">
+         <children>
+            <Button fx:id="btnAutoDetect" mnemonicParsing="false" text="Auto-detect" />
+            <ProgressIndicator fx:id="progressIndicator" layoutX="86.0" layoutY="4.0" prefHeight="17.0" prefWidth="19.0" visible="false" />
+         </children>
+      </Pane>
+      <Button fx:id="btnDone" layoutX="744.0" layoutY="124.0" mnemonicParsing="false" text="Done" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="14.0" />
+      <Label fx:id="labelFirstRun" layoutX="14.0" layoutY="45.0" text="This step is required only on the first run. You can change your choice later from the menu bar: Options -&gt; Select network adapter" />
+   </children>
+</AnchorPane>

@@ -28,10 +28,10 @@ public class AppearanceCounterPacketHandler implements PcapPacketHandler<Void>
 		this(ownIpInt, listOfProtocls, null);
 	}
 	
-	public AppearanceCounterPacketHandler(int ownIpInt, List<Integer> listOfProtocls, CaptureStartListener listener)
+	public AppearanceCounterPacketHandler(int ownIpInt, List<Integer> listOfProtocols, CaptureStartListener listener)
 	{
 		this.ownIpInt = ownIpInt;
-		this.protocolsToCount = listOfProtocls;
+		this.protocolsToCount = listOfProtocols;
 		this.captureStartListener = listener;
 	}
 

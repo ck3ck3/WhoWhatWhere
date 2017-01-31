@@ -68,7 +68,7 @@ public class NetworkSniffer
 
 	private Pcap pcap;
 	private Map<String, PcapIf> ipToDevice = new HashMap<>();
-	private List<DeviceAddressesAndDescription> ipAndDescList = new ArrayList<>();
+	private List<NICInfo> ipAndDescList = new ArrayList<>();
 
 	public NetworkSniffer() throws IllegalStateException
 	{
@@ -143,7 +143,7 @@ public class NetworkSniffer
 		return true;
 	}
 	
-	public List<DeviceAddressesAndDescription> getListOfDevices()
+	public List<NICInfo> getListOfDevices()
 	{
 		return ipAndDescList;
 	}
@@ -190,7 +190,7 @@ public class NetworkSniffer
 				hardwareAddress = new byte[8];
 			}
 			
-			ipAndDescList.add(new DeviceAddressesAndDescription(ip, hardwareAddress, description));
+			ipAndDescList.add(new NICInfo(ip, hardwareAddress, description));
 			ipToDevice.put(ip, device);
 		}
 	}
@@ -250,7 +250,7 @@ public class NetworkSniffer
 		return new AppearanceCounterResults(filteredCounterPH);
 	}
 
-	public void startWatchdogCapture(DeviceAddressesAndDescription deviceInfo, List<PacketTypeToMatch> packetTypeList, boolean isRepeated, Integer cooldownInSecs, WatchdogListener listener, StringBuilder errbuf) throws IllegalArgumentException, UnknownHostException
+	public void startWatchdogCapture(NICInfo deviceInfo, List<PacketTypeToMatch> packetTypeList, boolean isRepeated, Integer cooldownInSecs, WatchdogListener listener, StringBuilder errbuf) throws IllegalArgumentException, UnknownHostException
 	{
 		WatchdogPacketHandler watchdogPH = new WatchdogPacketHandler(packetTypeList, isRepeated, cooldownInSecs, listener, this, deviceInfo.getMACAddress());
 

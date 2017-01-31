@@ -19,7 +19,7 @@ public class HotkeyRegistry
 {
 	private Alert alertChangeHotkey;
 	private HotkeyManager hotkeyManager = new HotkeyManager();
-	private Node nodeToDisableOnKeyConfig = null;
+	private Node nodeToDisableOnKeyConfig;
 	
 	public HotkeyRegistry()
 	{
@@ -41,13 +41,6 @@ public class HotkeyRegistry
 			public void handle(ActionEvent e)
 			{
 				hotkeyManager.setKeySelection(hotkeyID, true);
-				
-				alertChangeHotkey.setOnCloseRequest(dialogEvent -> 
-				{
-					if (hotkeyManager.isKeySelection()) //if the dialog is getting closed without setting a new hotkey, disable the new key selection
-						hotkeyManager.setKeySelection(hotkeyID, false);
-					
-				});
 				
 				if (nodeToDisableOnKeyConfig != null)
 					nodeToDisableOnKeyConfig.setDisable(true);
@@ -139,7 +132,7 @@ public class HotkeyRegistry
 							error.setHeaderText("Failed to set a new hotkey");
 							error.setContentText(iae.getMessage());
 
-							closeHotkeyChangeAlert();
+							alertChangeHotkey.close();
 							error.showAndWait();
 							if (nodeToDisableOnKeyConfig != null)
 								nodeToDisableOnKeyConfig.setDisable(false);
@@ -151,7 +144,7 @@ public class HotkeyRegistry
 					Platform.runLater(() ->
 					{
 						hotkeyLabel.setText("Current hotkey: " + HotkeyManager.hotkeyToString(modifiers, keyCode));
-						closeHotkeyChangeAlert();
+						alertChangeHotkey.close();
 						if (nodeToDisableOnKeyConfig != null)
 							nodeToDisableOnKeyConfig.setDisable(false);
 					});
@@ -168,13 +161,16 @@ public class HotkeyRegistry
 		alertChangeHotkey.setHeaderText("Choose a new hotkey");
 		alertChangeHotkey.setContentText("Press the new hotkey");
 		alertChangeHotkey.getButtonTypes().add(new ButtonType("Cancel"));
-	}
-
-	private void closeHotkeyChangeAlert()
-	{
-		alertChangeHotkey.setAlertType(AlertType.INFORMATION); //javafx bug? can't close it when it's of type NONE
-		alertChangeHotkey.close();
-		alertChangeHotkey.setAlertType(AlertType.NONE); //due to the javafx bug, revert back to NONE
+		
+		alertChangeHotkey.setOnCloseRequest(dialogEvent -> 
+		{
+			if (hotkeyManager.isKeySelection()) //if the dialog is getting closed without setting a new hotkey, disable the new key selection
+			{
+				hotkeyManager.setKeySelection(null, false);
+				if (nodeToDisableOnKeyConfig != null)
+					nodeToDisableOnKeyConfig.setDisable(false);
+			}
+		});
 	}
 
 	public void cleanup()

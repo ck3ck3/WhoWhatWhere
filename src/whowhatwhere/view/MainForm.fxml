@@ -6,8 +6,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-
-<ScrollPane prefHeight="817.0" prefWidth="1207.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.GUIController">
+<ScrollPane fx:id="scrollPaneMainForm" prefHeight="817.0" prefWidth="1207.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.GUIController">
    <content>
       <BorderPane prefHeight="800.0" prefWidth="1190.0">
          <top>
@@ -23,6 +22,7 @@
                 </Menu>
                   <Menu mnemonicParsing="false" text="Options">
                      <items>
+                        <MenuItem fx:id="menuItemSelectNIC" mnemonicParsing="false" text="Select network adapter" />
                         <CheckMenuItem fx:id="menuItemChkCheckUpdateStartup" mnemonicParsing="false" text="Check for updates on startup" />
                         <CheckMenuItem fx:id="menuItemChkDisplayBalloon" mnemonicParsing="false" text="Display info balloon after minimizing" />
                         <CheckMenuItem fx:id="menuItemChkStartMinimized" mnemonicParsing="false" text="Start minimized" />
@@ -52,48 +52,43 @@
                            <children>
                               <HBox prefHeight="244.0" prefWidth="1172.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="18.0">
                                  <children>
-                                    <ScrollPane hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+                                    <TitledPane collapsible="false" prefHeight="250.0" prefWidth="506.0" text="Configuration">
                                        <content>
-                                          <VBox fx:id="vboxNICs" fillWidth="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="190.0" minWidth="500.0" prefHeight="241.0" prefWidth="500.0">
+                                          <Pane>
                                              <children>
-                                                <Label text="Choose your network adapter:">
-                                                   <padding>
-                                                      <Insets left="10.0" top="10.0" />
-                                                   </padding>
-                                                </Label>
+                                                <ComboBox fx:id="comboNetworkAdapter" layoutX="14.0" layoutY="38.0" prefHeight="25.0" prefWidth="475.0" />
+                                                <Label layoutX="14.0" layoutY="14.0" text="Select your network adapter:" />
                                              </children>
-                                          </VBox>
+                                          </Pane>
                                        </content>
-                                    </ScrollPane>
-                                    <ScrollPane hbarPolicy="NEVER" prefWidth="665.0" vbarPolicy="NEVER" HBox.hgrow="ALWAYS">
-                                       <content>
-                                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="277.0" prefWidth="670.0">
+                                    </TitledPane>
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="277.0" prefWidth="670.0">
+                                       <children>
+                                          <AnchorPane fx:id="paneCaptureOptions" layoutX="7.0" layoutY="14.0" prefHeight="190.0" prefWidth="532.0">
                                              <children>
-                                                <AnchorPane fx:id="paneCaptureOptions" layoutX="7.0" layoutY="14.0" prefHeight="190.0" prefWidth="303.0">
+                                                <CheckBox fx:id="chkboxFilterProtocols" layoutY="30.0" mnemonicParsing="false" text="Only count specific protocols:" />
+                                                <Pane fx:id="paneProtocolBoxes" layoutX="188.0" layoutY="30.0">
                                                    <children>
-                                                      <Label text="Count packets of these protocols:" />
-                                                      <CheckBox fx:id="chkboxAnyProtocol" disable="true" layoutX="7.0" layoutY="30.0" mnemonicParsing="false" text="Any protocol" />
-                                                      <CheckBox fx:id="chkboxUDP" layoutX="106.0" layoutY="30.0" mnemonicParsing="false" text="UDP" />
-                                                      <CheckBox fx:id="chkboxTCP" layoutX="157.0" layoutY="30.0" mnemonicParsing="false" text="TCP" />
-                                                      <CheckBox fx:id="chkboxICMP" layoutX="207.0" layoutY="30.0" mnemonicParsing="false" text="ICMP" />
-                                                      <CheckBox fx:id="chkboxHTTP" layoutX="266.0" layoutY="30.0" mnemonicParsing="false" text="HTTP" />
-                                                      <Label layoutX="260.0" layoutY="130.0" text="seconds" />
-                                                      <CheckBox fx:id="chkboxGetLocation" layoutY="70.0" mnemonicParsing="false" selected="true" text="Get location info for each IP address" />
-                                                      <CheckBox fx:id="chkboxTimedCapture" layoutY="130.0" mnemonicParsing="false" selected="true" text="Automatically stop capturing after" />
-                                                      <CheckBox fx:id="chkboxPing" layoutY="98.0" mnemonicParsing="false" selected="true" text="Ping each IP address" />
-                                                      <Label layoutX="139.0" layoutY="98.0" text="Ping timeout:" />
-                                                      <Label layoutX="268.0" layoutY="98.0" text="milliseconds" />
-                                                      <NumberTextField fx:id="numFieldCaptureTimeout" layoutX="207.0" layoutY="126.0" minValue="1" prefHeight="25.0" prefWidth="49.0" />
-                                                      <NumberTextField fx:id="numFieldPingTimeout" layoutX="216.0" layoutY="94.0" minValue="1" prefHeight="25.0" prefWidth="47.0" />
+                                                      <CheckBox fx:id="chkboxUDP" mnemonicParsing="false" text="UDP" />
+                                                      <CheckBox fx:id="chkboxTCP" layoutX="51.0" mnemonicParsing="false" text="TCP" />
+                                                      <CheckBox fx:id="chkboxICMP" layoutX="101.0" mnemonicParsing="false" text="ICMP" />
+                                                      <CheckBox fx:id="chkboxHTTP" layoutX="160.0" mnemonicParsing="false" text="HTTP" />
                                                    </children>
-                                                </AnchorPane>
-                                                <Button fx:id="btnStart" layoutX="7.0" layoutY="174.0" mnemonicParsing="false" text="Start capturing" />
-                                                <Button fx:id="btnStop" layoutX="108.0" layoutY="174.0" mnemonicParsing="false" text="Stop capturing" />
-                                                <Label fx:id="labelStatus" layoutX="7.0" layoutY="219.0" text="Status: Idle" />
+                                                </Pane>
+                                                <Label layoutX="260.0" layoutY="130.0" text="seconds" />
+                                                <CheckBox fx:id="chkboxGetLocation" layoutY="70.0" mnemonicParsing="false" selected="true" text="Get location info for each IP address" />
+                                                <CheckBox fx:id="chkboxTimedCapture" layoutY="130.0" mnemonicParsing="false" selected="true" text="Automatically stop capturing after" />
+                                                <CheckBox fx:id="chkboxPing" layoutY="98.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="208.0" selected="true" text="Ping each IP address (timeout after" />
+                                                <Label layoutX="262.0" layoutY="98.0" text="milliseconds)" />
+                                                <NumberTextField fx:id="numFieldCaptureTimeout" layoutX="206.0" layoutY="126.0" minValue="1" prefHeight="25.0" prefWidth="49.0" />
+                                                <NumberTextField fx:id="numFieldPingTimeout" layoutX="210.0" layoutY="94.0" minValue="1" prefHeight="25.0" prefWidth="47.0" />
                                              </children>
                                           </AnchorPane>
-                                       </content>
-                                    </ScrollPane>
+                                          <Button fx:id="btnStart" layoutX="7.0" layoutY="174.0" mnemonicParsing="false" text="Start capturing" />
+                                          <Button fx:id="btnStop" layoutX="108.0" layoutY="174.0" mnemonicParsing="false" text="Stop capturing" />
+                                          <Label fx:id="labelStatus" layoutX="7.0" layoutY="219.0" text="Status: Idle" />
+                                       </children>
+                                    </AnchorPane>
                                  </children>
                               </HBox>
                               <Label layoutX="15.0" layoutY="257.0" text="Results:" />

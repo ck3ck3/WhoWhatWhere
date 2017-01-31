@@ -34,7 +34,6 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
@@ -60,7 +59,6 @@ import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.geoipresolver.GeoIPInfo;
 import whowhatwhere.model.geoipresolver.GeoIPResolver;
 import whowhatwhere.model.networksniffer.CaptureStartListener;
-import whowhatwhere.model.networksniffer.DeviceAddressesAndDescription;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.appearancecounter.AppearanceCounterResults;
 import whowhatwhere.model.networksniffer.appearancecounter.IpAppearancesCounter;
@@ -70,6 +68,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private final static Logger logger = Logger.getLogger(AppearanceCounterUI.class.getPackage().getName());
 	private final static String manageUserNotesFormLocation = "/whowhatwhere/view/ManageUserNotes.fxml";
 
+	private final static String propsChkboxFilterProtocols = "chkboxFilterProtocols";
 	private final static String propsChkboxUDP = "chkboxUDP";
 	private final static String propsChkboxTCP = "chkboxTCP";
 	private final static String propsChkboxICMP = "chkboxICMP";
@@ -126,7 +125,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private TableColumn<IPInfoRowModel, String> columnRegion;
 	private TableColumn<IPInfoRowModel, String> columnCity;
 	private Label labelCurrCaptureHotkey;
-	private CheckBox chkboxAnyProtocol;
+	private CheckBox chkboxFilterProtocols;
 	private CheckBox chkboxUDP;
 	private CheckBox chkboxTCP;
 	private CheckBox chkboxICMP;
@@ -142,6 +141,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private ComboBox<String> comboColumns;
 	private TextField textColumnContains;
 	private TabPane tabPane;
+	private Pane paneProtocolBoxes;
 	private HotkeyRegistry hotkeyRegistry;
 	
 	private Button activeButton;
@@ -151,7 +151,6 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private boolean isTimedTaskRunning = false;
 	private boolean isAHotkeyResult = false;
 	private int protocolBoxesChecked = 0;
-	private Map<RadioButton, DeviceAddressesAndDescription> buttonToIpMap;
 	private NetworkSniffer sniffer = new NetworkSniffer();
 	private int captureHotkeyKeyCode;
 	private int captureHotkeyModifiers;
@@ -235,7 +234,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		columnRegion = controller.getColumnRegion();
 		columnCity = controller.getColumnCity();
 		labelCurrCaptureHotkey = controller.getLabelCurrCaptureHotkey();
-		chkboxAnyProtocol = controller.getChkboxAnyProtocol();
+		chkboxFilterProtocols = controller.getChkboxFilterProtocols();
 		chkboxUDP = controller.getChkboxUDP();
 		chkboxTCP = controller.getChkboxTCP();
 		chkboxICMP = controller.getChkboxICMP();
@@ -251,8 +250,8 @@ public class AppearanceCounterUI implements CaptureStartListener
 		comboColumns = controller.getComboColumns();
 		textColumnContains = controller.getTextColumnContains();
 		tabPane = controller.getTabPane();
+		paneProtocolBoxes = controller.getPaneProtocolBoxes();
 
-		buttonToIpMap = controller.getButtonToIpMap();
 		hotkeyRegistry = controller.getHotkeyRegistry();
 	}
 
@@ -268,16 +267,18 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 		chkboxTimedCapture.selectedProperty().addListener((ov, old_val, new_val) -> numFieldCaptureTimeout.setDisable(!new_val));
 
+		chkboxFilterProtocols.selectedProperty().addListener((ov, old_val, new_val) -> paneProtocolBoxes.setDisable(!new_val));
+		
 		ChangeListener<Boolean> protocolBoxes = (observable, oldValue, newValue) ->
 		{
 			if (newValue)
-			{
-				chkboxAnyProtocol.setSelected(false);
 				protocolBoxesChecked++;
-			}
 			else
 				if (--protocolBoxesChecked == 0) //we are unchecking the last checkbox
-					chkboxAnyProtocol.setSelected(true);
+				{
+					chkboxFilterProtocols.setSelected(false);
+					paneProtocolBoxes.setDisable(true);
+				}
 		};
 
 		chkboxUDP.selectedProperty().addListener(protocolBoxes);
@@ -461,7 +462,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			return;
 		}
 
-		cmdScreen.showScreenOnNewStage("Pinging " + ip, cmdScreen.getCloseButton());
+		cmdScreen.showScreenOnNewStage("Pinging " + ip, null, cmdScreen.getCloseButton());
 		cmdScreen.runCommand();
 	}
 
@@ -480,13 +481,13 @@ public class AppearanceCounterUI implements CaptureStartListener
 			return;
 		}
 
-		cmdScreen.showScreenOnNewStage("Tracing " + ip, cmdScreen.getCloseButton());
+		cmdScreen.showScreenOnNewStage("Tracing " + ip, null, cmdScreen.getCloseButton());
 	}
 
 	private void startButtonPressed()
 	{
 		StringBuilder errbuf = new StringBuilder();
-		String deviceIP = buttonToIpMap.get(controller.getTglGrpNIC().getSelectedToggle()).getIP();
+		String deviceIP = controller.getSelectedNIC().getIP();
 		final CaptureStartListener thisObj = this;
 
 		changeGuiTemplate(true);
@@ -523,17 +524,20 @@ public class AppearanceCounterUI implements CaptureStartListener
 			{
 				ArrayList<Integer> protocols = new ArrayList<>();
 
-				if (chkboxUDP.isSelected())
-					protocols.add(NetworkSniffer.stringProtocolToInt("UDP"));
-
-				if (chkboxTCP.isSelected())
-					protocols.add(NetworkSniffer.stringProtocolToInt("TCP"));
-
-				if (chkboxICMP.isSelected())
-					protocols.add(NetworkSniffer.stringProtocolToInt("ICMP"));
-
-				if (chkboxHTTP.isSelected())
-					protocols.add(NetworkSniffer.stringProtocolToInt("HTTP"));
+				if (chkboxFilterProtocols.isSelected())
+				{
+					if (chkboxUDP.isSelected())
+						protocols.add(NetworkSniffer.stringProtocolToInt("UDP"));
+	
+					if (chkboxTCP.isSelected())
+						protocols.add(NetworkSniffer.stringProtocolToInt("TCP"));
+	
+					if (chkboxICMP.isSelected())
+						protocols.add(NetworkSniffer.stringProtocolToInt("ICMP"));
+	
+					if (chkboxHTTP.isSelected())
+						protocols.add(NetworkSniffer.stringProtocolToInt("HTTP"));
+				}
 
 				return protocols;
 			}
@@ -693,7 +697,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		btnStart.setDisable(duringCapture);
 		btnStop.setDisable(!duringCapture);
 		paneCaptureOptions.setDisable(duringCapture);
-		controller.getVboxNICs().setDisable(duringCapture);
+//		controller.getComboNetworkAdapter().setDisable(duringCapture);
 		paneCaptureOptions.setDisable(duringCapture);
 		btnExportTableToCSV.setDisable(duringCapture);
 
@@ -859,13 +863,13 @@ public class AppearanceCounterUI implements CaptureStartListener
 	{
 		protocolBoxesChecked = 0;
 
+		chkboxFilterProtocols.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxFilterProtocols, false));
 		chkboxUDP.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUDP, false));
 		chkboxTCP.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxTCP, false));
 		chkboxICMP.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxICMP, false));
 		chkboxHTTP.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxHTTP, false));
-
-		if (protocolBoxesChecked == 0)
-			chkboxAnyProtocol.setSelected(true);
+		
+		paneProtocolBoxes.setDisable(!chkboxFilterProtocols.isSelected());
 	}
 
 	private void setDisabledPanes()
@@ -892,6 +896,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 	public void saveCurrentRunValuesToProperties(Properties props)
 	{
+		props.put(propsChkboxFilterProtocols, ((Boolean) chkboxFilterProtocols.isSelected()).toString());
 		props.put(propsChkboxUDP, ((Boolean) chkboxUDP.isSelected()).toString());
 		props.put(propsChkboxTCP, ((Boolean) chkboxTCP.isSelected()).toString());
 		props.put(propsChkboxICMP, ((Boolean) chkboxICMP.isSelected()).toString());
@@ -946,7 +951,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			return;
 		}
 
-		Stage newStage = userNotesScreen.showScreenOnNewStage("Manage User Notes", userNotesScreen.getCloseButton());
+		Stage newStage = userNotesScreen.showScreenOnNewStage("Manage User Notes", null, userNotesScreen.getCloseButton());
 		newStage.setOnCloseRequest(windowEvent -> 
 		{
 			windowEvent.consume();
