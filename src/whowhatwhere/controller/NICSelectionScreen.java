@@ -118,6 +118,7 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 			isAutoDetectRunning = true;
 			progressIndicator.setVisible(true);
 			btnAutoDetect.setDisable(true);
+			comboNIC.setDisable(true);
 			final int timeoutInSecs = 30;
 
 			pingProcess = Runtime.getRuntime().exec("ping 8.8.8.8 -n " + timeoutInSecs);
@@ -191,5 +192,6 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 		
 		isAutoDetectRunning = false;
 		btnAutoDetect.setDisable(false);
+		comboNIC.setDisable(false);
 	}
 }
