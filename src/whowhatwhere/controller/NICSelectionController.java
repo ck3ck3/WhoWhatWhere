@@ -4,7 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressIndicator;
+import javafx.scene.layout.Pane;
 import whowhatwhere.model.networksniffer.NICInfo;
 
 public class NICSelectionController
@@ -15,10 +15,10 @@ public class NICSelectionController
 	private Button btnAutoDetect;
 	@FXML
 	private Button btnDone;
-	@FXML 
-	private ProgressIndicator progressIndicator;
 	@FXML
 	private Label labelFirstRun;
+	@FXML
+	private Pane paneDetecting;
 
 
 	public ComboBox<NICInfo> getComboNIC()
@@ -36,9 +36,9 @@ public class NICSelectionController
 		return btnDone;
 	}
 	
-	public ProgressIndicator getProgressIndicator()
+	public Pane getPaneDetecting()
 	{
-		return progressIndicator;
+		return paneDetecting;
 	}
 	
 	public Label getLabelFirstRun()

@@ -17,7 +17,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ProgressIndicator;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import whowhatwhere.model.networksniffer.NICInfo;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
@@ -33,7 +33,7 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 	private ComboBox<NICInfo> comboNIC;
 	private Button btnAutoDetect;
 	private Button btnDone;
-	private ProgressIndicator progressIndicator;
+	private Pane detecting;
 	private Node nodeToEnableOnClose;
 	private final NICInfo nicInfoToCopyResultInto;
 	private List<NICInfo> listOfDevices = new NetworkSniffer().getListOfDevices();
@@ -61,7 +61,7 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 		comboNIC = controller.getComboNIC();
 		btnAutoDetect = controller.getBtnAutoDetect();
 		btnDone = controller.getBtnDone();
-		progressIndicator = controller.getProgressIndicator();
+		detecting = controller.getPaneDetecting();
 		this.nodeToEnableOnClose = nodeToEnableOnClose;
 		this.nicInfoToCopyResultInto = nicInfoToCopyResultInto;
 			
@@ -72,7 +72,7 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 			comboNIC.getSelectionModel().select(nicInfoToCopyResultInto);
 		
 		controller.getLabelFirstRun().setVisible(isFirstRun);
-
+		getPostCloseStage().toBack();
 		
 		setButtonHandlers();
 	}
@@ -116,7 +116,7 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 		try
 		{
 			isAutoDetectRunning = true;
-			progressIndicator.setVisible(true);
+			detecting.setVisible(true);
 			btnAutoDetect.setDisable(true);
 			comboNIC.setDisable(true);
 			final int timeoutInSecs = 30;
@@ -183,7 +183,7 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 	private void cleanupAfterAutoDetect()
 	{
 		autoDetectTimer.cancel();
-		progressIndicator.setVisible(false);
+		detecting.setVisible(false);
 		
 		pingProcess.destroy();
 		

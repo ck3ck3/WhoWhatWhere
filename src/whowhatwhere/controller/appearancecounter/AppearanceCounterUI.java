@@ -44,7 +44,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -135,7 +135,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private Button btnConfigCaptureHotkey;
 	private AnchorPane paneEnableCaptureHotkey;
 	private CheckBox chkboxUseTTS;
-	private HBox hboxColumnNames;
+	private GridPane gridPaneColumnNames;
 	private CheckBox chkboxFilterResults;
 	private Pane paneFilterResults;
 	private ComboBox<String> comboColumns;
@@ -244,7 +244,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		btnConfigCaptureHotkey = controller.getBtnConfigCaptureHotkey();
 		paneEnableCaptureHotkey = controller.getPaneEnableCaptureHotkey();
 		chkboxUseTTS = controller.getChkboxUseTTS();
-		hboxColumnNames = controller.getHboxColumnNames();
+		gridPaneColumnNames = controller.getGridPaneColumnNames();
 		chkboxFilterResults = controller.getChkboxFilterResults();
 		paneFilterResults = controller.getPaneFilterResults();
 		comboColumns = controller.getComboColumns();
@@ -363,8 +363,14 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private void initColumnListForTTS()
 	{
 		chkboxListColumns = new ArrayList<>();
-
-		for (TableColumn<IPInfoRowModel, ?> tableColumn : tableResults.getColumns())
+		
+		int col = 0, row = 0, amountOfColumns = gridPaneColumnNames.getColumnConstraints().size();
+		ObservableList<TableColumn<IPInfoRowModel, ?>> tableColumns = tableResults.getColumns();
+		
+		if (tableColumns.size() > amountOfColumns * gridPaneColumnNames.getRowConstraints().size())
+			throw new IllegalStateException("There are more table columns that cells in the grid pane");
+		
+		for (TableColumn<IPInfoRowModel, ?> tableColumn : tableColumns)
 		{
 			String colName = tableColumn.getText();
 
@@ -372,7 +378,16 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 			CheckBox box = new CheckBox(colName);
 
-			hboxColumnNames.getChildren().add(box);
+			gridPaneColumnNames.add(box, col, row);
+			
+			if ((col % (amountOfColumns - 1) == 0) && col > 0) 
+			{
+				row++;
+				col = 0;
+			}
+			else
+				col++;
+			
 			chkboxListColumns.add(box);
 		}
 
@@ -579,7 +594,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		for (int i = 0; i < rowsToRead; i++)
 			lines[i].append("Result number " + (i + 1) + ": ");
 
-		for (Node node : hboxColumnNames.getChildren())
+		for (Node node : gridPaneColumnNames.getChildren())
 		{
 			CheckBox chkbox = (CheckBox) node;
 
@@ -674,7 +689,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 	private boolean isNoColumnChecked()
 	{
-		for (Node node : hboxColumnNames.getChildren())
+		for (Node node : gridPaneColumnNames.getChildren())
 		{
 			CheckBox box = (CheckBox) node;
 

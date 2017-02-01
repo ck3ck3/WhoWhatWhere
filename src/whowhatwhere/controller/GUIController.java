@@ -9,12 +9,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,7 +21,7 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -35,6 +33,7 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
@@ -44,9 +43,10 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import numbertextfield.NumberTextField;
@@ -60,14 +60,13 @@ import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.networksniffer.NICInfo;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.startwithwindows.StartWithWindowsRegistryUtils;
-import javafx.scene.control.ScrollPane;
 
-public class GUIController implements Initializable, CheckForUpdatesResultHandler
+public class GUIController implements CheckForUpdatesResultHandler
 {
 	private final static String NICSelectionFormLocation = "/whowhatwhere/view/NICSelectionForm.fxml";
 	private final static String propsFileLocation = Main.getAppName() + ".properties";
 	private final static String defaultPropsResource = "/defaultLastRun.properties";
-	
+
 	private final static String propsNICDescription = "Selected NIC description";
 	private final static String propsTraceAddress = "traceAddress";
 	private final static String propsShowMessageOnMinimize = "showMinimizeMessage";
@@ -78,15 +77,13 @@ public class GUIController implements Initializable, CheckForUpdatesResultHandle
 	private final static String propsHeight = "lastRunHeight";
 	private final static String propsX = "lastRunX";
 	private final static String propsY = "lastRunY";
-	
+
 	private final static String voiceForTTS = "kevin16";
 
 	private final static Logger logger = Logger.getLogger(GUIController.class.getPackage().getName());
 
 	@FXML
 	private ScrollPane scrollPaneMainForm;
-	@FXML
-	private ComboBox<NICInfo> comboNetworkAdapter;
 	@FXML
 	private AnchorPane paneCaptureOptions;
 	@FXML
@@ -142,7 +139,7 @@ public class GUIController implements Initializable, CheckForUpdatesResultHandle
 	@FXML
 	private AnchorPane paneUseTTS;
 	@FXML
-	private HBox hboxColumnNames;
+	private GridPane gridPaneColumnNames;
 	@FXML
 	private Label labelReadFirstRows;
 	@FXML
@@ -246,10 +243,11 @@ public class GUIController implements Initializable, CheckForUpdatesResultHandle
 	private AppearanceCounterUI appearanceCounterUI;
 	private PingToSpeechUI pingToSpeechUI;
 	private WatchdogUI watchdogUI;
-		
-	
-	@Override
-	public void initialize(URL location, ResourceBundle resources)
+
+	/**
+	 * <b>MUST</b> be called after the stage is shown
+	 */
+	public void init()
 	{
 		try
 		{
@@ -265,7 +263,7 @@ public class GUIController implements Initializable, CheckForUpdatesResultHandle
 
 			shutdownApp();
 		}
-		
+
 		hotkeyRegistry = new HotkeyRegistry(scrollPaneMainForm);
 
 		appearanceCounterUI = new AppearanceCounterUI(this);
@@ -441,7 +439,7 @@ public class GUIController implements Initializable, CheckForUpdatesResultHandle
 		Properties props = loadProperties();
 
 		loadNICInfo(PropertiesByType.getStringProperty(props, propsNICDescription, ""));
-		
+
 		textTrace.setText(props.getProperty(propsTraceAddress));
 
 		checkForUpdatesOnStartup = PropertiesByType.getBoolProperty(props, propsCheckForUpdatesOnStartup, true);
@@ -464,7 +462,7 @@ public class GUIController implements Initializable, CheckForUpdatesResultHandle
 		pingToSpeechUI.loadLastRunConfig(props);
 		watchdogUI.loadLastRunConfig(props);
 	}
-	
+
 	private void loadNICInfo(String nicDescription)
 	{
 		NICInfo nic = null;
@@ -479,59 +477,56 @@ public class GUIController implements Initializable, CheckForUpdatesResultHandle
 		if (nic == null) //couldn't find the NIC
 		{
 			List<NICInfo> listOfDevices = sniffer.getListOfDevices();
-			
+
 			if (listOfDevices.size() == 1) //if there's only one option
 				selectedNIC = listOfDevices.get(0);
 			else
 				showNICSelectionScreen();
 		}
 	}
-	
+
 	private void showNICSelectionScreen()
 	{
-		Platform.runLater(() ->
+		List<NICInfo> listOfDevices = sniffer.getListOfDevices();
+
+		if (listOfDevices == null || listOfDevices.size() == 0)
 		{
-			List<NICInfo> listOfDevices = sniffer.getListOfDevices();
+			new Alert(AlertType.ERROR, "Unable to find any network interfaces. Terminating application.").showAndWait();
+			logger.log(Level.SEVERE, "Unable to find any network interfaces");
+			shutdownApp();
+		}
 
-			if (listOfDevices == null || listOfDevices.size() == 0)
-			{
-				new Alert(AlertType.ERROR, "Unable to find any network interfaces. Terminating application.").showAndWait();
-				logger.log(Level.SEVERE, "Unable to find any network interfaces");
-				shutdownApp();
-			}
+		Stage stage = getStage();
 
-			Stage stage = getStage();
-			
-			if (selectedNIC == null)
-				selectedNIC = new NICInfo();
-			
-			NICSelectionScreen selectionScreen = null;
-			
-			try
-			{
-				selectionScreen = new NICSelectionScreen(NICSelectionFormLocation, stage, stage.getScene(), scrollPaneMainForm, selectedNIC);
-			}
-			catch (Exception e)
-			{
-				new Alert(AlertType.ERROR, "Unable to load network adapter selection screen. Terminating application.").showAndWait();
-				logger.log(Level.SEVERE, "Unable to load network adapter selection screen", e);
-				shutdownApp();
-			}
-			
-			scrollPaneMainForm.setDisable(true);
-			Stage newStage = selectionScreen.showScreenOnNewStage("Choose a network adapter", Modality.APPLICATION_MODAL, selectionScreen.getCloseButton());
-			
-			newStage.setOnCloseRequest(windowEvent -> 
-			{
-				if (selectedNIC.getDescription() == null) //if we don't have a NIC set
-				{
-					windowEvent.consume();
-					new Alert(AlertType.ERROR, "You must select a network adapter.").showAndWait();
-				}
-				else //just close the window and restore gui functionality
-					scrollPaneMainForm.setDisable(false);
-			});
+		if (selectedNIC == null)
+			selectedNIC = new NICInfo();
 
+		NICSelectionScreen selectionScreen = null;
+
+		try
+		{
+			selectionScreen = new NICSelectionScreen(NICSelectionFormLocation, stage, stage.getScene(), scrollPaneMainForm, selectedNIC);
+		}
+		catch (Exception e)
+		{
+			new Alert(AlertType.ERROR, "Unable to load network adapter selection screen. Terminating application.").showAndWait();
+			logger.log(Level.SEVERE, "Unable to load network adapter selection screen", e);
+			shutdownApp();
+		}
+
+		scrollPaneMainForm.setDisable(true);
+		Stage newStage = selectionScreen.showScreenOnNewStage("Choose a network adapter", Modality.APPLICATION_MODAL, selectionScreen.getCloseButton());
+
+		newStage.toFront();
+		newStage.setOnCloseRequest(windowEvent ->
+		{
+			if (selectedNIC.getDescription() == null) //if we don't have a NIC set
+			{
+				windowEvent.consume();
+				new Alert(AlertType.ERROR, "You must select a network adapter.").showAndWait();
+			}
+			else //just close the window and restore gui functionality
+				scrollPaneMainForm.setDisable(false);
 		});
 	}
 
@@ -546,27 +541,35 @@ public class GUIController implements Initializable, CheckForUpdatesResultHandle
 
 	private void loadLastRunDimensions(Properties props)
 	{
-		Platform.runLater(() ->
+		Stage stage = getStage();
+		Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
+		
+		if (primaryScreenBounds.getHeight() < stage.getHeight() || primaryScreenBounds.getWidth() < stage.getWidth())
 		{
-			Stage stage = getStage();
+			scrollPaneMainForm.setFitToWidth(false);
+			scrollPaneMainForm.setFitToHeight(false);
+			stage.setMaximized(true);
+		}
+		else
+		{
 			Double value;
-
+			
 			value = PropertiesByType.getDoubleProperty(props, propsWidth, Double.NaN);
-			if (value != Double.NaN)
+			if (!value.equals(Double.NaN))
 				stage.setWidth(value);
-
+	
 			value = PropertiesByType.getDoubleProperty(props, propsHeight, Double.NaN);
-			if (value != Double.NaN)
+			if (!value.equals(Double.NaN))
 				stage.setHeight(value);
-
+	
 			value = PropertiesByType.getDoubleProperty(props, propsX, Double.NaN);
-			if (value != Double.NaN)
+			if (!value.equals(Double.NaN))
 				stage.setX(value);
-
+	
 			value = PropertiesByType.getDoubleProperty(props, propsY, Double.NaN);
-			if (value != Double.NaN)
+			if (!value.equals(Double.NaN))
 				stage.setY(value);
-		});
+		}
 	}
 
 	private void loadStartWithWindowsSetting()
@@ -882,9 +885,9 @@ public class GUIController implements Initializable, CheckForUpdatesResultHandle
 		return paneUseTTS;
 	}
 
-	public HBox getHboxColumnNames()
+	public GridPane getGridPaneColumnNames()
 	{
-		return hboxColumnNames;
+		return gridPaneColumnNames;
 	}
 
 	public CheckBox getChkboxPing()
@@ -999,7 +1002,7 @@ public class GUIController implements Initializable, CheckForUpdatesResultHandle
 
 	public Stage getStage()
 	{
-		return (Stage) tabPane.getScene().getWindow();
+		return (Stage) scrollPaneMainForm.getScene().getWindow();
 	}
 
 	public RadioButton getRadioWatchdogStopAfterMatch()

@@ -22,15 +22,14 @@ import org.json.JSONObject;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import whowhatwhere.controller.CheckForUpdatesResultHandler;
+import whowhatwhere.controller.GUIController;
 
 public class Main extends Application
 {
@@ -62,19 +61,16 @@ public class Main extends Application
 			if (!initSysTray(primaryStage))
 				logger.log(Level.WARNING, "Unable to initialize system tray");
 
-			URL fxmlLocation = Main.class.getResource(mainFormLocation);
-			Parent root = FXMLLoader.load(fxmlLocation);
-
+			FXMLLoader loader = new FXMLLoader(getClass().getResource(mainFormLocation));
+			Parent root = (Parent)loader.load();
+			GUIController gui = (GUIController) loader.getController();
+			
 			Scene scene = new Scene(root);
 			primaryStage.setTitle(appTitle);
 			primaryStage.setScene(scene);
 			primaryStage.show();
-			
-			double height = primaryStage.getHeight();
-			double width = primaryStage.getWidth();
-			Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
-			if (primaryScreenBounds.getHeight() < height || primaryScreenBounds.getWidth() < width)
-				primaryStage.setMaximized(true);
+			gui.init();
+
 		}
 		catch (IOException e)
 		{
