@@ -63,7 +63,7 @@ import whowhatwhere.model.startwithwindows.StartWithWindowsRegistryUtils;
 
 public class GUIController implements CheckForUpdatesResultHandler
 {
-	private final static String NICSelectionFormLocation = "/whowhatwhere/view/NICSelectionForm.fxml";
+	private final static String NICSelectionFormLocation = "/whowhatwhere/view/fxmls/maingui/NICSelectionForm.fxml";
 	private final static String propsFileLocation = Main.getAppName() + ".properties";
 	private final static String defaultPropsResource = "/defaultLastRun.properties";
 

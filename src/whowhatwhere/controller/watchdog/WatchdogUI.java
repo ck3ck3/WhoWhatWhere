@@ -43,7 +43,7 @@ public class WatchdogUI implements WatchdogListener
 	private final static Logger logger = Logger.getLogger(WatchdogUI.class.getPackage().getName());
 
 	private final static String hotkeyID = "Watchdog hotkey";
-	private final static String listFormLocation = "/whowhatwhere/view/WatchdogManageList.fxml";
+	private final static String listFormLocation = "/whowhatwhere/view/fxmls/watchdog/WatchdogManageList.fxml";
 	public static final String presetExtension = ".watchdogPreset";
 	private static final String lastRunFilename = "Last run" + presetExtension;
 	private final static String voiceForTTS = "kevin16";

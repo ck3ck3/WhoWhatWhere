@@ -66,7 +66,7 @@ import whowhatwhere.model.networksniffer.appearancecounter.IpAppearancesCounter;
 public class AppearanceCounterUI implements CaptureStartListener
 {
 	private final static Logger logger = Logger.getLogger(AppearanceCounterUI.class.getPackage().getName());
-	private final static String manageUserNotesFormLocation = "/whowhatwhere/view/ManageUserNotes.fxml";
+	private final static String manageUserNotesFormLocation = "/whowhatwhere/view/fxmls/maingui/ManageUserNotes.fxml";
 
 	private final static String propsChkboxFilterProtocols = "chkboxFilterProtocols";
 	private final static String propsChkboxUDP = "chkboxUDP";

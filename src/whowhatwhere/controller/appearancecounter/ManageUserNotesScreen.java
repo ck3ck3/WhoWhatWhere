@@ -13,7 +13,7 @@ import javafx.scene.control.TableColumn;
 import javafx.stage.Stage;
 import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
-import whowhatwhere.view.SecondaryFXMLWithCRUDTableScreen;
+import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLWithCRUDTableScreen;
 
 public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<UserNotesRowModel>
 {

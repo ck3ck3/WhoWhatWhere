@@ -1,4 +1,4 @@
-package whowhatwhere.view;
+package whowhatwhere.view.secondaryfxmlscreen;
 
 import java.io.IOException;
 

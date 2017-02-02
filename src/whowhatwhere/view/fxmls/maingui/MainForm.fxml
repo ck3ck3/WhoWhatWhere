@@ -129,7 +129,7 @@
                                     <Label fx:id="labelStatus" layoutX="10.0" layoutY="45.0" text="Status: Idle" />
                                  </children>
                               </AnchorPane>
-                              <TableView fx:id="tableResults" editable="true" layoutX="14.0" layoutY="319.0" prefHeight="245.0" prefWidth="1158.0" stylesheets="whowhatwhere/view/tableResults.css" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="62.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="319.0">
+                              <TableView fx:id="tableResults" editable="true" layoutX="14.0" layoutY="319.0" prefHeight="245.0" prefWidth="1158.0" stylesheets="whowhatwhere/view/fxmls/maingui/tableResults.css" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="62.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="319.0">
                                  <columns>
                                     <TableColumn fx:id="columnPacketCount" editable="false" prefWidth="115.0" sortType="DESCENDING" text="Packet Count" />
                                     <TableColumn fx:id="columnIP" minWidth="8.0" prefWidth="115.0" text="IP Address" />

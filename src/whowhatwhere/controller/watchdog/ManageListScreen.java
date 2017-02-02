@@ -25,7 +25,7 @@ import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
 import whowhatwhere.model.criteria.RelativeToValue;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
-import whowhatwhere.view.SecondaryFXMLWithCRUDTableScreen;
+import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLWithCRUDTableScreen;
 
 public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTypeToMatch>
 {

@@ -26,11 +26,11 @@ import javafx.stage.Stage;
 import whowhatwhere.Main;
 import whowhatwhere.model.geoipresolver.GeoIPInfo;
 import whowhatwhere.model.geoipresolver.GeoIPResolver;
-import whowhatwhere.view.SecondaryFXMLScreen;
+import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen;
 
 public class VisualTraceScreen extends SecondaryFXMLScreen
 {
-	private final static String visualTraceFormLocation = "/whowhatwhere/view/VisualTraceForm.fxml";
+	private final static String visualTraceFormLocation = "/whowhatwhere/view/fxmls/commands/VisualTraceForm.fxml";
 	private final static String baseUrl = "https://maps.googleapis.com/maps/api/staticmap?key=AIzaSyCT-QqmWbW7A-N0ywbXTmblZKq5flvtXmE&size=400x400&scale=2&maptype=roadmap";
 	private final static Logger logger = Logger.getLogger(VisualTraceScreen.class.getPackage().getName());
 

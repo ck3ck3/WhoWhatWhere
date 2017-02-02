@@ -24,7 +24,7 @@ import whowhatwhere.model.networksniffer.watchdog.OutputMethod;
 import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
 import whowhatwhere.model.networksniffer.watchdog.WatchdogListener;
 import whowhatwhere.model.networksniffer.watchdog.WatchdogMessage;
-import whowhatwhere.view.SecondaryFXMLScreen;
+import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen;
 
 public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogListener
 {
@@ -45,13 +45,13 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 	/**
 	 * 
 	 * @param fxmlLocation
-	 *            {@link whowhatwhere.view.SecondaryFXMLScreen#SecondaryFXMLScreen(String fxmlLocation, Stage stage, Scene scene)
+	 *            {@link whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen#SecondaryFXMLScreen(String fxmlLocation, Stage stage, Scene scene)
 	 *            see description in super}
 	 * @param stage
-	 *            {@link whowhatwhere.view.SecondaryFXMLScreen#SecondaryFXMLScreen(String fxmlLocation, Stage stage, Scene scene)
+	 *            {@link whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen#SecondaryFXMLScreen(String fxmlLocation, Stage stage, Scene scene)
 	 *            see description in super}
 	 * @param scene
-	 *            {@link whowhatwhere.view.SecondaryFXMLScreen#SecondaryFXMLScreen(String fxmlLocation, Stage stage, Scene scene)
+	 *            {@link whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen#SecondaryFXMLScreen(String fxmlLocation, Stage stage, Scene scene)
 	 *            see description in super}
 	 * @param nodeToEnableOnClose
 	 *            - Node to enable when this screen is closed. Can be null.
@@ -59,7 +59,7 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 	 *            - a NICInfo object that its contents need to be updated with
 	 *            the selected NIC details when this screen closes.
 	 * @throws IOException
-	 *             {@link whowhatwhere.view.SecondaryFXMLScreen#SecondaryFXMLScreen(String fxmlLocation, Stage stage, Scene scene)
+	 *             {@link whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen#SecondaryFXMLScreen(String fxmlLocation, Stage stage, Scene scene)
 	 *             see description in super}
 	 */
 	public NICSelectionScreen(String fxmlLocation, Stage stage, Scene scene, NICInfo nicInfoToCopyResultInto) throws IOException

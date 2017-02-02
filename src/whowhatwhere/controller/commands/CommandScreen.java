@@ -10,11 +10,11 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import whowhatwhere.model.cmd.CmdLiveOutput;
 import whowhatwhere.model.cmd.LiveOutputListener;
-import whowhatwhere.view.SecondaryFXMLScreen;
+import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen;
 
 public abstract class CommandScreen extends SecondaryFXMLScreen implements LiveOutputListener
 {
-	protected final static String commandFormLocation = "/whowhatwhere/view/CommandForm.fxml";
+	protected final static String commandFormLocation = "/whowhatwhere/view/fxmls/commands/CommandForm.fxml";
 	protected final static Logger logger = Logger.getLogger(CommandScreen.class.getPackage().getName());
 
 	private String commandStr;
