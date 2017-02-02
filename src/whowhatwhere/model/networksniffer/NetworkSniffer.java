@@ -58,7 +58,7 @@ public class NetworkSniffer
 
 	private static int snaplen = 64 * 1024; // Capture all packets, no truncation
 	private static int flags = Pcap.MODE_PROMISCUOUS; // capture all packets
-	private static int timeout = 10 * 1000; // 10 seconds in milliseconds
+	private static int timeout = 1 * 1000; // 1 second in milliseconds
 	
 	private static final Pattern ipv4Pattern = Pattern.compile("^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
 
@@ -280,7 +280,8 @@ public class NetworkSniffer
 
 	public void stopCapture()
 	{
-		pcap.breakloop();
+		if (pcap != null)
+			pcap.breakloop();
 	}
 	
 	public void cleanup()

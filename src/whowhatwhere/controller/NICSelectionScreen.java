@@ -11,7 +11,6 @@ import org.jnetpcap.packet.PcapPacket;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -34,49 +33,55 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 	private Button btnAutoDetect;
 	private Button btnDone;
 	private Pane detecting;
-	private Node nodeToEnableOnClose;
 	private final NICInfo nicInfoToCopyResultInto;
 	private List<NICInfo> listOfDevices = new NetworkSniffer().getListOfDevices();
-	
+
 	private Process pingProcess;
 	private NetworkSniffer[] snifferArray = new NetworkSniffer[listOfDevices.size()];
 	private boolean isAutoDetectRunning = false;
 	private boolean isFirstRun;
 	private Timer autoDetectTimer;
-	
-	
+
 	/**
 	 * 
-	 * @param fxmlLocation {@link whowhatwhere.view.SecondaryFXMLScreen#SecondaryFXMLScreen(String fxmlLocation, Stage stage, Scene scene) see description in super} 
-	 * @param stage {@link whowhatwhere.view.SecondaryFXMLScreen#SecondaryFXMLScreen(String fxmlLocation, Stage stage, Scene scene) see description in super}
-	 * @param scene {@link whowhatwhere.view.SecondaryFXMLScreen#SecondaryFXMLScreen(String fxmlLocation, Stage stage, Scene scene) see description in super}
-	 * @param nodeToEnableOnClose - Node to enable when this screen is closed. Can be null.
-	 * @param nicInfoToCopyResultInto - a NICInfo object that its contents need to be updated with the selected NIC details when this screen closes. 
-	 * @throws IOException {@link whowhatwhere.view.SecondaryFXMLScreen#SecondaryFXMLScreen(String fxmlLocation, Stage stage, Scene scene) see description in super}
+	 * @param fxmlLocation
+	 *            {@link whowhatwhere.view.SecondaryFXMLScreen#SecondaryFXMLScreen(String fxmlLocation, Stage stage, Scene scene)
+	 *            see description in super}
+	 * @param stage
+	 *            {@link whowhatwhere.view.SecondaryFXMLScreen#SecondaryFXMLScreen(String fxmlLocation, Stage stage, Scene scene)
+	 *            see description in super}
+	 * @param scene
+	 *            {@link whowhatwhere.view.SecondaryFXMLScreen#SecondaryFXMLScreen(String fxmlLocation, Stage stage, Scene scene)
+	 *            see description in super}
+	 * @param nodeToEnableOnClose
+	 *            - Node to enable when this screen is closed. Can be null.
+	 * @param nicInfoToCopyResultInto
+	 *            - a NICInfo object that its contents need to be updated with
+	 *            the selected NIC details when this screen closes.
+	 * @throws IOException
+	 *             {@link whowhatwhere.view.SecondaryFXMLScreen#SecondaryFXMLScreen(String fxmlLocation, Stage stage, Scene scene)
+	 *             see description in super}
 	 */
-	public NICSelectionScreen(String fxmlLocation, Stage stage, Scene scene, Node nodeToEnableOnClose, NICInfo nicInfoToCopyResultInto) throws IOException
+	public NICSelectionScreen(String fxmlLocation, Stage stage, Scene scene, NICInfo nicInfoToCopyResultInto) throws IOException
 	{
 		super(fxmlLocation, stage, scene);
-		controller =  getLoader().<NICSelectionController> getController();
+		controller = getLoader().<NICSelectionController> getController();
 		comboNIC = controller.getComboNIC();
 		btnAutoDetect = controller.getBtnAutoDetect();
 		btnDone = controller.getBtnDone();
 		detecting = controller.getPaneDetecting();
-		this.nodeToEnableOnClose = nodeToEnableOnClose;
 		this.nicInfoToCopyResultInto = nicInfoToCopyResultInto;
-			
+
 		comboNIC.setItems(FXCollections.observableList(listOfDevices));
-		
+
 		isFirstRun = nicInfoToCopyResultInto.getDescription() == null;
 		if (!isFirstRun)
 			comboNIC.getSelectionModel().select(nicInfoToCopyResultInto);
-		
+
 		controller.getLabelFirstRun().setVisible(isFirstRun);
-		getPostCloseStage().toBack();
-		
+
 		setButtonHandlers();
 	}
-
 
 	private void setButtonHandlers()
 	{
@@ -84,7 +89,7 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 		{
 			autoDetect();
 		});
-		
+
 		btnDone.setOnAction(actionEvent ->
 		{
 			NICInfo selectedItem = comboNIC.getSelectionModel().getSelectedItem();
@@ -97,20 +102,17 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 			{
 				if (isAutoDetectRunning)
 					cleanupAfterAutoDetect();
-				
+
 				nicInfoToCopyResultInto.copyNICInfo(selectedItem);
-				
-				if (nodeToEnableOnClose != null)
-					nodeToEnableOnClose.setDisable(false);
 			}
 		});
 	}
-	
+
 	public Button getCloseButton()
 	{
 		return btnDone;
 	}
-	
+
 	private void autoDetect()
 	{
 		try
@@ -121,38 +123,6 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 			comboNIC.setDisable(true);
 			final int timeoutInSecs = 30;
 
-			pingProcess = Runtime.getRuntime().exec("ping 8.8.8.8 -n " + timeoutInSecs);
-			
-			PacketTypeToMatch packetType = new PacketTypeToMatch("", OutputMethod.enumToString(OutputMethod.POPUP), "Outgoing", "8.8.8.8", "255.255.255.255", PacketTypeToMatch.userNotes_ANY, 
-					PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, "ICMP", PacketTypeToMatch.packetOrPort_ANY, 
-					PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY);
-			
-			for (int i = 0; i < listOfDevices.size(); i++)
-			{
-				NICInfo nic = listOfDevices.get(i);
-				snifferArray[i] = new NetworkSniffer();
-				
-				packetType.setMessageText(String.valueOf(i));
-				List<PacketTypeToMatch> list = new ArrayList<>(1);
-				list.add(packetType);
-				
-				final int index = i;
-				new Thread(() ->
-				{
-					try
-					{
-						snifferArray[index].startWatchdogCapture(nic, list, false, null, this, new StringBuilder());
-					}
-					catch (UnknownHostException e)
-					{
-						Platform.runLater(() -> new Alert(AlertType.ERROR, "Unable to auto-detect: " + e.getMessage()).showAndWait());
-						cleanupAfterAutoDetect();
-					}
-					
-				}).start();
-				
-			}
-			
 			autoDetectTimer = new Timer(true);
 			autoDetectTimer.schedule(new TimerTask()
 			{
@@ -163,6 +133,41 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 					cleanupAfterAutoDetect();
 				}
 			}, timeoutInSecs * 1000);
+
+			pingProcess = Runtime.getRuntime().exec("ping 8.8.8.8 -n " + timeoutInSecs);
+
+			PacketTypeToMatch packetType = new PacketTypeToMatch("", OutputMethod.enumToString(OutputMethod.POPUP), "Outgoing", "8.8.8.8", "255.255.255.255", PacketTypeToMatch.userNotes_ANY,
+					PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, "ICMP", PacketTypeToMatch.packetOrPort_ANY,
+					PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY);
+
+			for (int i = 0; i < listOfDevices.size() && isAutoDetectRunning; i++)
+			{
+				NICInfo nic = listOfDevices.get(i);
+
+				snifferArray[i] = new NetworkSniffer();
+
+				packetType.setMessageText(String.valueOf(i));
+				List<PacketTypeToMatch> list = new ArrayList<>(1);
+				list.add(packetType);
+
+				if (isAutoDetectRunning) //if one of these threads detected it, this will be false and we won't run another detection for no reason
+				{
+					final int index = i;
+					new Thread(() ->
+					{
+						try
+						{
+							snifferArray[index].startWatchdogCapture(nic, list, false, null, this, new StringBuilder());
+						}
+						catch (UnknownHostException e)
+						{
+							Platform.runLater(() -> new Alert(AlertType.ERROR, "Unable to auto-detect: " + e.getMessage()).showAndWait());
+							cleanupAfterAutoDetect();
+						}
+
+					}).start();
+				}
+			}
 		}
 		catch (Exception e)
 		{
@@ -171,26 +176,27 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 		}
 	}
 
-
 	@Override
 	public void watchdogFoundMatchingPacket(PcapPacket packet, WatchdogMessage message)
 	{
-		Platform.runLater(() -> comboNIC.getSelectionModel().select(Integer.valueOf(message.getMessage())));
 		cleanupAfterAutoDetect();
-	}
+		int index = Integer.valueOf(message.getMessage());
 
+		Platform.runLater(() -> comboNIC.getSelectionModel().select(index));
+	}
 
 	private void cleanupAfterAutoDetect()
 	{
+		isAutoDetectRunning = false;
 		autoDetectTimer.cancel();
 		detecting.setVisible(false);
-		
+
 		pingProcess.destroy();
-		
+
 		for (int i = 0; i < listOfDevices.size(); i++)
-			snifferArray[i].stopCapture();
-		
-		isAutoDetectRunning = false;
+			if (snifferArray[i] != null)
+				snifferArray[i].stopCapture();
+
 		btnAutoDetect.setDisable(false);
 		comboNIC.setDisable(false);
 	}

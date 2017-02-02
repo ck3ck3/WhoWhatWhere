@@ -712,7 +712,6 @@ public class AppearanceCounterUI implements CaptureStartListener
 		btnStart.setDisable(duringCapture);
 		btnStop.setDisable(!duringCapture);
 		paneCaptureOptions.setDisable(duringCapture);
-//		controller.getComboNetworkAdapter().setDisable(duringCapture);
 		paneCaptureOptions.setDisable(duringCapture);
 		btnExportTableToCSV.setDisable(duringCapture);
 

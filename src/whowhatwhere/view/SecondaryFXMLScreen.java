@@ -47,13 +47,13 @@ public abstract class SecondaryFXMLScreen
 	 * @param buttonsToClose
 	 *            - list of buttons that close this window. The buttons'
 	 *            onAction doesn't have to implement anything, not even closing
-	 *            the screen. If onAction is implemented, it MUST to be done in
-	 *            the constructor of the inheriting class, and then that
-	 *            implementation will be called before closing the window. In
-	 *            case the window shouldn't be closed (if there's an input error
-	 *            on a form for example), the inheriting class' onAction method
-	 *            implementation should throw an IllegalArgumentException, which
-	 *            will then not close the window.
+	 *            the screen. If onAction is implemented, it <b>MUST</b> be done
+	 *            before calling this method, and then that implementation will
+	 *            be called before closing the window. In case the window
+	 *            shouldn't be closed (if there's an input error on a form for
+	 *            example), the inheriting class' onAction method implementation
+	 *            should throw an IllegalArgumentException, which will then not
+	 *            close the window.
 	 */
 	public void showScreenOnExistingStage(Stage existingStage, Button... buttonsToClose)
 	{
@@ -95,13 +95,13 @@ public abstract class SecondaryFXMLScreen
 	 * @param buttonsToClose
 	 *            - list of buttons that close this window. The buttons'
 	 *            onAction doesn't have to implement anything, not even closing
-	 *            the screen. If onAction is implemented, it <b>MUST</b> to be
-	 *            done in the constructor of the inheriting class, and then that
-	 *            implementation will be called before closing the window. In
-	 *            case the window shouldn't be closed (if there's an input error
-	 *            on a form for example), the inheriting class' onAction method
-	 *            implementation should throw an IllegalArgumentException, which
-	 *            will then not close the window.
+	 *            the screen. If onAction is implemented, it <b>MUST</b> be done
+	 *            before calling this method, and then that implementation will
+	 *            be called before closing the window. In case the window
+	 *            shouldn't be closed (if there's an input error on a form for
+	 *            example), the inheriting class' onAction method implementation
+	 *            should throw an IllegalArgumentException, which will then not
+	 *            close the window.
 	 * @return The new stage that was created for this screen. Users can then
 	 *         call setOnCloseRequest() on it to decide behavior on external
 	 *         (non {@code buttonsToClose}) close request

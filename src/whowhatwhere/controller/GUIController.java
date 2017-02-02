@@ -505,7 +505,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 
 		try
 		{
-			selectionScreen = new NICSelectionScreen(NICSelectionFormLocation, stage, stage.getScene(), scrollPaneMainForm, selectedNIC);
+			selectionScreen = new NICSelectionScreen(NICSelectionFormLocation, stage, stage.getScene(), selectedNIC);
 		}
 		catch (Exception e)
 		{
@@ -514,10 +514,8 @@ public class GUIController implements CheckForUpdatesResultHandler
 			shutdownApp();
 		}
 
-		scrollPaneMainForm.setDisable(true);
 		Stage newStage = selectionScreen.showScreenOnNewStage("Choose a network adapter", Modality.APPLICATION_MODAL, selectionScreen.getCloseButton());
 
-		newStage.toFront();
 		newStage.setOnCloseRequest(windowEvent ->
 		{
 			if (selectedNIC.getDescription() == null) //if we don't have a NIC set
@@ -525,8 +523,6 @@ public class GUIController implements CheckForUpdatesResultHandler
 				windowEvent.consume();
 				new Alert(AlertType.ERROR, "You must select a network adapter.").showAndWait();
 			}
-			else //just close the window and restore gui functionality
-				scrollPaneMainForm.setDisable(false);
 		});
 	}
 
