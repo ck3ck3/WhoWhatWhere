@@ -182,8 +182,8 @@
                                                 <Label fx:id="labelWatchdogCurrHotkey" layoutX="117.0" layoutY="4.0" prefHeight="17.0" prefWidth="244.0" text="Current hotkey: " />
                                              </children>
                                           </AnchorPane>
-                                          <Button fx:id="btnWatchdogStart" layoutX="14.0" layoutY="78.0" mnemonicParsing="false" text="Start waiting for match" />
-                                          <Button fx:id="btnWatchdogStop" disable="true" layoutX="164.0" layoutY="78.0" mnemonicParsing="false" text="Stop waiting for match" />
+                                          <Button fx:id="btnWatchdogStart" layoutX="14.0" layoutY="78.0" mnemonicParsing="false" text="Start Watchdog" />
+                                          <Button fx:id="btnWatchdogStop" disable="true" layoutX="121.0" layoutY="78.0" mnemonicParsing="false" text="Stop Watchdog" />
                                           <AnchorPane fx:id="paneWatchdogConfig" layoutX="14.0" layoutY="14.0" prefHeight="71.0" prefWidth="623.0">
                                              <children>
                                                 <Button fx:id="btnWatchdogManageList" mnemonicParsing="false" text="Manage match list" />

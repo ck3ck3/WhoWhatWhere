@@ -158,6 +158,9 @@ public class HotkeyManager implements NativeKeyListener
 	{
 		String keyText = NativeKeyEvent.getKeyText(hotkey);
 		String modifiersText = NativeKeyEvent.getModifiersText(modifiers);
+		
+		if (keyText.equals("NumPad Separator")) //no one knows this key as separator
+			keyText = "NumPad Del";
 
 		return (modifiersText.isEmpty() ? "" : modifiersText + "+") + keyText;
 	}

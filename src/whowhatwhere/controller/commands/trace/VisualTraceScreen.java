@@ -31,7 +31,7 @@ import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen;
 public class VisualTraceScreen extends SecondaryFXMLScreen
 {
 	private final static String visualTraceFormLocation = "/whowhatwhere/view/fxmls/commands/VisualTraceForm.fxml";
-	private final static String baseUrl = "https://maps.googleapis.com/maps/api/staticmap?key=AIzaSyCT-QqmWbW7A-N0ywbXTmblZKq5flvtXmE&size=400x400&scale=2&maptype=roadmap";
+	private final static String baseUrl = "https://maps.googleapis.com/maps/api/staticmap?key=" + GoogleStaticMapsAPIKey.key + "&size=400x400&scale=2&maptype=roadmap";
 	private final static Logger logger = Logger.getLogger(VisualTraceScreen.class.getPackage().getName());
 
 	private VisualTraceController visualTraceController;

@@ -20,6 +20,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import whowhatwhere.model.networksniffer.NICInfo;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
+import whowhatwhere.model.networksniffer.PacketDirection;
 import whowhatwhere.model.networksniffer.watchdog.OutputMethod;
 import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
 import whowhatwhere.model.networksniffer.watchdog.WatchdogListener;
@@ -136,9 +137,10 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 
 			pingProcess = Runtime.getRuntime().exec("ping 8.8.8.8 -n " + timeoutInSecs);
 
-			PacketTypeToMatch packetType = new PacketTypeToMatch("", OutputMethod.enumToString(OutputMethod.POPUP), "Outgoing", "8.8.8.8", "255.255.255.255", PacketTypeToMatch.userNotes_ANY,
-					PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, "ICMP", PacketTypeToMatch.packetOrPort_ANY,
-					PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY);
+			PacketTypeToMatch packetType = new PacketTypeToMatch("", OutputMethod.enumToString(OutputMethod.POPUP), PacketDirection.enumToString(PacketDirection.Outgoing), "8.8.8.8",
+					"255.255.255.255", PacketTypeToMatch.userNotes_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, "ICMP",
+					PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY,
+					PacketTypeToMatch.packetOrPort_ANY);
 
 			for (int i = 0; i < listOfDevices.size() && isAutoDetectRunning; i++)
 			{
@@ -195,9 +197,8 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 
 		for (int i = 0; i < listOfDevices.size(); i++)
 			if (snifferArray[i] != null)
-				snifferArray[i].stopCapture();
+				snifferArray[i].cleanup();
 
-		btnAutoDetect.setDisable(false);
 		comboNIC.setDisable(false);
 	}
 }

@@ -55,6 +55,12 @@ public class PingToSpeechUI
 			String address = comboPTSipToPing.getEditor().getText();
 			List<String> items = comboPTSipToPing.getItems();
 
+			if (address.isEmpty())
+			{
+				tts.speak("Please enter an address to ping");
+				return;
+			}
+			
 			if (!items.contains(address))
 				items.add(address);
 

@@ -163,7 +163,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		@Override
 		public void run()
 		{
-			String line = "Pressing " + activeButton.getText() + " button";
+			String line = activeButton == btnStart ? "Starting capture" : "Stopping capture";
 
 			isAHotkeyResult = true;
 			tts.speak(line);
@@ -835,9 +835,6 @@ public class AppearanceCounterUI implements CaptureStartListener
 			}
 
 			labelStatus.setText(statusCapturing + timerExpires);
-
-			if (isAHotkeyResult)
-				tts.speak("Capture started");
 		});
 	}
 

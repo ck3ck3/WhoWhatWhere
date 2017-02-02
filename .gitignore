@@ -1,4 +1,5 @@
 bin
+/src/whowhatwhere/controller/commands/trace/GoogleStaticMapsAPIKey.java
 Who What Where.properties
 userNotes.properties
 WhoWhatWhere.rar
