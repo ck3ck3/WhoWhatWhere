@@ -14,6 +14,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
 import whowhatwhere.controller.appearancecounter.ManageUserNotesScreen;
 
@@ -44,6 +47,7 @@ public class UserNotes
 			}
 			catch (IOException e)
 			{
+				Platform.runLater(() -> new Alert(AlertType.ERROR, "Unable to open user notes file: " + e.getMessage()).showAndWait());
 				logger.log(Level.SEVERE, "Unable to open user notes file " + userNotesFilename, e);
 			}
 		}
@@ -69,12 +73,12 @@ public class UserNotes
 		return userNotes.getProperty(ip, valueIfKeyNotFound);
 	}
 	
-	public boolean userNotesContainsKey(String ip)
+	public boolean containsIP(String ip)
 	{
 		return userNotes.containsKey(ip);
 	}
 	
-	public Set<Object> getKeySet()
+	public Set<Object> getIPSet()
 	{
 		return userNotes.keySet();
 	}
@@ -89,6 +93,7 @@ public class UserNotes
 		}
 		catch (IOException e)
 		{
+			Platform.runLater(() -> new Alert(AlertType.ERROR, "Unable to save user notes file: " + e.getMessage()).showAndWait());
 			logger.log(Level.SEVERE, "Unable to save user notes file " + userNotesFilename, e);
 		}
 	}
@@ -106,6 +111,7 @@ public class UserNotes
 		}
 		catch (IOException e)
 		{
+			Platform.runLater(() -> new Alert(AlertType.ERROR, "Unable to load user notes management screen: " + e.getMessage()).showAndWait());
 			logger.log(Level.SEVERE, "Unable to load user notes management screen", e);
 			return;
 		}

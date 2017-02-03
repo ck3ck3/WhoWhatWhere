@@ -48,7 +48,7 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 	{
 		ObservableList<UserNotesRowModel> list = FXCollections.observableArrayList();
 		
-		for (Object ipObj : userNotes.getKeySet())
+		for (Object ipObj : userNotes.getIPSet())
 		{
 			String ip = (String)ipObj;
 			list.add(new UserNotesRowModel(ip, userNotes.getUserNote(ip)));
@@ -66,7 +66,7 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 			String previousValue = rowModel.getOldValue();
 			boolean isNewContentValid = isValidIPValue(newContent);
 			UserNotesRowModel rowValue = rowModel.getRowValue();
-			boolean ipAlreadyExists = userNotes.userNotesContainsKey(newContent);
+			boolean ipAlreadyExists = userNotes.containsIP(newContent);
 			
 			if (ipAlreadyExists)
 			{

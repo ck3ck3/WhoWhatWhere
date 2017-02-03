@@ -49,6 +49,7 @@ import whowhatwhere.Main;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
 import whowhatwhere.controller.UserNotes;
+import whowhatwhere.controller.commands.Commands;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.geoipresolver.GeoIPInfo;
@@ -423,10 +424,10 @@ public class AppearanceCounterUI implements CaptureStartListener
 			});
 
 			MenuItem pingIP = new MenuItem("Ping this IP");
-			pingIP.setOnAction(event -> guiController.pingCommand(row.getItem().ipAddressProperty().getValue()));
+			pingIP.setOnAction(event -> Commands.pingCommand(row.getItem().ipAddressProperty().getValue(), guiController.getStage()));
 
 			MenuItem traceIP = new MenuItem("Visual trace this IP");
-			traceIP.setOnAction(event -> guiController.traceCommand(row.getItem().ipAddressProperty().getValue()));
+			traceIP.setOnAction(event -> Commands.traceCommand(row.getItem().ipAddressProperty().getValue(), guiController.getStage()));
 
 			ContextMenu rowMenu = new ContextMenu(copyMenu, getGeoIPinfo, sendIPToPTS, pingIP, traceIP);
 

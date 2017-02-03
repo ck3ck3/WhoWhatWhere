@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import whowhatwhere.controller.GUIController;
+import whowhatwhere.controller.commands.Commands;
 
 public class TraceUtilityUI
 {
@@ -23,7 +24,7 @@ public class TraceUtilityUI
 		textTrace = controller.getTextTrace();
 		btnTrace = controller.getBtnTrace();
 		
-		btnTrace.setOnAction(event -> this.guiController.traceCommand(textTrace.getText()));
+		btnTrace.setOnAction(event -> Commands.traceCommand(textTrace.getText(), this.guiController.getStage()));
 
 		textTrace.setOnKeyPressed(ke ->
 		{
