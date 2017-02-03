@@ -21,7 +21,6 @@ import whowhatwhere.model.criteria.CriteriaProtocol;
 import whowhatwhere.model.criteria.OrCriteria;
 import whowhatwhere.model.criteria.RelativeToValue;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
-import whowhatwhere.model.networksniffer.PacketDirection;
 
 public class WatchdogPacketHandler implements PcapPacketHandler<Void>
 {
@@ -101,7 +100,7 @@ public class WatchdogPacketHandler implements PcapPacketHandler<Void>
 			if (criteriasToAND.size() > 0)
 			{
 				criterias.add(andCriteria);
-				criteriaToMsgMap.put(andCriteria, new WatchdogMessage(item.messageTextProperty().get(), OutputMethod.stringToEnum(item.messageOutputMethodProperty().get())));
+				criteriaToMsgMap.put(andCriteria, new WatchdogMessage(item.messageTextProperty().get(), item.messageOutputMethodAsEnum()));
 			}
 		}
 		
@@ -113,10 +112,10 @@ public class WatchdogPacketHandler implements PcapPacketHandler<Void>
 		List<Criteria<PcapPacket, Boolean>> criteriasToAND = new ArrayList<Criteria<PcapPacket, Boolean>>();
 		
 		if (!item.packetDirectionProperty().get().equals(PacketTypeToMatch.packetDirection_ANY))
-			criteriasToAND.add(new CriteriaPacketDirection(PacketDirection.stringToEnum(item.packetDirectionProperty().get()), ownMACAddress));
+			criteriasToAND.add(new CriteriaPacketDirection(item.packetDirectoinAsEnum(), ownMACAddress));
 		
 		if (!item.ipAddressProperty().get().equals(PacketTypeToMatch.IP_ANY))
-			criteriasToAND.add(new CriteriaIP(item.ipAddressProperty().get(), item.netmaskProperty().get(), PacketDirection.stringToEnum(item.packetDirectionProperty().get())));
+			criteriasToAND.add(new CriteriaIP(item.ipAddressProperty().get(), item.netmaskProperty().get(), item.packetDirectoinAsEnum()));
 		
 		if (!item.userNotesProperty().get().equals(PacketTypeToMatch.userNotes_ANY))
 		{
@@ -125,11 +124,11 @@ public class WatchdogPacketHandler implements PcapPacketHandler<Void>
 			
 			if (ipsToAdd > 0)
 			{
-				CriteriaIP criteriaIP = new CriteriaIP(ipsFromUserNotes.get(0), "255.255.255.255", PacketDirection.stringToEnum(item.packetDirectionProperty().get()));
+				CriteriaIP criteriaIP = new CriteriaIP(ipsFromUserNotes.get(0), "255.255.255.255", item.packetDirectoinAsEnum());
 				Criteria<PcapPacket, Boolean> orBetweenIPs = criteriaIP;
 					
 				for (int i = 1; i < ipsToAdd; i++)
-					orBetweenIPs = new OrCriteria<PcapPacket>(orBetweenIPs, new CriteriaIP(ipsFromUserNotes.get(i), "255.255.255.255", PacketDirection.stringToEnum(item.packetDirectionProperty().get())));
+					orBetweenIPs = new OrCriteria<PcapPacket>(orBetweenIPs, new CriteriaIP(ipsFromUserNotes.get(i), "255.255.255.255", item.packetDirectoinAsEnum()));
 					
 				criteriasToAND.add(orBetweenIPs);
 			}
@@ -145,7 +144,7 @@ public class WatchdogPacketHandler implements PcapPacketHandler<Void>
 			criteriasToAND.add(new CriteriaPacketSize(Integer.valueOf(item.packetSizeSmallerProperty().get()), RelativeToValue.LESS_THAN));
 		
 		if (!item.protocolProperty().get().equals(PacketTypeToMatch.protocol_ANY))
-			criteriasToAND.add(new CriteriaProtocol(item.protocolAsInt()));
+			criteriasToAND.add(new CriteriaProtocol(item.protocolAsEnum()));
 		
 		if (!item.srcPortGreaterProperty().get().equals(PacketTypeToMatch.packetOrPort_ANY))
 			criteriasToAND.add(new CriteriaPort(Integer.valueOf(item.srcPortGreaterProperty().get()), RelativeToValue.GREATER_THAN, true));

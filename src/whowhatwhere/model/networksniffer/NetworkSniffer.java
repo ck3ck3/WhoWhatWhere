@@ -15,16 +15,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import org.apache.commons.collections.bidimap.TreeBidiMap;
 import org.apache.commons.io.IOUtils;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapAddr;
 import org.jnetpcap.PcapIf;
 import org.jnetpcap.packet.PcapPacketHandler;
-import org.jnetpcap.protocol.network.Icmp;
-import org.jnetpcap.protocol.tcpip.Http;
-import org.jnetpcap.protocol.tcpip.Tcp;
-import org.jnetpcap.protocol.tcpip.Udp;
 
 import whowhatwhere.Main;
 import whowhatwhere.model.networksniffer.appearancecounter.AppearanceCounterPacketHandler;
@@ -36,20 +31,11 @@ import whowhatwhere.model.networksniffer.watchdog.WatchdogPacketHandler;
 public class NetworkSniffer
 {
 	private static final Logger logger = Logger.getLogger(NetworkSniffer.class.getPackage().getName());
-	private static TreeBidiMap protocolBidiMap;
 	private static boolean initSuccessful;
 	private static List<String> errorList = new ArrayList<String>();
 
-	public static final String[] supportedProtocols = {"ICMP", "UDP", "TCP", "HTTP"};
-	
 	static
 	{
-		protocolBidiMap = new TreeBidiMap();
-		protocolBidiMap.put("ICMP", Icmp.ID);
-		protocolBidiMap.put("UDP", Udp.ID);
-		protocolBidiMap.put("TCP", Tcp.ID);
-		protocolBidiMap.put("HTTP", Http.ID);
-		
 		initSuccessful = loadJnetpcapDll(Main.jnetpcapDLLx86Location, Main.jnetpcapDLLx64Location);
 		
 		if (!initSuccessful)
@@ -206,16 +192,6 @@ public class NetworkSniffer
 	{
 		InetAddress bar = InetAddress.getByName(str);
 		return ByteBuffer.wrap(bar.getAddress()).getInt();
-	}
-
-	public static int stringProtocolToInt(String protocol)
-	{
-		return (Integer)protocolBidiMap.get(protocol);
-	}
-	
-	public static String intProtocolToString(int protocol)
-	{
-		return (String)protocolBidiMap.getKey(protocol);
 	}
 	
 	public static boolean isValidIPv4(String ip)

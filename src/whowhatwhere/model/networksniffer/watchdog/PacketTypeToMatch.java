@@ -4,21 +4,21 @@ import java.io.Serializable;
 import java.util.List;
 
 import javafx.beans.property.SimpleStringProperty;
-import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.PacketDirection;
+import whowhatwhere.model.networksniffer.SupportedProtocols;
 
 public class PacketTypeToMatch implements Serializable
 {
 	private static final long serialVersionUID = -7741791299979590040L;	//auto-generated, modify if changes to the class are not backwards-compatible
 	
-	public final static String packetDirection_ANY = PacketDirection.enumToString(PacketDirection.ANY);
+	public final static String packetDirection_ANY = PacketDirection.ANY.toString();
 	public final static String IP_ANY = "";
 	public final static String netmask_ANY = "";
 	public final static String userNotes_ANY = "";
 	public final static String packetOrPort_ANY = "";
 	public final static String protocol_ANY = "ANY";
 	public final static String message_empty = "";
-	public final static String outputMethod_default = OutputMethod.enumToString(OutputMethod.TTS);
+	public final static String outputMethod_default = OutputMethod.TTS.toString();
 	
 	transient private SimpleStringProperty messageText;
 	private String messageTextToSerialize;
@@ -49,7 +49,7 @@ public class PacketTypeToMatch implements Serializable
 	private String packetSizeGreaterToSerialize;
 	
 	transient private SimpleStringProperty protocol;
-	private String protocolToSerialize;
+	private SupportedProtocols protocolToSerialize;
 	
 	transient private SimpleStringProperty srcPortSmaller;
 	private String srcPortSmallerToSerialize;
@@ -95,15 +95,15 @@ public class PacketTypeToMatch implements Serializable
 	public void initAfterSerialization()
 	{
 		setMessageText(messageTextToSerialize);
-		setMessageOutputMethod(OutputMethod.enumToString(messageOutputMethodToSerialize));
-		setPacketDirection(PacketDirection.enumToString(packetDirectionToSerialize));
+		setMessageOutputMethod(messageOutputMethodToSerialize.toString());
+		setPacketDirection(packetDirectionToSerialize.toString());
 		setIpAddress(ipAddressToSerialize);
 		setNetmask(netmaskToSerialize);
 		setUserNotes(userNotesToSerialize);
 		setPacketSizeSmaller(packetSizeSmallerToSerialize);
 		setPacketSizeEquals(packetSizeEqualsToSerialize);
 		setPacketSizeGreater(packetSizeGreaterToSerialize);
-		setProtocol(protocolToSerialize);
+		setProtocol(protocolToSerialize == null ? protocol_ANY : protocolToSerialize.toString()); //since ANY isn't in the enum
 		setSrcPortSmaller(srcPortSmallerToSerialize);
 		setSrcPortEquals(srcPortEqualsToSerialize);
 		setSrcPortGreater(srcPortGreaterToSerialize);
@@ -142,6 +142,11 @@ public class PacketTypeToMatch implements Serializable
 		this.messageOutputMethodToSerialize = OutputMethod.stringToEnum(outputMethod);
 	}
 	
+	public OutputMethod messageOutputMethodAsEnum()
+	{
+		return messageOutputMethodToSerialize;
+	}
+	
 	public SimpleStringProperty packetDirectionProperty()
 	{
 		return packetDirection;
@@ -155,6 +160,11 @@ public class PacketTypeToMatch implements Serializable
 			this.packetDirection.setValue(packetDirection);
 		
 		packetDirectionToSerialize = PacketDirection.stringToEnum(packetDirection);
+	}
+	
+	public PacketDirection packetDirectoinAsEnum()
+	{
+		return packetDirectionToSerialize;
 	}
 	
 	public SimpleStringProperty ipAddressProperty()
@@ -184,12 +194,17 @@ public class PacketTypeToMatch implements Serializable
 		else
 			this.protocol.setValue(protocol);
 		
-		this.protocolToSerialize = protocol;
+		this.protocolToSerialize = SupportedProtocols.stringToEnum(protocol);
 	}
 	
 	public Integer protocolAsInt()
 	{
-		return (protocol == null || protocol.getValue().isEmpty() || protocol.getValue().equals(protocol_ANY) ? null : NetworkSniffer.stringProtocolToInt(protocol.getValue()));
+		return (protocol == null || protocol.getValue().isEmpty() || protocol.getValue().equals(protocol_ANY) ? null : protocolToSerialize.getValue());
+	}
+	
+	public SupportedProtocols protocolAsEnum()
+	{
+		return protocolToSerialize;
 	}
 	
 	public boolean isSameValuesAs(PacketTypeToMatch otherEntry)

@@ -2,13 +2,13 @@ package whowhatwhere.model.criteria;
 
 import org.jnetpcap.packet.PcapPacket;
 
-import whowhatwhere.model.networksniffer.NetworkSniffer;
+import whowhatwhere.model.networksniffer.SupportedProtocols;
 
 public class CriteriaProtocol implements Criteria<PcapPacket, Boolean>
 {
-	int protocol;
+	SupportedProtocols protocol;
 
-	public CriteriaProtocol(int protocol)
+	public CriteriaProtocol(SupportedProtocols protocol)
 	{
 		this.protocol = protocol;
 	}
@@ -16,12 +16,12 @@ public class CriteriaProtocol implements Criteria<PcapPacket, Boolean>
 	@Override
 	public Boolean meetCriteria(PcapPacket itemToCheck)
 	{
-		return itemToCheck.hasHeader(protocol);
+		return itemToCheck.hasHeader(protocol.getValue());
 	}
 
 	@Override
 	public String getCriteriaAsText()
 	{
-		return "(Protocol == " + NetworkSniffer.intProtocolToString(protocol) + ")";
+		return "(Protocol == " + protocol.toString() + ")";
 	}
 }

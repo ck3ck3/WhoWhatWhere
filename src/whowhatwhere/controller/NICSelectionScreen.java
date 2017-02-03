@@ -21,6 +21,7 @@ import javafx.stage.Stage;
 import whowhatwhere.model.networksniffer.NICInfo;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.PacketDirection;
+import whowhatwhere.model.networksniffer.SupportedProtocols;
 import whowhatwhere.model.networksniffer.watchdog.OutputMethod;
 import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
 import whowhatwhere.model.networksniffer.watchdog.WatchdogListener;
@@ -135,12 +136,12 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 				}
 			}, timeoutInSecs * 1000);
 
-			pingProcess = Runtime.getRuntime().exec("ping 8.8.8.8 -n " + timeoutInSecs);
+			String ipToPing = "8.8.8.8";
+			pingProcess = Runtime.getRuntime().exec("ping " + ipToPing + " -n " + timeoutInSecs);
 
-			PacketTypeToMatch packetType = new PacketTypeToMatch("", OutputMethod.enumToString(OutputMethod.POPUP), PacketDirection.enumToString(PacketDirection.Outgoing), "8.8.8.8",
-					"255.255.255.255", PacketTypeToMatch.userNotes_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, "ICMP",
-					PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY,
-					PacketTypeToMatch.packetOrPort_ANY);
+			PacketTypeToMatch packetType = new PacketTypeToMatch("", OutputMethod.POPUP.toString(), PacketDirection.Outgoing.toString(), ipToPing, "255.255.255.255", PacketTypeToMatch.userNotes_ANY,
+					PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, SupportedProtocols.ICMP.toString(), PacketTypeToMatch.packetOrPort_ANY,
+					PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY);
 
 			for (int i = 0; i < listOfDevices.size() && isAutoDetectRunning; i++)
 			{

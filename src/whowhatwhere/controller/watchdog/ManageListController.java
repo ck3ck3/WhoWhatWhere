@@ -23,8 +23,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
-import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.PacketDirection;
+import whowhatwhere.model.networksniffer.SupportedProtocols;
 import whowhatwhere.model.networksniffer.watchdog.OutputMethod;
 import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
 
@@ -174,10 +174,11 @@ public class ManageListController extends SecondaryFXMLWithCRUDTableController<P
 		columnPacketSizeGreater.setCellFactory(TextFieldTableCell.forTableColumn());
 
 		columnProtocol.setCellValueFactory(new PropertyValueFactory<>("protocol"));
-		String[] protocols = new String[NetworkSniffer.supportedProtocols.length + 1];
-		protocols[0] = PacketTypeToMatch.protocol_ANY;
-		System.arraycopy(NetworkSniffer.supportedProtocols, 0, protocols, 1, NetworkSniffer.supportedProtocols.length); //add the rest of the protocols
-		columnProtocol.setCellFactory(ComboBoxTableCell.forTableColumn(protocols));
+		String[] supportedProtocols = SupportedProtocols.getSupportedProtocolsAsString();
+		String[] protocolsToAdd = new String[supportedProtocols.length + 1];
+		protocolsToAdd[0] = PacketTypeToMatch.protocol_ANY;
+		System.arraycopy(supportedProtocols, 0, protocolsToAdd, 1, supportedProtocols.length); //add the rest of the protocols
+		columnProtocol.setCellFactory(ComboBoxTableCell.forTableColumn(protocolsToAdd));
 		
 		columnSrcPortSmaller.setCellValueFactory(new PropertyValueFactory<PacketTypeToMatch, String>("srcPortSmaller"));
 		columnSrcPortSmaller.setCellFactory(TextFieldTableCell.forTableColumn());

@@ -27,8 +27,9 @@ public enum PacketDirection
 		return (PacketDirection) bidiMap.getKey(str);
 	}
 	
-	public static String enumToString(PacketDirection packetDirection)
+	@Override
+	public String toString()
 	{
-		return (String) bidiMap.get(packetDirection);
+		return (String) bidiMap.get(this);
 	}
 }

@@ -45,7 +45,7 @@ public class WatchdogUI implements WatchdogListener
 	private final static String hotkeyID = "Watchdog hotkey";
 	private final static String listFormLocation = "/whowhatwhere/view/fxmls/watchdog/WatchdogManageList.fxml";
 	public static final String presetExtension = ".watchdogPreset";
-	private static final String lastRunFilename = "Last run" + presetExtension;
+	public static final String lastRunFilename = "Last run" + presetExtension;
 	private final static String voiceForTTS = "kevin16";
 	private final static int minCooldownValue = 3;
 	private final static int maxCooldownValue = Integer.MAX_VALUE;

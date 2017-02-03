@@ -27,8 +27,9 @@ public enum OutputMethod
 		return (OutputMethod) bidiMap.getKey(str);
 	}
 	
-	public static String enumToString(OutputMethod outputMethod)
+	@Override
+	public String toString()
 	{
-		return (String) bidiMap.get(outputMethod);
+		return (String) bidiMap.get(this);
 	}
 }

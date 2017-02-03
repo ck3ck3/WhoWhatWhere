@@ -56,6 +56,7 @@ import whowhatwhere.model.geoipresolver.GeoIPInfo;
 import whowhatwhere.model.geoipresolver.GeoIPResolver;
 import whowhatwhere.model.networksniffer.CaptureStartListener;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
+import whowhatwhere.model.networksniffer.SupportedProtocols;
 import whowhatwhere.model.networksniffer.appearancecounter.AppearanceCounterResults;
 import whowhatwhere.model.networksniffer.appearancecounter.IpAppearancesCounter;
 
@@ -481,16 +482,16 @@ public class AppearanceCounterUI implements CaptureStartListener
 				if (chkboxFilterProtocols.isSelected())
 				{
 					if (chkboxUDP.isSelected())
-						protocols.add(NetworkSniffer.stringProtocolToInt("UDP"));
+						protocols.add(SupportedProtocols.UDP.getValue());
 	
 					if (chkboxTCP.isSelected())
-						protocols.add(NetworkSniffer.stringProtocolToInt("TCP"));
+						protocols.add(SupportedProtocols.TCP.getValue());
 	
 					if (chkboxICMP.isSelected())
-						protocols.add(NetworkSniffer.stringProtocolToInt("ICMP"));
+						protocols.add(SupportedProtocols.ICMP.getValue());
 	
 					if (chkboxHTTP.isSelected())
-						protocols.add(NetworkSniffer.stringProtocolToInt("HTTP"));
+						protocols.add(SupportedProtocols.HTTP.getValue());
 				}
 
 				return protocols;
