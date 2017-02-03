@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import numbertextfield.*?>
+
+<AnchorPane prefHeight="229.0" prefWidth="697.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.watchdog.WatchdogController">
+   <children>
+      <CheckBox fx:id="chkboxWatchdogHotkey" layoutX="14.0" layoutY="124.0" mnemonicParsing="false" selected="true" text="Enable start/stop Watchdog hotkey" />
+      <AnchorPane fx:id="paneWatchdogHotkeyConfig" layoutX="230.0" layoutY="120.0" prefHeight="25.0" prefWidth="366.0">
+         <children>
+            <Button fx:id="btnWatchdogConfigureHotkey" mnemonicParsing="false" text="Configure hotkey" />
+            <Label fx:id="labelWatchdogCurrHotkey" layoutX="117.0" layoutY="4.0" prefHeight="17.0" prefWidth="244.0" text="Current hotkey: " />
+         </children>
+      </AnchorPane>
+      <Button fx:id="btnWatchdogStart" layoutX="14.0" layoutY="78.0" mnemonicParsing="false" text="Start Watchdog" />
+      <Button fx:id="btnWatchdogStop" disable="true" layoutX="121.0" layoutY="78.0" mnemonicParsing="false" text="Stop Watchdog" />
+      <AnchorPane fx:id="paneWatchdogConfig" layoutX="14.0" layoutY="14.0" prefHeight="71.0" prefWidth="623.0">
+         <children>
+            <Button fx:id="btnWatchdogManageList" mnemonicParsing="false" text="Manage match list" />
+            <Label fx:id="labelWatchdogEntryCount" layoutX="123.0" layoutY="4.0" prefHeight="17.0" prefWidth="204.0" text="Match list contains 0 entries" />
+            <RadioButton fx:id="radioWatchdogStopAfterMatch" layoutY="36.0" mnemonicParsing="false" text="Stop once a match is found">
+               <toggleGroup>
+                  <ToggleGroup fx:id="tglWatchdogStopOrContinue" />
+               </toggleGroup>
+            </RadioButton>
+            <RadioButton fx:id="radioWatchdogKeepLooking" layoutX="175.0" layoutY="36.0" mnemonicParsing="false" text="Keep looking for matches " toggleGroup="$tglWatchdogStopOrContinue" />
+            <AnchorPane fx:id="paneWatchdogCooldown" layoutX="343.0" layoutY="32.0" prefHeight="25.0" prefWidth="280.0">
+               <children>
+                  <Label layoutY="4.0" text="Cooldown period between alerts: " />
+                  <Label layoutX="231.0" layoutY="4.0" text="seconds" />
+                  <NumberTextField fx:id="numFieldWatchdogCooldown" layoutX="179.0" maxValue="0" prefHeight="25.0" prefWidth="46.0" />
+               </children>
+            </AnchorPane>
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>

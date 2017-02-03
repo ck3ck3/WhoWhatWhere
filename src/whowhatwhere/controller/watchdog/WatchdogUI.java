@@ -57,7 +57,8 @@ public class WatchdogUI implements WatchdogListener
 	private final static String propsRadioKeepLooking = "radioKeepLooking";
 	private final static String propsNumFieldCooldown = "numFieldCooldown";
 
-	private GUIController controller;
+	private GUIController guiController;
+	private WatchdogController controller;
 
 	private CheckBox chkboxHotkey;
 	private AnchorPane paneHotkeyConfig;
@@ -109,9 +110,10 @@ public class WatchdogUI implements WatchdogListener
 		}
 	};
 
-	public WatchdogUI(GUIController controller)
+	public WatchdogUI(GUIController guiController)
 	{
-		this.controller = controller;
+		this.controller = guiController.getWatchdogPaneController();
+		this.guiController = guiController;
 
 		initUIElementsFromController();
 		initButtonHandlers();
@@ -123,7 +125,7 @@ public class WatchdogUI implements WatchdogListener
 
 	private void initUIElementsFromController()
 	{
-		hotkeyRegistry = controller.getHotkeyRegistry();
+		hotkeyRegistry = guiController.getHotkeyRegistry();
 
 		chkboxHotkey = controller.getChkboxWatchdogHotkey();
 		paneHotkeyConfig = controller.getPaneWatchdogHotkeyConfig();
@@ -152,7 +154,7 @@ public class WatchdogUI implements WatchdogListener
 		btnManageList.setOnAction(event ->
 		{
 			ManageListScreen manageListScreen;
-			Stage stage = controller.getStage();
+			Stage stage = guiController.getStage();
 
 			try
 			{
@@ -183,7 +185,7 @@ public class WatchdogUI implements WatchdogListener
 				return;
 			}
 
-			NICInfo deviceInfo = controller.getSelectedNIC();
+			NICInfo deviceInfo = guiController.getSelectedNIC();
 			new Thread(() ->
 			{
 				StringBuilder errorBuffer = new StringBuilder();
@@ -339,6 +341,6 @@ public class WatchdogUI implements WatchdogListener
 	 */
 	public Map<String, List<String>> getUserNotesReverseMap()
 	{
-		return controller.getUserNotesReverseMap();
+		return guiController.getUserNotes().getUserNotesReverseMap();
 	}
 }

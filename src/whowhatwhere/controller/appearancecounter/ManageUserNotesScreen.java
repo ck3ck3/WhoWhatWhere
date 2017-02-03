@@ -2,7 +2,6 @@ package whowhatwhere.controller.appearancecounter;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Properties;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,23 +11,24 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TableColumn;
 import javafx.stage.Stage;
 import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
+import whowhatwhere.controller.UserNotes;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLWithCRUDTableScreen;
 
 public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<UserNotesRowModel>
 {
 	private ManageUserNotesController userNotesController;
-	private Properties propsNotes;
+	private UserNotes userNotes;
 	private TableColumn<UserNotesRowModel, String> columnIP;
 	private TableColumn<UserNotesRowModel, String> columnNotes;
 	
 	private final static String emptyCellString = "(Click to edit)";
 
-	public ManageUserNotesScreen(String fxmlLocation, Stage stage, Scene scene, Properties propsNotes) throws IOException
+	public ManageUserNotesScreen(String fxmlLocation, Stage stage, Scene scene, UserNotes userNotes) throws IOException
 	{
 		super(fxmlLocation, stage, scene);
 
-		this.propsNotes = propsNotes;
+		this.userNotes = userNotes;
 		userNotesController = (ManageUserNotesController) controller;
 		columnIP = userNotesController.getColumnIP();
 		columnNotes = userNotesController.getColumnNotes();
@@ -46,7 +46,15 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 	@Override
 	protected ObservableList<UserNotesRowModel> getInitialTableItems()
 	{
-		return propertiesToObservableList(propsNotes);
+		ObservableList<UserNotesRowModel> list = FXCollections.observableArrayList();
+		
+		for (Object ipObj : userNotes.getKeySet())
+		{
+			String ip = (String)ipObj;
+			list.add(new UserNotesRowModel(ip, userNotes.getUserNote(ip)));
+		}
+		
+		return list;
 	}
 
 	@Override
@@ -58,7 +66,7 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 			String previousValue = rowModel.getOldValue();
 			boolean isNewContentValid = isValidIPValue(newContent);
 			UserNotesRowModel rowValue = rowModel.getRowValue();
-			boolean ipAlreadyExists = propsNotes.containsKey(newContent);
+			boolean ipAlreadyExists = userNotes.userNotesContainsKey(newContent);
 			
 			if (ipAlreadyExists)
 			{
@@ -73,8 +81,8 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 				{
 					if (isValidNotesValue(rowValue.notesProperty().getValue()))
 					{
-						propsNotes.remove(previousValue);
-						propsNotes.put(newContent, rowValue.notesProperty().getValue());
+						userNotes.removeUserNote(previousValue);
+						userNotes.addUserNote(newContent, rowValue.notesProperty().getValue());
 					}
 				}
 				else
@@ -97,7 +105,7 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 				String ipAddressValue = rowValue.ipAddressProperty().getValue();
 				
 				if (isValidIPValue(ipAddressValue))
-					propsNotes.put(ipAddressValue, newContent);
+					userNotes.addUserNote(ipAddressValue, newContent);
 			}
 			else
 				new Alert(AlertType.ERROR, "Please enter a non-empty, non-default note. If you want to delete this row, please select it and press the \"" + userNotesController.getBtnRemoveRow().getText() + "\" button.").showAndWait();
@@ -132,7 +140,7 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 	protected void performForDeleteRows(List<UserNotesRowModel> listOfDeletedRows)
 	{
 		for (UserNotesRowModel row : listOfDeletedRows)
-			propsNotes.remove(row.ipAddressProperty().getValue());
+			userNotes.removeUserNote(row.ipAddressProperty().getValue());
 	}
 
 	@Override
@@ -145,19 +153,6 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 				throw new IllegalArgumentException();
 			}
 		
-		AppearanceCounterUI.saveUserNotes(propsNotes);
-	}
-	
-	private ObservableList<UserNotesRowModel> propertiesToObservableList(Properties props)
-	{
-		ObservableList<UserNotesRowModel> list = FXCollections.observableArrayList();
-		
-		for (Object ipObj : props.keySet())
-		{
-			String ip = (String)ipObj;
-			list.add(new UserNotesRowModel(ip, props.getProperty(ip)));
-		}
-		
-		return list;
+		userNotes.saveUserNotes();
 	}
 }

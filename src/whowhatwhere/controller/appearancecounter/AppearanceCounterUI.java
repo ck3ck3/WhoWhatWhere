@@ -1,10 +1,6 @@
 package whowhatwhere.controller.appearancecounter;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,8 +48,7 @@ import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
-import whowhatwhere.controller.commands.ping.PingCommandScreen;
-import whowhatwhere.controller.commands.trace.TraceCommandScreen;
+import whowhatwhere.controller.UserNotes;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.geoipresolver.GeoIPInfo;
@@ -66,8 +61,7 @@ import whowhatwhere.model.networksniffer.appearancecounter.IpAppearancesCounter;
 public class AppearanceCounterUI implements CaptureStartListener
 {
 	private final static Logger logger = Logger.getLogger(AppearanceCounterUI.class.getPackage().getName());
-	private final static String manageUserNotesFormLocation = "/whowhatwhere/view/fxmls/maingui/ManageUserNotes.fxml";
-
+	
 	private final static String propsChkboxFilterProtocols = "chkboxFilterProtocols";
 	private final static String propsChkboxUDP = "chkboxUDP";
 	private final static String propsChkboxTCP = "chkboxTCP";
@@ -100,9 +94,9 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private final static String voiceForTTS = "kevin16";
 	
 	private final static String emptyNotesString = "(Click to add notes)";
-	private final static String userNotesFilename = "userNotes.properties";
 
-	private GUIController controller;
+	private AppearanceCounterController controller;
+	private GUIController guiController;
 
 	private Button btnStart;
 	private Button btnStop;
@@ -155,8 +149,8 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private int captureHotkeyKeyCode;
 	private int captureHotkeyModifiers;
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
-	private Properties userNotes;
 	private String suggestedPathForCSVFile;
+	private UserNotes userNotes;
 
 	private Runnable captureHotkeyPressed = new Runnable()
 	{
@@ -171,11 +165,14 @@ public class AppearanceCounterUI implements CaptureStartListener
 		}
 	};
 
-	public AppearanceCounterUI(GUIController controller)
+	public AppearanceCounterUI(GUIController guiController)
 	{
-		this.controller = controller;
+		
+		this.controller = guiController.getAppearanceCounterController();
+		this.guiController = guiController;
+		userNotes = guiController.getUserNotes();
 
-		this.hotkeyRegistry = controller.getHotkeyRegistry();
+		this.hotkeyRegistry = guiController.getHotkeyRegistry();
 		initUIElementsFromController();
 
 		activeButton = btnStart;
@@ -184,31 +181,9 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 		btnStop.setDisable(true);
 
-		initUserNotes();
 		initTable();
 		initColumnListForTTS();
 		initButtonHandlers();
-	}
-
-	private void initUserNotes()
-	{
-		InputStream in;
-		File userNotesFile = new File(userNotesFilename);
-		userNotes = new Properties();
-
-		if (userNotesFile.exists())
-		{
-			try
-			{
-				in = new FileInputStream(userNotesFile);
-				
-				userNotes.load(in);
-				in.close();
-			}
-			catch (IOException e)
-			{
-			}
-		}
 	}
 
 	private void initUIElementsFromController()
@@ -249,10 +224,10 @@ public class AppearanceCounterUI implements CaptureStartListener
 		paneFilterResults = controller.getPaneFilterResults();
 		comboColumns = controller.getComboColumns();
 		textColumnContains = controller.getTextColumnContains();
-		tabPane = controller.getTabPane();
 		paneProtocolBoxes = controller.getPaneProtocolBoxes();
 
-		hotkeyRegistry = controller.getHotkeyRegistry();
+		tabPane = guiController.getTabPane();
+		hotkeyRegistry = guiController.getHotkeyRegistry();
 	}
 
 	private void initButtonHandlers()
@@ -298,7 +273,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			fileChooser.setInitialDirectory(new File(suggestedPathForCSVFile));
 			fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("CSV Files", "*.csv"), new FileChooser.ExtensionFilter("Text Files", "*.txt"));
 			
-			Stage stage = controller.getStage();
+			Stage stage = guiController.getStage();
 			
 			File file = fileChooser.showSaveDialog(stage);
             if (file != null) 
@@ -350,11 +325,11 @@ public class AppearanceCounterUI implements CaptureStartListener
 			rowModel.getRowValue().setNotes(newContent);
 
 			if (newContent.equals(emptyNotesString)) //if user deleted an existing note
-				userNotes.remove(ipAddress); //doesn't do anything if the key didn't exist
+				userNotes.removeUserNote(ipAddress); //doesn't do anything if the key didn't exist
 			else
-				userNotes.put(ipAddress, newContent);
+				userNotes.addUserNote(ipAddress, newContent);
 			
-			saveUserNotes(userNotes);
+			userNotes.saveUserNotes();
 		});
 
 		generatePopupMenus();
@@ -443,15 +418,15 @@ public class AppearanceCounterUI implements CaptureStartListener
 			MenuItem sendIPToPTS = new MenuItem("Set this IP in Ping-to-Speech (in Utilities tab)");
 			sendIPToPTS.setOnAction(event ->
 			{
-				controller.getComboPTSipToPing().getEditor().setText(row.getItem().ipAddressProperty().getValue());
-				tabPane.getSelectionModel().select(controller.getUtilsTab());
+				guiController.getPingToSpeechController().getComboPTSipToPing().getEditor().setText(row.getItem().ipAddressProperty().getValue());
+				tabPane.getSelectionModel().select(guiController.getUtilsTab());
 			});
 
 			MenuItem pingIP = new MenuItem("Ping this IP");
-			pingIP.setOnAction(event -> pingCommand(row.getItem().ipAddressProperty().getValue()));
+			pingIP.setOnAction(event -> guiController.pingCommand(row.getItem().ipAddressProperty().getValue()));
 
 			MenuItem traceIP = new MenuItem("Visual trace this IP");
-			traceIP.setOnAction(event -> traceCommand(row.getItem().ipAddressProperty().getValue()));
+			traceIP.setOnAction(event -> guiController.traceCommand(row.getItem().ipAddressProperty().getValue()));
 
 			ContextMenu rowMenu = new ContextMenu(copyMenu, getGeoIPinfo, sendIPToPTS, pingIP, traceIP);
 
@@ -462,47 +437,10 @@ public class AppearanceCounterUI implements CaptureStartListener
 		});
 	}
 
-	private void pingCommand(String ip)
-	{
-		PingCommandScreen cmdScreen;
-		Stage stage = controller.getStage();
-
-		try
-		{
-			cmdScreen = new PingCommandScreen(stage, stage.getScene(), ip);
-		}
-		catch (IOException e)
-		{
-			logger.log(Level.SEVERE, "Unable to load Ping (command) screen", e);
-			return;
-		}
-
-		cmdScreen.showScreenOnNewStage("Pinging " + ip, null, cmdScreen.getCloseButton());
-		cmdScreen.runCommand();
-	}
-
-	public void traceCommand(String ip)
-	{
-		TraceCommandScreen cmdScreen;
-		Stage stage = controller.getStage();
-
-		try
-		{
-			cmdScreen = new TraceCommandScreen(stage, stage.getScene(), ip);
-		}
-		catch (IOException e)
-		{
-			logger.log(Level.SEVERE, "Unable to load Trace (command) screen", e);
-			return;
-		}
-
-		cmdScreen.showScreenOnNewStage("Tracing " + ip, null, cmdScreen.getCloseButton());
-	}
-
 	private void startButtonPressed()
 	{
 		StringBuilder errbuf = new StringBuilder();
-		String deviceIP = controller.getSelectedNIC().getIP();
+		String deviceIP = guiController.getSelectedNIC().getIP();
 		final CaptureStartListener thisObj = this;
 
 		changeGuiTemplate(true);
@@ -808,7 +746,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			if (chkboxPing.isSelected())
 				ping = NetworkSniffer.pingAsString(ip, numFieldPingTimeout.getValue());
 			
-			notes = userNotes.getProperty(ip, emptyNotesString);
+			notes = userNotes.getUserNote(ip, emptyNotesString);
 
 			row = new IPInfoRowModel(id, amountOfAppearances, ip, notes, owner, ping, country, region, city);
 			data.add(row);
@@ -929,71 +867,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 		for (CheckBox box : chkboxListColumns)
 			props.put(propsTTSCheckBox + box.getText(), ((Boolean) box.isSelected()).toString());
 		
-		saveUserNotes(userNotes);
+		userNotes.saveUserNotes();
 		props.put(propsExportCSVPath, suggestedPathForCSVFile);
-	}
-
-	public static void saveUserNotes(Properties props)
-	{
-		try
-		{
-			FileOutputStream out = new FileOutputStream(userNotesFilename);
-			props.store(out, "User notes");
-			out.close();
-		}
-		catch (IOException e)
-		{
-			logger.log(Level.SEVERE, "Unable to save user notes file " + userNotesFilename, e);
-		}
-	}
-
-	public void openManageUserNotesScreen()
-	{
-		ManageUserNotesScreen userNotesScreen;
-		Stage stage = (Stage) controller.getTabPane().getScene().getWindow();
-
-		try
-		{
-			userNotesScreen = new ManageUserNotesScreen(manageUserNotesFormLocation, stage, stage.getScene(), userNotes);
-		}
-		catch (IOException e)
-		{
-			logger.log(Level.SEVERE, "Unable to load user notes management screen", e);
-			return;
-		}
-
-		Stage newStage = userNotesScreen.showScreenOnNewStage("Manage User Notes", null, userNotesScreen.getCloseButton());
-		newStage.setOnCloseRequest(windowEvent -> 
-		{
-			windowEvent.consume();
-			userNotesScreen.getCloseButton().fire();
-		});
-	}
-
-	/**
-	 * @return a map that maps user note to a list of IPs that have that note 
-	 */
-	public Map<String, List<String>> getUserNotesReverseMap()
-	{
-		Map<String, List<String>> reverseMap = new HashMap<String, List<String>>();
-		
-		for (Object ipObj : userNotes.keySet())
-		{
-			String ip = (String) ipObj;
-			String note = userNotes.getProperty(ip);
-			
-			List<String> listOfIPs = reverseMap.get(note);
-			
-			if (listOfIPs == null) //first ip for that note
-			{
-				listOfIPs = new ArrayList<String>();
-				listOfIPs.add(ip);
-				reverseMap.put(note, listOfIPs);
-			}
-			else //there's already a list of ips for this note
-				listOfIPs.add(ip);
-		}
-		
-		return reverseMap;
 	}
 }

@@ -33,7 +33,8 @@ public class PingToSpeechUI
 	private final static String ptsHotkeyID = "PTS hotkey";
 	private final static String voiceForTTS = "kevin16";
 	
-	private GUIController controller;
+	private GUIController guiController;
+	private PingToSpeechController controller;
 	
 	private int ptsHotkeyKeyCode;
 	private int ptsHotkeyModifiers;
@@ -77,9 +78,10 @@ public class PingToSpeechUI
 	};
 	
 	
-	public PingToSpeechUI(GUIController controller)
+	public PingToSpeechUI(GUIController guiController)
 	{
-		this.controller = controller;
+		this.controller = guiController.getPingToSpeechController();
+		this.guiController = guiController;
 		
 		initUIElementsFromController();
 		initButtonHandlers();
@@ -87,7 +89,7 @@ public class PingToSpeechUI
 
 	private void initUIElementsFromController()
 	{
-		hotkeyRegistry = controller.getHotkeyRegistry();
+		hotkeyRegistry = guiController.getHotkeyRegistry();
 		
 		comboPTSipToPing = controller.getComboPTSipToPing();
 		btnPTSConfigureHotkey = controller.getBtnPTSConfigureHotkey();

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="119.0" prefWidth="533.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.utilities.PingToSpeechController">
+   <children>
+      <ComboBox fx:id="comboPTSipToPing" editable="true" layoutX="14.0" layoutY="42.0" prefHeight="25.0" prefWidth="371.0" />
+      <Label layoutX="14.0" layoutY="14.0" text="Enter an IP or hostname to ping and use the hotkey to hear the result" />
+      <AnchorPane fx:id="panePTSHotkey" layoutX="119.0" layoutY="78.0">
+         <children>
+            <Button fx:id="btnPTSConfigureHotkey" mnemonicParsing="false" text="Configure hotkey" />
+            <Label fx:id="labelPTSCurrentHotkey" layoutX="117.0" layoutY="4.0" text="Current hotkey: " />
+         </children>
+      </AnchorPane>
+      <CheckBox fx:id="chkboxPTSHotkey" layoutX="14.0" layoutY="82.0" mnemonicParsing="false" selected="true" text="Enable hotkey" />
+   </children>
+</AnchorPane>

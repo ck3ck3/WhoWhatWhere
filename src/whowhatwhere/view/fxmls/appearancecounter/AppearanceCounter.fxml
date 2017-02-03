@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import numbertextfield.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.appearancecounter.AppearanceCounterController">
+   <children>
+      <HBox fillHeight="false" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="18.0">
+         <children>
+            <TitledPane collapsible="false" prefHeight="234.0" prefWidth="429.0" text="Capture options">
+               <content>
+                  <AnchorPane fx:id="paneCaptureOptions" prefHeight="190.0" prefWidth="427.0">
+                     <children>
+                        <CheckBox fx:id="chkboxFilterProtocols" layoutX="10.0" layoutY="14.0" mnemonicParsing="false" text="Only count specific protocols:" />
+                        <Pane fx:id="paneProtocolBoxes" layoutX="198.0" layoutY="14.0">
+                           <children>
+                              <CheckBox fx:id="chkboxUDP" mnemonicParsing="false" text="UDP" />
+                              <CheckBox fx:id="chkboxTCP" layoutX="51.0" mnemonicParsing="false" text="TCP" />
+                              <CheckBox fx:id="chkboxICMP" layoutX="101.0" mnemonicParsing="false" text="ICMP" />
+                              <CheckBox fx:id="chkboxHTTP" layoutX="160.0" mnemonicParsing="false" text="HTTP" />
+                           </children>
+                        </Pane>
+                        <Label layoutX="270.0" layoutY="110.0" text="seconds" />
+                        <CheckBox fx:id="chkboxGetLocation" layoutX="10.0" layoutY="46.0" mnemonicParsing="false" selected="true" text="Get location info for each IP address" />
+                        <CheckBox fx:id="chkboxTimedCapture" layoutX="10.0" layoutY="110.0" mnemonicParsing="false" selected="true" text="Automatically stop capturing after" />
+                        <CheckBox fx:id="chkboxPing" layoutX="10.0" layoutY="78.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="208.0" selected="true" text="Ping each IP address (timeout after" />
+                        <Label layoutX="272.0" layoutY="78.0" text="milliseconds)" />
+                        <NumberTextField fx:id="numFieldCaptureTimeout" layoutX="216.0" layoutY="106.0" minValue="1" prefHeight="25.0" prefWidth="49.0" />
+                        <NumberTextField fx:id="numFieldPingTimeout" layoutX="220.0" layoutY="74.0" minValue="1" prefHeight="25.0" prefWidth="47.0" />
+                     </children>
+                  </AnchorPane>
+               </content>
+            </TitledPane>
+            <TitledPane collapsible="false" prefHeight="197.0" prefWidth="743.0" text="Hotkey options">
+               <content>
+                  <AnchorPane>
+                     <children>
+                        <AnchorPane fx:id="paneEnableCaptureHotkey" layoutX="10.0" layoutY="11.0" prefHeight="177.0" prefWidth="705.0">
+                           <children>
+                              <Button fx:id="btnConfigCaptureHotkey" layoutX="201.0" mnemonicParsing="false" text="Configure hotkey" />
+                              <Label fx:id="labelCurrCaptureHotkey" layoutX="318.0" layoutY="4.0" text="Current hotkey: " />
+                              <CheckBox fx:id="chkboxUseTTS" layoutY="35.0" mnemonicParsing="false" selected="true" text="If the hotkey was used to start or stop a capture, read results using text-to-speech" />
+                              <AnchorPane fx:id="paneUseTTS" layoutX="1.0" layoutY="67.0" prefWidth="703.0">
+                                 <children>
+                                    <Label layoutY="64.0" text="Read values of these columns:" />
+                                    <Label fx:id="labelReadFirstRows" text="Read the first" />
+                                    <GridPane fx:id="gridPaneColumnNames" layoutX="166.0" layoutY="64.0" prefHeight="45.0" prefWidth="500.0">
+                                       <columnConstraints>
+                                          <ColumnConstraints hgrow="SOMETIMES" maxWidth="199.0" minWidth="10.0" prefWidth="82.0" />
+                                          <ColumnConstraints hgrow="SOMETIMES" maxWidth="199.0" minWidth="10.0" prefWidth="82.0" />
+                                          <ColumnConstraints hgrow="SOMETIMES" maxWidth="199.0" minWidth="10.0" prefWidth="82.0" />
+                                          <ColumnConstraints hgrow="SOMETIMES" maxWidth="199.0" minWidth="10.0" prefWidth="82.0" />
+                                       </columnConstraints>
+                                       <rowConstraints>
+                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                       </rowConstraints>
+                                    </GridPane>
+                                    <Label layoutX="118.0" text="rows of the table" />
+                                    <CheckBox fx:id="chkboxFilterResults" layoutY="32.0" mnemonicParsing="false" text="Only read rows where column" />
+                                    <Pane fx:id="paneFilterResults" layoutX="190.0" layoutY="28.0">
+                                       <children>
+                                          <ComboBox fx:id="comboColumns" prefWidth="150.0" />
+                                          <Label layoutX="157.0" layoutY="4.0" text="contains" />
+                                          <TextField fx:id="textColumnContains" layoutX="207.0" />
+                                       </children>
+                                    </Pane>
+                                    <NumberTextField fx:id="numFieldRowsToRead" layoutX="76.0" layoutY="-4.0" minValue="1" prefHeight="19.0" prefWidth="38.0" />
+                                 </children>
+                              </AnchorPane>
+                           </children>
+                        </AnchorPane>
+                        <CheckBox fx:id="chkboxUseCaptureHotkey" layoutX="10.0" layoutY="14.0" mnemonicParsing="false" selected="true" text="Enable start/stop capture hotkey" />
+                     </children>
+                  </AnchorPane>
+               </content>
+            </TitledPane>
+         </children>
+      </HBox>
+      <AnchorPane layoutX="1.0" layoutY="248.0" AnchorPane.leftAnchor="1.0">
+         <children>
+            <Button fx:id="btnStart" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" text="Start capturing" />
+            <Button fx:id="btnStop" layoutX="111.0" layoutY="10.0" mnemonicParsing="false" text="Stop capturing" />
+            <Label fx:id="labelStatus" layoutX="10.0" layoutY="45.0" text="Status: Idle" />
+         </children>
+      </AnchorPane>
+      <TableView fx:id="tableResults" editable="true" layoutX="14.0" layoutY="319.0" prefHeight="245.0" prefWidth="1158.0" stylesheets="@tableResults.css" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="62.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="319.0">
+         <columns>
+            <TableColumn fx:id="columnPacketCount" editable="false" prefWidth="115.0" sortType="DESCENDING" text="Packet Count" />
+            <TableColumn fx:id="columnIP" minWidth="8.0" prefWidth="115.0" text="IP Address" />
+            <TableColumn fx:id="columnNotes" prefWidth="146.0" text="User Notes" />
+            <TableColumn fx:id="columnOwner" editable="false" minWidth="1.0" prefWidth="188.0" text="Owner" />
+            <TableColumn fx:id="columnPing" prefWidth="128.0" text="Ping" />
+            <TableColumn fx:id="columnCountry" editable="false" minWidth="0.0" prefWidth="166.0" text="Country" />
+            <TableColumn fx:id="columnRegion" editable="false" minWidth="0.0" prefWidth="143.0" text="Region" />
+            <TableColumn fx:id="columnCity" editable="false" prefWidth="155.0" text="City" />
+         </columns>
+      </TableView>
+      <AnchorPane layoutX="979.0" layoutY="568.0" AnchorPane.bottomAnchor="33.0" AnchorPane.rightAnchor="24.0">
+         <children>
+            <Button fx:id="btnExportTableToCSV" disable="true" mnemonicParsing="false" text="Export table contents to CSV file" />
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>

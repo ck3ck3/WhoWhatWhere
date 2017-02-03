@@ -10,7 +10,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -26,34 +25,28 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.input.KeyCode;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
+import whowhatwhere.controller.appearancecounter.AppearanceCounterController;
 import whowhatwhere.controller.appearancecounter.AppearanceCounterUI;
-import whowhatwhere.controller.appearancecounter.IPInfoRowModel;
+import whowhatwhere.controller.commands.ping.PingCommandScreen;
+import whowhatwhere.controller.commands.trace.TraceCommandScreen;
+import whowhatwhere.controller.utilities.PingToSpeechController;
 import whowhatwhere.controller.utilities.PingToSpeechUI;
+import whowhatwhere.controller.utilities.TraceUtilityController;
+import whowhatwhere.controller.utilities.TraceUtilityUI;
+import whowhatwhere.controller.watchdog.WatchdogController;
 import whowhatwhere.controller.watchdog.WatchdogUI;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.TextToSpeech;
@@ -68,7 +61,6 @@ public class GUIController implements CheckForUpdatesResultHandler
 	private final static String defaultPropsResource = "/defaultLastRun.properties";
 
 	private final static String propsNICDescription = "Selected NIC description";
-	private final static String propsTraceAddress = "traceAddress";
 	private final static String propsShowMessageOnMinimize = "showMinimizeMessage";
 	private final static String propsStartMinimized = "startMinimized";
 	private final static String propsIgnoreRunPathDiff = "ignorePathDiff";
@@ -85,73 +77,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 	@FXML
 	private ScrollPane scrollPaneMainForm;
 	@FXML
-	private AnchorPane paneCaptureOptions;
-	@FXML
-	private CheckBox chkboxFilterProtocols;
-	@FXML
-	private CheckBox chkboxUDP;
-	@FXML
-	private CheckBox chkboxTCP;
-	@FXML
-	private CheckBox chkboxICMP;
-	@FXML
-	private CheckBox chkboxHTTP;
-	@FXML
-	private CheckBox chkboxTimedCapture;
-	@FXML
-	private Button btnStart;
-	@FXML
-	private Button btnStop;
-	@FXML
-	private Label labelStatus;
-	@FXML
 	private Button btnExit;
-	@FXML
-	private CheckBox chkboxGetLocation;
-	@FXML
-	private TableView<IPInfoRowModel> tableResults;
-	@FXML
-	private TableColumn<IPInfoRowModel, Integer> columnPacketCount;
-	@FXML
-	private TableColumn<IPInfoRowModel, String> columnIP;
-	@FXML
-	private TableColumn<IPInfoRowModel, String> columnNotes;
-	@FXML
-	private TableColumn<IPInfoRowModel, String> columnOwner;
-	@FXML
-	private TableColumn<IPInfoRowModel, String> columnPing;
-	@FXML
-	private TableColumn<IPInfoRowModel, String> columnCountry;
-	@FXML
-	private TableColumn<IPInfoRowModel, String> columnRegion;
-	@FXML
-	private TableColumn<IPInfoRowModel, String> columnCity;
-	@FXML
-	private Label labelCurrCaptureHotkey;
-	@FXML
-	private CheckBox chkboxUseCaptureHotkey;
-	@FXML
-	private Button btnConfigCaptureHotkey;
-	@FXML
-	private AnchorPane paneEnableCaptureHotkey;
-	@FXML
-	private CheckBox chkboxUseTTS;
-	@FXML
-	private AnchorPane paneUseTTS;
-	@FXML
-	private GridPane gridPaneColumnNames;
-	@FXML
-	private Label labelReadFirstRows;
-	@FXML
-	private CheckBox chkboxPing;
-	@FXML
-	private CheckBox chkboxFilterResults;
-	@FXML
-	private Pane paneFilterResults;
-	@FXML
-	private ComboBox<String> comboColumns;
-	@FXML
-	private TextField textColumnContains;
 	@FXML
 	private MenuItem menuItemMinimize;
 	@FXML
@@ -163,39 +89,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 	@FXML
 	private TabPane tabPane;
 	@FXML
-	private ComboBox<String> comboPTSipToPing;
-	@FXML
-	private Button btnPTSConfigureHotkey;
-	@FXML
-	private Label labelPTSCurrentHotkey;
-	@FXML
 	private Tab tabUtils;
-	@FXML
-	private CheckBox chkboxPTSHotkey;
-	@FXML
-	private AnchorPane panePTSHotkey;
-	@FXML
-	private CheckBox chkboxWatchdogHotkey;
-	@FXML
-	private AnchorPane paneWatchdogHotkeyConfig;
-	@FXML
-	private Button btnWatchdogConfigureHotkey;
-	@FXML
-	private Label labelWatchdogCurrHotkey;
-	@FXML
-	private Button btnWatchdogStart;
-	@FXML
-	private Button btnWatchdogStop;
-	@FXML
-	private Button btnWatchdogManageList;
-	@FXML
-	private Label labelWatchdogEntryCount;
-	@FXML
-	private TextField textTrace;
-	@FXML
-	private Button btnTrace;
-	@FXML
-	private Button btnExportTableToCSV;
 	@FXML
 	private MenuItem menuItemSelectNIC;
 	@FXML
@@ -211,27 +105,16 @@ public class GUIController implements CheckForUpdatesResultHandler
 	@FXML
 	private MenuItem menuItemManageNotes;
 	@FXML
-	private RadioButton radioWatchdogStopAfterMatch;
+	private AppearanceCounterController appearanceCounterPaneController;
 	@FXML
-	private ToggleGroup tglWatchdogStopOrContinue;
+	private PingToSpeechController ptsPaneController;
 	@FXML
-	private RadioButton radioWatchdogKeepLooking;
+	private WatchdogController watchdogPaneController;
 	@FXML
-	private AnchorPane paneWatchdogCooldown;
-	@FXML
-	private NumberTextField numFieldWatchdogCooldown;
-	@FXML
-	private AnchorPane paneWatchdogConfig;
-	@FXML
-	private NumberTextField numFieldCaptureTimeout;
-	@FXML
-	private NumberTextField numFieldRowsToRead;
-	@FXML
-	private NumberTextField numFieldPingTimeout;
-	@FXML
-	private Pane paneProtocolBoxes;
+	private TraceUtilityController tracePaneController;
 
-	NICInfo selectedNIC;
+
+	private NICInfo selectedNIC;
 	private NetworkSniffer sniffer;
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 	private HotkeyRegistry hotkeyRegistry;
@@ -239,10 +122,13 @@ public class GUIController implements CheckForUpdatesResultHandler
 	private boolean showMessageOnMinimize;
 	private boolean ignoreRunPathDiff;
 	private boolean checkForUpdatesOnStartup;
-
+	private UserNotes userNotes;
+	
 	private AppearanceCounterUI appearanceCounterUI;
 	private PingToSpeechUI pingToSpeechUI;
 	private WatchdogUI watchdogUI;
+	private TraceUtilityUI traceUI;
+	
 
 	/**
 	 * <b>MUST</b> be called after the stage is shown
@@ -263,14 +149,18 @@ public class GUIController implements CheckForUpdatesResultHandler
 
 			shutdownApp();
 		}
+		
+		userNotes = new UserNotes();
 
 		hotkeyRegistry = new HotkeyRegistry(scrollPaneMainForm);
 
 		appearanceCounterUI = new AppearanceCounterUI(this);
 		pingToSpeechUI = new PingToSpeechUI(this);
 		watchdogUI = new WatchdogUI(this);
+		traceUI = new TraceUtilityUI(this);
 
-		initButtonHandlers();
+		btnExit.setOnAction(e -> exitButtonPressed());
+
 		initMenuBar();
 		addExitToSystrayIcon();
 
@@ -278,6 +168,26 @@ public class GUIController implements CheckForUpdatesResultHandler
 
 		if (checkForUpdatesOnStartup)
 			checkForUpdates(true); //only show a message if there is a new version
+	}
+	
+	public AppearanceCounterController getAppearanceCounterController()
+	{
+		return appearanceCounterPaneController;
+	}
+	
+	public PingToSpeechController getPingToSpeechController()
+	{
+		return ptsPaneController;
+	}
+	
+	public WatchdogController getWatchdogPaneController()
+	{
+		return watchdogPaneController;
+	}
+	
+	public TraceUtilityController getTracePaneController()
+	{
+		return tracePaneController;
 	}
 
 	private void addExitToSystrayIcon()
@@ -309,21 +219,9 @@ public class GUIController implements CheckForUpdatesResultHandler
 		});
 	}
 
-	private void initButtonHandlers()
-	{
-		btnExit.setOnAction(e -> exitButtonPressed());
-		btnTrace.setOnAction(event -> appearanceCounterUI.traceCommand(textTrace.getText()));
-
-		textTrace.setOnKeyPressed(ke ->
-		{
-			if (ke.getCode().equals(KeyCode.ENTER))
-				btnTrace.fire();
-		});
-	}
-
 	private void initMenuBar()
 	{
-		menuItemManageNotes.setOnAction(event -> appearanceCounterUI.openManageUserNotesScreen());
+		menuItemManageNotes.setOnAction(event -> userNotes.openManageUserNotesScreen(getStage()));
 		menuItemMinimize.setOnAction(event ->
 		{
 			Stage stage = getStage();
@@ -379,6 +277,44 @@ public class GUIController implements CheckForUpdatesResultHandler
 			shutdownApp();
 		}
 	}
+	
+	public void pingCommand(String ip)
+	{
+		PingCommandScreen cmdScreen;
+		Stage stage = getStage();
+
+		try
+		{
+			cmdScreen = new PingCommandScreen(stage, stage.getScene(), ip);
+		}
+		catch (IOException e)
+		{
+			logger.log(Level.SEVERE, "Unable to load Ping (command) screen", e);
+			return;
+		}
+
+		cmdScreen.showScreenOnNewStage("Pinging " + ip, null, cmdScreen.getCloseButton());
+		cmdScreen.runCommand();
+	}
+
+	public void traceCommand(String ip)
+	{
+		TraceCommandScreen cmdScreen;
+		Stage stage = getStage();
+
+		try
+		{
+			cmdScreen = new TraceCommandScreen(stage, stage.getScene(), ip);
+		}
+		catch (IOException e)
+		{
+			logger.log(Level.SEVERE, "Unable to load Trace (command) screen", e);
+			return;
+		}
+
+		cmdScreen.showScreenOnNewStage("Tracing " + ip, null, cmdScreen.getCloseButton());
+	}
+
 
 	private void saveCurrentRunValuesToProperties()
 	{
@@ -388,10 +324,10 @@ public class GUIController implements CheckForUpdatesResultHandler
 		appearanceCounterUI.saveCurrentRunValuesToProperties(props);
 		pingToSpeechUI.saveCurrentRunValuesToProperties(props);
 		watchdogUI.saveCurrentRunValuesToProperties(props);
+		traceUI.saveCurrentRunValuesToProperties(props);
 
 		props.put(propsNICDescription, selectedNIC.getDescription());
 
-		props.put(propsTraceAddress, textTrace.getText());
 		props.put(propsCheckForUpdatesOnStartup, String.valueOf(checkForUpdatesOnStartup));
 		props.put(propsShowMessageOnMinimize, String.valueOf(showMessageOnMinimize));
 		props.put(propsStartMinimized, String.valueOf(menuItemChkStartMinimized.isSelected()));
@@ -440,8 +376,6 @@ public class GUIController implements CheckForUpdatesResultHandler
 
 		loadNICInfo(PropertiesByType.getStringProperty(props, propsNICDescription, ""));
 
-		textTrace.setText(props.getProperty(propsTraceAddress));
-
 		checkForUpdatesOnStartup = PropertiesByType.getBoolProperty(props, propsCheckForUpdatesOnStartup, true);
 		menuItemChkCheckUpdateStartup.setSelected(checkForUpdatesOnStartup);
 
@@ -461,6 +395,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 		appearanceCounterUI.loadLastRunConfig(props);
 		pingToSpeechUI.loadLastRunConfig(props);
 		watchdogUI.loadLastRunConfig(props);
+		traceUI.loadLastRunConfig(props);
 	}
 
 	private void loadNICInfo(String nicDescription)
@@ -731,249 +666,9 @@ public class GUIController implements CheckForUpdatesResultHandler
 		return alert;
 	}
 
-	public AnchorPane getPaneCaptureOptions()
-	{
-		return paneCaptureOptions;
-	}
-
-	public CheckBox getChkboxFilterProtocols()
-	{
-		return chkboxFilterProtocols;
-	}
-
-	public CheckBox getChkboxUDP()
-	{
-		return chkboxUDP;
-	}
-
-	public CheckBox getChkboxTCP()
-	{
-		return chkboxTCP;
-	}
-
-	public CheckBox getChkboxICMP()
-	{
-		return chkboxICMP;
-	}
-
-	public CheckBox getChkboxHTTP()
-	{
-		return chkboxHTTP;
-	}
-
-	public CheckBox getChkboxTimedCapture()
-	{
-		return chkboxTimedCapture;
-	}
-
-	public Button getBtnStart()
-	{
-		return btnStart;
-	}
-
-	public Button getBtnStop()
-	{
-		return btnStop;
-	}
-
-	public Label getLabelStatus()
-	{
-		return labelStatus;
-	}
-
 	public Button getBtnExit()
 	{
 		return btnExit;
-	}
-
-	public CheckBox getChkboxGetLocation()
-	{
-		return chkboxGetLocation;
-	}
-
-	public TableView<IPInfoRowModel> getTableResults()
-	{
-		return tableResults;
-	}
-
-	public TableColumn<IPInfoRowModel, Integer> getColumnPacketCount()
-	{
-		return columnPacketCount;
-	}
-
-	public TableColumn<IPInfoRowModel, String> getColumnIP()
-	{
-		return columnIP;
-	}
-
-	public TableColumn<IPInfoRowModel, String> getColumnNotes()
-	{
-		return columnNotes;
-	}
-
-	public TableColumn<IPInfoRowModel, String> getColumnOwner()
-	{
-		return columnOwner;
-	}
-
-	public TableColumn<IPInfoRowModel, String> getColumnPing()
-	{
-		return columnPing;
-	}
-
-	public TableColumn<IPInfoRowModel, String> getColumnCountry()
-	{
-		return columnCountry;
-	}
-
-	public TableColumn<IPInfoRowModel, String> getColumnRegion()
-	{
-		return columnRegion;
-	}
-
-	public TableColumn<IPInfoRowModel, String> getColumnCity()
-	{
-		return columnCity;
-	}
-
-	public Label getLabelCurrCaptureHotkey()
-	{
-		return labelCurrCaptureHotkey;
-	}
-
-	public NumberTextField getNumFieldCaptureTimeout()
-	{
-		return numFieldCaptureTimeout;
-	}
-
-	public NumberTextField getNumFieldRowsToRead()
-	{
-		return numFieldRowsToRead;
-	}
-
-	public NumberTextField getNumberFieldPingTimeout()
-	{
-		return numFieldPingTimeout;
-	}
-
-	public CheckBox getChkboxUseCaptureHotkey()
-	{
-		return chkboxUseCaptureHotkey;
-	}
-
-	public Button getBtnConfigCaptureHotkey()
-	{
-		return btnConfigCaptureHotkey;
-	}
-
-	public AnchorPane getPaneEnableCaptureHotkey()
-	{
-		return paneEnableCaptureHotkey;
-	}
-
-	public CheckBox getChkboxUseTTS()
-	{
-		return chkboxUseTTS;
-	}
-
-	public AnchorPane getPaneUseTTS()
-	{
-		return paneUseTTS;
-	}
-
-	public GridPane getGridPaneColumnNames()
-	{
-		return gridPaneColumnNames;
-	}
-
-	public CheckBox getChkboxPing()
-	{
-		return chkboxPing;
-	}
-
-	public CheckBox getChkboxFilterResults()
-	{
-		return chkboxFilterResults;
-	}
-
-	public Pane getPaneFilterResults()
-	{
-		return paneFilterResults;
-	}
-
-	public ComboBox<String> getComboColumns()
-	{
-		return comboColumns;
-	}
-
-	public TextField getTextColumnContains()
-	{
-		return textColumnContains;
-	}
-
-	public ComboBox<String> getComboPTSipToPing()
-	{
-		return comboPTSipToPing;
-	}
-
-	public Button getBtnPTSConfigureHotkey()
-	{
-		return btnPTSConfigureHotkey;
-	}
-
-	public Label getLabelPTSCurrentHotkey()
-	{
-		return labelPTSCurrentHotkey;
-	}
-
-	public CheckBox getChkboxPTSHotkey()
-	{
-		return chkboxPTSHotkey;
-	}
-
-	public AnchorPane getPanePTSHotkey()
-	{
-		return panePTSHotkey;
-	}
-
-	public CheckBox getChkboxWatchdogHotkey()
-	{
-		return chkboxWatchdogHotkey;
-	}
-
-	public AnchorPane getPaneWatchdogHotkeyConfig()
-	{
-		return paneWatchdogHotkeyConfig;
-	}
-
-	public Button getBtnWatchdogConfigureHotkey()
-	{
-		return btnWatchdogConfigureHotkey;
-	}
-
-	public Label getLabelWatchdogCurrHotkey()
-	{
-		return labelWatchdogCurrHotkey;
-	}
-
-	public Button getBtnWatchdogStart()
-	{
-		return btnWatchdogStart;
-	}
-
-	public Button getBtnWatchdogStop()
-	{
-		return btnWatchdogStop;
-	}
-
-	public Button getBtnWatchdogManageList()
-	{
-		return btnWatchdogManageList;
-	}
-
-	public Label getLabelWatchdogEntryCount()
-	{
-		return labelWatchdogEntryCount;
 	}
 
 	public TabPane getTabPane()
@@ -986,11 +681,6 @@ public class GUIController implements CheckForUpdatesResultHandler
 		return tabUtils;
 	}
 
-	public Button getBtnExportTableToCSV()
-	{
-		return btnExportTableToCSV;
-	}
-
 	public HotkeyRegistry getHotkeyRegistry()
 	{
 		return hotkeyRegistry;
@@ -1001,46 +691,13 @@ public class GUIController implements CheckForUpdatesResultHandler
 		return (Stage) scrollPaneMainForm.getScene().getWindow();
 	}
 
-	public RadioButton getRadioWatchdogStopAfterMatch()
-	{
-		return radioWatchdogStopAfterMatch;
-	}
-
-	public RadioButton getRadioWatchdogKeepLooking()
-	{
-		return radioWatchdogKeepLooking;
-	}
-
-	public AnchorPane getPaneWatchdogCooldown()
-	{
-		return paneWatchdogCooldown;
-	}
-
-	public NumberTextField getNumFieldWatchdogCooldown()
-	{
-		return numFieldWatchdogCooldown;
-	}
-
-	public AnchorPane getPaneWatchdogConfig()
-	{
-		return paneWatchdogConfig;
-	}
-
-	public Pane getPaneProtocolBoxes()
-	{
-		return paneProtocolBoxes;
-	}
-
 	public NICInfo getSelectedNIC()
 	{
 		return selectedNIC;
 	}
-
-	/**
-	 * @return a map that maps user note to a list of IPs that have that note
-	 */
-	public Map<String, List<String>> getUserNotesReverseMap()
+	
+	public UserNotes getUserNotes()
 	{
-		return appearanceCounterUI.getUserNotesReverseMap();
+		return userNotes;
 	}
 }
