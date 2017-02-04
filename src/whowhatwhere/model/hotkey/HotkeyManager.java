@@ -146,7 +146,8 @@ public class HotkeyManager implements NativeKeyListener
 	{
 		HotkeyConfiguration hotkeyConfig = hotkeyMap.get(hotkeyID);
 		
-		hotkeyToID.remove(hotkeyToString(hotkeyConfig.getModifiers(), hotkeyConfig.getHotkey()));
+		if (hotkeyConfig != null)
+			hotkeyToID.remove(hotkeyToString(hotkeyConfig.getModifiers(), hotkeyConfig.getHotkey()));
 	}
 
 	private boolean isHotkeyTaken(int modifiers, int hotkey)

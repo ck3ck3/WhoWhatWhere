@@ -48,6 +48,7 @@ import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
+import whowhatwhere.controller.LoadAndSaveSettings;
 import whowhatwhere.controller.UserNotes;
 import whowhatwhere.controller.commands.Commands;
 import whowhatwhere.model.PropertiesByType;
@@ -60,7 +61,7 @@ import whowhatwhere.model.networksniffer.SupportedProtocols;
 import whowhatwhere.model.networksniffer.appearancecounter.AppearanceCounterResults;
 import whowhatwhere.model.networksniffer.appearancecounter.IpAppearancesCounter;
 
-public class AppearanceCounterUI implements CaptureStartListener
+public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSettings
 {
 	private final static Logger logger = Logger.getLogger(AppearanceCounterUI.class.getPackage().getName());
 	
@@ -93,7 +94,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 	private final static String statusResults = "Status: Fetching results...";
 	private final static String msgTimerExpired = "Timer expired, stopping capture";
 	private final static String captureHotkeyID = "WhoWhatWhere capture hotkey";
-	private final static String voiceForTTS = "kevin16";
+	private final static String voiceForTTS = GUIController.voiceForTTS;
 	
 	private final static String emptyNotesString = "(Click to add notes)";
 
@@ -169,9 +170,9 @@ public class AppearanceCounterUI implements CaptureStartListener
 
 	public AppearanceCounterUI(GUIController guiController)
 	{
-		
 		this.controller = guiController.getAppearanceCounterController();
 		this.guiController = guiController;
+		this.guiController.registerForSettingsHandler(this);
 		userNotes = guiController.getUserNotes();
 
 		this.hotkeyRegistry = guiController.getHotkeyRegistry();
@@ -299,9 +300,6 @@ public class AppearanceCounterUI implements CaptureStartListener
 			tts.setMuted(!new_val);
 			paneUseTTS.setDisable(!new_val);
 		});
-
-		chkboxUseCaptureHotkey.selectedProperty().addListener(hotkeyRegistry.generateChangeListenerForHotkeyCheckbox(captureHotkeyID, captureHotkeyModifiers, captureHotkeyKeyCode,
-				chkboxUseCaptureHotkey, labelCurrCaptureHotkey, paneEnableCaptureHotkey, captureHotkeyPressed));
 	}
 
 	private void initTable()
@@ -417,10 +415,10 @@ public class AppearanceCounterUI implements CaptureStartListener
 			MenuItem getGeoIPinfo = new MenuItem("See more GeoIP results for this IP in browser");
 			getGeoIPinfo.setOnAction(event -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + row.getItem().ipAddressProperty().getValue()));
 
-			MenuItem sendIPToPTS = new MenuItem("Set this IP in Ping-to-Speech (in Utilities tab)");
-			sendIPToPTS.setOnAction(event ->
+			MenuItem sendIPToQuickPing = new MenuItem("Set this IP in Ping-to-Speech (in Utilities tab)");
+			sendIPToQuickPing.setOnAction(event ->
 			{
-				guiController.getPingToSpeechController().getComboPTSipToPing().getEditor().setText(row.getItem().ipAddressProperty().getValue());
+				guiController.getQuickPingController().getComboToPing().getEditor().setText(row.getItem().ipAddressProperty().getValue());
 				tabPane.getSelectionModel().select(guiController.getUtilsTab());
 			});
 
@@ -430,7 +428,7 @@ public class AppearanceCounterUI implements CaptureStartListener
 			MenuItem traceIP = new MenuItem("Visual trace this IP");
 			traceIP.setOnAction(event -> Commands.traceCommand(row.getItem().ipAddressProperty().getValue(), guiController.getStage()));
 
-			ContextMenu rowMenu = new ContextMenu(copyMenu, getGeoIPinfo, sendIPToPTS, pingIP, traceIP);
+			ContextMenu rowMenu = new ContextMenu(copyMenu, getGeoIPinfo, sendIPToQuickPing, pingIP, traceIP);
 
 			// only display context menu for non-null items:
 			row.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(row.itemProperty())).then(rowMenu).otherwise((ContextMenu) null));
@@ -652,7 +650,6 @@ public class AppearanceCounterUI implements CaptureStartListener
 		btnStart.setDisable(duringCapture);
 		btnStop.setDisable(!duringCapture);
 		paneCaptureOptions.setDisable(duringCapture);
-		paneCaptureOptions.setDisable(duringCapture);
 		btnExportTableToCSV.setDisable(duringCapture);
 
 		if (duringCapture)
@@ -782,10 +779,10 @@ public class AppearanceCounterUI implements CaptureStartListener
 	{
 		captureHotkeyModifiers = PropertiesByType.getIntProperty(props, propsCaptureHotkeyModifiers);
 		captureHotkeyKeyCode = PropertiesByType.getIntProperty(props, propsCaptureHotkeyKeycode);
+		
+		chkboxUseCaptureHotkey.selectedProperty().addListener(hotkeyRegistry.generateChangeListenerForHotkeyCheckbox(captureHotkeyID, captureHotkeyModifiers, captureHotkeyKeyCode,
+				chkboxUseCaptureHotkey, labelCurrCaptureHotkey, paneEnableCaptureHotkey, captureHotkeyPressed));
 		chkboxUseCaptureHotkey.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseCaptureHotkey, false));
-
-		if (chkboxUseCaptureHotkey.isSelected())
-			hotkeyRegistry.addHotkey(captureHotkeyID, captureHotkeyModifiers, captureHotkeyKeyCode, labelCurrCaptureHotkey, captureHotkeyPressed);
 
 		chkboxUseTTS.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxUseTTS, false));
 		numFieldRowsToRead.setText(PropertiesByType.getStringProperty(props, propsNumFieldRowsToRead));

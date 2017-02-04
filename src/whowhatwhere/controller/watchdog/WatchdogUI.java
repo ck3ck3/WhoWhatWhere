@@ -30,6 +30,7 @@ import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
+import whowhatwhere.controller.LoadAndSaveSettings;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.networksniffer.NICInfo;
@@ -38,7 +39,7 @@ import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
 import whowhatwhere.model.networksniffer.watchdog.WatchdogListener;
 import whowhatwhere.model.networksniffer.watchdog.WatchdogMessage;
 
-public class WatchdogUI implements WatchdogListener
+public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 {
 	private final static Logger logger = Logger.getLogger(WatchdogUI.class.getPackage().getName());
 
@@ -46,7 +47,7 @@ public class WatchdogUI implements WatchdogListener
 	private final static String listFormLocation = "/whowhatwhere/view/fxmls/watchdog/WatchdogManageList.fxml";
 	public static final String presetExtension = ".watchdogPreset";
 	public static final String lastRunFilename = "Last run" + presetExtension;
-	private final static String voiceForTTS = "kevin16";
+	private final static String voiceForTTS = GUIController.voiceForTTS;
 	private final static int minCooldownValue = 3;
 	private final static int maxCooldownValue = Integer.MAX_VALUE;
 
@@ -114,6 +115,7 @@ public class WatchdogUI implements WatchdogListener
 	{
 		this.controller = guiController.getWatchdogPaneController();
 		this.guiController = guiController;
+		this.guiController.registerForSettingsHandler(this);
 
 		initUIElementsFromController();
 		initButtonHandlers();
@@ -127,27 +129,24 @@ public class WatchdogUI implements WatchdogListener
 	{
 		hotkeyRegistry = guiController.getHotkeyRegistry();
 
-		chkboxHotkey = controller.getChkboxWatchdogHotkey();
-		paneHotkeyConfig = controller.getPaneWatchdogHotkeyConfig();
-		btnConfigureHotkey = controller.getBtnWatchdogConfigureHotkey();
-		labelCurrHotkey = controller.getLabelWatchdogCurrHotkey();
-		labelEntryCount = controller.getLabelWatchdogEntryCount();
-		btnStart = controller.getBtnWatchdogStart();
-		btnStop = controller.getBtnWatchdogStop();
-		btnManageList = controller.getBtnWatchdogManageList();
-		radioKeepLooking = controller.getRadioWatchdogKeepLooking();
-		radioStopAfterMatch = controller.getRadioWatchdogStopAfterMatch();
-		numFieldCooldown = controller.getNumFieldWatchdogCooldown();
-		paneCooldown = controller.getPaneWatchdogCooldown();
-		paneWatchdogConfig = controller.getPaneWatchdogConfig();
+		chkboxHotkey = controller.getChkboxHotkey();
+		paneHotkeyConfig = controller.getPaneHotkeyConfig();
+		btnConfigureHotkey = controller.getBtnConfigureHotkey();
+		labelCurrHotkey = controller.getLabelCurrHotkey();
+		labelEntryCount = controller.getLabelEntryCount();
+		btnStart = controller.getBtnStart();
+		btnStop = controller.getBtnStop();
+		btnManageList = controller.getBtnManageList();
+		radioKeepLooking = controller.getRadioKeepLooking();
+		radioStopAfterMatch = controller.getRadioStopAfterMatch();
+		numFieldCooldown = controller.getNumFieldCooldown();
+		paneCooldown = controller.getPaneCooldown();
+		paneWatchdogConfig = controller.getPaneConfig();
 	}
 
 	private void initButtonHandlers()
 	{
 		WatchdogUI thisObj = this;
-
-		chkboxHotkey.selectedProperty()
-				.addListener(hotkeyRegistry.generateChangeListenerForHotkeyCheckbox(hotkeyID, hotkeyModifiers, hotkeyKeyCode, chkboxHotkey, labelCurrHotkey, paneHotkeyConfig, hotkeyPressed));
 
 		btnConfigureHotkey.setOnAction(hotkeyRegistry.generateEventHandlerForHotkeyConfigButton(hotkeyID));
 
@@ -282,13 +281,14 @@ public class WatchdogUI implements WatchdogListener
 
 	private void setWatchdogHotkey(Properties props)
 	{
-		chkboxHotkey.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxHotkey, false));
 		hotkeyModifiers = PropertiesByType.getIntProperty(props, propsHotkeyModifiers);
 		hotkeyKeyCode = PropertiesByType.getIntProperty(props, propsHotkeyKeycode);
+		chkboxHotkey.selectedProperty()
+				.addListener(hotkeyRegistry.generateChangeListenerForHotkeyCheckbox(hotkeyID, hotkeyModifiers, hotkeyKeyCode, chkboxHotkey, labelCurrHotkey, paneHotkeyConfig, hotkeyPressed));
 
-		if (chkboxHotkey.isSelected())
-			hotkeyRegistry.addHotkey(hotkeyID, hotkeyModifiers, hotkeyKeyCode, labelCurrHotkey, hotkeyPressed);
-		else
+		chkboxHotkey.setSelected(PropertiesByType.getBoolProperty(props, propsChkboxHotkey, false));
+
+		if (!chkboxHotkey.isSelected())
 			paneHotkeyConfig.setDisable(true);
 	}
 

@@ -12,97 +12,97 @@ import numbertextfield.NumberTextField;
 public class WatchdogController
 {
 	@FXML
-	private CheckBox chkboxWatchdogHotkey;
+	private CheckBox chkboxHotkey;
 	@FXML
-	private AnchorPane paneWatchdogHotkeyConfig;
+	private AnchorPane paneHotkeyConfig;
 	@FXML
-	private Button btnWatchdogConfigureHotkey;
+	private Button btnConfigureHotkey;
 	@FXML
-	private Label labelWatchdogCurrHotkey;
+	private Label labelCurrHotkey;
 	@FXML
-	private Button btnWatchdogStart;
+	private Button btnStart;
 	@FXML
-	private Button btnWatchdogStop;
+	private Button btnStop;
 	@FXML
-	private Button btnWatchdogManageList;
+	private Button btnManageList;
 	@FXML
-	private Label labelWatchdogEntryCount;
+	private Label labelEntryCount;
 	@FXML
-	private RadioButton radioWatchdogStopAfterMatch;
+	private RadioButton radioStopAfterMatch;
 	@FXML
-	private ToggleGroup tglWatchdogStopOrContinue;
+	private ToggleGroup tglStopOrContinue;
 	@FXML
-	private RadioButton radioWatchdogKeepLooking;
+	private RadioButton radioKeepLooking;
 	@FXML
-	private AnchorPane paneWatchdogCooldown;
+	private AnchorPane paneCooldown;
 	@FXML
-	private NumberTextField numFieldWatchdogCooldown;
+	private NumberTextField numFieldCooldown;
 	@FXML
-	private AnchorPane paneWatchdogConfig;
+	private AnchorPane paneConfig;
 	
 	
-	public CheckBox getChkboxWatchdogHotkey()
+	public CheckBox getChkboxHotkey()
 	{
-		return chkboxWatchdogHotkey;
+		return chkboxHotkey;
 	}
 
-	public AnchorPane getPaneWatchdogHotkeyConfig()
+	public AnchorPane getPaneHotkeyConfig()
 	{
-		return paneWatchdogHotkeyConfig;
+		return paneHotkeyConfig;
 	}
 
-	public Button getBtnWatchdogConfigureHotkey()
+	public Button getBtnConfigureHotkey()
 	{
-		return btnWatchdogConfigureHotkey;
+		return btnConfigureHotkey;
 	}
 
-	public Label getLabelWatchdogCurrHotkey()
+	public Label getLabelCurrHotkey()
 	{
-		return labelWatchdogCurrHotkey;
+		return labelCurrHotkey;
 	}
 
-	public Button getBtnWatchdogStart()
+	public Button getBtnStart()
 	{
-		return btnWatchdogStart;
+		return btnStart;
 	}
 
-	public Button getBtnWatchdogStop()
+	public Button getBtnStop()
 	{
-		return btnWatchdogStop;
+		return btnStop;
 	}
 
-	public Button getBtnWatchdogManageList()
+	public Button getBtnManageList()
 	{
-		return btnWatchdogManageList;
+		return btnManageList;
 	}
 
-	public Label getLabelWatchdogEntryCount()
+	public Label getLabelEntryCount()
 	{
-		return labelWatchdogEntryCount;
+		return labelEntryCount;
 	}
 	
-	public RadioButton getRadioWatchdogStopAfterMatch()
+	public RadioButton getRadioStopAfterMatch()
 	{
-		return radioWatchdogStopAfterMatch;
+		return radioStopAfterMatch;
 	}
 
-	public RadioButton getRadioWatchdogKeepLooking()
+	public RadioButton getRadioKeepLooking()
 	{
-		return radioWatchdogKeepLooking;
+		return radioKeepLooking;
 	}
 
-	public AnchorPane getPaneWatchdogCooldown()
+	public AnchorPane getPaneCooldown()
 	{
-		return paneWatchdogCooldown;
+		return paneCooldown;
 	}
 
-	public NumberTextField getNumFieldWatchdogCooldown()
+	public NumberTextField getNumFieldCooldown()
 	{
-		return numFieldWatchdogCooldown;
+		return numFieldCooldown;
 	}
 
-	public AnchorPane getPaneWatchdogConfig()
+	public AnchorPane getPaneConfig()
 	{
-		return paneWatchdogConfig;
+		return paneConfig;
 	}
 }

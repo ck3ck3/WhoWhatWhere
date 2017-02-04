@@ -6,9 +6,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import whowhatwhere.controller.GUIController;
+import whowhatwhere.controller.LoadAndSaveSettings;
 import whowhatwhere.controller.commands.Commands;
 
-public class TraceUtilityUI
+public class TraceUtilityUI implements LoadAndSaveSettings
 {
 	private GUIController guiController;
 	private TraceUtilityController controller;
@@ -20,11 +21,12 @@ public class TraceUtilityUI
 	public TraceUtilityUI(GUIController guiController)
 	{
 		this.guiController = guiController;
+		this.guiController.registerForSettingsHandler(this);
 		controller = guiController.getTracePaneController();
 		textTrace = controller.getTextTrace();
 		btnTrace = controller.getBtnTrace();
 		
-		btnTrace.setOnAction(event -> Commands.traceCommand(textTrace.getText(), this.guiController.getStage()));
+		btnTrace.setOnAction(event -> Commands.traceCommand(textTrace.getText(), guiController.getStage()));
 
 		textTrace.setOnKeyPressed(ke ->
 		{

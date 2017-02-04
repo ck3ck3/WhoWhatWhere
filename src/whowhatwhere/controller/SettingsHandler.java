@@ -23,10 +23,6 @@ import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import whowhatwhere.Main;
-import whowhatwhere.controller.appearancecounter.AppearanceCounterUI;
-import whowhatwhere.controller.utilities.PingToSpeechUI;
-import whowhatwhere.controller.utilities.TraceUtilityUI;
-import whowhatwhere.controller.watchdog.WatchdogUI;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.networksniffer.NICInfo;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
@@ -47,42 +43,31 @@ public class SettingsHandler
 	private final static String propsHeight = "lastRunHeight";
 	private final static String propsX = "lastRunX";
 	private final static String propsY = "lastRunY";
-	
+
 	private final static Logger logger = Logger.getLogger(SettingsHandler.class.getPackage().getName());
-	
+
 	private boolean showMessageOnMinimize;
 	private boolean ignoreRunPathDiff;
 	private boolean checkForUpdatesOnStartup;
 	private NICInfo selectedNIC;
 	private NetworkSniffer sniffer;
-	
-	private GUIController guiController;
-	private AppearanceCounterUI appearanceCounterUI;
-	private PingToSpeechUI pingToSpeechUI;
-	private WatchdogUI watchdogUI;
-	private TraceUtilityUI traceUI;
 
-	
+	private GUIController guiController;
+
+
 	public SettingsHandler(GUIController guiController)
 	{
 		this.guiController = guiController;
 		sniffer = guiController.getSniffer();
-		
-		appearanceCounterUI = new AppearanceCounterUI(guiController);
-		pingToSpeechUI = new PingToSpeechUI(guiController);
-		watchdogUI = new WatchdogUI(guiController);
-		traceUI = new TraceUtilityUI(guiController);
 	}
 	
-	public void saveCurrentRunValuesToProperties()
+	public void saveCurrentRunValuesToProperties(List<LoadAndSaveSettings> instancesWithSettingsToHandle)
 	{
 		Stage stage = guiController.getStage();
 		Properties props = new Properties();
 
-		appearanceCounterUI.saveCurrentRunValuesToProperties(props);
-		pingToSpeechUI.saveCurrentRunValuesToProperties(props);
-		watchdogUI.saveCurrentRunValuesToProperties(props);
-		traceUI.saveCurrentRunValuesToProperties(props);
+		for (LoadAndSaveSettings instance : instancesWithSettingsToHandle)
+			instance.saveCurrentRunValuesToProperties(props);
 
 		props.put(propsNICDescription, selectedNIC.getDescription());
 
@@ -97,14 +82,29 @@ public class SettingsHandler
 
 		try
 		{
-			FileOutputStream out = new FileOutputStream(propsFileLocation);
-			props.store(out, "Last run configuration");
-			out.close();
+			savePropertiesSafely(props, "Last run configuration", propsFileLocation);
 		}
 		catch (IOException e)
 		{
 			logger.log(Level.SEVERE, "Unable to save properties file " + propsFileLocation, e);
 		}
+	}
+
+	/**Saves Properties to file, but doesn't overwrite the previous file unless the save was successful.
+	 * @param props - Properties object to save
+	 * @param note - the note on top of the saved file
+	 * @param filename - name of the file to save
+	 * @throws IOException - if saving failed
+	 */
+	public static void savePropertiesSafely(Properties props, String note, String filename) throws IOException
+	{
+		String saveFileAttempt = filename + ".attempt";
+		FileOutputStream out = new FileOutputStream(saveFileAttempt); //in case saving goes wrong, we don't lose the previous save file
+		props.store(out, note);
+		out.close();
+
+		new File(filename).delete();
+		new File(saveFileAttempt).renameTo(new File(filename));
 	}
 
 	private Properties loadProperties()
@@ -128,7 +128,7 @@ public class SettingsHandler
 		return props;
 	}
 
-	public void loadLastRunConfig()
+	public void loadLastRunConfig(List<LoadAndSaveSettings> instancesWithSettingsToHandle)
 	{
 		Properties props = loadProperties();
 
@@ -150,17 +150,15 @@ public class SettingsHandler
 
 		loadLastRunDimensions(props);
 
-		appearanceCounterUI.loadLastRunConfig(props);
-		pingToSpeechUI.loadLastRunConfig(props);
-		watchdogUI.loadLastRunConfig(props);
-		traceUI.loadLastRunConfig(props);
+		for (LoadAndSaveSettings instance : instancesWithSettingsToHandle)
+			instance.loadLastRunConfig(props);
 	}
-	
+
 	private void loadLastRunDimensions(Properties props)
 	{
 		Stage stage = guiController.getStage();
 		Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
-		
+
 		if (primaryScreenBounds.getHeight() < stage.getHeight() || primaryScreenBounds.getWidth() < stage.getWidth())
 		{
 			guiController.getScrollPane().setFitToWidth(false);
@@ -170,19 +168,19 @@ public class SettingsHandler
 		else
 		{
 			Double value;
-			
+
 			value = PropertiesByType.getDoubleProperty(props, propsWidth, Double.NaN);
 			if (!value.equals(Double.NaN))
 				stage.setWidth(value);
-	
+
 			value = PropertiesByType.getDoubleProperty(props, propsHeight, Double.NaN);
 			if (!value.equals(Double.NaN))
 				stage.setHeight(value);
-	
+
 			value = PropertiesByType.getDoubleProperty(props, propsX, Double.NaN);
 			if (!value.equals(Double.NaN))
 				stage.setX(value);
-	
+
 			value = PropertiesByType.getDoubleProperty(props, propsY, Double.NaN);
 			if (!value.equals(Double.NaN))
 				stage.setY(value);
@@ -222,7 +220,7 @@ public class SettingsHandler
 			logger.log(Level.SEVERE, "Failed querying the registry for StartWithWindows values", ioe);
 		}
 	}
-	
+
 	public EventHandler<ActionEvent> handleStartWithWindowsClick(boolean allUsers, CheckMenuItem otherItem)
 	{
 		return ae ->
@@ -240,7 +238,6 @@ public class SettingsHandler
 			otherItem.setSelected(false); //if one is selected, the other one has to be unselected. if the click is to de-select, the other one was already unselected as well anyway.	
 		};
 	}
-
 
 	/**
 	 * @param forAllUsers
@@ -276,7 +273,7 @@ public class SettingsHandler
 
 		return false;
 	}
-	
+
 	private void loadNICInfo(String nicDescription)
 	{
 		NICInfo nic = null;
@@ -298,7 +295,7 @@ public class SettingsHandler
 				showNICSelectionScreen();
 		}
 	}
-	
+
 	public void showNICSelectionScreen()
 	{
 		List<NICInfo> listOfDevices = sniffer.getListOfDevices();
@@ -349,27 +346,26 @@ public class SettingsHandler
 		return null;
 	}
 
-	
 	public NICInfo getSelectedNIC()
 	{
 		return selectedNIC;
 	}
-	
+
 	public boolean getCheckForUpdatesOnStartup()
 	{
 		return checkForUpdatesOnStartup;
 	}
-	
+
 	public void setCheckForUpdatesOnStartup(boolean value)
 	{
 		checkForUpdatesOnStartup = value;
 	}
-	
+
 	public boolean getShowMessageOnMinimize()
 	{
 		return showMessageOnMinimize;
 	}
-	
+
 	public void setShowMessageOnMinimize(boolean value)
 	{
 		showMessageOnMinimize = value;

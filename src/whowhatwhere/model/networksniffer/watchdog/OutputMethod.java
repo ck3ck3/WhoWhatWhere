@@ -12,7 +12,7 @@ public enum OutputMethod
 	{
 		bidiMap.put(TTS, "Say with text-to-speech");
 		bidiMap.put(POPUP, "Show a pop-up message");
-		bidiMap.put(TTS_AND_POPUP, "Say with TTS and show pop-up");
+		bidiMap.put(TTS_AND_POPUP, "Say with text-to-speech and show a pop-up message");
 	}
 	
 	public static String[] getValuesAsStrings()

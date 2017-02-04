@@ -5,6 +5,8 @@ import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.TrayIcon.MessageType;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,16 +28,20 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import whowhatwhere.Main;
 import whowhatwhere.controller.appearancecounter.AppearanceCounterController;
-import whowhatwhere.controller.utilities.PingToSpeechController;
+import whowhatwhere.controller.appearancecounter.AppearanceCounterUI;
+import whowhatwhere.controller.utilities.QuickPingController;
+import whowhatwhere.controller.utilities.QuickPingUI;
 import whowhatwhere.controller.utilities.TraceUtilityController;
+import whowhatwhere.controller.utilities.TraceUtilityUI;
 import whowhatwhere.controller.watchdog.WatchdogController;
+import whowhatwhere.controller.watchdog.WatchdogUI;
 import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.networksniffer.NICInfo;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 
 public class GUIController implements CheckForUpdatesResultHandler
 {
-	private final static String voiceForTTS = "kevin16";
+	public final static String voiceForTTS = "kevin16";
 
 	private final static Logger logger = Logger.getLogger(GUIController.class.getPackage().getName());
 
@@ -72,7 +78,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 	@FXML
 	private AppearanceCounterController appearanceCounterPaneController;
 	@FXML
-	private PingToSpeechController ptsPaneController;
+	private QuickPingController quickPingPaneController;
 	@FXML
 	private WatchdogController watchdogPaneController;
 	@FXML
@@ -85,6 +91,8 @@ public class GUIController implements CheckForUpdatesResultHandler
 	private boolean isExitAlreadyAddedToSystray = false;
 	private UserNotes userNotes;
 	private SettingsHandler settings;
+	private List<LoadAndSaveSettings> instancesWithSettingsToHandle = new ArrayList<>();
+
 	
 	
 	/**
@@ -115,8 +123,13 @@ public class GUIController implements CheckForUpdatesResultHandler
 
 		userNotes = new UserNotes();
 		
+		new AppearanceCounterUI(this);
+		new QuickPingUI(this);
+		new WatchdogUI(this);
+		new TraceUtilityUI(this);
+		
 		settings = new SettingsHandler(this);
-		settings.loadLastRunConfig();
+		settings.loadLastRunConfig(instancesWithSettingsToHandle);
 		
 		initMenuBar();
 
@@ -129,9 +142,9 @@ public class GUIController implements CheckForUpdatesResultHandler
 		return appearanceCounterPaneController;
 	}
 	
-	public PingToSpeechController getPingToSpeechController()
+	public QuickPingController getQuickPingController()
 	{
-		return ptsPaneController;
+		return quickPingPaneController;
 	}
 	
 	public WatchdogController getWatchdogPaneController()
@@ -142,6 +155,11 @@ public class GUIController implements CheckForUpdatesResultHandler
 	public TraceUtilityController getTracePaneController()
 	{
 		return tracePaneController;
+	}
+	
+	public void registerForSettingsHandler(LoadAndSaveSettings instace)
+	{
+		instancesWithSettingsToHandle.add(instace);
 	}
 
 	private void addExitToSystrayIcon()
@@ -200,7 +218,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 	{
 		try
 		{
-			settings.saveCurrentRunValuesToProperties();
+			settings.saveCurrentRunValuesToProperties(instancesWithSettingsToHandle);
 
 			hotkeyRegistry.cleanup();
 			sniffer.cleanup();

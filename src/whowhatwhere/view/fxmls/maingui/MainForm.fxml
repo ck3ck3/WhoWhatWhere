@@ -53,8 +53,8 @@
                   <content>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                            <children>
-                              <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="14.0" prefHeight="145.0" prefWidth="657.0" text="Ping-to-speech">
-                              	<content><fx:include fx:id="ptsPane" source="../utilities/PingToSpeech.fxml" /></content>
+                              <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="14.0" prefHeight="145.0" prefWidth="657.0" text="Quick ping">
+                              	<content><fx:include fx:id="quickPingPane" source="../utilities/QuickPing.fxml" /></content>
                               </TitledPane>
                               <TitledPane collapsible="false" layoutX="14.0" layoutY="174.0" prefHeight="187.0" prefWidth="659.0" text="Watchdog">
                               	<content><fx:include fx:id="watchdogPane" source="../watchdog/Watchdog.fxml" /></content>

@@ -2,7 +2,6 @@ package whowhatwhere.controller;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -87,9 +86,7 @@ public class UserNotes
 	{
 		try
 		{
-			FileOutputStream out = new FileOutputStream(userNotesFilename);
-			userNotes.store(out, "User notes");
-			out.close();
+			SettingsHandler.savePropertiesSafely(userNotes, "User notes", userNotesFilename);
 		}
 		catch (IOException e)
 		{
