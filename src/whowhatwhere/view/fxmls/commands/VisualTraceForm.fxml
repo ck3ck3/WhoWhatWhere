@@ -8,39 +8,35 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane minHeight="870.0" minWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.commands.trace.VisualTraceController">
+<AnchorPane minHeight="850.0" minWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.commands.trace.VisualTraceController">
    <children>
-      <SplitPane dividerPositions="0.93" orientation="VERTICAL" prefHeight="870.0" prefWidth="1200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <items>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-               <children>
-                  <SplitPane dividerPositions="0.33" prefHeight="804.0" prefWidth="1200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-2.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                    <items>
-                        <ScrollPane fx:id="scrollerChkboxes" fitToHeight="true" fitToWidth="true" prefHeight="804.0" prefWidth="200.0">
-                           <content>
-                              <VBox fx:id="vboxChkboxes" prefHeight="802.0" prefWidth="1200.0" />
-                           </content>
-                        </ScrollPane>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="800.0" prefWidth="800.0" SplitPane.resizableWithParent="false">
-                           <children>
-                              <ImageView fx:id="imgView" fitHeight="800.0" fitWidth="800.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                              <Label fx:id="labelLoading" layoutX="337.0" layoutY="355.0" text="Loading..." visible="false">
-                                 <font>
-                                    <Font size="30.0" />
-                                 </font>
-                              </Label>
-                           </children>
-                        </AnchorPane>
-                    </items>
-                  </SplitPane>
-               </children>
-            </AnchorPane>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-               <children>
-                  <Button fx:id="btnClose" layoutX="1079.0" layoutY="17.0" mnemonicParsing="false" text="Close this screen" AnchorPane.bottomAnchor="16.0" AnchorPane.rightAnchor="14.0" />
-               </children>
-            </AnchorPane>
-        </items>
-      </SplitPane>
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefWidth="1200.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <SplitPane dividerPositions="0.33" prefWidth="1200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+              <items>
+                  <ScrollPane prefViewportWidth="400.0">
+                     <content>
+                        <VBox fx:id="vboxChkboxes" />
+                     </content>
+                  </ScrollPane>
+                <AnchorPane minHeight="0.0" minWidth="0.0" SplitPane.resizableWithParent="false">
+                     <children>
+                        <ImageView fx:id="imgView" fitHeight="800.0" fitWidth="800.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <Label fx:id="labelLoading" layoutX="337.0" layoutY="355.0" text="Loading..." visible="false">
+                           <font>
+                              <Font size="30.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </AnchorPane>
+              </items>
+            </SplitPane>
+         </children>
+      </AnchorPane>
+    <AnchorPane layoutY="834.0" prefHeight="52.0" prefWidth="1200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+         <children>
+            <Button fx:id="btnClose" layoutX="1081.0" layoutY="15.0" mnemonicParsing="false" text="Close this screen" AnchorPane.bottomAnchor="12.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="15.0" />
+         </children>
+      </AnchorPane>
    </children>
 </AnchorPane>

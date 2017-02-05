@@ -77,9 +77,9 @@ public abstract class SecondaryFXMLWithCRUDTableScreen<T> extends SecondaryFXMLS
 	protected abstract ObservableList<T> getInitialTableItems();
 	
 	/**
-	 * Deriving classes should implement the required behavior for onEditCommit for editable columns.
+	 * Deriving classes should implement the required behavior for onEditStart/onEditCancel/onEditCommit for editable columns.
 	 */
-	protected abstract void setOnEditCommit();
+	protected abstract void setOnEditHandlers();
 	
 	/**
 	 * @return An object of type T that represents an empty row in the table, that the user will later edit to input data
@@ -128,7 +128,7 @@ public abstract class SecondaryFXMLWithCRUDTableScreen<T> extends SecondaryFXMLS
 		table.getSortOrder().addAll(sortOrder); //restore the sort order, if existed (setItems removes that property)
 
 		initButtonHandlers();
-		setOnEditCommit();
+		setOnEditHandlers();
 	}
 	
 	/**

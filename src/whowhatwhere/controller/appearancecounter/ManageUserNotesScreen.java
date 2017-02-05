@@ -22,6 +22,9 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 	private TableColumn<UserNotesRowModel, String> columnIP;
 	private TableColumn<UserNotesRowModel, String> columnNotes;
 	
+	private UserNotesRowModel rowBeingEdited;
+	private boolean editedCellWasEmpty;
+	
 	private final static String emptyCellString = "(Click to edit)";
 
 	public ManageUserNotesScreen(String fxmlLocation, Stage stage, Scene scene, UserNotes userNotes) throws IOException
@@ -56,10 +59,24 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 		
 		return list;
 	}
-
+	
 	@Override
-	protected void setOnEditCommit()
+	protected void setOnEditHandlers()
 	{
+		columnIP.setOnEditStart(rowModel ->
+		{
+			editedCellWasEmpty = rowModel.getOldValue().equals(emptyCellString);
+			if (editedCellWasEmpty)
+			{
+				rowModel.getRowValue().setIpAddress("");
+				rowBeingEdited = rowModel.getRowValue();
+			}
+		});
+		columnIP.setOnEditCancel(rowModel -> 
+		{
+			if (editedCellWasEmpty)
+				rowBeingEdited.setIpAddress(emptyCellString);
+		});
 		columnIP.setOnEditCommit(rowModel -> 
 		{
 			String newContent = rowModel.getNewValue();
@@ -86,12 +103,29 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 					}
 				}
 				else
+				{
 					new Alert(AlertType.ERROR, "Please enter a valid IP address. If you want to delete this row, please select it and press the \"" + userNotesController.getBtnRemoveRow().getText() + "\" button.").showAndWait();
+					rowValue.setIpAddress(emptyCellString);
+				}
 			}
 			
 			table.refresh();
 		});
 		
+		columnNotes.setOnEditStart(rowModel ->
+		{
+			editedCellWasEmpty = rowModel.getOldValue().equals(emptyCellString);
+			if (editedCellWasEmpty)
+			{
+				rowModel.getRowValue().setNotes("");
+				rowBeingEdited = rowModel.getRowValue();
+			}
+		});
+		columnNotes.setOnEditCancel(rowModel -> 
+		{
+			if (editedCellWasEmpty)
+				rowBeingEdited.setNotes(emptyCellString);
+		});
 		columnNotes.setOnEditCommit(rowModel -> 
 		{
 			String newContent = rowModel.getNewValue();

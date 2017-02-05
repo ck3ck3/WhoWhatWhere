@@ -97,7 +97,7 @@ public class ManageListScreen extends SecondaryFXMLWithCRUDTableScreen<PacketTyp
 	}
 
 	@Override
-	protected void setOnEditCommit()
+	protected void setOnEditHandlers()
 	{
 		columnMsgText.setOnEditCommit(rowModel -> rowModel.getRowValue().setMessageText(rowModel.getNewValue()));
 

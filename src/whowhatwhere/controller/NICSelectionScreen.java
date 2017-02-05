@@ -201,5 +201,6 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 				snifferArray[i].cleanup();
 
 		comboNIC.setDisable(false);
+		btnAutoDetect.setDisable(false);
 	}
 }

@@ -154,6 +154,8 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 	private String suggestedPathForCSVFile;
 	private UserNotes userNotes;
+	private IPInfoRowModel rowWithNoteBeingEdited;
+	private boolean editedNotedWasEmpty;
 
 	private Runnable captureHotkeyPressed = new Runnable()
 	{
@@ -317,6 +319,20 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		columnCity.setCellValueFactory(new PropertyValueFactory<>("city"));
 
 		columnNotes.setCellFactory(TextFieldTableCell.forTableColumn()); //make Notes column editable
+		columnNotes.setOnEditStart(rowModel ->
+		{
+			editedNotedWasEmpty = rowModel.getOldValue().equals(emptyNotesString);
+			if (editedNotedWasEmpty)
+			{
+				rowModel.getRowValue().setNotes("");
+				rowWithNoteBeingEdited = rowModel.getRowValue();
+			}
+		});
+		columnNotes.setOnEditCancel(rowModel -> 
+		{
+			if (editedNotedWasEmpty)
+				rowWithNoteBeingEdited.setNotes(emptyNotesString);
+		});
 		columnNotes.setOnEditCommit(rowModel ->
 		{
 			String newContent = rowModel.getNewValue().isEmpty() ? emptyNotesString : rowModel.getNewValue();
