@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 public abstract class SecondaryFXMLScreen
 {
@@ -17,6 +18,7 @@ public abstract class SecondaryFXMLScreen
 	private Scene postCloseScene;
 	private Parent loadedFXML;
 	private FXMLLoader loader;
+	private EventHandler<WindowEvent> eventForStageOnShowing;
 
 	/**
 	 * 
@@ -36,6 +38,14 @@ public abstract class SecondaryFXMLScreen
 
 		loader = new FXMLLoader(getClass().getResource(fxmlLocation));
 		setLoadedFXML(loader.load());
+	}
+	
+	/**Allows setting an onShowing event for the stage
+	 * @param eventHandler - The event handler to run when the stage is set to "showing"
+	 */
+	public void setStageOnShowing(EventHandler<WindowEvent> eventHandler)
+	{
+		eventForStageOnShowing = eventHandler;
 	}
 
 	/**
@@ -81,6 +91,13 @@ public abstract class SecondaryFXMLScreen
 		}
 
 		existingStage.setScene(scene);
+		
+		if (eventForStageOnShowing != null)
+		{
+			existingStage.setOnShowing(eventForStageOnShowing);
+			existingStage.hide(); //to activate onShowing() in case it was set
+		}
+		
 		existingStage.show();
 	}
 
@@ -137,6 +154,9 @@ public abstract class SecondaryFXMLScreen
 
 		if (modality != null)
 			stage.initModality(modality);
+		
+		if (eventForStageOnShowing != null)
+			stage.setOnShowing(eventForStageOnShowing);
 
 		stage.show();
 

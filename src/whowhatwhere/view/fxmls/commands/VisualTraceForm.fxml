@@ -8,20 +8,20 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane minHeight="850.0" minWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.commands.trace.VisualTraceController">
+<AnchorPane fx:id="anchorPaneScreen" minHeight="730.0" minWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.commands.trace.VisualTraceController">
    <children>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefWidth="1200.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <SplitPane dividerPositions="0.33" prefWidth="1200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <SplitPane fx:id="splitPane" dividerPositions="0.33" prefWidth="1200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
               <items>
-                  <ScrollPane prefViewportWidth="400.0">
+                  <ScrollPane fx:id="scrollPane">
                      <content>
-                        <VBox fx:id="vboxChkboxes" />
+                        <Pane fx:id="paneTraceInfo" />
                      </content>
                   </ScrollPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" SplitPane.resizableWithParent="false">
                      <children>
-                        <ImageView fx:id="imgView" fitHeight="800.0" fitWidth="800.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <ImageView fx:id="imgView" fitHeight="680.0" fitWidth="800.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                         <Label fx:id="labelLoading" layoutX="337.0" layoutY="355.0" text="Loading..." visible="false">
                            <font>
                               <Font size="30.0" />

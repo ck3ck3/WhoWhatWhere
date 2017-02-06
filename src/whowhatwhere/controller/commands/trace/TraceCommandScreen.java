@@ -134,7 +134,7 @@ public class TraceCommandScreen extends CommandScreen
 
 	private void openVisualTrace()
 	{
-		List<String> listOfIPs = getListOfIPs();
+		List<String> listOfIPs = getOutputAsList();
 		VisualTraceScreen visualTraceScreen;
 		Stage stage = (Stage)btnStart.getScene().getWindow();
 		
@@ -150,12 +150,12 @@ public class TraceCommandScreen extends CommandScreen
 
 		Button btnClose = visualTraceScreen.getVisualTraceController().getBtnClose();
 
-		visualTraceScreen.showScreenOnExistingStage(stage, btnClose);
+		visualTraceScreen.showScreenOnNewStage("Visual trace of " + ip, null, btnClose);
 	}
 
-	private List<String> getListOfIPs()
+	private List<String> getOutputAsList()
 	{
-		List<String> listOfIPs = new ArrayList<>();
+		List<String> outputList = new ArrayList<>();
 		String lines[] = getTextArea().getText().split(introMarker)[1].split("\n"); //get actual command output, after our intro string
 		int lastLineToRead = lines.length - (endedGracefully ? 2 : 0); //if ended gracefully, the last two lines are not relevant
 
@@ -170,15 +170,15 @@ public class TraceCommandScreen extends CommandScreen
 			if (lastChar != ']' && !Character.isDigit(lastChar)) //this means this line is a "request timed out" since it doesn't end with an ip or a hostname
 				continue;
 
-			listOfIPs.add(lines[i]);
+			outputList.add(lines[i]);
 		}
 
-		return listOfIPs;
+		return outputList;
 	}
 	
-	static String extractIPFromLine(String ipInfo)
+	static String extractIPFromLine(String line)
 	{
-		String spaceSeparated[] = ipInfo.split(" ");
+		String spaceSeparated[] = line.split(" ");
 		String tempIP = spaceSeparated[spaceSeparated.length - 1];
 		
 		if (tempIP.startsWith("[")) //then we have a hostname, not just an ip

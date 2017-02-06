@@ -16,12 +16,22 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.geometry.HPos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import whowhatwhere.Main;
 import whowhatwhere.model.geoipresolver.GeoIPInfo;
@@ -31,19 +41,25 @@ import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen;
 public class VisualTraceScreen extends SecondaryFXMLScreen
 {
 	private final static String visualTraceFormLocation = "/whowhatwhere/view/fxmls/commands/VisualTraceForm.fxml";
-	private final static String baseUrl = "https://maps.googleapis.com/maps/api/staticmap?key=" + GoogleStaticMapsAPIKey.key + "&size=400x400&scale=2&maptype=roadmap";
+	private final static String baseUrl = "https://maps.googleapis.com/maps/api/staticmap?key=" + GoogleStaticMapsAPIKey.key + "&size=400x340&scale=2&maptype=roadmap";
+	private final static String geoIPIconLocation = "/earth-16.png";
+	private final static String zoomInIconLocation = "/zoom-16.png";
+	
 	private final static Logger logger = Logger.getLogger(VisualTraceScreen.class.getPackage().getName());
 
 	private VisualTraceController visualTraceController;
-	private List<String> listOfIPs;
+	private List<String> tracertOutput;
+	private Map<CheckBox, String> checkboxToIP = new HashMap<>();
 	private Map<String, GeoIPInfo> geoIPResults = new HashMap<>();
 	private List<CheckBox> listOfChkBoxes = new ArrayList<>();
 	private GenerateImageFromURLService imgService;
+	private ImageView imgView;
+	private ToggleButton lastZoomButtonPressed;
 
 	public VisualTraceScreen(List<String> listOfIPs, Stage postCloseStage, Scene postCloseScene) throws IOException
 	{
 		super(visualTraceFormLocation, postCloseStage, postCloseScene);
-		this.listOfIPs = listOfIPs;
+		this.tracertOutput = listOfIPs;
 
 		imgService = new GenerateImageFromURLService(this);
 
@@ -56,60 +72,209 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		}
 
 		visualTraceController = getLoader().<VisualTraceController> getController();
+		imgView = visualTraceController.getImgView();
+		
 		generateTraceInfoGUI();
 		generateAndShowImage();
 
+		setStageOnShowing(event -> Platform.runLater(() -> resizeIfNeeded()));
+		
 		imgService.setOnSucceeded(event ->
 		{
 			getVisualTraceController().getLoadingLabel().setVisible(false);
 			Image img = imgService.getValue();
-			getVisualTraceController().getImgView().setImage(img);
+			imgView.setImage(img);
 		});
+	}
+	
+	private void resizeIfNeeded()
+	{
+		SplitPane splitPane = visualTraceController.getSplitPane();
+		double traceInfoWidth = visualTraceController.getPaneTraceInfo().getWidth();
+		double splitPaneDividerPosition = splitPane.getDividerPositions()[0];
+		double splitPaneWidth = splitPane.getWidth();
+		
+		if (traceInfoWidth > splitPaneDividerPosition * splitPaneWidth)
+		{
+			double idealWidth = traceInfoWidth + (1 - splitPaneDividerPosition) * splitPaneWidth + 30;
+			Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
+			
+			Stage stage = (Stage)imgView.getScene().getWindow();
+			
+			if (primaryScreenBounds.getWidth() > idealWidth)
+				stage.setWidth(idealWidth);
+			else
+				stage.setMaximized(true);
+		}
 	}
 
 	private void generateTraceInfoGUI()
 	{
-		VBox vbox = getVisualTraceController().getVboxChkboxes();
+		int row = 1, col = 0;
+		GridPane gridPane = new GridPane();
+		Pane paneTraceInfo = visualTraceController.getPaneTraceInfo();
+		paneTraceInfo.getChildren().add(gridPane);
+		gridPane.setHgap(10);
+		
+		createLabelsOnGridPane(gridPane, tracertOutput.get(0).contains("["));
 
 		char label = 'A';
-		for (String ipInfo : listOfIPs)
+		for (String line : tracertOutput)
 		{
-			String text = label + ": " + ipInfo;
-			CheckBox box = new CheckBox(text);
+			CheckBox box = new CheckBox(label + ": ");
+			col = 0;
 
 			box.setSelected(true);
-			box.selectedProperty().addListener((observable, oldValue, newValue) -> generateAndShowImage());
-
-			listOfChkBoxes.add(box);
-			vbox.getChildren().add(box);
-
-			final String ip = TraceCommandScreen.extractIPFromLine(ipInfo);
-
-			Hyperlink geoIPLink = new Hyperlink("GeoIP info");
-			geoIPLink.setOnAction(event -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + ip));
-
-			Hyperlink focusMapLink = new Hyperlink("Focus map here");
-			focusMapLink.setOnAction(event ->
+			box.selectedProperty().addListener((observable, oldValue, newValue) -> 
 			{
-				imgService.setCenterOnIP(ip);
 				generateAndShowImage();
+				
+				if (lastZoomButtonPressed != null)
+				{
+					lastZoomButtonPressed.setSelected(false);
+					lastZoomButtonPressed = null;
+				}
 			});
 
-			HBox hbox = new HBox(box, focusMapLink, geoIPLink);
-			vbox.getChildren().add(hbox);
+			listOfChkBoxes.add(box);
+			gridPane.add(box, col++, row);
+			GridPane.setHalignment(box, HPos.CENTER);
+
+			List<String> valueList = getListOfValues(line);
+			
+			String ip = valueList.get(valueList.size() - 1);
+			checkboxToIP.put(box, ip);
+			
+			for (String value : valueList)
+			{
+				Label tempLabel = new Label(value);
+				gridPane.add(tempLabel, col++, row);
+				GridPane.setHalignment(tempLabel, HPos.CENTER);
+			}
+
+			addButtonsToGridPane(ip, gridPane, col, row);
 
 			if (label != 'Z')
 				label++; //trace is limited to 30 hops, so no need to worry about '9'
 			else
 				label = '0';
+			
+			row++;
 		}
+	}
+	
+	/**
+	 * @param fullLine - full line from tracert output
+	 * @return - a list of values in this order: hop #, ping results, hostname (if available), ip address
+	 */
+	private List<String> getListOfValues(String fullLine)
+	{
+		List<String> values = new ArrayList<>();
+		
+		String[] splitBySpace = fullLine.trim().split(" ");
+		for (String str : splitBySpace)
+		{
+			if (!str.isEmpty())
+			{
+				if (str.equals("ms"))
+				{
+					int lastIndex = values.size() - 1;
+					values.set(lastIndex, values.get(lastIndex) + " ms");
+				}
+				else
+				{
+					if (str.contains("["))
+						values.add(str.substring(1, str.length() - 1));
+					else
+						values.add(str);
+				}
+			}
+		}
+		
+		String pings = values.get(1) + "  " + values.get(2) + "  " +values.get(3) + "  ";
+		values.set(1, pings);
+		values.remove(3); //remove in descending order to prevent lower indices from changing
+		values.remove(2);
+		
+		return values;
+	}
+	
+	private void addButtonsToGridPane(String ip, GridPane gridPane, int col, int row)
+	{
+		ToggleButton btnZoom = new ToggleButton();
+		btnZoom.setGraphic(new ImageView(new Image(getClass().getResourceAsStream(zoomInIconLocation))));
+		btnZoom.setTooltip(new Tooltip("Zoom in on this location"));
+		btnZoom.setOnAction(event ->
+		{
+			if (btnZoom.isSelected())
+			{
+				imgService.setCenterOnIP(ip);
+				
+				if (lastZoomButtonPressed != null)
+					lastZoomButtonPressed.setSelected(false);
+				
+				lastZoomButtonPressed = btnZoom;
+			}
+			else
+				lastZoomButtonPressed = null;
+			
+			generateAndShowImage();
+		});
+		
+		Button btnGeoIP = new Button(); 
+		btnGeoIP.setGraphic(new ImageView(new Image(getClass().getResourceAsStream(geoIPIconLocation))));
+		btnGeoIP.setTooltip(new Tooltip("Show more detailed GeoIP info online"));
+		btnGeoIP.setOnAction(event -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + ip));
+
+		gridPane.add(btnZoom, col++, row);
+		gridPane.add(btnGeoIP, col++, row);
+		GridPane.setHalignment(btnZoom, HPos.CENTER);
+		GridPane.setHalignment(btnGeoIP, HPos.CENTER);		
+	}
+	
+	private void createLabelsOnGridPane(GridPane gridPane, boolean withHostnames)
+	{
+		Font defaultFont = Font.getDefault();
+		Font font = Font.font(defaultFont.getName(), FontWeight.BOLD, defaultFont.getSize());
+		int col = 0;
+		
+		Label labelMapNode = new Label("Map label");
+		Label labelHopNum = new Label("Hop #");
+		Label labelPings = new Label("Ping results");
+		Label labelHostname = new Label("Hostname");
+		Label labelIPAddress = new Label("IP address");
+		Label labelFocusHere = new Label("Zoom in");
+		Label labelGeoIPInfo = new Label("GeoIP info");
+		labelMapNode.setFont(font);
+		labelHopNum.setFont(font);
+		labelPings.setFont(font);
+		labelHostname.setFont(font);
+		labelIPAddress.setFont(font);
+		labelFocusHere.setFont(font);
+		labelGeoIPInfo.setFont(font);
+		GridPane.setHalignment(labelMapNode, HPos.CENTER);
+		GridPane.setHalignment(labelHopNum, HPos.CENTER);
+		GridPane.setHalignment(labelPings, HPos.CENTER);
+		GridPane.setHalignment(labelHostname, HPos.CENTER);
+		GridPane.setHalignment(labelIPAddress, HPos.CENTER);
+		GridPane.setHalignment(labelFocusHere, HPos.CENTER);
+		GridPane.setHalignment(labelGeoIPInfo, HPos.CENTER);
+		
+		gridPane.add(labelMapNode, col++, 0);
+		gridPane.add(labelHopNum, col++, 0);
+		gridPane.add(labelPings, col++, 0);
+		if (withHostnames)
+			gridPane.add(labelHostname, col++, 0);
+		gridPane.add(labelIPAddress, col++, 0);
+		gridPane.add(labelFocusHere, col++, 0);
+		gridPane.add(labelGeoIPInfo, col++, 0);
 	}
 
 	private void generateAndShowImage()
 	{
 		Platform.runLater(() ->
 		{
-			getVisualTraceController().getImgView().setImage(null);
+			imgView.setImage(null);
 			getVisualTraceController().getLoadingLabel().setVisible(true);
 			imgService.restart();
 		});
@@ -147,7 +312,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			{
 				char label = text.charAt(0);
 
-				ip = TraceCommandScreen.extractIPFromLine(text);
+				ip = checkboxToIP.get(checkBox);
 				GeoIPInfo ipInfo = geoIPResults.get(ip);
 
 				if (!isPublicIP(ip) || ipInfo == null || !ipInfo.getSuccess()) //not a public ip with a location, skip it

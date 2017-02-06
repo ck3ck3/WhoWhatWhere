@@ -104,7 +104,7 @@ public class NetworkSniffer
 		try
 		{
 			String currDir = System.getProperty("user.dir");
-			InputStream dll = Main.class.getResourceAsStream(copyDllFrom);
+			InputStream dll = NetworkSniffer.class.getResourceAsStream(copyDllFrom);
 
 			if (dll == null)
 				throw new IOException("Unable to find " + copyDllFrom + " in resources");

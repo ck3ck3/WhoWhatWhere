@@ -3,29 +3,50 @@ package whowhatwhere.controller.commands.trace;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.ScrollPane;
 
 public class VisualTraceController
 {
 
 	@FXML
-	private ScrollPane scrollerChkboxes;
-	@FXML
 	private ImageView imgView;
 	@FXML
 	private Button btnClose;
 	@FXML
-	private VBox vboxChkboxes;
+	private Label labelLoading;
 	@FXML
-	Label labelLoading;
-
-	public ScrollPane getScrollerChkboxes()
+	private Pane paneTraceInfo;
+	@FXML
+	private AnchorPane anchorPaneScreen;
+	@FXML
+	private SplitPane splitPane;
+	@FXML
+	private ScrollPane scrollPane;
+	
+	public ScrollPane getScrollPane()
 	{
-		return scrollerChkboxes;
+		return scrollPane;
 	}
 
+	public SplitPane getSplitPane()
+	{
+		return splitPane;
+	}
+	
+	public AnchorPane getAnchorPaneScreen()
+	{
+		return anchorPaneScreen;
+	}
+	
+	public Pane getPaneTraceInfo()
+	{
+		return paneTraceInfo;
+	}
+	
 	public ImageView getImgView()
 	{
 		return imgView;
@@ -34,11 +55,6 @@ public class VisualTraceController
 	public Button getBtnClose()
 	{
 		return btnClose;
-	}
-
-	public VBox getVboxChkboxes()
-	{
-		return vboxChkboxes;
 	}
 
 	public Label getLoadingLabel()
