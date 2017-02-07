@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.geometry.HPos;
@@ -23,7 +25,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -45,6 +49,11 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 	private final static String geoIPIconLocation = "/earth-16.png";
 	private final static String zoomInIconLocation = "/zoom-16.png";
 	
+	private final static String propertyHop = "hop#";
+	private final static String propertyPings = "pings";
+	private final static String propertyHostname = "hostname";
+	private final static String propertyIP = "ip";
+	
 	private final static Logger logger = Logger.getLogger(VisualTraceScreen.class.getPackage().getName());
 
 	private VisualTraceController visualTraceController;
@@ -54,7 +63,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 	private List<CheckBox> listOfChkBoxes = new ArrayList<>();
 	private GenerateImageFromURLService imgService;
 	private ImageView imgView;
-	private ToggleButton lastZoomButtonPressed;
+	private ToggleGroup zoomToggleGroup = new ToggleGroup();
 
 	public VisualTraceScreen(List<String> listOfIPs, Stage postCloseStage, Scene postCloseScene) throws IOException
 	{
@@ -121,35 +130,40 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		char label = 'A';
 		for (String line : tracertOutput)
 		{
-			CheckBox box = new CheckBox(label + ": ");
+			CheckBox box = new CheckBox(String.valueOf(label));
 			col = 0;
 
 			box.setSelected(true);
 			box.selectedProperty().addListener((observable, oldValue, newValue) -> 
 			{
-				generateAndShowImage();
+				Toggle selectedZoomBtn = zoomToggleGroup.getSelectedToggle();
+				if (selectedZoomBtn != null)
+					selectedZoomBtn.setSelected(false);
 				
-				if (lastZoomButtonPressed != null)
-				{
-					lastZoomButtonPressed.setSelected(false);
-					lastZoomButtonPressed = null;
-				}
+				generateAndShowImage();
 			});
 
 			listOfChkBoxes.add(box);
 			gridPane.add(box, col++, row);
 			GridPane.setHalignment(box, HPos.CENTER);
 
-			List<String> valueList = getListOfValues(line);
+			Map<String, String> valueMap = getListOfValues(line);
 			
-			String ip = valueList.get(valueList.size() - 1);
+			String ip = valueMap.get(propertyIP);
 			checkboxToIP.put(box, ip);
 			
-			for (String value : valueList)
+			List<String> orderedPropertyList = Arrays.asList(propertyHop, propertyPings, propertyHostname, propertyIP);
+			for (String key : orderedPropertyList)
 			{
-				Label tempLabel = new Label(value);
-				gridPane.add(tempLabel, col++, row);
-				GridPane.setHalignment(tempLabel, HPos.CENTER);
+				String value = valueMap.get(key);
+				if (value != null)
+				{
+					Label tempLabel = new Label(value);
+					gridPane.add(tempLabel, col++, row);
+					
+					if (key.equals(propertyHop))
+						GridPane.setHalignment(tempLabel, HPos.CENTER);
+				}
 			}
 
 			addButtonsToGridPane(ip, gridPane, col, row);
@@ -165,11 +179,12 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 	
 	/**
 	 * @param fullLine - full line from tracert output
-	 * @return - a list of values in this order: hop #, ping results, hostname (if available), ip address
+	 * @return - a map of values with these keys: propertyHop, propertyPings, propertyHostname (if available), propertyIP
 	 */
-	private List<String> getListOfValues(String fullLine)
+	private Map<String, String> getListOfValues(String fullLine)
 	{
 		List<String> values = new ArrayList<>();
+		boolean containsHostname = false;
 		
 		String[] splitBySpace = fullLine.trim().split(" ");
 		for (String str : splitBySpace)
@@ -184,7 +199,10 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 				else
 				{
 					if (str.contains("["))
-						values.add(str.substring(1, str.length() - 1));
+						{
+							values.add(str.substring(1, str.length() - 1));
+							containsHostname = true;
+						}
 					else
 						values.add(str);
 				}
@@ -196,29 +214,31 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		values.remove(3); //remove in descending order to prevent lower indices from changing
 		values.remove(2);
 		
-		return values;
+		Map<String, String> mappedResults = new HashMap<>();
+		int index = 0;
+		
+		mappedResults.put(propertyHop, values.get(index++));
+		mappedResults.put(propertyPings, values.get(index++));
+		if (containsHostname)
+			mappedResults.put(propertyHostname, values.get(index++));
+		mappedResults.put(propertyIP, values.get(index++));
+		
+		return mappedResults;
 	}
 	
 	private void addButtonsToGridPane(String ip, GridPane gridPane, int col, int row)
 	{
 		ToggleButton btnZoom = new ToggleButton();
+		btnZoom.setToggleGroup(zoomToggleGroup);
 		btnZoom.setGraphic(new ImageView(new Image(getClass().getResourceAsStream(zoomInIconLocation))));
 		btnZoom.setTooltip(new Tooltip("Zoom in on this location"));
-		btnZoom.setOnAction(event ->
+		btnZoom.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
 		{
-			if (btnZoom.isSelected())
+			if (newValue) //selected
 			{
 				imgService.setCenterOnIP(ip);
-				
-				if (lastZoomButtonPressed != null)
-					lastZoomButtonPressed.setSelected(false);
-				
-				lastZoomButtonPressed = btnZoom;
+				generateAndShowImage();
 			}
-			else
-				lastZoomButtonPressed = null;
-			
-			generateAndShowImage();
 		});
 		
 		Button btnGeoIP = new Button(); 
@@ -252,13 +272,6 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		labelIPAddress.setFont(font);
 		labelFocusHere.setFont(font);
 		labelGeoIPInfo.setFont(font);
-		GridPane.setHalignment(labelMapNode, HPos.CENTER);
-		GridPane.setHalignment(labelHopNum, HPos.CENTER);
-		GridPane.setHalignment(labelPings, HPos.CENTER);
-		GridPane.setHalignment(labelHostname, HPos.CENTER);
-		GridPane.setHalignment(labelIPAddress, HPos.CENTER);
-		GridPane.setHalignment(labelFocusHere, HPos.CENTER);
-		GridPane.setHalignment(labelGeoIPInfo, HPos.CENTER);
 		
 		gridPane.add(labelMapNode, col++, 0);
 		gridPane.add(labelHopNum, col++, 0);
