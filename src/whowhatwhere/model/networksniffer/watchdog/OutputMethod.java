@@ -1,12 +1,12 @@
 package whowhatwhere.model.networksniffer.watchdog;
 
-import org.apache.commons.collections.bidimap.TreeBidiMap;
+import org.apache.commons.collections4.bidimap.TreeBidiMap;
 
 public enum OutputMethod
 {
 	TTS, POPUP, TTS_AND_POPUP;
 	
-	private static TreeBidiMap bidiMap = new TreeBidiMap();
+	private static TreeBidiMap<OutputMethod, String> bidiMap = new TreeBidiMap<>();
 	
 	static
 	{
@@ -17,19 +17,19 @@ public enum OutputMethod
 	
 	public static String[] getValuesAsStrings()
 	{
-		String[] methods = {(String) bidiMap.get(TTS), (String) bidiMap.get(POPUP), (String) bidiMap.get(TTS_AND_POPUP)};
+		String[] methods = {bidiMap.get(TTS), bidiMap.get(POPUP), bidiMap.get(TTS_AND_POPUP)};
 		
 		return methods;
 	}
 	
 	public static OutputMethod stringToEnum(String str)
 	{
-		return (OutputMethod) bidiMap.getKey(str);
+		return bidiMap.getKey(str);
 	}
 	
 	@Override
 	public String toString()
 	{
-		return (String) bidiMap.get(this);
+		return bidiMap.get(this);
 	}
 }

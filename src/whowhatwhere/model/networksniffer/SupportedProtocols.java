@@ -1,6 +1,6 @@
 package whowhatwhere.model.networksniffer;
 
-import org.apache.commons.collections.bidimap.TreeBidiMap;
+import org.apache.commons.collections4.bidimap.TreeBidiMap;
 import org.jnetpcap.protocol.network.Icmp;
 import org.jnetpcap.protocol.tcpip.Http;
 import org.jnetpcap.protocol.tcpip.Tcp;
@@ -11,11 +11,11 @@ public enum SupportedProtocols
 	ICMP(Icmp.ID), UDP(Udp.ID), TCP(Tcp.ID), HTTP(Http.ID);
 	
 	private int value;
-	private static TreeBidiMap protocolBidiMap;
+	private static TreeBidiMap<String, SupportedProtocols> protocolBidiMap;
 	
 	static
 	{
-		protocolBidiMap = new TreeBidiMap();
+		protocolBidiMap = new TreeBidiMap<>();
 		protocolBidiMap.put("ICMP", ICMP);
 		protocolBidiMap.put("UDP", UDP);
 		protocolBidiMap.put("TCP", TCP);
@@ -35,12 +35,12 @@ public enum SupportedProtocols
 	@Override
 	public String toString()
 	{
-		return (String) protocolBidiMap.getKey(this);
+		return protocolBidiMap.getKey(this);
 	}
 	
 	public static SupportedProtocols stringToEnum(String str)
 	{
-		return (SupportedProtocols) protocolBidiMap.get(str);
+		return protocolBidiMap.get(str);
 	}
 	
 	public static String[] getSupportedProtocolsAsString()
