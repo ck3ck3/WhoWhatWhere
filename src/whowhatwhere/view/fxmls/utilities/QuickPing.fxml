@@ -16,8 +16,8 @@
                   <Label fx:id="labelCurrentHotkey" layoutX="117.0" layoutY="4.0" text="Current hotkey: " />
                </children>
             </AnchorPane>
-            <Label layoutY="35.0" text="How to output the result:" />
-            <ComboBox fx:id="comboOutputMethod" layoutX="141.0" layoutY="31.0" prefHeight="25.0" prefWidth="375.0" />
+            <Label layoutY="35.0" text="Get informed of the result by" />
+            <ComboBox fx:id="comboOutputMethod" layoutX="146.0" layoutY="31.0" prefHeight="25.0" prefWidth="370.0" />
          </children>
       </AnchorPane>
       <CheckBox fx:id="chkboxHotkey" layoutX="14.0" layoutY="82.0" mnemonicParsing="false" selected="false" text="Enable hotkey" />
