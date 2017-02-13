@@ -2,7 +2,7 @@ package whowhatwhere.model.criteria;
 
 public enum RelativeToValue
 {
-	LESS_THAN("<"), EQUALS("=="), GREATER_THAN(">");
+	LESS_THAN("\u2264"), EQUALS("=="), GREATER_THAN("\u2265");
 	
 	private String sign;
 	

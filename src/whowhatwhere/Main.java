@@ -30,6 +30,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import whowhatwhere.controller.CheckForUpdatesResultHandler;
 import whowhatwhere.controller.GUIController;
+import whowhatwhere.controller.ToolTipDefaultsFixer;
 
 public class Main extends Application
 {
@@ -61,6 +62,7 @@ public class Main extends Application
 			if (!initSysTray(primaryStage))
 				logger.log(Level.WARNING, "Unable to initialize system tray");
 
+			ToolTipDefaultsFixer.setTooltipTimers(250, 15000, 200);
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(mainFormLocation));
 			Parent root = (Parent)loader.load();
 			GUIController gui = (GUIController) loader.getController();

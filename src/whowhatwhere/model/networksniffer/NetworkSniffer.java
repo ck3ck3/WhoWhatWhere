@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.net.util.SubnetUtils;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapAddr;
 import org.jnetpcap.PcapIf;
@@ -37,7 +38,7 @@ public class NetworkSniffer
 	static
 	{
 		initSuccessful = loadJnetpcapDll(Main.jnetpcapDLLx86Location, Main.jnetpcapDLLx64Location);
-		
+
 		if (!initSuccessful)
 			logger.log(Level.SEVERE, "Unable to load jnetpcap.dll.");
 	}
@@ -45,12 +46,11 @@ public class NetworkSniffer
 	private static int snaplen = 64 * 1024; // Capture all packets, no truncation
 	private static int flags = Pcap.MODE_PROMISCUOUS; // capture all packets
 	private static int timeout = 1 * 1000; // 1 second in milliseconds
-	
+
 	private static final Pattern ipv4Pattern = Pattern.compile("^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
 
 	private final static String Ipv4Prefix = "INET4:";
 	private final static String DLLName = "jnetpcap";
-
 
 	private Pcap pcap;
 	private Map<String, PcapIf> ipToDevice = new HashMap<>();
@@ -60,7 +60,7 @@ public class NetworkSniffer
 	{
 		if (!initSuccessful)
 			throw new IllegalStateException("Unable to load jnetpcap library. These errors were reported:\n" + String.join("\n", errorList));
-		
+
 		generateListOfDevices();
 	}
 
@@ -119,7 +119,7 @@ public class NetworkSniffer
 		catch (UnsatisfiedLinkError ule)
 		{
 			errorList.add("Trying to load " + copyDllFrom + " : " + ule.getMessage());
-			
+
 			if (logULE)
 				logger.log(Level.SEVERE, String.join("\n", errorList));
 
@@ -128,7 +128,7 @@ public class NetworkSniffer
 
 		return true;
 	}
-	
+
 	public List<NICInfo> getListOfDevices()
 	{
 		return ipAndDescList;
@@ -166,16 +166,16 @@ public class NetworkSniffer
 				continue;
 
 			byte[] hardwareAddress;
-			
+
 			try
 			{
 				hardwareAddress = device.getHardwareAddress();
 			}
-			catch(IOException ioe)
+			catch (IOException ioe)
 			{
 				hardwareAddress = new byte[8];
 			}
-			
+
 			ipAndDescList.add(new NICInfo(ip, hardwareAddress, description));
 			ipToDevice.put(ip, device);
 		}
@@ -193,10 +193,39 @@ public class NetworkSniffer
 		InetAddress bar = InetAddress.getByName(str);
 		return ByteBuffer.wrap(bar.getAddress()).getInt();
 	}
-	
+
 	public static boolean isValidIPv4(String ip)
 	{
 		return ipv4Pattern.matcher(ip).matches();
+	}
+
+	public static boolean isValidNetmask(String ip, String netmask)
+	{
+		try
+		{
+			new SubnetUtils(ip, netmask);
+		}
+		catch(IllegalArgumentException iae)
+		{
+			return false;
+		}
+		
+		return true;
+	}
+	
+	public static String getSubnetRange(String ip, String netmask)
+	{
+		try
+		{
+			SubnetUtils subnetUtils = new SubnetUtils(ip, netmask);
+			subnetUtils.setInclusiveHostCount(true); //to allow one specific address with mask 255.255.255.255
+			
+			return subnetUtils.getInfo().getLowAddress() + " - " + subnetUtils.getInfo().getHighAddress();
+		}
+		catch(IllegalArgumentException iae)
+		{
+			return null;
+		}
 	}
 
 	public void startAppearanceCounterCapture(String deviceIp, List<Integer> protocolsToCapture, StringBuilder errbuf)
@@ -226,7 +255,8 @@ public class NetworkSniffer
 		return new AppearanceCounterResults(filteredCounterPH);
 	}
 
-	public void startWatchdogCapture(NICInfo deviceInfo, List<PacketTypeToMatch> packetTypeList, boolean isRepeated, Integer cooldownInSecs, WatchdogListener listener, StringBuilder errbuf) throws IllegalArgumentException, UnknownHostException
+	public void startWatchdogCapture(NICInfo deviceInfo, List<PacketTypeToMatch> packetTypeList, boolean isRepeated, Integer cooldownInSecs, WatchdogListener listener, StringBuilder errbuf)
+			throws IllegalArgumentException, UnknownHostException
 	{
 		WatchdogPacketHandler watchdogPH = new WatchdogPacketHandler(packetTypeList, isRepeated, cooldownInSecs, listener, this, deviceInfo.getMACAddress());
 
@@ -259,7 +289,7 @@ public class NetworkSniffer
 		if (pcap != null)
 			pcap.breakloop();
 	}
-	
+
 	public void cleanup()
 	{
 		if (pcap != null)
@@ -268,20 +298,23 @@ public class NetworkSniffer
 			pcap.close();
 		}
 	}
-	
+
 	/**
 	 * 
-	 * @param ip - IP to ping
-	 * @param timeout - timeout in ms. -1 for default timeout
-	 * @return The string "X milliseconds" (where X is the ping result).
-	 * If the ping timed out, returns "Timeout". If an error occurred, returns "Error"
+	 * @param ip
+	 *            - IP to ping
+	 * @param timeout
+	 *            - timeout in ms. -1 for default timeout
+	 * @return The string "X milliseconds" (where X is the ping result). If the
+	 *         ping timed out, returns "Timeout". If an error occurred, returns
+	 *         "Error"
 	 */
 	public static String pingAsString(String ip, int timeout)
 	{
 		String command = "ping -n 1 " + (timeout > 0 ? "-w " + timeout + " " : "") + ip;
 		String errorString = "Error";
 		Process exec;
-		
+
 		try
 		{
 			exec = Runtime.getRuntime().exec(command);
@@ -289,7 +322,7 @@ public class NetworkSniffer
 			String results = readLines.get(readLines.size() - 1);
 			results = results.substring(results.lastIndexOf(' ')).trim();
 			String ping;
-			
+
 			if (!results.contains("ms"))
 				ping = "Timeout";
 			else

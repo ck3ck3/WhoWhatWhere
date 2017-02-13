@@ -1,5 +1,7 @@
 package whowhatwhere.controller.watchdog;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -7,25 +9,35 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.jnetpcap.packet.PcapPacket;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
 import whowhatwhere.controller.GUIController;
@@ -42,14 +54,15 @@ import whowhatwhere.model.networksniffer.watchdog.WatchdogMessage;
 public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 {
 	private final static Logger logger = Logger.getLogger(WatchdogUI.class.getPackage().getName());
+	private final static String watchdogListAddEditFormLocation = "/whowhatwhere/view/fxmls/watchdog/AddEditEntry.fxml";
 
 	private final static String hotkeyID = "Watchdog hotkey";
-	private final static String listFormLocation = "/whowhatwhere/view/fxmls/watchdog/WatchdogManageList.fxml";
 	public static final String presetExtension = ".watchdogPreset";
 	public static final String lastRunFilename = "Last run" + presetExtension;
 	private final static String voiceForTTS = GUIController.voiceForTTS;
-	private final static int minCooldownValue = 3;
-	private final static int maxCooldownValue = Integer.MAX_VALUE;
+	private final static int minCooldownValue = 1;
+	private final static int defaultnCooldownValue = 3;
+	private final static int maxCooldownValue = 60 * 60 * 24; //24 hours
 
 	private final static String propsChkboxHotkey = "chkboxWatchdogHotkey";
 	private final static String propsHotkeyKeycode = "watchdogHotkeyKeycode";
@@ -67,14 +80,14 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 	private Label labelCurrHotkey;
 	private Button btnStart;
 	private Button btnStop;
-	private Button btnManageList;
-	private Label labelEntryCount;
 	private Button activeButton;
 	private RadioButton radioStopAfterMatch;
 	private RadioButton radioKeepLooking;
 	private NumberTextField numFieldCooldown;
 	private AnchorPane paneCooldown;
 	private AnchorPane paneWatchdogConfig;
+	private TableView<PacketTypeToMatch> table;
+	private AnchorPane paneTableAndControls;
 
 	private int hotkeyKeyCode;
 	private int hotkeyModifiers;
@@ -82,7 +95,8 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 	private NetworkSniffer sniffer = new NetworkSniffer();
 	private HotkeyRegistry hotkeyRegistry;
-
+	private Map<String, List<String>> userNotesToIPListMap;
+	
 	private Runnable hotkeyPressed = new Runnable()
 	{
 		@Override
@@ -113,14 +127,18 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 
 	public WatchdogUI(GUIController guiController)
 	{
-		this.controller = guiController.getWatchdogPaneController();
+		this.controller = guiController.getWatchdogTabController();
 		this.guiController = guiController;
 		this.guiController.registerForSettingsHandler(this);
+		
+
 
 		initUIElementsFromController();
 		initButtonHandlers();
+		
+		table.setItems(entryList);
+		userNotesToIPListMap = getUserNotesReverseMap();
 
-		entryList.addListener((ListChangeListener<PacketTypeToMatch>) change -> labelEntryCount.setText("Match list contains " + change.getList().size() + " entries"));
 		numFieldCooldown.setMinValue(minCooldownValue);
 		numFieldCooldown.setMaxValue(maxCooldownValue);
 	}
@@ -133,45 +151,31 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		paneHotkeyConfig = controller.getPaneHotkeyConfig();
 		btnConfigureHotkey = controller.getBtnConfigureHotkey();
 		labelCurrHotkey = controller.getLabelCurrHotkey();
-		labelEntryCount = controller.getLabelEntryCount();
 		btnStart = controller.getBtnStart();
 		btnStop = controller.getBtnStop();
-		btnManageList = controller.getBtnManageList();
 		radioKeepLooking = controller.getRadioKeepLooking();
 		radioStopAfterMatch = controller.getRadioStopAfterMatch();
 		numFieldCooldown = controller.getNumFieldCooldown();
 		paneCooldown = controller.getPaneCooldown();
 		paneWatchdogConfig = controller.getPaneConfig();
-	}
+		table = controller.getTable();
+		paneTableAndControls = controller.getPaneTableAndControls();
+}
 
 	private void initButtonHandlers()
 	{
 		WatchdogUI thisObj = this;
 
 		btnConfigureHotkey.setOnAction(hotkeyRegistry.generateEventHandlerForHotkeyConfigButton(hotkeyID));
-
-		btnManageList.setOnAction(event ->
-		{
-			ManageListScreen manageListScreen;
-			Stage stage = guiController.getStage();
-
-			try
-			{
-				manageListScreen = new ManageListScreen(listFormLocation, stage, stage.getScene(), thisObj);
-			}
-			catch (IOException e)
-			{
-				logger.log(Level.SEVERE, "Unable to load watchdog list screen", e);
-				return;
-			}
-
-			Stage newStage = manageListScreen.showScreenOnNewStage("Manage Watchdog list", null, manageListScreen.getCloseButton());
-			newStage.setOnCloseRequest(windowEvent ->
-			{
-				windowEvent.consume();
-				manageListScreen.getCloseButton().fire();
-			});
-		});
+		
+		setTableRowDoubleClickToEdit();
+		
+		controller.getBtnAddRow().setOnAction(generateAddEditEventHandler(false));
+		controller.getBtnEditRow().setOnAction(generateAddEditEventHandler(true));
+		initRemoveEntryButton();
+		
+		initSavePresetButton();
+		initLoadPresetButton();
 
 		radioStopAfterMatch.setOnAction(event -> paneCooldown.setDisable(true));
 		radioKeepLooking.setOnAction(event -> paneCooldown.setDisable(false));
@@ -212,6 +216,189 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 
 		activeButton = btnStart;
 	}
+	
+	private void initRemoveEntryButton()
+	{
+		controller.getBtnRemoveRow().setOnAction(event ->
+		{
+			ObservableList<PacketTypeToMatch> selectedItems = table.getSelectionModel().getSelectedItems();
+
+			if (selectedItems.isEmpty())
+			{
+				new Alert(AlertType.ERROR, "No entries selected.").showAndWait();
+				return;
+			}
+			
+			table.getItems().removeAll(selectedItems);
+			table.getSelectionModel().clearSelection();
+		});
+	}
+	
+	private EventHandler<ActionEvent> generateAddEditEventHandler(boolean isEdit)
+	{
+		return new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				ListAddEditScreen watchdogListAddEditScreen;
+				Stage stage = guiController.getStage();
+				
+				if (isEdit)
+				{
+					int numOfSelectedRows = table.getSelectionModel().getSelectedIndices().size();
+					String errorMsg = null;
+					
+					if (numOfSelectedRows == 0)
+						errorMsg = "Please select an entry to edit";
+					else
+						if (numOfSelectedRows > 1)
+							errorMsg = "Only one entry must be selected for edit";
+					
+					if (numOfSelectedRows != 1)
+					{
+						new Alert(AlertType.ERROR, errorMsg).showAndWait();
+						return;
+					}
+				}
+
+				try
+				{
+					watchdogListAddEditScreen = new ListAddEditScreen(watchdogListAddEditFormLocation, stage, stage.getScene(), table, userNotesToIPListMap, isEdit);
+				}
+				catch (IOException e)
+				{
+					logger.log(Level.SEVERE, "Unable to load watchdog list add/edit screen", e);
+					return;
+				}
+				catch (IllegalStateException ise)
+				{
+					new Alert(AlertType.ERROR, ise.getMessage()).showAndWait();
+					return;
+				}
+
+				Stage newStage = watchdogListAddEditScreen.showScreenOnNewStage((isEdit ? "Edit" : "Add") + " an entry", Modality.APPLICATION_MODAL, watchdogListAddEditScreen.getBtnDone(), watchdogListAddEditScreen.getBtnCancel());
+				
+				newStage.setOnCloseRequest(windowEvent ->
+				{
+					windowEvent.consume();
+					watchdogListAddEditScreen.getBtnCancel().fire();
+				});
+			}
+		};
+	}
+	
+	private void initSavePresetButton()
+	{
+		controller.getBtnSavePreset().setOnAction(event ->
+		{
+			TextInputDialog dialog = new TextInputDialog();
+			dialog.setTitle("Save Preset");
+			dialog.setHeaderText("Save this preset for future use");
+			dialog.setContentText("Please enter preset name:");
+
+			Optional<String> result = dialog.showAndWait();
+
+			result.ifPresent(filename ->
+			{
+				String fullName = filename + WatchdogUI.presetExtension;
+				boolean alreadyExists = false;
+
+				if (new File(fullName).exists()) //if filename already exists
+				{
+					Alert overwriteDialog = new Alert(AlertType.CONFIRMATION,
+							"A preset with that name already exists. Press \"OK\" to overwrite the preset or \"Cancel\" to close this dialog without saving the new preset.");
+					overwriteDialog.setTitle("Preset name already exists");
+					overwriteDialog.setHeaderText("Overwrite existing preset?");
+
+					Optional<ButtonType> overwriteResult = overwriteDialog.showAndWait();
+					if (overwriteResult.get() == ButtonType.CANCEL)
+						return;
+
+					alreadyExists = true;
+				}
+
+				try
+				{
+					WatchdogUI.saveListToFile(entryList, fullName);
+				}
+				catch (IOException ioe)
+				{
+					new Alert(AlertType.ERROR, "Unable to save preset: " + ioe.getMessage()).showAndWait();
+					return;
+				}
+
+				MenuItem menuItem = ManageListScreen.createMenuItem(entryList, filename);
+
+				ObservableList<MenuItem> items = controller.getMenuBtnLoadPreset().getItems();
+
+				if (alreadyExists)
+					return;
+
+				if (items.get(0).isDisable()) //it only contains the disabled "none found " item, remove it before adding new one
+					items.clear();
+
+				items.add(menuItem);
+			});
+		});
+	}
+
+	private void initLoadPresetButton()
+	{
+		ObservableList<MenuItem> items = controller.getMenuBtnLoadPreset().getItems();
+
+		File dir = new File(System.getProperty("user.dir"));
+		FileFilter fileFilter = new WildcardFileFilter("*" + WatchdogUI.presetExtension);
+		List<File> files = new ArrayList<File>(Arrays.asList(dir.listFiles(fileFilter))); //ArrayList because asList() returns an immutable list
+
+		if (files.removeIf(file -> file.getName().equals(WatchdogUI.lastRunFilename))) //if lastRun exists, remove it from the list and put it on top of the button's list
+			items.add(createMenuItem(entryList, WatchdogUI.lastRunFilename.replace(WatchdogUI.presetExtension, "")));
+
+		for (File file : files)
+			items.add(createMenuItem(entryList, file.getName().replace(WatchdogUI.presetExtension, "")));
+
+		if (items.isEmpty())
+		{
+			MenuItem none = new MenuItem("No presets found");
+
+			none.setDisable(true);
+			items.add(none);
+		}
+	}
+
+	public static MenuItem createMenuItem(ObservableList<PacketTypeToMatch> list, String filename)
+	{
+		MenuItem menuItem = new MenuItem(filename);
+
+		menuItem.setOnAction(event ->
+		{
+			try
+			{
+				WatchdogUI.loadListFromFile(list, filename + WatchdogUI.presetExtension);
+			}
+			catch (ClassNotFoundException | IOException e)
+			{
+				new Alert(AlertType.ERROR, "Unable to load preset: " + e.getMessage()).showAndWait();
+			}
+		});
+
+		return menuItem;
+	}
+	
+	private void setTableRowDoubleClickToEdit()
+	{
+		table.setRowFactory(param ->
+		{
+			TableRow<PacketTypeToMatch> row = new TableRow<>();
+			row.setOnMouseClicked(event ->
+			{
+				if (event.getClickCount() == 2 && (!row.isEmpty()))
+					controller.getBtnEditRow().fire();
+			});
+
+			return row;
+		});
+	}
 
 	@Override
 	public void watchdogFoundMatchingPacket(PcapPacket packetThatMatched, WatchdogMessage message)
@@ -229,6 +416,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		btnStop.setDisable(!listening);
 		btnStart.setDisable(listening);
 		paneWatchdogConfig.setDisable(listening);
+		paneTableAndControls.setDisable(listening);
 	}
 
 	private void outputMessage(WatchdogMessage message)
@@ -315,7 +503,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 	{
 		setWatchdogHotkey(props);
 
-		numFieldCooldown.setText(PropertiesByType.getStringProperty(props, propsNumFieldCooldown, String.valueOf(minCooldownValue)));
+		numFieldCooldown.setText(PropertiesByType.getStringProperty(props, propsNumFieldCooldown, String.valueOf(defaultnCooldownValue)));
 
 		if (PropertiesByType.getBoolProperty(props, propsRadioStopAfterMatch, true))
 			radioStopAfterMatch.fire(); //this way it activates the button handler

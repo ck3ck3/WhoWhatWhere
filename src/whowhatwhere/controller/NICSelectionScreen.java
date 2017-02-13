@@ -139,9 +139,8 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 			String ipToPing = "8.8.8.8";
 			pingProcess = Runtime.getRuntime().exec("ping " + ipToPing + " -n " + timeoutInSecs);
 
-			PacketTypeToMatch packetType = new PacketTypeToMatch("", OutputMethod.POPUP.toString(), PacketDirection.Outgoing.toString(), ipToPing, "255.255.255.255", PacketTypeToMatch.userNotes_ANY,
-					PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, SupportedProtocols.ICMP.toString(), PacketTypeToMatch.packetOrPort_ANY,
-					PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY, PacketTypeToMatch.packetOrPort_ANY);
+			PacketTypeToMatch packetType = new PacketTypeToMatch(ipToPing, "255.255.255.255", PacketTypeToMatch.userNotes_EMPTY, PacketDirection.Outgoing, SupportedProtocols.ICMP, null, null, null,
+					"", OutputMethod.POPUP);
 
 			for (int i = 0; i < listOfDevices.size() && isAutoDetectRunning; i++)
 			{

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import numbertextfield.NumberTextField?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="100.0" minWidth="-Infinity" prefHeight="626.0" prefWidth="1190.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.watchdog.WatchdogController">
+   <children>
+      <AnchorPane fx:id="paneTableAndControls" layoutX="14.0" layoutY="49.0" AnchorPane.bottomAnchor="346.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="49.0">
+         <children>
+            <TableView fx:id="table" maxWidth="5000.0" prefHeight="192.0" prefWidth="1161.0" stylesheets="/whowhatwhere/view/fxmls/watchdog/watchdogTable.css" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="39.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+               <columns>
+                  <TableColumn fx:id="columnIP" prefWidth="195.0" text="IP address" />
+                  <TableColumn fx:id="columnUserNotes" prefWidth="127.0" text="User notes" />
+                  <TableColumn fx:id="columnPacketDirection" prefWidth="107.0" text="Packet direction" />
+                  <TableColumn fx:id="columnProtocol" text="Protocol" />
+                  <TableColumn fx:id="columnSrcPort" prefWidth="106.0" text="Source port" />
+                  <TableColumn fx:id="columnDstPort" prefWidth="106.0" text="Destination port" />
+                  <TableColumn fx:id="columnPacketSize" prefWidth="110.0" text="Total packet size" />
+                  <TableColumn prefWidth="322.0" text="When a match is found">
+                     <columns>
+                        <TableColumn fx:id="columnMsgText" prefWidth="148.0" text="Message text" />
+                        <TableColumn fx:id="columnMsgOutputMethod" prefWidth="168.0" text="Inform me by" />
+                     </columns>
+                  </TableColumn>
+               </columns>
+            </TableView>
+            <AnchorPane layoutY="200.0" prefHeight="31.0" prefWidth="1138.0" AnchorPane.bottomAnchor="0.0">
+               <children>
+                  <Button fx:id="btnAddRow" mnemonicParsing="false" prefHeight="25.0" prefWidth="83.0" text="Add entry" />
+                  <Button fx:id="btnRemoveRow" layoutX="164.0" mnemonicParsing="false" text="Remove entry" />
+                  <Button fx:id="btnSavePreset" layoutX="713.0" mnemonicParsing="false" text="Save as preset" />
+                  <MenuButton fx:id="menubtnLoadPreset" layoutX="611.0" mnemonicParsing="false" text="Load preset" />
+                  <Button fx:id="btnMoveUp" layoutX="281.0" mnemonicParsing="false" text="Move selected entry up" />
+                  <Button fx:id="btnMoveDown" layoutX="428.0" mnemonicParsing="false" text="Move selected entry down" />
+                  <Button fx:id="btnEditRow" layoutX="90.0" mnemonicParsing="false" text="Edit entry" />
+               </children>
+            </AnchorPane>
+         </children>
+      </AnchorPane>
+      <TitledPane collapsible="false" layoutX="648.0" layoutY="303.0" prefHeight="131.0" prefWidth="527.0" text="Settings" AnchorPane.bottomAnchor="183.0">
+         <content>
+            <AnchorPane fx:id="paneConfig" prefWidth="525.0">
+               <children>
+                  <RadioButton fx:id="radioStopAfterMatch" layoutX="38.0" layoutY="39.0" mnemonicParsing="false" text="Stop Watchdog">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="tglStopOrContinue" />
+                     </toggleGroup>
+                  </RadioButton>
+                  <RadioButton fx:id="radioKeepLooking" layoutX="38.0" layoutY="72.0" mnemonicParsing="false" text="Keep Watchdog running and start a cooldown period of" toggleGroup="$tglStopOrContinue" />
+                  <AnchorPane fx:id="paneCooldown" layoutX="360.0" layoutY="69.0">
+                     <children>
+                        <Label fx:id="labelCooldownSeconds" layoutX="52.0" layoutY="3.0" text="seconds" />
+                        <NumberTextField fx:id="numFieldCooldown" maxValue="0" prefHeight="25.0" prefWidth="46.0" />
+                     </children>
+                  </AnchorPane>
+                  <Label layoutX="20.0" layoutY="10.0" text="When a match is found:" />
+               </children>
+            </AnchorPane>
+         </content>
+      </TitledPane>
+      <TitledPane collapsible="false" layoutX="14.0" layoutY="303.0" prefHeight="140.0" prefWidth="619.0" text="Start / stop" AnchorPane.bottomAnchor="183.0">
+         <content>
+            <AnchorPane>
+               <children>
+                  <Button fx:id="btnStart" layoutX="15.0" layoutY="15.0" mnemonicParsing="false" text="Start Watchdog" />
+                  <Button fx:id="btnStop" disable="true" layoutX="122.0" layoutY="15.0" mnemonicParsing="false" text="Stop Watchdog" />
+                  <CheckBox fx:id="chkboxHotkey" layoutX="15.0" layoutY="64.0" mnemonicParsing="false" selected="false" text="Enable start/stop Watchdog hotkey" />
+                  <AnchorPane fx:id="paneHotkeyConfig" layoutX="231.0" layoutY="60.0" prefHeight="25.0" prefWidth="366.0">
+                     <children>
+                        <Button fx:id="btnConfigureHotkey" mnemonicParsing="false" text="Configure hotkey" />
+                        <Label fx:id="labelCurrHotkey" layoutX="117.0" layoutY="4.0" prefHeight="17.0" prefWidth="244.0" text="Current hotkey: " />
+                     </children>
+                  </AnchorPane>
+               </children>
+            </AnchorPane>
+         </content>
+      </TitledPane>
+      <Label fx:id="labelTableHeader" layoutX="16.0" layoutY="14.0" text="Watchdog entries">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>

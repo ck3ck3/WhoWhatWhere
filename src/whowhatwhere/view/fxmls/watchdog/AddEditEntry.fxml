@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.text.*?>
+<?import numbertextfield.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+
+<ScrollPane hbarPolicy="NEVER" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.watchdog.ListAddEditController">
+   <content>
+      <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="749.0" prefWidth="653.0">
+         <children>
+            <TitledPane collapsible="false" focusTraversable="false" layoutX="14.0" layoutY="14.0" prefHeight="535.0" prefWidth="620.0" text="Watch for these conditions">
+               <content>
+                  <AnchorPane prefWidth="565.0">
+                     <children>
+                        <Label fx:id="labelPacketSizeRight" focusTraversable="false" layoutX="353.0" layoutY="459.0" text="and" />
+                        <Label fx:id="labelSrcPortRight" focusTraversable="false" layoutX="353.0" layoutY="347.0" text="and" />
+                        <Label fx:id="labelDstPortRight" focusTraversable="false" layoutX="353.0" layoutY="386.0" text="and" />
+                        <Label focusTraversable="false" layoutX="14.0" layoutY="64.0" text="IP address">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                        </Label>
+                        <Label focusTraversable="false" layoutX="14.0" layoutY="276.0" text="Protocol and ports">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                        </Label>
+                        <Label focusTraversable="false" layoutX="14.0" layoutY="14.0" prefHeight="40.0" prefWidth="581.0" text="Choose one or more conditions. A packet matches if all of the chosen conditions are matched." wrapText="true">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                        </Label>
+                        <Label focusTraversable="false" layoutX="14.0" layoutY="204.0" text="Packet direction">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                        </Label>
+                        <Label focusTraversable="false" layoutX="14.0" layoutY="428.0" text="Packet size">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                        </Label>
+                        <CheckBox fx:id="chkboxIPAddress" layoutX="22.0" layoutY="94.0" mnemonicParsing="false" text="IP Address" />
+                        <TextField fx:id="textIPAddress" disable="true" layoutX="149.0" layoutY="92.0" prefHeight="27.0" prefWidth="121.0" />
+                        <CheckBox fx:id="chkboxNetmask" disable="true" layoutX="39.0" layoutY="129.0" mnemonicParsing="false" text="Netmask" />
+                        <TextField fx:id="textNetmask" disable="true" layoutX="149.0" layoutY="127.0" prefHeight="27.0" prefWidth="121.0" />
+                        <CheckBox fx:id="chkboxUserNotes" layoutX="22.0" layoutY="162.0" mnemonicParsing="false" text="User notes" />
+                        <ComboBox fx:id="comboUserNotes" disable="true" layoutX="149.0" layoutY="160.0" prefHeight="27.0" prefWidth="292.0" />
+                        <CheckBox fx:id="chkboxPacketDirection" layoutX="22.0" layoutY="234.0" mnemonicParsing="false" text="Packet direction" />
+                        <ComboBox fx:id="comboPacketDirection" disable="true" layoutX="149.0" layoutY="232.0" prefHeight="27.0" prefWidth="121.0" />
+                        <CheckBox fx:id="chkboxProtocol" layoutX="22.0" layoutY="306.0" mnemonicParsing="false" text="Contains protocol" />
+                        <ComboBox fx:id="comboProtocol" disable="true" layoutX="149.0" layoutY="304.0" prefHeight="27.0" prefWidth="121.0" />
+                        <CheckBox fx:id="chkboxSrcPort" layoutX="22.0" layoutY="346.0" mnemonicParsing="false" text="Source port" />
+                        <ComboBox fx:id="comboSrcPort" disable="true" layoutX="149.0" layoutY="344.0" prefHeight="27.0" prefWidth="121.0" />
+                        <NumberTextField fx:id="numFieldSrcPortLeft" allowEmpty="true" disable="true" layoutX="286.0" layoutY="344.0" maxValue="65535" minValue="1" prefHeight="25.0" prefWidth="57.0" />
+                        <NumberTextField fx:id="numFieldSrcPortRight" allowEmpty="true" layoutX="384.0" layoutY="344.0" maxValue="65535" minValue="1" prefWidth="57.0" />
+                        <CheckBox fx:id="chkboxDstPort" layoutX="22.0" layoutY="386.0" mnemonicParsing="false" text="Destination port" />
+                        <ComboBox fx:id="comboDstPort" disable="true" layoutX="149.0" layoutY="384.0" prefHeight="27.0" prefWidth="121.0" />
+                        <NumberTextField fx:id="numFieldDstPortLeft" allowEmpty="true" disable="true" layoutX="286.0" layoutY="384.0" maxValue="65535" minValue="1" prefHeight="25.0" prefWidth="57.0" />
+                        <NumberTextField fx:id="numFieldDstPortRight" allowEmpty="true" layoutX="384.0" layoutY="383.0" maxValue="65535" minValue="1" prefWidth="57.0" />
+                        <CheckBox fx:id="chkboxPacketSize" layoutX="22.0" layoutY="458.0" mnemonicParsing="false" text="IP packet size" />
+                        <ComboBox fx:id="comboPacketSize" disable="true" layoutX="149.0" layoutY="456.0" prefHeight="27.0" prefWidth="121.0" />
+                        <NumberTextField fx:id="numFieldPacketSizeLeft" allowEmpty="true" disable="true" layoutX="286.0" layoutY="456.0" maxValue="65535" minValue="1" prefHeight="25.0" prefWidth="57.0" />
+                        <NumberTextField fx:id="numFieldPacketSizeRight" allowEmpty="true" layoutX="384.0" layoutY="456.0" maxValue="65535" minValue="1" prefWidth="57.0" />
+                        <Label fx:id="labelIPRange" disable="true" focusTraversable="false" layoutX="285.0" layoutY="131.0" text="Selected IP range: 255.255.255.255 - 255.255.255.255" />
+                     </children>
+                  </AnchorPane>
+               </content>
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </TitledPane>
+            <TitledPane collapsible="false" focusTraversable="false" layoutX="14.0" layoutY="565.0" prefHeight="125.0" prefWidth="620.0" text="Action when a match is found">
+               <content>
+                  <AnchorPane>
+                     <children>
+                        <Label focusTraversable="false" layoutX="11.0" layoutY="13.0" text="Inform me with this text" />
+                        <TextField fx:id="textMessage" layoutX="149.0" layoutY="9.0" prefHeight="27.0" prefWidth="440.0" text="Match found" />
+                        <Label focusTraversable="false" layoutX="11.0" layoutY="49.0" text="Inform me by" />
+                        <ComboBox fx:id="comboOutputMethod" layoutX="149.0" layoutY="44.0" prefHeight="27.0" prefWidth="440.0" />
+                     </children>
+                  </AnchorPane>
+               </content>
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </TitledPane>
+            <Button fx:id="btnDone" defaultButton="true" layoutX="476.0" layoutY="649.0" mnemonicParsing="false" text="Done" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="79.0" />
+            <Button fx:id="btnCancel" cancelButton="true" layoutX="529.0" layoutY="673.0" mnemonicParsing="false" text="Cancel" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="19.0" />
+         </children>
+      </AnchorPane>
+   </content>
+</ScrollPane>

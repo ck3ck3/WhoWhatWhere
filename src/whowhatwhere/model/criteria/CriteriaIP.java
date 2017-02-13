@@ -33,9 +33,11 @@ public class CriteriaIP implements Criteria<PcapPacket, Boolean>
 		Ip4 ipHeader = new Ip4();
 		ipHeader = itemToCheck.getHeader(ipHeader);
 		
+		if (direction == null) //direction wasn't set, so any direction
+			return subnetInfo.isInRange(ipHeader.sourceToInt()) || subnetInfo.isInRange(ipHeader.destinationToInt());
+		
 		switch(direction)
 		{
-			case ANY:		return subnetInfo.isInRange(ipHeader.sourceToInt()) || subnetInfo.isInRange(ipHeader.destinationToInt());
 			case Incoming:	return subnetInfo.isInRange(ipHeader.sourceToInt());
 			case Outgoing:	return subnetInfo.isInRange(ipHeader.destinationToInt());
 			default:		return null; //doesn't get here

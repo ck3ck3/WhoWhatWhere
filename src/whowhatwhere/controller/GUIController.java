@@ -23,6 +23,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.image.Image;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -41,9 +42,10 @@ import whowhatwhere.model.networksniffer.NetworkSniffer;
 
 public class GUIController implements CheckForUpdatesResultHandler
 {
-	public final static String voiceForTTS = "kevin16";
-
 	private final static Logger logger = Logger.getLogger(GUIController.class.getPackage().getName());
+	private final static String smallQuestionMarkImageLocation = "/qmark-21x21.png";
+	public final static Image imageHelpTooltip = new Image(GUIController.class.getResourceAsStream(smallQuestionMarkImageLocation));
+	public final static String voiceForTTS = "kevin16";
 
 	@FXML
 	private ScrollPane scrollPaneMainForm;
@@ -80,7 +82,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 	@FXML
 	private QuickPingController quickPingPaneController;
 	@FXML
-	private WatchdogController watchdogPaneController;
+	private WatchdogController watchdogTabController;
 	@FXML
 	private TraceUtilityController tracePaneController;
 
@@ -93,7 +95,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 	private SettingsHandler settings;
 	private List<LoadAndSaveSettings> instancesWithSettingsToHandle = new ArrayList<>();
 
-	
+
 	
 	/**
 	 * <b>MUST</b> be called after the stage is shown
@@ -135,6 +137,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 
 		if (settings.getCheckForUpdatesOnStartup())
 			checkForUpdates(true); //only show a message if there is a new version
+		
 	}
 	
 	public AppearanceCounterController getAppearanceCounterController()
@@ -147,9 +150,9 @@ public class GUIController implements CheckForUpdatesResultHandler
 		return quickPingPaneController;
 	}
 	
-	public WatchdogController getWatchdogPaneController()
+	public WatchdogController getWatchdogTabController()
 	{
-		return watchdogPaneController;
+		return watchdogTabController;
 	}
 	
 	public TraceUtilityController getTracePaneController()

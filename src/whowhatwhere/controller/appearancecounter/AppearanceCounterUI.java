@@ -26,6 +26,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
@@ -35,8 +36,10 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
@@ -318,6 +321,20 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		columnRegion.setCellValueFactory(new PropertyValueFactory<>("region"));
 		columnCity.setCellValueFactory(new PropertyValueFactory<>("city"));
 
+		setUserNotesColumnBehavior();
+		generatePopupMenus();
+	}
+	
+	private void setUserNotesColumnBehavior()
+	{
+		Label labelForIPLabel = new Label("User notes");
+		labelForIPLabel.setContentDisplay(ContentDisplay.RIGHT);
+		labelForIPLabel.setGraphic(new ImageView(GUIController.imageHelpTooltip));
+		labelForIPLabel.setTooltip(new Tooltip("Add your own label to describe this IP address to easily recognize it in the future"));
+		labelForIPLabel.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
+		columnNotes.setGraphic(labelForIPLabel);
+		columnNotes.setText("");
+		
 		columnNotes.setCellFactory(TextFieldTableCell.forTableColumn()); //make Notes column editable
 		columnNotes.setOnEditStart(rowModel ->
 		{
@@ -347,8 +364,13 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 			
 			userNotes.saveUserNotes();
 		});
-
-		generatePopupMenus();
+	}
+	
+	private String getColumnHeaderText(TableColumn<IPInfoRowModel, ?> column)
+	{
+		Label label = (Label) column.getGraphic();
+		
+		return label == null ? column.getText() : label.getText();
 	}
 
 	private void initColumnListForTTS()
@@ -363,7 +385,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		
 		for (TableColumn<IPInfoRowModel, ?> tableColumn : tableColumns)
 		{
-			String colName = tableColumn.getText();
+			String colName = getColumnHeaderText(tableColumn);
 
 			comboColumns.getItems().add(colName);
 
@@ -410,7 +432,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 
 			for (TableColumn<IPInfoRowModel, ?> column : tableResults.getColumns()) //build the submenu to copy each column value
 			{
-				String columnName = column.getText();
+				String columnName = getColumnHeaderText(column);
 				MenuItem itemForcolumn = new MenuItem(columnName);
 				itemForcolumn.setOnAction(event ->
 				{
@@ -564,7 +586,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 
 					String colValue = columnMapping.get(colName);
 
-					if (colValue.isEmpty() || (colName.equals(columnNotes.getText()) && colValue.equals(emptyNotesString)))
+					if (colValue.isEmpty() || (colName.equals(getColumnHeaderText(columnNotes)) && colValue.equals(emptyNotesString)))
 						continue;
 
 					lines[i].append(colName + ": " + colValue + ". ");

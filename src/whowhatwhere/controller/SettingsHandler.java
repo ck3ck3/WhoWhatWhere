@@ -160,11 +160,7 @@ public class SettingsHandler
 		Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
 
 		if (primaryScreenBounds.getHeight() < stage.getHeight() || primaryScreenBounds.getWidth() < stage.getWidth())
-		{
-			guiController.getScrollPane().setFitToWidth(false);
-			guiController.getScrollPane().setFitToHeight(false);
 			stage.setMaximized(true);
-		}
 		else
 		{
 			Double value;

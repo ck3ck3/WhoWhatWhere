@@ -4,114 +4,84 @@ import java.io.Serializable;
 import java.util.List;
 
 import javafx.beans.property.SimpleStringProperty;
+import whowhatwhere.controller.watchdog.NumberRange;
+import whowhatwhere.controller.watchdog.NumberRangeValues;
+import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.PacketDirection;
 import whowhatwhere.model.networksniffer.SupportedProtocols;
 
 public class PacketTypeToMatch implements Serializable
 {
-	private static final long serialVersionUID = -7741791299979590040L;	//auto-generated, modify if changes to the class are not backwards-compatible
-	
-	public final static String packetDirection_ANY = PacketDirection.ANY.toString();
-	public final static String IP_ANY = "";
-	public final static String netmask_ANY = "";
-	public final static String userNotes_ANY = "";
-	public final static String packetOrPort_ANY = "";
-	public final static String protocol_ANY = "ANY";
-	public final static String message_empty = "";
-	public final static String outputMethod_default = OutputMethod.TTS.toString();
-	
-	transient private SimpleStringProperty messageText;
-	private String messageTextToSerialize;
-	
-	transient private SimpleStringProperty messageOutputMethod;
-	private OutputMethod messageOutputMethodToSerialize;
-	
-	transient private SimpleStringProperty packetDirection;
-	private PacketDirection packetDirectionToSerialize;
-	
-	transient private SimpleStringProperty ipAddress;
-	private String ipAddressToSerialize;
-	
-	transient private SimpleStringProperty netmask;
-	private String netmaskToSerialize;
-	
-	transient private SimpleStringProperty userNotes;
-	private String userNotesToSerialize;
-	private List<String> ipsFromUserNotes;
-	
-	transient private SimpleStringProperty packetSizeSmaller;
-	private String packetSizeSmallerToSerialize;
-	
-	transient private SimpleStringProperty packetSizeEquals;
-	private String packetSizeEqualsToSerialize;
-	
-	transient private SimpleStringProperty packetSizeGreater;
-	private String packetSizeGreaterToSerialize;
-	
-	transient private SimpleStringProperty protocol;
-	private SupportedProtocols protocolToSerialize;
-	
-	transient private SimpleStringProperty srcPortSmaller;
-	private String srcPortSmallerToSerialize;
-	
-	transient private SimpleStringProperty srcPortEquals;
-	private String srcPortEqualsToSerialize;
-	
-	transient private SimpleStringProperty srcPortGreater;
-	private String srcPortGreaterToSerialize;
-	
-	transient private SimpleStringProperty dstPortSmaller;
-	private String dstPortSmallerToSerialize;
-	
-	transient private SimpleStringProperty dstPortEquals;
-	private String dstPortEqualsToSerialize;
-	
-	transient private SimpleStringProperty dstPortGreater;
-	private String dstPortGreaterToSerialize;
-	
+	private static final long serialVersionUID = 3254209424151921883L; //auto-generated, modify if changes to the class are not backwards-compatible
 
-	public PacketTypeToMatch(String message, String outputMethod, String packetDirection, String ipAddress, String netmask, String userNotes, String packetSizeSmaller, String packetSizeEquals, String packetSizeGreater, String protocol, 
-			String srcPortSmaller, String srcPortEquals, String srcPortGreater, String dstPortSmaller, String dstPortEquals, String dstPortGreater)
+	public final static String packetDirection_EMPTY = "";
+	public final static String IPAddress_EMPTY = "";
+	public final static String netmask_EMPTY = "";
+	public final static String userNotes_EMPTY = "";
+	public final static String packetOrPort_EMPTY = "";
+	public final static String protocol_EMPTY = "";
+	public final static String message_EMPTY = "";
+	public final static String outputMethod_default = OutputMethod.TTS.toString();
+
+	transient private SimpleStringProperty messageText;
+	private String messageTextValue;
+
+	transient private SimpleStringProperty messageOutputMethod;
+	private OutputMethod messageOutputMethodValue;
+
+	transient private SimpleStringProperty packetDirection;
+	private PacketDirection packetDirectionValue;
+
+	transient private SimpleStringProperty ipAddress;
+	private String ipAddressValue;
+
+	private String netmaskValue;
+
+	transient private SimpleStringProperty userNotes;
+	private String userNotesValue;
+	private List<String> ipsFromUserNotes;
+
+	transient private SimpleStringProperty packetSize;
+	private NumberRangeValues packetSizeValues;
+
+	transient private SimpleStringProperty protocol;
+	private SupportedProtocols protocolValue;
+
+	transient private SimpleStringProperty srcPort;
+	private NumberRangeValues srcPortValues;
+
+	transient private SimpleStringProperty dstPort;
+	private NumberRangeValues dstPortValues;
+
+	public PacketTypeToMatch(String ipAddress, String netmask, String userNotes, PacketDirection packetDirection, SupportedProtocols protocol, NumberRangeValues srcPortValues, NumberRangeValues dstPortValues, 
+			NumberRangeValues packetSizeValues, String message, OutputMethod outputMethod)
 	{
-		
+		setNetmask(netmask); //needs to be set before IP
+		setIpAddress(ipAddress);
+		setUserNotes(userNotes);
+		setPacketDirection(packetDirection);
+		setProtocol(protocol);
+		setSrcPort(srcPortValues);
+		setDstPort(dstPortValues);
+		setPacketSize(packetSizeValues);
 		setMessageText(message);
 		setMessageOutputMethod(outputMethod);
-		setPacketDirection(packetDirection);
-		setIpAddress(ipAddress);
-		setNetmask(netmask);
-		setUserNotes(userNotes);
-		setPacketSizeSmaller(packetSizeSmaller);
-		setPacketSizeEquals(packetSizeEquals);
-		setPacketSizeGreater(packetSizeGreater);
-		setProtocol(protocol);
-		setSrcPortSmaller(srcPortSmaller);
-		setSrcPortEquals(srcPortEquals);
-		setSrcPortGreater(srcPortGreater);
-		setDstPortSmaller(dstPortSmaller);
-		setDstPortEquals(dstPortEquals);
-		setDstPortGreater(dstPortGreater);
 	}
-	
+
 	public void initAfterSerialization()
 	{
-		setMessageText(messageTextToSerialize);
-		setMessageOutputMethod(messageOutputMethodToSerialize.toString());
-		setPacketDirection(packetDirectionToSerialize.toString());
-		setIpAddress(ipAddressToSerialize);
-		setNetmask(netmaskToSerialize);
-		setUserNotes(userNotesToSerialize);
-		setPacketSizeSmaller(packetSizeSmallerToSerialize);
-		setPacketSizeEquals(packetSizeEqualsToSerialize);
-		setPacketSizeGreater(packetSizeGreaterToSerialize);
-		setProtocol(protocolToSerialize == null ? protocol_ANY : protocolToSerialize.toString()); //since ANY isn't in the enum
-		setSrcPortSmaller(srcPortSmallerToSerialize);
-		setSrcPortEquals(srcPortEqualsToSerialize);
-		setSrcPortGreater(srcPortGreaterToSerialize);
-		setDstPortSmaller(dstPortSmallerToSerialize);
-		setDstPortEquals(dstPortEqualsToSerialize);
-		setDstPortGreater(dstPortGreaterToSerialize);
+		setNetmask(netmaskValue); //needs to be set before IP
+		setIpAddress(ipAddressValue);
+		setUserNotes(userNotesValue);
+		setPacketDirection(packetDirectionValue);
+		setProtocol(protocolValue);
+		setSrcPort(srcPortValues);
+		setDstPort(dstPortValues);
+		setPacketSize(packetSizeValues);
+		setMessageText(messageTextValue);
+		setMessageOutputMethod(messageOutputMethodValue);
 	}
-	
+
 	public SimpleStringProperty messageTextProperty()
 	{
 		return messageText;
@@ -123,50 +93,42 @@ public class PacketTypeToMatch implements Serializable
 			this.messageText = new SimpleStringProperty(message);
 		else
 			this.messageText.setValue(message);
-		
-		this.messageTextToSerialize = message;
+
+		this.messageTextValue = message;
 	}
-	
+
 	public SimpleStringProperty messageOutputMethodProperty()
 	{
 		return messageOutputMethod;
 	}
 
-	public void setMessageOutputMethod(String outputMethod)
+	public void setMessageOutputMethod(OutputMethod outputMethod)
 	{
 		if (this.messageOutputMethod == null)
-			this.messageOutputMethod = new SimpleStringProperty(outputMethod);
+			this.messageOutputMethod = new SimpleStringProperty(outputMethod.toString());
 		else
-			this.messageOutputMethod.setValue(outputMethod);
-		
-		this.messageOutputMethodToSerialize = OutputMethod.stringToEnum(outputMethod);
+			this.messageOutputMethod.setValue(outputMethod.toString());
+
+		this.messageOutputMethodValue = outputMethod;
 	}
-	
-	public OutputMethod messageOutputMethodAsEnum()
-	{
-		return messageOutputMethodToSerialize;
-	}
-	
+
 	public SimpleStringProperty packetDirectionProperty()
 	{
 		return packetDirection;
 	}
 
-	public void setPacketDirection(String packetDirection)
+	public void setPacketDirection(PacketDirection packetDirection)
 	{
+		String stringVal = packetDirection == null ? packetDirection_EMPTY : packetDirection.toString();
+
 		if (this.packetDirection == null)
-			this.packetDirection = new SimpleStringProperty(packetDirection);
+			this.packetDirection = new SimpleStringProperty(stringVal);
 		else
-			this.packetDirection.setValue(packetDirection);
-		
-		packetDirectionToSerialize = PacketDirection.stringToEnum(packetDirection);
+			this.packetDirection.setValue(stringVal);
+
+		packetDirectionValue = packetDirection;
 	}
-	
-	public PacketDirection packetDirectoinAsEnum()
-	{
-		return packetDirectionToSerialize;
-	}
-	
+
 	public SimpleStringProperty ipAddressProperty()
 	{
 		return ipAddress;
@@ -174,12 +136,17 @@ public class PacketTypeToMatch implements Serializable
 
 	public void setIpAddress(String ip)
 	{
-		if (this.ipAddress == null)
-			this.ipAddress = new SimpleStringProperty(ip);
-		else
-			this.ipAddress.setValue(ip);
+		String stringVal = ip == null ? IPAddress_EMPTY : ip;
+
+		if (!stringVal.equals(IPAddress_EMPTY) && netmaskValue != null && !netmaskValue.equals(netmask_EMPTY) && !netmaskValue.equals("255.255.255.255"))
+			stringVal = NetworkSniffer.getSubnetRange(stringVal, netmaskValue);
 		
-		this.ipAddressToSerialize = ip;
+		if (this.ipAddress == null)
+			this.ipAddress = new SimpleStringProperty(stringVal);
+		else
+			this.ipAddress.setValue(stringVal);
+
+		this.ipAddressValue = ip;
 	}
 
 	public SimpleStringProperty protocolProperty()
@@ -187,88 +154,28 @@ public class PacketTypeToMatch implements Serializable
 		return protocol;
 	}
 
-	public void setProtocol(String protocol)
+	public void setProtocol(SupportedProtocols protocol)
 	{
+		String stringVal = protocol == null ? protocol_EMPTY : protocol.toString();
+
 		if (this.protocol == null)
-			this.protocol = new SimpleStringProperty(protocol);
+			this.protocol = new SimpleStringProperty(stringVal);
 		else
-			this.protocol.setValue(protocol);
-		
-		this.protocolToSerialize = SupportedProtocols.stringToEnum(protocol);
-	}
-	
-	public Integer protocolAsInt()
-	{
-		return (protocol == null || protocol.getValue().isEmpty() || protocol.getValue().equals(protocol_ANY) ? null : protocolToSerialize.getValue());
-	}
-	
-	public SupportedProtocols protocolAsEnum()
-	{
-		return protocolToSerialize;
-	}
-	
-	public boolean isSameValuesAs(PacketTypeToMatch otherEntry)
-	{
-		if (!packetDirection.get().equals(otherEntry.packetDirection.get()))
-			return false;
-		
-		if (!ipAddress.get().equals(otherEntry.ipAddress.get()))
-			return false;
-		
-		if (!netmask.get().equals(otherEntry.netmask.get()))
-			return false;
-		
-		if (!userNotes.get().equals(otherEntry.userNotes.get()))
-			return false;
-		
-		if (!packetSizeSmaller.get().equals(otherEntry.packetSizeSmaller.get()))
-			return false;
-		
-		if (!packetSizeEquals.get().equals(otherEntry.packetSizeEquals.get()))
-			return false;
-		
-		if (!packetSizeGreater.get().equals(otherEntry.packetSizeGreater.get()))
-			return false;
-		
-		if (!protocol.get().equals(otherEntry.protocol.get()))
-			return false;
-		
-		if (!srcPortSmaller.get().equals(otherEntry.srcPortSmaller.get()))
-			return false;
-		
-		if (!dstPortEquals.get().equals(otherEntry.dstPortEquals.get()))
-			return false;
-		
-		if (!srcPortGreater.get().equals(otherEntry.srcPortGreater.get()))
-			return false;
-		
-		if (!dstPortSmaller.get().equals(otherEntry.dstPortSmaller.get()))
-			return false;
-		
-		if (!dstPortEquals.get().equals(otherEntry.dstPortEquals.get()))
-			return false;
-		
-		if (!dstPortGreater.get().equals(otherEntry.dstPortGreater.get()))
-			return false;
-		
-		return true;
+			this.protocol.setValue(stringVal);
+
+		this.protocolValue = protocol;
 	}
 
-	public SimpleStringProperty netmaskProperty()
+	public Integer protocolAsInt()
 	{
-		return netmask;
+		return (protocol == null || protocol.getValue().isEmpty() || protocol.getValue().equals(protocol_EMPTY) ? null : protocolValue.getValue());
 	}
 
 	public void setNetmask(String netmask)
 	{
-		if (this.netmask == null)
-			this.netmask = new SimpleStringProperty(netmask);
-		else
-			this.netmask.setValue(netmask);
-		
-		netmaskToSerialize = netmask;
+		netmaskValue = netmask;
 	}
-	
+
 	public SimpleStringProperty userNotesProperty()
 	{
 		return userNotes;
@@ -276,147 +183,65 @@ public class PacketTypeToMatch implements Serializable
 
 	public void setUserNotes(String userNotes)
 	{
+		String stringVal = userNotes == null ? userNotes_EMPTY : userNotes;
+
 		if (this.userNotes == null)
-			this.userNotes = new SimpleStringProperty(userNotes);
+			this.userNotes = new SimpleStringProperty(stringVal);
 		else
-			this.userNotes.setValue(userNotes);
-		
-		userNotesToSerialize = userNotes;
-	}
-	
-	public SimpleStringProperty packetSizeSmallerProperty()
-	{
-		return packetSizeSmaller;
+			this.userNotes.setValue(stringVal);
+
+		userNotesValue = userNotes;
 	}
 
-	public void setPacketSizeSmaller(String packetSizeSmaller)
+	public SimpleStringProperty packetSizeProperty()
 	{
-		if (this.packetSizeSmaller == null)
-			this.packetSizeSmaller = new SimpleStringProperty(packetSizeSmaller);
-		else
-			this.packetSizeSmaller.setValue(packetSizeSmaller);
-		
-		packetSizeSmallerToSerialize = packetSizeSmaller;
-	}
-	
-	public SimpleStringProperty packetSizeEqualsProperty()
-	{
-		return packetSizeEquals;
+		return packetSize;
 	}
 
-	public void setPacketSizeEquals(String packetSizeEquals)
+	public void setPacketSize(NumberRangeValues packetSizeValues)
 	{
-		if (this.packetSizeEquals == null)
-			this.packetSizeEquals = new SimpleStringProperty(packetSizeEquals);
+		String newStringValue = packetSizeValues == null ? packetOrPort_EMPTY : NumberRange.numberRangeStringRepresentation(packetSizeValues.getRange(), packetSizeValues.getLeftValue(), packetSizeValues.getRightValue());
+
+		if (packetSize == null)
+			packetSize = new SimpleStringProperty(newStringValue);
 		else
-			this.packetSizeEquals.setValue(packetSizeEquals);
+			packetSize.set(newStringValue);
 		
-		packetSizeEqualsToSerialize = packetSizeEquals;
-	}
-	
-	public SimpleStringProperty packetSizeGreaterProperty()
-	{
-		return packetSizeGreater;
+		this.packetSizeValues = packetSizeValues;
 	}
 
-	public void setPacketSizeGreater(String packetSizeGreater)
+	public SimpleStringProperty srcPortProperty()
 	{
-		if (this.packetSizeGreater == null)
-			this.packetSizeGreater = new SimpleStringProperty(packetSizeGreater);
-		else
-			this.packetSizeGreater.setValue(packetSizeGreater);
-		
-		packetSizeGreaterToSerialize = packetSizeGreater;
-	}
-	
-	public SimpleStringProperty srcPortSmallerProperty()
-	{
-		return srcPortSmaller;
+		return srcPort;
 	}
 
-	public void setSrcPortSmaller(String srcPortSmaller)
+	public void setSrcPort(NumberRangeValues srcPortValues)
 	{
-		if (this.srcPortSmaller == null)
-			this.srcPortSmaller = new SimpleStringProperty(srcPortSmaller);
+		String newStringValue = srcPortValues == null ? packetOrPort_EMPTY : NumberRange.numberRangeStringRepresentation(srcPortValues.getRange(), srcPortValues.getLeftValue(), srcPortValues.getRightValue());
+
+		if (srcPort == null)
+			srcPort = new SimpleStringProperty(newStringValue);
 		else
-			this.srcPortSmaller.setValue(srcPortSmaller);
+			srcPort.set(newStringValue);
 		
-		srcPortSmallerToSerialize = srcPortSmaller;
-	}
-	
-	public SimpleStringProperty srcPortEqualsProperty()
-	{
-		return srcPortEquals;
+		this.srcPortValues = srcPortValues;
 	}
 
-	public void setSrcPortEquals(String port)
+	public SimpleStringProperty dstPortProperty()
 	{
-		if (this.srcPortEquals == null)
-			this.srcPortEquals = new SimpleStringProperty(port);
-		else
-			this.srcPortEquals.setValue(port);
-		
-		this.srcPortEqualsToSerialize = port;
-	}
-	
-	public SimpleStringProperty srcPortGreaterProperty()
-	{
-		return srcPortGreater;
+		return dstPort;
 	}
 
-	public void setSrcPortGreater(String srcPortGreater)
+	public void setDstPort(NumberRangeValues dstPortValues)
 	{
-		if (this.srcPortGreater == null)
-			this.srcPortGreater = new SimpleStringProperty(srcPortGreater);
-		else
-			this.srcPortGreater.setValue(srcPortGreater);
-		
-		srcPortGreaterToSerialize = srcPortGreater;
-	}
-	
-	public SimpleStringProperty dstPortSmallerProperty()
-	{
-		return dstPortSmaller;
-	}
+		String newStringValue = dstPortValues == null ? packetOrPort_EMPTY : NumberRange.numberRangeStringRepresentation(dstPortValues.getRange(), dstPortValues.getLeftValue(), dstPortValues.getRightValue());
 
-	public void setDstPortSmaller(String dstPortSmaller)
-	{
-		if (this.dstPortSmaller == null)
-			this.dstPortSmaller = new SimpleStringProperty(dstPortSmaller);
+		if (dstPort == null)
+			dstPort = new SimpleStringProperty(newStringValue);
 		else
-			this.dstPortSmaller.setValue(dstPortSmaller);
+			dstPort.set(newStringValue);
 		
-		dstPortSmallerToSerialize = dstPortSmaller;
-	}
-	
-	public SimpleStringProperty dstPortEqualsProperty()
-	{
-		return dstPortEquals;
-	}
-
-	public void setDstPortEquals(String port)
-	{
-		if (this.dstPortEquals == null)
-			this.dstPortEquals = new SimpleStringProperty(port);
-		else
-			this.dstPortEquals.setValue(port);
-		
-		this.dstPortEqualsToSerialize = port;
-	}
-	
-	public SimpleStringProperty dstPortGreaterProperty()
-	{
-		return dstPortGreater;
-	}
-
-	public void setDstPortGreater(String dstPortGreater)
-	{
-		if (this.dstPortGreater == null)
-			this.dstPortGreater = new SimpleStringProperty(dstPortGreater);
-		else
-			this.dstPortGreater.setValue(dstPortGreater);
-		
-		this.dstPortGreaterToSerialize = dstPortGreater;
+		this.dstPortValues = dstPortValues;
 	}
 
 	public List<String> getIPsFromUserNotes()
@@ -427,5 +252,55 @@ public class PacketTypeToMatch implements Serializable
 	public void setIPsFromUserNotes(List<String> ipsFromUserNotes)
 	{
 		this.ipsFromUserNotes = ipsFromUserNotes;
+	}
+
+	public String getMessageTextValue()
+	{
+		return messageTextValue;
+	}
+
+	public OutputMethod getMessageOutputMethodValue()
+	{
+		return messageOutputMethodValue;
+	}
+
+	public PacketDirection getPacketDirectionValue()
+	{
+		return packetDirectionValue;
+	}
+
+	public String getIpAddressValue()
+	{
+		return ipAddressValue;
+	}
+
+	public String getNetmaskValue()
+	{
+		return netmaskValue;
+	}
+
+	public String getUserNotesValue()
+	{
+		return userNotesValue;
+	}
+
+	public SupportedProtocols getProtocolValue()
+	{
+		return protocolValue;
+	}
+
+	public NumberRangeValues getPacketSizeValues()
+	{
+		return packetSizeValues;
+	}
+
+	public NumberRangeValues getSrcPortValues()
+	{
+		return srcPortValues;
+	}
+
+	public NumberRangeValues getDstPortValues()
+	{
+		return dstPortValues;
 	}
 }

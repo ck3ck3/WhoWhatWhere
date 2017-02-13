@@ -6,7 +6,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<ScrollPane fx:id="scrollPaneMainForm" fitToHeight="true" fitToWidth="true" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.GUIController">
+<ScrollPane fx:id="scrollPaneMainForm" fitToHeight="false" fitToWidth="false" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.GUIController">
    <content>
       <BorderPane>
          <top>
@@ -47,20 +47,20 @@
             <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
               <tabs>
                 <Tab closable="false" text="Who What Where">
-                	<content><fx:include fx:id="appearanceCounterPane" source="/whowhatwhere/view/fxmls/appearancecounter/AppearanceCounter.fxml" /></content>
+                	<content><fx:include fx:id="appearanceCounterPane" source="/whowhatwhere/view/fxmls/appearancecounter/AppearanceCounter.fxml" /></content><!-- source="../appearancecounter/AppearanceCounter.fxml" /></content> -->
+                </Tab>
+                <Tab closable="false" text="Watchdog">
+                	<content><fx:include fx:id="watchdogTab" source="/whowhatwhere/view/fxmls/watchdog/WatchdogTab.fxml" /></content><!-- source="../watchdog/WatchdogTab.fxml" /></content>-->
                 </Tab>
                 <Tab fx:id="tabUtils" closable="false" text="Utilities">
                   <content>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                            <children>
                               <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="14.0" prefHeight="145.0" prefWidth="657.0" text="Quick ping">
-                              	<content><fx:include fx:id="quickPingPane" source="/whowhatwhere/view/fxmls/utilities/QuickPing.fxml" /></content>
+                              	<content><fx:include fx:id="quickPingPane" source="/whowhatwhere/view/fxmls/utilities/QuickPing.fxml" /></content><!-- source="../utilities/QuickPing.fxml" /></content> -->
                               </TitledPane>
-                              <TitledPane collapsible="false" layoutX="14.0" layoutY="174.0" prefHeight="187.0" prefWidth="659.0" text="Watchdog">
-                              	<content><fx:include fx:id="watchdogPane" source="/whowhatwhere/view/fxmls/watchdog/Watchdog.fxml" /></content>
-                              </TitledPane>
-                              <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="382.0" prefHeight="78.0" prefWidth="660.0" text="Visual Trace">
-                              	<content><fx:include fx:id="tracePane" source="/whowhatwhere/view/fxmls/utilities/Trace.fxml" /></content>
+                              <TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="175.0" prefHeight="78.0" prefWidth="660.0" text="Visual Trace">
+                              	<content><fx:include fx:id="tracePane" source="/whowhatwhere/view/fxmls/utilities/Trace.fxml" /></content><!-- source="../utilities/Trace.fxml" /></content> -->
                               </TitledPane>
                            </children>
                         </AnchorPane>
