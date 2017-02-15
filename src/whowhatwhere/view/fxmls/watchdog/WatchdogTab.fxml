@@ -28,8 +28,8 @@
                   <TableColumn fx:id="columnPacketSize" prefWidth="110.0" text="Total packet size" />
                   <TableColumn prefWidth="322.0" text="When a match is found">
                      <columns>
-                        <TableColumn fx:id="columnMsgText" prefWidth="148.0" text="Message text" />
-                        <TableColumn fx:id="columnMsgOutputMethod" prefWidth="168.0" text="Inform me by" />
+                        <TableColumn fx:id="columnMsgOutputMethod" prefWidth="168.0" text="Notification type" />
+                        <TableColumn fx:id="columnMsgText" prefWidth="148.0" text="Notification text" />
                      </columns>
                   </TableColumn>
                </columns>

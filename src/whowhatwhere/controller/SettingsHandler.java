@@ -14,19 +14,18 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckMenuItem;
 import javafx.stage.Modality;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import whowhatwhere.Main;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.networksniffer.NICInfo;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.startwithwindows.StartWithWindowsRegistryUtils;
+import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen;
 
 public class SettingsHandler
 {
@@ -54,13 +53,12 @@ public class SettingsHandler
 
 	private GUIController guiController;
 
-
 	public SettingsHandler(GUIController guiController)
 	{
 		this.guiController = guiController;
 		sniffer = guiController.getSniffer();
 	}
-	
+
 	public void saveCurrentRunValuesToProperties(List<LoadAndSaveSettings> instancesWithSettingsToHandle)
 	{
 		Stage stage = guiController.getStage();
@@ -90,11 +88,18 @@ public class SettingsHandler
 		}
 	}
 
-	/**Saves Properties to file, but doesn't overwrite the previous file unless the save was successful.
-	 * @param props - Properties object to save
-	 * @param note - the note on top of the saved file
-	 * @param filename - name of the file to save
-	 * @throws IOException - if saving failed
+	/**
+	 * Saves Properties to file, but doesn't overwrite the previous file unless
+	 * the save was successful.
+	 * 
+	 * @param props
+	 *            - Properties object to save
+	 * @param note
+	 *            - the note on top of the saved file
+	 * @param filename
+	 *            - name of the file to save
+	 * @throws IOException
+	 *             - if saving failed
 	 */
 	public static void savePropertiesSafely(Properties props, String note, String filename) throws IOException
 	{
@@ -157,30 +162,40 @@ public class SettingsHandler
 	private void loadLastRunDimensions(Properties props)
 	{
 		Stage stage = guiController.getStage();
-		Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
+		boolean propsExists = false;
 
-		if (primaryScreenBounds.getHeight() < stage.getHeight() || primaryScreenBounds.getWidth() < stage.getWidth())
-			stage.setMaximized(true);
-		else
+		Double value;
+
+		value = PropertiesByType.getDoubleProperty(props, propsWidth, Double.NaN);
+		if (!value.equals(Double.NaN))
 		{
-			Double value;
-
-			value = PropertiesByType.getDoubleProperty(props, propsWidth, Double.NaN);
-			if (!value.equals(Double.NaN))
-				stage.setWidth(value);
-
-			value = PropertiesByType.getDoubleProperty(props, propsHeight, Double.NaN);
-			if (!value.equals(Double.NaN))
-				stage.setHeight(value);
-
-			value = PropertiesByType.getDoubleProperty(props, propsX, Double.NaN);
-			if (!value.equals(Double.NaN))
-				stage.setX(value);
-
-			value = PropertiesByType.getDoubleProperty(props, propsY, Double.NaN);
-			if (!value.equals(Double.NaN))
-				stage.setY(value);
+			stage.setWidth(value);
+			propsExists = true;
 		}
+
+		value = PropertiesByType.getDoubleProperty(props, propsHeight, Double.NaN);
+		if (!value.equals(Double.NaN))
+		{
+			stage.setHeight(value);
+			propsExists = true;
+		}
+
+		value = PropertiesByType.getDoubleProperty(props, propsX, Double.NaN);
+		if (!value.equals(Double.NaN))
+		{
+			stage.setX(value);
+			propsExists = true;
+		}
+
+		value = PropertiesByType.getDoubleProperty(props, propsY, Double.NaN);
+		if (!value.equals(Double.NaN))
+		{
+			stage.setY(value);
+			propsExists = true;
+		}
+		
+		if (!propsExists)
+			SecondaryFXMLScreen.fitToVisualBoundsIfTooBig(stage);
 	}
 
 	private void loadStartWithWindowsSetting()
@@ -335,11 +350,16 @@ public class SettingsHandler
 
 	private NICInfo getNICByDescription(String description)
 	{
+		NICInfo possibleChoice = null;
+		
 		for (NICInfo nic : sniffer.getListOfDevices())
 			if (description.equals(nic.getDescription()))
-				return nic;
+				if (!nic.getIP().equals("[0.0.0.0]")) //sometimes there's a "virtual NIC" that mirrors the real one. They have the same MAC but the real one has actual IP, virtual one has 0.0.0.0
+					return nic;
+				else
+					possibleChoice = nic;
 
-		return null;
+		return possibleChoice;
 	}
 
 	public NICInfo getSelectedNIC()

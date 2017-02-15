@@ -5,10 +5,12 @@ import java.io.IOException;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -159,8 +161,28 @@ public abstract class SecondaryFXMLScreen
 			stage.setOnShowing(eventForStageOnShowing);
 
 		stage.show();
+		fitToVisualBoundsIfTooBig(stage);
 
 		return stage;
+	}
+	
+	public static void fitToVisualBoundsIfTooBig(Stage stage)
+	{
+		Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
+		double visualBoundHeight = primaryScreenBounds.getHeight();
+		double visualBoundWidth = primaryScreenBounds.getWidth();
+
+		if (visualBoundHeight < stage.getHeight())
+		{
+			stage.setHeight(visualBoundHeight);
+			stage.setY(0);
+		}
+
+		if (visualBoundWidth < stage.getWidth())
+		{
+			stage.setWidth(visualBoundWidth);
+			stage.setX(0);
+		}
 	}
 
 	public Scene getPostCloseScene()

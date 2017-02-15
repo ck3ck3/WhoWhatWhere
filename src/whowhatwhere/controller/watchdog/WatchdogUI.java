@@ -27,6 +27,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
@@ -56,13 +57,14 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 	private final static Logger logger = Logger.getLogger(WatchdogUI.class.getPackage().getName());
 	private final static String watchdogListAddEditFormLocation = "/whowhatwhere/view/fxmls/watchdog/AddEditEntry.fxml";
 
+	public final static String presetExtension = ".watchdogPreset";
+	public final static String lastRunFilename = "Last run" + presetExtension;
+	public final static int minCooldownValue = 1;
+	public final static int defaultnCooldownValue = 3;
+	public final static int maxCooldownValue = 60 * 60 * 24; //24 hours
+	
 	private final static String hotkeyID = "Watchdog hotkey";
-	public static final String presetExtension = ".watchdogPreset";
-	public static final String lastRunFilename = "Last run" + presetExtension;
 	private final static String voiceForTTS = GUIController.voiceForTTS;
-	private final static int minCooldownValue = 1;
-	private final static int defaultnCooldownValue = 3;
-	private final static int maxCooldownValue = 60 * 60 * 24; //24 hours
 
 	private final static String propsChkboxHotkey = "chkboxWatchdogHotkey";
 	private final static String propsHotkeyKeycode = "watchdogHotkeyKeycode";
@@ -130,17 +132,12 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		this.controller = guiController.getWatchdogTabController();
 		this.guiController = guiController;
 		this.guiController.registerForSettingsHandler(this);
-		
-
 
 		initUIElementsFromController();
 		initButtonHandlers();
 		
 		table.setItems(entryList);
 		userNotesToIPListMap = getUserNotesReverseMap();
-
-		numFieldCooldown.setMinValue(minCooldownValue);
-		numFieldCooldown.setMaxValue(maxCooldownValue);
 	}
 
 	private void initUIElementsFromController()
@@ -229,8 +226,20 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 				return;
 			}
 			
-			table.getItems().removeAll(selectedItems);
-			table.getSelectionModel().clearSelection();
+			String entryOrEntries = selectedItems.size() == 1 ? "entry" : "entries"; 
+			Alert removalConfirmation = new Alert(AlertType.CONFIRMATION, "Are you sure you want to remove the selected " + entryOrEntries + "?");
+			removalConfirmation.setTitle("Entry removal confirmation");
+			removalConfirmation.setHeaderText("Remove " + entryOrEntries);
+			ButtonType btnYes = new ButtonType("Yes", ButtonData.OK_DONE);
+			ButtonType btnNo = new ButtonType("No", ButtonData.CANCEL_CLOSE);
+			removalConfirmation.getButtonTypes().setAll(btnYes, btnNo);
+			Optional<ButtonType> result = removalConfirmation.showAndWait();
+			
+			if (result.get() == btnYes)
+			{
+				table.getItems().removeAll(selectedItems);
+				table.getSelectionModel().clearSelection();
+			}
 		});
 	}
 	
@@ -328,7 +337,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 					return;
 				}
 
-				MenuItem menuItem = ManageListScreen.createMenuItem(entryList, filename);
+				MenuItem menuItem = createMenuItem(entryList, filename);
 
 				ObservableList<MenuItem> items = controller.getMenuBtnLoadPreset().getItems();
 

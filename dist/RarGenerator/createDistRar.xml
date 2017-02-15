@@ -36,7 +36,7 @@
 			<arg value="WhoWhatWhere-launch4j.xml" />
 		</exec>
 		<delete file="WhoWhatWhere/WhoWhatWhere.jar" />
-		<copy file="../../NBA2K Europe.watchdogPreset" toDir="WhoWhatWhere" />
+<!--		<copy file="../../NBA2K Europe.watchdogPreset" toDir="WhoWhatWhere" /> -->
 		<exec executable="cmd">
 			<arg value="/c" />
 			<arg value="rar" />

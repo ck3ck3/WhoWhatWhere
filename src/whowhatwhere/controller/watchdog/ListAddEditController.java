@@ -8,8 +8,13 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.layout.AnchorPane;
 import numbertextfield.NumberTextField;
 import whowhatwhere.model.networksniffer.PacketDirection;
 import whowhatwhere.model.networksniffer.SupportedProtocols;
@@ -17,6 +22,8 @@ import whowhatwhere.model.networksniffer.watchdog.OutputMethod;
 
 public class ListAddEditController implements Initializable
 {
+	private final static String speakerImageLocation = "/speaker.png";
+	
 	@FXML
 	private ComboBox<OutputMethod> comboOutputMethod;
 	@FXML
@@ -77,10 +84,24 @@ public class ListAddEditController implements Initializable
 	private Label labelIPRange;
 	@FXML
 	private CheckBox chkboxNetmask;
+	@FXML
+	private AnchorPane paneWholeForm;
+	@FXML
+	private Button btnPreview;
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
+		paneWholeForm.setOnKeyPressed(keyEvent ->
+		{
+			if (keyEvent.getCode().equals(KeyCode.ESCAPE))
+			{
+				btnCancel.requestFocus();
+				if (btnCancel.isFocused()) //if there's no validation error, to keep consistent with trying to click on Cancel normally
+					btnCancel.fire();
+			}
+		});
+		
 		labelIPRange.setVisible(false);
 		
 		labelSrcPortRight.setVisible(false);
@@ -91,6 +112,10 @@ public class ListAddEditController implements Initializable
 		
 		labelPacketSizeRight.setVisible(false);
 		numFieldPacketSizeRight.setVisible(false);
+		
+		btnPreview.setVisible(false);
+		btnPreview.setContentDisplay(ContentDisplay.RIGHT);
+		btnPreview.setGraphic(new ImageView(new Image(speakerImageLocation)));
 	}
 
 	public ComboBox<OutputMethod> getComboOutputMethod()
@@ -242,5 +267,10 @@ public class ListAddEditController implements Initializable
 	public CheckBox getChkboxNetmask()
 	{
 		return chkboxNetmask;
+	}
+
+	public Button getBtnPreview()
+	{
+		return btnPreview;
 	}
 }

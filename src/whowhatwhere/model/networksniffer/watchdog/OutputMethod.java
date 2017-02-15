@@ -10,9 +10,9 @@ public enum OutputMethod
 	
 	static
 	{
-		bidiMap.put(TTS, "Speaking with text-to-speech");
-		bidiMap.put(POPUP, "Showing a pop-up message");
-		bidiMap.put(TTS_AND_POPUP, "Saying with text-to-speech and showing a pop-up message");
+		bidiMap.put(TTS, "Read out loud");
+		bidiMap.put(POPUP, "Show a pop-up message");
+		bidiMap.put(TTS_AND_POPUP, "Both");
 	}
 	
 	public static String[] getValuesAsStrings()

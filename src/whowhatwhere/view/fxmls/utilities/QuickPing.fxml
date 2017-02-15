@@ -1,23 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="119.0" prefWidth="533.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.utilities.QuickPingController">
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="119.0" prefWidth="577.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.utilities.QuickPingController">
    <children>
       <AnchorPane fx:id="paneAllButHotkeyChkbox" layoutX="14.0" layoutY="10.0">
          <children>
-            <ComboBox fx:id="comboIPToPing" editable="true" layoutX="322.0" prefHeight="25.0" prefWidth="194.0" />
-            <Label layoutY="4.0" text="Enter an IP or hostname to ping when the hotkey is pressed" />
-            <AnchorPane fx:id="paneHotkey" layoutX="105.0" layoutY="68.0">
+            <ComboBox fx:id="comboIPToPing" editable="true" layoutX="111.0" prefHeight="25.0" prefWidth="253.0" />
+            <Label fx:id="labelIP" layoutY="4.0" text="IP or hostname" />
+            <AnchorPane fx:id="paneHotkey" layoutX="111.0" layoutY="68.0">
                <children>
                   <Button fx:id="btnConfigureHotkey" mnemonicParsing="false" text="Configure hotkey" />
                   <Label fx:id="labelCurrentHotkey" layoutX="117.0" layoutY="4.0" text="Current hotkey: " />
                </children>
             </AnchorPane>
-            <Label layoutY="35.0" text="Get informed of the result by" />
-            <ComboBox fx:id="comboOutputMethod" layoutX="162.0" layoutY="31.0" prefHeight="25.0" prefWidth="354.0" />
+            <Label layoutY="35.0" text="Notification type" />
+            <ComboBox fx:id="comboOutputMethod" layoutX="111.0" layoutY="31.0" prefHeight="25.0" prefWidth="202.0" />
          </children>
       </AnchorPane>
       <CheckBox fx:id="chkboxHotkey" layoutX="14.0" layoutY="82.0" mnemonicParsing="false" selected="false" text="Enable hotkey" />

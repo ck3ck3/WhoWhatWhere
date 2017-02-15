@@ -25,6 +25,7 @@ import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
 import whowhatwhere.controller.GUIController;
+import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.PacketDirection;
 import whowhatwhere.model.networksniffer.SupportedProtocols;
@@ -34,6 +35,8 @@ import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen;
 
 public class ListAddEditScreen extends SecondaryFXMLScreen
 {
+	private final static String voiceForTTS = GUIController.voiceForTTS;
+	
 	private ListAddEditController watchdogListAddEditController;
 	private TableView<PacketTypeToMatch> table;
 
@@ -66,9 +69,11 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 	private CheckBox chkboxPacketSize;
 	private CheckBox chkboxNetmask;
 	private Label labelIPRange;
+	private Button btnPreview;
 
 	private Map<String, List<String>> userNotesToIPListMap;
 	private boolean isIPFieldValid = false;
+	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 
 	public ListAddEditScreen(String fxmlLocation, Stage stage, Scene scene, TableView<PacketTypeToMatch> table, Map<String, List<String>> userNotes, boolean isEdit) throws IOException
 	{
@@ -118,6 +123,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 		chkboxPacketSize = watchdogListAddEditController.getChkboxPacketSize();
 		chkboxNetmask = watchdogListAddEditController.getChkboxNetmask();
 		labelIPRange = watchdogListAddEditController.getLabelIPRange();
+		btnPreview = watchdogListAddEditController.getBtnPreview();
 	}
 
 	private void initControlsBehavior(boolean isEdit)
@@ -126,7 +132,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 		setChangeListeners();
 		setTooltipsForControls();
 		setValidatorsForControls();
-		setDoneButtonAction(isEdit);
+		setButtonHandlers(isEdit);
 	}
 	
 	private String getValueFromTextField(CheckBox chkbox, TextField field)
@@ -182,8 +188,18 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 		return new NumberRangeValues(comboValue, leftValue, rightValue);			
 	}
 
-	private void setDoneButtonAction(boolean isEdit)
+	private void setButtonHandlers(boolean isEdit)
 	{
+		btnPreview.setOnAction(actionEvent ->
+		{
+			String text = textMessage.getText();
+			
+			if (text.isEmpty())
+				new Alert(AlertType.ERROR, "No text to preview").showAndWait();
+			else
+				tts.speak(text);
+		});
+		
 		btnDone.setOnAction(actionEvent ->
 		{
 			try
@@ -411,6 +427,8 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 		comboSrcPort.valueProperty().addListener(generateNumberRangeChangeListenerForComboValue(numFieldSrcPortLeft, labelSrcPortRight, numFieldSrcPortRight));
 		comboDstPort.valueProperty().addListener(generateNumberRangeChangeListenerForComboValue(numFieldDstPortLeft, labelDstPortRight, numFieldDstPortRight));
 		comboPacketSize.valueProperty().addListener(generateNumberRangeChangeListenerForComboValue(numFieldPacketSizeLeft, labelPacketSizeRight, numFieldPacketSizeRight));
+		
+		comboOutputMethod.valueProperty().addListener((ChangeListener<OutputMethod>) (observable, oldValue, newValue) -> btnPreview.setVisible(newValue ==  OutputMethod.TTS || newValue == OutputMethod.TTS_AND_POPUP));
 	}
 
 	/**

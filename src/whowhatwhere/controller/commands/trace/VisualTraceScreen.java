@@ -235,21 +235,26 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		btnZoom.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
 		{
 			if (newValue) //selected
-			{
 				imgService.setCenterOnIP(ip);
-				generateAndShowImage();
-			}
+			
+			generateAndShowImage();
 		});
 		
 		Button btnGeoIP = new Button(); 
 		btnGeoIP.setGraphic(new ImageView(new Image(getClass().getResourceAsStream(geoIPIconLocation))));
-		btnGeoIP.setTooltip(new Tooltip("Show more detailed GeoIP info online"));
+		btnGeoIP.setTooltip(new Tooltip("Show more detailed GeoIP info online (opens in a browser window)"));
 		btnGeoIP.setOnAction(event -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + ip));
 
 		gridPane.add(btnZoom, col++, row);
 		gridPane.add(btnGeoIP, col++, row);
 		GridPane.setHalignment(btnZoom, HPos.CENTER);
-		GridPane.setHalignment(btnGeoIP, HPos.CENTER);		
+		GridPane.setHalignment(btnGeoIP, HPos.CENTER);
+		
+		if (!isPublicIP(ip))
+		{
+			btnZoom.setDisable(true);
+			btnGeoIP.setDisable(true);
+		}
 	}
 	
 	private void createLabelsOnGridPane(GridPane gridPane, boolean withHostnames)

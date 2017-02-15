@@ -26,6 +26,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.PopupWindow.AnchorLocation;
 import numbertextfield.NumberTextField;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
@@ -114,16 +115,20 @@ public class WatchdogController implements Initializable
 		btnMoveUp.setOnAction(generateRowMovementButtonHandlers(RowMovementDirection.UP));
 		btnMoveDown.setOnAction(generateRowMovementButtonHandlers(RowMovementDirection.DOWN));
 		
+		numFieldCooldown.setMinValue(WatchdogUI.minCooldownValue);
+		numFieldCooldown.setMaxValue(WatchdogUI.maxCooldownValue);
+		
 		labelCooldownSeconds.setGraphic(new ImageView(GUIController.imageHelpTooltip));
 		labelCooldownSeconds.setContentDisplay(ContentDisplay.RIGHT);
-		Tooltip cooldownTooltip = new Tooltip("In order to avoid getting flooded with messages, matches that occur during a cooldown period will be ignored and not issue an alert.\nMinimal cooldown period is 3 seconds.");
+		Tooltip cooldownTooltip = new Tooltip("In order to avoid getting flooded with messages, matches that occur during a cooldown period will be ignored and not issue a notification.\nMinimal cooldown period is " + WatchdogUI.minCooldownValue + " seconds.");
 		cooldownTooltip.setWrapText(true);
 		cooldownTooltip.setMaxWidth(350);
+		cooldownTooltip.setAnchorLocation(AnchorLocation.WINDOW_TOP_RIGHT);
 		labelCooldownSeconds.setTooltip(cooldownTooltip);
 		
 		labelTableHeader.setGraphic(new ImageView(GUIController.imageHelpTooltip));
 		labelTableHeader.setContentDisplay(ContentDisplay.RIGHT);
-		Tooltip headerTooltip = new Tooltip("Watchdog inspects packets in the background and issues a user-customized alert when a packet matches the conditions specified in an entry. The entries are checked in the order that they appear. If a packet matches an entry, the remaining entries will not be checked.");
+		Tooltip headerTooltip = new Tooltip("Watchdog inspects packets in the background and issues a user-customized notification when a packet matches the conditions specified in an entry. The entries are checked in the order that they appear. If a packet matches an entry, the remaining entries will not be checked.");
 		headerTooltip.setWrapText(true);
 		headerTooltip.setMaxWidth(420);
 		labelTableHeader.setTooltip(headerTooltip);
