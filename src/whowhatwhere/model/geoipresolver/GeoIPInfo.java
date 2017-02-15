@@ -19,6 +19,14 @@ public class GeoIPInfo
 	private String message; //if status is "fail", info here
 
 	private boolean success;
+	
+	public GeoIPInfo() {}
+	
+	
+	/**Create an object with success = false
+	 * @param fail - success will be set to false regardless of the value of this parameter
+	 */
+	public GeoIPInfo(boolean fail) { success = false;}
 
 	public String getStatus()
 	{

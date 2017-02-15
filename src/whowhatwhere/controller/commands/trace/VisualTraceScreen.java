@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,9 +22,14 @@ import javafx.concurrent.Task;
 import javafx.geometry.HPos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
@@ -32,6 +38,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -64,6 +71,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 	private GenerateImageFromURLService imgService;
 	private ImageView imgView;
 	private ToggleGroup zoomToggleGroup = new ToggleGroup();
+	private Map<String, GeoIPInfo> ipToGeoipInfo = new HashMap<>();
 
 	public VisualTraceScreen(List<String> listOfIPs, Stage postCloseStage, Scene postCloseScene) throws IOException
 	{
@@ -77,7 +85,13 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			String ip = TraceCommandScreen.extractIPFromLine(line);
 			GeoIPInfo ipInfo = GeoIPResolver.getIPInfo(ip);
 
-			geoIPResults.put(ip, ipInfo);
+			if (ipInfo != null)
+				geoIPResults.put(ip, ipInfo);
+			else
+			{
+				ipInfo = showAlertRetryGettingGeoIP(ip);
+				geoIPResults.put(ip, ipInfo);
+			}
 		}
 
 		visualTraceController = getLoader().<VisualTraceController> getController();
@@ -93,7 +107,26 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			getVisualTraceController().getLoadingLabel().setVisible(false);
 			Image img = imgService.getValue();
 			imgView.setImage(img);
+			visualTraceController.getPaneStackColor().setStyle("-fx-background-color: #A3CBFE;"); //ocean color background to hide transparent part of image if exists
 		});
+	}
+	
+	private GeoIPInfo showAlertRetryGettingGeoIP(String ip)
+	{
+		Alert failedGeoIP = new Alert(AlertType.WARNING, "Failed to get GeoIP info for ip " + ip + "\nRetry or skip this IP?");
+		
+		ButtonType btnRetry = new ButtonType("Retry", ButtonData.OK_DONE);
+		ButtonType btnSkip = new ButtonType("Skip", ButtonData.CANCEL_CLOSE);
+		failedGeoIP.getButtonTypes().setAll(btnRetry, btnSkip);
+		failedGeoIP.setTitle("Failed to get GeoIP info");
+		failedGeoIP.setHeaderText("Retry or skip?");
+		
+		Optional<ButtonType> result = failedGeoIP.showAndWait();
+		
+		if (result.get() == btnRetry)
+			return GeoIPResolver.getIPInfo(ip);
+		else //skip
+			return new GeoIPInfo(false);
 	}
 	
 	private void resizeIfNeeded()
@@ -103,14 +136,14 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		double splitPaneDividerPosition = splitPane.getDividerPositions()[0];
 		double splitPaneWidth = splitPane.getWidth();
 		
-		if (traceInfoWidth > splitPaneDividerPosition * splitPaneWidth)
+		if (traceInfoWidth > splitPaneDividerPosition * splitPaneWidth) //if trace info is wider than what is visible
 		{
 			double idealWidth = traceInfoWidth + (1 - splitPaneDividerPosition) * splitPaneWidth + 30;
 			Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
 			
 			Stage stage = (Stage)imgView.getScene().getWindow();
 			
-			if (primaryScreenBounds.getWidth() > idealWidth)
+			if (primaryScreenBounds.getWidth() > idealWidth) //if the resolution is wide enough to contain the view without scrollers
 				stage.setWidth(idealWidth);
 			else
 				stage.setMaximized(true);
@@ -151,6 +184,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			
 			String ip = valueMap.get(propertyIP);
 			checkboxToIP.put(box, ip);
+			ipToGeoipInfo.put(ip, geoIPResults.get(ip));
 			
 			List<String> orderedPropertyList = Arrays.asList(propertyHop, propertyPings, propertyHostname, propertyIP);
 			for (String key : orderedPropertyList)
@@ -234,27 +268,41 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		btnZoom.setTooltip(new Tooltip("Zoom in on this location"));
 		btnZoom.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
 		{
+			HBox hbox = (HBox) btnZoom.getParent();
+			@SuppressWarnings("unchecked")
+			Spinner<Integer> spinnerZoom = (Spinner<Integer>) hbox.getChildren().get(1);
+			spinnerZoom.setDisable(!newValue);
+			
 			if (newValue) //selected
-				imgService.setCenterOnIP(ip);
+				imgService.setCenterOnIP(ip, spinnerZoom.getValue());
 			
 			generateAndShowImage();
 		});
+		
+		Spinner<Integer> spinnerZoom = new Spinner<>(1, 20, 6, 1);
+		spinnerZoom.setPrefWidth(55);
+		spinnerZoom.setPrefHeight(btnZoom.getHeight());
+		spinnerZoom.valueProperty().addListener((ChangeListener<Integer>) (observable, oldValue, newValue) ->
+		{
+			imgService.setCenterOnIP(ip, newValue);
+			generateAndShowImage();
+		});
+		spinnerZoom.setEditable(false);
+		spinnerZoom.setDisable(true);
+		HBox zoomControls = new HBox(btnZoom, spinnerZoom);
 		
 		Button btnGeoIP = new Button(); 
 		btnGeoIP.setGraphic(new ImageView(new Image(getClass().getResourceAsStream(geoIPIconLocation))));
 		btnGeoIP.setTooltip(new Tooltip("Show more detailed GeoIP info online (opens in a browser window)"));
 		btnGeoIP.setOnAction(event -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + ip));
 
-		gridPane.add(btnZoom, col++, row);
+		gridPane.add(zoomControls, col++, row);
 		gridPane.add(btnGeoIP, col++, row);
 		GridPane.setHalignment(btnZoom, HPos.CENTER);
 		GridPane.setHalignment(btnGeoIP, HPos.CENTER);
 		
-		if (!isPublicIP(ip))
-		{
+		if (!ipToGeoipInfo.get(ip).getSuccess() || !isPublicIP(ip)) //no geoip info for this ip
 			btnZoom.setDisable(true);
-			btnGeoIP.setDisable(true);
-		}
 	}
 	
 	private void createLabelsOnGridPane(GridPane gridPane, boolean withHostnames)
@@ -292,36 +340,24 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 	{
 		Platform.runLater(() ->
 		{
+			visualTraceController.getPaneStackColor().setStyle("");
 			imgView.setImage(null);
 			getVisualTraceController().getLoadingLabel().setVisible(true);
 			imgService.restart();
 		});
 	}
 
-	private String generateURL(String centerOnIP)
+	private String generateURL(String centerOnIP, int zoom)
 	{
-		String url = baseUrl;
-		final String pathInit = "&path=";
+		String markers = "";
+		String pathInit = "&path=";
 		String path = pathInit;
-		boolean isFirstMarker = true;
+		int markersLeftToTurnRed = 2; // the first two markers are the first and last markers
+		int checkboxIndexForPath = 0;
+		
+		List<CheckBox> reorderedListOfCheckBoxes = getReorderedListOfCheckboxes();
 
-		if (centerOnIP != null)
-		{
-			GeoIPInfo ipInfo = geoIPResults.get(centerOnIP);
-			String location = ipInfo.getCountry() + "," + ipInfo.getCity();
-			try
-			{
-				location = URLEncoder.encode(location, "UTF-8");
-			}
-			catch (UnsupportedEncodingException e)
-			{
-				logger.log(Level.SEVERE, "Unable to encode this URL: " + location, e);
-			}
-
-			return url + "&center=" + location + "&zoom=10";
-		}
-
-		for (CheckBox checkBox : listOfChkBoxes)
+		for (CheckBox checkBox : reorderedListOfCheckBoxes)
 		{
 			String text = checkBox.getText();
 			String ip;
@@ -331,48 +367,101 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 				char label = text.charAt(0);
 
 				ip = checkboxToIP.get(checkBox);
-				GeoIPInfo ipInfo = geoIPResults.get(ip);
+				GeoIPInfo ipInfo = ipToGeoipInfo.get(ip); 
 
 				if (!isPublicIP(ip) || ipInfo == null || !ipInfo.getSuccess()) //not a public ip with a location, skip it
 				{
 					checkBox.setSelected(false);
 					checkBox.setDisable(true);
-					checkBox.getParent().getChildrenUnmodifiable().get(1).setDisable(true); //also disable the hyperlink "focus map", since there's no location
-
 					continue;
 				}
 
-				String markers = "&markers=color:" + (isFirstMarker ? "red" : "blue") + "%7Clabel:" + label;
-				isFirstMarker = false;
+				String currentMarker = "&markers=color:" + (markersLeftToTurnRed-- > 0 ? "red" : "blue") + "%7Clabel:" + label;
 
-				String region = ipInfo.getRegion();
-				String location = ipInfo.getCountry() + "," + (region.isEmpty() ? "" : ipInfo.getRegion() + ",") + ipInfo.getCity();
-				try
-				{
-					location = URLEncoder.encode(location, "UTF-8");
-				}
-				catch (UnsupportedEncodingException e)
-				{
-					logger.log(Level.SEVERE, "Unable to encode this URL: " + location, e);
-				}
-				url += markers + "%7C" + location;
+				String location = getLocationString(ipInfo);
+				markers += currentMarker + "%7C" + location;
 
+				//for path string, we need the original order of locations, not the redorderedList
+				CheckBox chkboxForPath;
+				do { chkboxForPath = listOfChkBoxes.get(checkboxIndexForPath++); } while(!chkboxForPath.isSelected());
+				String ipForPath = checkboxToIP.get(chkboxForPath);
+				String locationForPath = getLocationString(ipToGeoipInfo.get(ipForPath));
+				
 				if (!path.equals(pathInit)) //if it's not the first part of the path
-					location = "%7C" + location;
+					locationForPath = "%7C" + locationForPath;
 
-				path += location;
+				path += locationForPath;
 			}
 		}
-
-		//change the last marker from blue to red
-		String lastMarker = "markers=color:blue";
-		if (url.contains(lastMarker))
+		
+		String result = baseUrl + markers + path; 
+		
+		if (centerOnIP != null)
 		{
-			int lastIndexOfMarker = url.lastIndexOf(lastMarker);
-			url = url.substring(0, lastIndexOfMarker) + "markers=color:red" + url.substring(lastIndexOfMarker + lastMarker.length());
+			GeoIPInfo ipInfo = ipToGeoipInfo.get(centerOnIP);
+			String location = ipInfo.getCountry() + "," + ipInfo.getCity();
+			try
+			{
+				location = URLEncoder.encode(location, "UTF-8");
+			}
+			catch (UnsupportedEncodingException e)
+			{
+				logger.log(Level.SEVERE, "Unable to encode this URL: " + location, e);
+			}
+			result += "&center=" + location + "&zoom=" + zoom;
 		}
 
-		return url + path;
+		return result;
+	}
+	
+		
+	/**If two markers are set on the same spot in Google static maps, it will show the first marker set. In order to show the first and last markers we need
+	 * them to be set before other markers. The rest of the markers should come in reverse order so that the last marker set is visible (style choice).
+	 * @return returns a list based on listOfChkBoxes but in a different order: first, last, {reverse order of first+1 to last-1}
+	 */
+	private List<CheckBox> getReorderedListOfCheckboxes()
+	{
+		List<CheckBox> reorderedListOfCheckBoxes = new ArrayList<>();
+		
+		CheckBox checkedBox;
+		int firstCheckedBox = 0;
+		int lastChckedBox = listOfChkBoxes.size() - 1;
+		
+		do { checkedBox = listOfChkBoxes.get(firstCheckedBox++); } while(!checkedBox.isSelected());
+		reorderedListOfCheckBoxes.add(checkedBox);
+		
+		do { checkedBox = listOfChkBoxes.get(lastChckedBox--); } while(!checkedBox.isSelected());
+		if (!reorderedListOfCheckBoxes.contains(checkedBox))
+			reorderedListOfCheckBoxes.add(checkedBox);
+		else
+			return reorderedListOfCheckBoxes; //if there's just one box to add, don't add it twice.
+		
+		for (int i = lastChckedBox; i >= firstCheckedBox; i--)
+		{
+			checkedBox = listOfChkBoxes.get(i);
+			if (!checkedBox.isSelected())
+				continue;
+			
+			reorderedListOfCheckBoxes.add(checkedBox);	
+		}
+
+		return reorderedListOfCheckBoxes;
+	}
+	
+	private String getLocationString(GeoIPInfo ipInfo)
+	{
+		String region = ipInfo.getRegion();
+		String location = ipInfo.getCountry() + "," + (region.isEmpty() ? "" : ipInfo.getRegion() + ",") + ipInfo.getCity();
+		try
+		{
+			location = URLEncoder.encode(location, "UTF-8");
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			logger.log(Level.SEVERE, "Unable to encode this URL: " + location, e);
+		}
+
+		return location;
 	}
 
 	private boolean isPublicIP(String ip)
@@ -400,6 +489,8 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 	{
 		private VisualTraceScreen traceScreen;
 		private String centerOnIP; //IP location to center on, only relevant ONCE for the next use. Ignored when null.
+		private Map<String, Image> urlToImageCache = new HashMap<>();
+		private int zoom;
 
 		public GenerateImageFromURLService(VisualTraceScreen traceScreen)
 		{
@@ -415,16 +506,25 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 				@Override
 				protected Image call() throws Exception
 				{
-					String url = traceScreen.generateURL(centerOnIP);
+					String url = traceScreen.generateURL(centerOnIP, zoom);
 					centerOnIP = null; //reset for next use
-					return new Image(url);
+					
+					Image img = urlToImageCache.get(url);
+					if (img == null)
+					{
+						img = new Image(url);
+						urlToImageCache.put(url, img);
+					}
+
+					return img;
 				}
 			};
 		}
 
-		public void setCenterOnIP(String centerOnIP)
+		public void setCenterOnIP(String centerOnIP, int zoom)
 		{
 			this.centerOnIP = centerOnIP;
+			this.zoom = zoom;
 		}
 	}
 }

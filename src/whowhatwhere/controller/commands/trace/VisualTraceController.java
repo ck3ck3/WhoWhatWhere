@@ -8,6 +8,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.StackPane;
 
 public class VisualTraceController
 {
@@ -26,6 +27,8 @@ public class VisualTraceController
 	private SplitPane splitPane;
 	@FXML
 	private ScrollPane scrollPane;
+	@FXML
+	private StackPane paneStackColor;
 	
 	public ScrollPane getScrollPane()
 	{
@@ -60,6 +63,11 @@ public class VisualTraceController
 	public Label getLoadingLabel()
 	{
 		return labelLoading;
+	}
+
+	public StackPane getPaneStackColor()
+	{
+		return paneStackColor;
 	}
 
 }

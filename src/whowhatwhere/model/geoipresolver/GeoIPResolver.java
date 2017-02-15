@@ -21,7 +21,7 @@ public class GeoIPResolver
 	private static final String failMsg = "fail";
 	private static final Logger logger = Logger.getLogger(GeoIPResolver.class.getPackage().getName());
 	private static final int maxQueriesPerMin = 120;
-	private static final int connectionTimeout = 1500;
+	private static final int connectionTimeout = 3000;//1500;
 	private static final int readTimeout = 1500;
 	private static int queryCounter = 0;
 
@@ -75,7 +75,7 @@ public class GeoIPResolver
 		GeoIPInfo ipInfo = new GeoIPInfo();
 
 		ipInfo.setSuccess(false);
-		ipInfo.setMessage("Fail: Reached quota of queries per minute (" + maxQueriesPerMin + "). Right click to use a different GeoIP service or wait a minute and try again");
+		ipInfo.setMessage("Fail: Reached quota of queries per minute (" + maxQueriesPerMin + "). Wait a minute and try again");
 		return ipInfo;
 	}
 
