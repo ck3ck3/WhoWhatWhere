@@ -298,7 +298,7 @@ public class SettingsHandler
 
 		if (nic == null) //couldn't find the NIC
 		{
-			List<NICInfo> listOfDevices = sniffer.getListOfDevices();
+			List<NICInfo> listOfDevices = sniffer.getListOfDevicesWithIP();
 
 			if (listOfDevices.size() == 1) //if there's only one option
 				selectedNIC = listOfDevices.get(0);
@@ -309,7 +309,7 @@ public class SettingsHandler
 
 	public void showNICSelectionScreen()
 	{
-		List<NICInfo> listOfDevices = sniffer.getListOfDevices();
+		List<NICInfo> listOfDevices = sniffer.getListOfDevicesWithIP();
 
 		if (listOfDevices == null || listOfDevices.size() == 0)
 		{
@@ -321,7 +321,7 @@ public class SettingsHandler
 		Stage stage = guiController.getStage();
 
 		if (selectedNIC == null)
-			selectedNIC = new NICInfo();
+			selectedNIC = new NICInfo(); //the selected NICInfo will be copied into this object
 
 		NICSelectionScreen selectionScreen = null;
 
@@ -350,16 +350,11 @@ public class SettingsHandler
 
 	private NICInfo getNICByDescription(String description)
 	{
-		NICInfo possibleChoice = null;
-		
-		for (NICInfo nic : sniffer.getListOfDevices())
+		for (NICInfo nic : sniffer.getListOfDevicesWithIP())
 			if (description.equals(nic.getDescription()))
-				if (!nic.getIP().equals("[0.0.0.0]")) //sometimes there's a "virtual NIC" that mirrors the real one. They have the same MAC but the real one has actual IP, virtual one has 0.0.0.0
 					return nic;
-				else
-					possibleChoice = nic;
 
-		return possibleChoice;
+		return null;
 	}
 
 	public NICInfo getSelectedNIC()

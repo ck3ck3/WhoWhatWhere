@@ -53,15 +53,15 @@ public class NetworkSniffer
 	private final static String DLLName = "jnetpcap";
 
 	private Pcap pcap;
-	private Map<String, PcapIf> ipToDevice = new HashMap<>();
 	private List<NICInfo> ipAndDescList = new ArrayList<>();
+	private Map<NICInfo, PcapIf> nicInfoToPcapIf = new HashMap<>();
 
 	public NetworkSniffer() throws IllegalStateException
 	{
 		if (!initSuccessful)
 			throw new IllegalStateException("Unable to load jnetpcap library. These errors were reported:\n" + String.join("\n", errorList));
 
-		generateListOfDevices();
+		generateListOfDevicesWithIPs();
 	}
 
 	/**
@@ -129,25 +129,25 @@ public class NetworkSniffer
 		return true;
 	}
 
-	public List<NICInfo> getListOfDevices()
+	public List<NICInfo> getListOfDevicesWithIP()
 	{
 		return ipAndDescList;
 	}
 
-	private void generateListOfDevices()
+	private void generateListOfDevicesWithIPs()
 	{
-		List<PcapIf> alldevs = new ArrayList<>();
+		List<PcapIf> deviceList = new ArrayList<>();
 		StringBuilder errbuf = new StringBuilder();
 
-		int r = Pcap.findAllDevs(alldevs, errbuf);
+		int r = Pcap.findAllDevs(deviceList, errbuf);
 
-		if (r == Pcap.ERROR || alldevs.isEmpty())
+		if (r == Pcap.ERROR || deviceList.isEmpty())
 		{
 			logger.log(Level.SEVERE, "Can't read list of devices, error is " + errbuf.toString());
 			return;
 		}
-
-		for (PcapIf device : alldevs)
+		
+		for (PcapIf device : deviceList)
 		{
 			String description = (device.getDescription() != null) ? device.getDescription() : "No description available";
 			String ip = null;
@@ -162,7 +162,7 @@ public class NetworkSniffer
 				}
 			}
 
-			if (ip == null)
+			if (ip == null || ip.equals("[0.0.0.0]"))
 				continue;
 
 			byte[] hardwareAddress;
@@ -176,8 +176,9 @@ public class NetworkSniffer
 				hardwareAddress = new byte[8];
 			}
 
-			ipAndDescList.add(new NICInfo(ip, hardwareAddress, description));
-			ipToDevice.put(ip, device);
+			NICInfo nicInfo = new NICInfo(ip, hardwareAddress, description);
+			ipAndDescList.add(nicInfo);
+			nicInfoToPcapIf.put(nicInfo, device);
 		}
 	}
 
@@ -228,13 +229,14 @@ public class NetworkSniffer
 		}
 	}
 
-	public void startAppearanceCounterCapture(String deviceIp, List<Integer> protocolsToCapture, StringBuilder errbuf)
+	public void startAppearanceCounterCapture(NICInfo device, List<Integer> protocolsToCapture, StringBuilder errbuf)
 	{
-		startAppearanceCounterCapture(deviceIp, protocolsToCapture, null, errbuf);
+		startAppearanceCounterCapture(device, protocolsToCapture, null, errbuf);
 	}
 
-	public AppearanceCounterResults startAppearanceCounterCapture(String deviceIp, List<Integer> protocolsToCapture, CaptureStartListener listener, StringBuilder errbuf)
+	public AppearanceCounterResults startAppearanceCounterCapture(NICInfo device, List<Integer> protocolsToCapture, CaptureStartListener listener, StringBuilder errbuf)
 	{
+		String deviceIp = device.getIP();
 		String ownAddress = deviceIp.substring(1, deviceIp.length() - 1);
 		int ownIpInt;
 
@@ -244,13 +246,13 @@ public class NetworkSniffer
 		}
 		catch (UnknownHostException uhe)
 		{
-			logger.log(Level.SEVERE, "Unable convert own IP address " + ownAddress + " to integer. Debug info: " + ipToDevice.get(deviceIp).getAddresses().get(0).getAddr() + "\nUnable to capture");
+			logger.log(Level.SEVERE, "Unable convert own IP address " + ownAddress + " to integer. Unable to capture");
 			return null;
 		}
 
 		AppearanceCounterPacketHandler filteredCounterPH = new AppearanceCounterPacketHandler(ownIpInt, protocolsToCapture, listener);
 
-		startCapture(deviceIp, filteredCounterPH, errbuf);
+		startCapture(nicInfoToPcapIf.get(device), filteredCounterPH, errbuf);
 
 		return new AppearanceCounterResults(filteredCounterPH);
 	}
@@ -260,19 +262,11 @@ public class NetworkSniffer
 	{
 		WatchdogPacketHandler watchdogPH = new WatchdogPacketHandler(packetTypeList, isRepeated, cooldownInSecs, listener, this, deviceInfo.getMACAddress());
 
-		startCapture(deviceInfo.getIP(), watchdogPH, errbuf);
+		startCapture(nicInfoToPcapIf.get(deviceInfo), watchdogPH, errbuf);
 	}
 
-	private void startCapture(String deviceIp, PcapPacketHandler<Void> packetHandler, StringBuilder errbuf)
+	private void startCapture(PcapIf device, PcapPacketHandler<Void> packetHandler, StringBuilder errbuf)
 	{
-		PcapIf device = ipToDevice.get(deviceIp);
-
-		if (device == null)
-		{
-			logger.log(Level.SEVERE, "Unable to find device with IP " + deviceIp);
-			return;
-		}
-
 		pcap = Pcap.openLive(device.getName(), snaplen, flags, timeout, errbuf);
 
 		if (pcap == null)

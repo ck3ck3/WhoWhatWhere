@@ -265,7 +265,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		ToggleButton btnZoom = new ToggleButton();
 		btnZoom.setToggleGroup(zoomToggleGroup);
 		btnZoom.setGraphic(new ImageView(new Image(getClass().getResourceAsStream(zoomInIconLocation))));
-		btnZoom.setTooltip(new Tooltip("Zoom in on this location"));
+		btnZoom.setTooltip(new Tooltip("Zoom in on this location (into the center of the city)"));
 		btnZoom.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
 		{
 			HBox hbox = (HBox) btnZoom.getParent();
@@ -287,6 +287,9 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			imgService.setCenterOnIP(ip, newValue);
 			generateAndShowImage();
 		});
+		Tooltip spinnerTooltip = new Tooltip("Set zoom level (1-20)");
+		spinnerZoom.setTooltip(spinnerTooltip);
+		spinnerZoom.getEditor().setTooltip(spinnerTooltip);
 		spinnerZoom.setEditable(false);
 		spinnerZoom.setDisable(true);
 		HBox zoomControls = new HBox(btnZoom, spinnerZoom);

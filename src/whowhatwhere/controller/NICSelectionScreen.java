@@ -4,8 +4,9 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.jnetpcap.packet.PcapPacket;
 
@@ -36,13 +37,15 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 	private Button btnDone;
 	private Pane detecting;
 	private final NICInfo nicInfoToCopyResultInto;
-	private List<NICInfo> listOfDevices = new NetworkSniffer().getListOfDevices();
+	NetworkSniffer sniffer = new NetworkSniffer();
+	private List<NICInfo> listOfDevices = sniffer.getListOfDevicesWithIP();
 
 	private Process pingProcess;
-	private NetworkSniffer[] snifferArray = new NetworkSniffer[listOfDevices.size()];
 	private boolean isAutoDetectRunning = false;
 	private boolean isFirstRun;
-	private Timer autoDetectTimer;
+	private boolean autoDetectSuccess;
+	private ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
+	private ScheduledFuture<?> task;
 
 	/**
 	 * 
@@ -89,7 +92,7 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 	{
 		btnAutoDetect.setOnAction(actionEvent ->
 		{
-			autoDetect();
+			new Thread(() -> autoDetect()).start();
 		});
 
 		btnDone.setOnAction(actionEvent ->
@@ -119,68 +122,69 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 	{
 		try
 		{
+			autoDetectSuccess = false;
 			isAutoDetectRunning = true;
 			detecting.setVisible(true);
 			btnAutoDetect.setDisable(true);
 			comboNIC.setDisable(true);
-			final int timeoutInSecs = 30;
-
-			autoDetectTimer = new Timer(true);
-			autoDetectTimer.schedule(new TimerTask()
-			{
-				@Override
-				public void run()
-				{
-					Platform.runLater(() -> new Alert(AlertType.ERROR, "Unable to auto-detect, process timed out.").showAndWait());
-					cleanupAfterAutoDetect();
-				}
-			}, timeoutInSecs * 1000);
+			final int timeoutInSecs = 5;
 
 			String ipToPing = "8.8.8.8";
-			pingProcess = Runtime.getRuntime().exec("ping " + ipToPing + " -n " + timeoutInSecs);
+			pingProcess = Runtime.getRuntime().exec("ping -t " + ipToPing);
 
-			PacketTypeToMatch packetType = new PacketTypeToMatch(ipToPing, "255.255.255.255", PacketTypeToMatch.userNotes_EMPTY, PacketDirection.Outgoing, SupportedProtocols.ICMP, null, null, null,
-					"", OutputMethod.POPUP);
+			PacketTypeToMatch detectPing = new PacketTypeToMatch(ipToPing, null, PacketTypeToMatch.userNotes_EMPTY, PacketDirection.Outgoing, SupportedProtocols.ICMP, null, null, null, "",
+					OutputMethod.TTS);
 
 			for (int i = 0; i < listOfDevices.size() && isAutoDetectRunning; i++)
 			{
 				NICInfo nic = listOfDevices.get(i);
 
-				snifferArray[i] = new NetworkSniffer();
-
-				packetType.setMessageText(String.valueOf(i));
+				detectPing.setMessageText(String.valueOf(i));
 				List<PacketTypeToMatch> list = new ArrayList<>(1);
-				list.add(packetType);
+				list.add(detectPing);
+				
+				sniffer = new NetworkSniffer();
 
-				if (isAutoDetectRunning) //if one of these threads detected it, this will be false and we won't run another detection for no reason
+				task = timer.schedule(() ->
 				{
-					final int index = i;
-					new Thread(() ->
-					{
-						try
-						{
-							snifferArray[index].startWatchdogCapture(nic, list, false, null, this, new StringBuilder());
-						}
-						catch (UnknownHostException e)
-						{
-							Platform.runLater(() -> new Alert(AlertType.ERROR, "Unable to auto-detect: " + e.getMessage()).showAndWait());
-							cleanupAfterAutoDetect();
-						}
+					sniffer.cleanup();//stopCapture();
+				}, timeoutInSecs, TimeUnit.SECONDS);
 
-					}).start();
+				try
+				{
+					sniffer.startWatchdogCapture(nic, list, false, null, this, new StringBuilder());
+				}
+				catch(UnknownHostException uhe)
+				{
+					continue; //move on to the next nic
 				}
 			}
 		}
 		catch (Exception e)
 		{
 			Platform.runLater(() -> new Alert(AlertType.ERROR, "Unable to auto-detect: " + e.getMessage()).showAndWait());
-			cleanupAfterAutoDetect();
 		}
+		finally
+		{
+			if (isAutoDetectRunning)
+				cleanupAfterAutoDetect();
+		}
+
+		Platform.runLater(() ->
+		{
+			Alert autoDetectStatus = new Alert(AlertType.INFORMATION);
+			String result = "Auto detect " + (autoDetectSuccess ? "finished successfuly" : "failed");
+			autoDetectStatus.setTitle(result);
+			autoDetectStatus.setHeaderText(result);
+			autoDetectStatus.setContentText("Auto detect " + (autoDetectSuccess ? "finished successfuly and selected " : "failed to find ") + "the appropriate network interface.");
+			autoDetectStatus.showAndWait();
+		});
 	}
 
 	@Override
 	public void watchdogFoundMatchingPacket(PcapPacket packet, WatchdogMessage message)
 	{
+		autoDetectSuccess = true;
 		cleanupAfterAutoDetect();
 		int index = Integer.valueOf(message.getMessage());
 
@@ -190,14 +194,12 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 	private void cleanupAfterAutoDetect()
 	{
 		isAutoDetectRunning = false;
-		autoDetectTimer.cancel();
+		if (task != null)
+			task.cancel(true);
 		detecting.setVisible(false);
 
 		pingProcess.destroy();
-
-		for (int i = 0; i < listOfDevices.size(); i++)
-			if (snifferArray[i] != null)
-				snifferArray[i].cleanup();
+		sniffer.cleanup();
 
 		comboNIC.setDisable(false);
 		btnAutoDetect.setDisable(false);

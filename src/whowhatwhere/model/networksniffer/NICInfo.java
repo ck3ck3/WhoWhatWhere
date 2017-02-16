@@ -1,5 +1,7 @@
 package whowhatwhere.model.networksniffer;
 
+import java.util.Arrays;
+
 public class NICInfo
 {
 	private String ip;
@@ -47,5 +49,53 @@ public class NICInfo
 				+ ":" + hexString.substring(10, 12);
 
 		return description + " " + ip + " " + macAddressString;
+	}
+
+	@Override
+	public int hashCode() //hashcode and equals are overriden so this class can be used as a key in a map
+	{
+		final int prime = 31;
+		int result = 1;
+		
+		result = prime * result + ((description == null) ? 0 : description.hashCode());
+		result = prime * result + ((ip == null) ? 0 : ip.hashCode());
+		result = prime * result + Arrays.hashCode(macAddress);
+		
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) //hashcode and equals are overriden so this class can be used as a key in a map
+	{
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof NICInfo))
+			return false;
+		
+		NICInfo other = (NICInfo) obj;
+		if (description == null)
+		{
+			if (other.description != null)
+				return false;
+		}
+		else
+			if (!description.equals(other.description))
+				return false;
+		
+		if (ip == null)
+		{
+			if (other.ip != null)
+				return false;
+		}
+		else
+			if (!ip.equals(other.ip))
+				return false;
+		
+		if (!Arrays.equals(macAddress, other.macAddress))
+			return false;
+		
+		return true;
 	}
 }

@@ -59,6 +59,7 @@ import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.geoipresolver.GeoIPInfo;
 import whowhatwhere.model.geoipresolver.GeoIPResolver;
 import whowhatwhere.model.networksniffer.CaptureStartListener;
+import whowhatwhere.model.networksniffer.NICInfo;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.SupportedProtocols;
 import whowhatwhere.model.networksniffer.appearancecounter.AppearanceCounterResults;
@@ -192,8 +193,10 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		initTable();
 		initColumnListForTTS();
 		initButtonHandlers();
+		
+		guiController.setNumberTextFieldsValidationUI(guiController.getTabWWW(), "black", "red", numFieldCaptureTimeout, numFieldPingTimeout, numFieldRowsToRead);
 	}
-
+	
 	private void initUIElementsFromController()
 	{
 		btnStart = controller.getBtnStart();
@@ -457,7 +460,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 			sendIPToQuickPing.setOnAction(event ->
 			{
 				guiController.getQuickPingController().getComboToPing().getEditor().setText(row.getItem().ipAddressProperty().getValue());
-				tabPane.getSelectionModel().select(guiController.getUtilsTab());
+				tabPane.getSelectionModel().select(guiController.getTabUtilities());
 			});
 
 			MenuItem pingIP = new MenuItem("Ping this IP");
@@ -478,7 +481,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private void startButtonPressed()
 	{
 		StringBuilder errbuf = new StringBuilder();
-		String deviceIP = guiController.getSelectedNIC().getIP();
+		NICInfo device = guiController.getSelectedNIC();
 		final CaptureStartListener thisObj = this;
 
 		changeGuiTemplate(true);
@@ -490,7 +493,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 			@Override
 			protected Void call() throws Exception
 			{
-				results = sniffer.startAppearanceCounterCapture(deviceIP, getSelectedProtocols(), thisObj, errbuf);
+				results = sniffer.startAppearanceCounterCapture(device, getSelectedProtocols(), thisObj, errbuf);
 				return null;
 			}
 

@@ -11,6 +11,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.application.Platform;
+import javafx.beans.binding.BooleanExpression;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -27,6 +29,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
 import whowhatwhere.controller.appearancecounter.AppearanceCounterController;
 import whowhatwhere.controller.appearancecounter.AppearanceCounterUI;
@@ -62,6 +65,10 @@ public class GUIController implements CheckForUpdatesResultHandler
 	@FXML
 	private TabPane tabPane;
 	@FXML
+	private Tab tabWWW;
+	@FXML
+	private Tab tabWatchdog;
+	@FXML
 	private Tab tabUtils;
 	@FXML
 	private MenuItem menuItemSelectNIC;
@@ -82,7 +89,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 	@FXML
 	private QuickPingController quickPingPaneController;
 	@FXML
-	private WatchdogController watchdogTabController;
+	private WatchdogController watchdogPaneController;
 	@FXML
 	private TraceUtilityController tracePaneController;
 
@@ -150,9 +157,9 @@ public class GUIController implements CheckForUpdatesResultHandler
 		return quickPingPaneController;
 	}
 	
-	public WatchdogController getWatchdogTabController()
+	public WatchdogController getWatchdogPaneController()
 	{
-		return watchdogTabController;
+		return watchdogPaneController;
 	}
 	
 	public TraceUtilityController getTracePaneController()
@@ -331,6 +338,25 @@ public class GUIController implements CheckForUpdatesResultHandler
 		return alert;
 	}
 
+	public void setNumberTextFieldsValidationUI(Tab parentTab, String colorForValidText, String colorForInvalidText, NumberTextField... fields)
+	{
+		BooleanExpression andOfAllFields = new SimpleBooleanProperty(true);
+		
+		for (NumberTextField field: fields)
+		{
+			if (colorForValidText != null && colorForInvalidText != null)
+				field.setColorForText(colorForValidText, colorForInvalidText);
+			
+			if (parentTab != null)
+				andOfAllFields = andOfAllFields.and(field.getValidProperty());
+		}
+		
+		if (parentTab != null)
+			for (Tab tab : tabPane.getTabs())
+				if (!tab.equals(parentTab))
+					tab.disableProperty().bind(andOfAllFields.not());
+	}
+	
 	public Button getBtnExit()
 	{
 		return btnExit;
@@ -341,9 +367,19 @@ public class GUIController implements CheckForUpdatesResultHandler
 		return tabPane;
 	}
 
-	public Tab getUtilsTab()
+	public Tab getTabUtilities()
 	{
 		return tabUtils;
+	}
+
+	public Tab getTabWWW()
+	{
+		return tabWWW;
+	}
+
+	public Tab getTabWatchdog()
+	{
+		return tabWatchdog;
 	}
 
 	public HotkeyRegistry getHotkeyRegistry()

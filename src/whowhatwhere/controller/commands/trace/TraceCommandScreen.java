@@ -11,10 +11,13 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
@@ -80,7 +83,9 @@ public class TraceCommandScreen extends CommandScreen
 		numFieldTimeout.setPrefSize(45, 25);
 
 		btnVisualTrace.setOnAction(event -> openVisualTrace());
-
+		btnVisualTrace.setStyle("-fx-font-weight: bold;");
+		btnVisualTrace.setGraphic(new ImageView(new Image("/earth-16.png")));
+		btnVisualTrace.setContentDisplay(ContentDisplay.RIGHT);
 		btnVisualTrace.setDisable(true);
 
 		AnchorPane aPane = new AnchorPane(chkboxResolveNames);

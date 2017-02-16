@@ -53,13 +53,13 @@
          <center>
             <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
               <tabs>
-                <Tab closable="false" text="Who What Where">
+                <Tab fx:id="tabWWW" closable="false" text="Who What Where">
                 	<!-- <content><fx:include fx:id="appearanceCounterPane" source="../appearancecounter/AppearanceCounter.fxml" /></content> -->
                 	<content><fx:include fx:id="appearanceCounterPane" source="/whowhatwhere/view/fxmls/appearancecounter/AppearanceCounter.fxml" /></content>
                 </Tab>
-                <Tab closable="false" text="Watchdog">
+                <Tab fx:id="tabWatchdog" closable="false" text="Watchdog">
                 	<!-- <content><fx:include fx:id="watchdogTab" source="../watchdog/WatchdogTab.fxml" /></content>-->
-                	<content><fx:include fx:id="watchdogTab" source="/whowhatwhere/view/fxmls/watchdog/WatchdogTab.fxml" /></content> 
+                	<content><fx:include fx:id="watchdogPane" source="/whowhatwhere/view/fxmls/watchdog/WatchdogTab.fxml" /></content> 
                 </Tab>
                 <Tab fx:id="tabUtils" closable="false" text="Utilities">
                   <content>

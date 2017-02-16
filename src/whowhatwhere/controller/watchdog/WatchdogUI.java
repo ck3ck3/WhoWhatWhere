@@ -129,13 +129,14 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 
 	public WatchdogUI(GUIController guiController)
 	{
-		this.controller = guiController.getWatchdogTabController();
+		this.controller = guiController.getWatchdogPaneController();
 		this.guiController = guiController;
 		this.guiController.registerForSettingsHandler(this);
 
 		initUIElementsFromController();
 		initButtonHandlers();
 		
+		guiController.setNumberTextFieldsValidationUI(guiController.getTabWatchdog(), "black", "red", numFieldCooldown);
 		table.setItems(entryList);
 		userNotesToIPListMap = getUserNotesReverseMap();
 	}
