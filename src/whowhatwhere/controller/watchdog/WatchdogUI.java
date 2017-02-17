@@ -136,7 +136,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		initUIElementsFromController();
 		initButtonHandlers();
 		
-		guiController.setNumberTextFieldsValidationUI(guiController.getTabWatchdog(), "black", "red", numFieldCooldown);
+		guiController.setNumberTextFieldsValidationUI(guiController.getTabWatchdog(), numFieldCooldown);
 		table.setItems(entryList);
 		userNotesToIPListMap = getUserNotesReverseMap();
 	}

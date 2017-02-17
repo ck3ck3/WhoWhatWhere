@@ -25,6 +25,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
+import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.commands.CommandScreen;
 import whowhatwhere.model.geoipresolver.GeoIPResolver;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
@@ -81,6 +82,7 @@ public class TraceCommandScreen extends CommandScreen
 		btnStop.setDisable(true);
 
 		numFieldTimeout.setPrefSize(45, 25);
+		GUIController.setNumberTextFieldValidationUI(numFieldTimeout);
 
 		btnVisualTrace.setOnAction(event -> openVisualTrace());
 		btnVisualTrace.setStyle("-fx-font-weight: bold;");

@@ -6,7 +6,9 @@ import java.awt.TrayIcon;
 import java.awt.TrayIcon.MessageType;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,6 +49,10 @@ public class GUIController implements CheckForUpdatesResultHandler
 {
 	private final static Logger logger = Logger.getLogger(GUIController.class.getPackage().getName());
 	private final static String smallQuestionMarkImageLocation = "/qmark-21x21.png";
+	private final static String textColorForValidText = "black"; 
+	private final static String backgroundColorForValidText = "white";
+	private final static String textColorForInvalidText = "#b94a48";
+	private final static String backgroundColorForInvalidText = "#f2dede";
 	public final static Image imageHelpTooltip = new Image(GUIController.class.getResourceAsStream(smallQuestionMarkImageLocation));
 	public final static String voiceForTTS = "kevin16";
 
@@ -101,7 +107,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 	private UserNotes userNotes;
 	private SettingsHandler settings;
 	private List<LoadAndSaveSettings> instancesWithSettingsToHandle = new ArrayList<>();
-
+	private Map<Tab, BooleanExpression> tabToBindExpression = new HashMap<>();
 
 	
 	/**
@@ -337,24 +343,36 @@ public class GUIController implements CheckForUpdatesResultHandler
 
 		return alert;
 	}
-
-	public void setNumberTextFieldsValidationUI(Tab parentTab, String colorForValidText, String colorForInvalidText, NumberTextField... fields)
+	
+	public static void setNumberTextFieldValidationUI(NumberTextField... fields)
+	{
+		for (NumberTextField field: fields)
+				field.setColorForText(textColorForValidText, backgroundColorForValidText, textColorForInvalidText, backgroundColorForInvalidText);
+	}
+	
+	public void setNumberTextFieldsValidationUI(Tab parentTab, NumberTextField... fields)
 	{
 		BooleanExpression andOfAllFields = new SimpleBooleanProperty(true);
 		
-		for (NumberTextField field: fields)
-		{
-			if (colorForValidText != null && colorForInvalidText != null)
-				field.setColorForText(colorForValidText, colorForInvalidText);
-			
-			if (parentTab != null)
-				andOfAllFields = andOfAllFields.and(field.getValidProperty());
-		}
+		setNumberTextFieldValidationUI(fields);
 		
 		if (parentTab != null)
+		{
+			for (NumberTextField field: fields)
+				andOfAllFields = andOfAllFields.and(field.getValidProperty());
+		
 			for (Tab tab : tabPane.getTabs())
 				if (!tab.equals(parentTab))
-					tab.disableProperty().bind(andOfAllFields.not());
+				{
+					BooleanExpression existingExpression = tabToBindExpression.get(tab);
+					
+					if (existingExpression != null)
+						andOfAllFields = andOfAllFields.and(existingExpression);
+					
+					tabToBindExpression.put(tab, andOfAllFields);
+					tab.disableProperty().bind(andOfAllFields.not());					
+				}
+		}
 	}
 	
 	public Button getBtnExit()

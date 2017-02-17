@@ -194,7 +194,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		initColumnListForTTS();
 		initButtonHandlers();
 		
-		guiController.setNumberTextFieldsValidationUI(guiController.getTabWWW(), "black", "red", numFieldCaptureTimeout, numFieldPingTimeout, numFieldRowsToRead);
+		guiController.setNumberTextFieldsValidationUI(guiController.getTabWWW(), numFieldCaptureTimeout, numFieldPingTimeout, numFieldRowsToRead);
 	}
 	
 	private void initUIElementsFromController()

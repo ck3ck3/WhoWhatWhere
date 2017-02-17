@@ -133,6 +133,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 		setTooltipsForControls();
 		setValidatorsForControls();
 		setButtonHandlers(isEdit);
+		GUIController.setNumberTextFieldValidationUI(numFieldDstPortLeft, numFieldDstPortRight, numFieldPacketSizeLeft, numFieldPacketSizeRight, numFieldSrcPortLeft, numFieldSrcPortRight);
 	}
 	
 	private String getValueFromTextField(CheckBox chkbox, TextField field)
