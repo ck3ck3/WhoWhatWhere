@@ -1,4 +1,4 @@
-package whowhatwhere.controller.appearancecounter;
+package whowhatwhere.controller;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -10,7 +10,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
+import whowhatwhere.controller.appearancecounter.UserNotesRowModel;
 
 public class ManageUserNotesController extends SecondaryFXMLWithCRUDTableController<UserNotesRowModel>
 {
@@ -38,6 +38,10 @@ public class ManageUserNotesController extends SecondaryFXMLWithCRUDTableControl
 		columnNotes.setCellFactory(TextFieldTableCell.forTableColumn());
 		
 		tableEntries.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+		
+		GUIController.setCommonGraphicOnLabeled(btnAddRow, GUIController.CommonGraphicImages.ADD);
+		GUIController.setCommonGraphicOnLabeled(btnRemoveRow, GUIController.CommonGraphicImages.REMOVE);
+		GUIController.setCommonGraphicOnLabeled(btnClose, GUIController.CommonGraphicImages.OK);
 	}
 	
 	public TableView<UserNotesRowModel> getTable()

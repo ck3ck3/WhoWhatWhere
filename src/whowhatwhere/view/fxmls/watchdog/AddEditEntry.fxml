@@ -93,7 +93,7 @@
                   <Font size="14.0" />
                </font>
             </TitledPane>
-            <Button fx:id="btnDone" defaultButton="true" layoutX="476.0" layoutY="649.0" mnemonicParsing="false" text="Done" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="79.0" />
+            <Button fx:id="btnDone" defaultButton="true" layoutX="476.0" layoutY="649.0" mnemonicParsing="false" text="Done" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="104.0" />
             <Button fx:id="btnCancel" layoutX="529.0" layoutY="673.0" mnemonicParsing="false" text="Cancel" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="19.0" />
          </children>
       </AnchorPane>

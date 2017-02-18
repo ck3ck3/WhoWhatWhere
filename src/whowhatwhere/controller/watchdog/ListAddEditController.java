@@ -21,7 +21,7 @@ import whowhatwhere.model.networksniffer.watchdog.OutputMethod;
 
 public class ListAddEditController implements Initializable
 {
-	private final static String speakerImageLocation = "/buttonGraphics/speaker-21-edited.png";
+	private final static String speakerImageLocation = "/buttonGraphics/speaker.png";
 	
 	@FXML
 	private ComboBox<OutputMethod> comboOutputMethod;
@@ -114,6 +114,8 @@ public class ListAddEditController implements Initializable
 		
 		btnPreview.setVisible(false);
 		GUIController.setGraphicForLabeledControl(btnPreview, speakerImageLocation, ContentDisplay.LEFT);
+		GUIController.setCommonGraphicOnLabeled(btnDone, GUIController.CommonGraphicImages.OK);
+		GUIController.setCommonGraphicOnLabeled(btnCancel, GUIController.CommonGraphicImages.CANCEL);
 	}
 	
 	public ComboBox<OutputMethod> getComboOutputMethod()

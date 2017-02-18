@@ -26,13 +26,7 @@ import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
 
 public class WatchdogController implements Initializable
 {
-	private final static String addImageLocation = "/buttonGraphics/Add.png";
-	private final static String editImageLocation = "/buttonGraphics/Edit.png";
-	private final static String removeImageLocation = "/buttonGraphics/Delete.png";
-	private final static String upImageLocation = "/buttonGraphics/Up.png";
-	private final static String downImageLocation = "/buttonGraphics/Down.png";
-	private final static String loadImageLocation = "/buttonGraphics/Load.png";
-	private final static String saveImageLocation = "/buttonGraphics/Save.png";
+	private final static String startWatchdogImageLocation = "/buttonGraphics/watchdogIcon.png";
 	
 	@FXML
 	private Button btnAddRow;
@@ -115,15 +109,15 @@ public class WatchdogController implements Initializable
 		numFieldCooldown.setMinValue(WatchdogUI.minCooldownValue);
 		numFieldCooldown.setMaxValue(WatchdogUI.maxCooldownValue);
 		
-		GUIController.setTooltipGraphic(labelCooldownSeconds);
+		GUIController.setCommonGraphicOnLabeled(labelCooldownSeconds, GUIController.CommonGraphicImages.TOOLTIP);
 		Tooltip cooldownTooltip = new Tooltip("In order to avoid getting flooded with messages, matches that occur during a cooldown period will be ignored and not issue a notification.\nMinimal cooldown period is " + WatchdogUI.minCooldownValue + " seconds.");
 		cooldownTooltip.setWrapText(true);
 		cooldownTooltip.setMaxWidth(350);
 		cooldownTooltip.setAnchorLocation(AnchorLocation.WINDOW_TOP_RIGHT);
 		labelCooldownSeconds.setTooltip(cooldownTooltip);
 		
-		GUIController.setTooltipGraphic(labelTableHeader);
-		Tooltip headerTooltip = new Tooltip("Watchdog inspects network traffic in the background and issues a user-customized notification when a packet matches the conditions specified in an entry. The entries are checked in the order that they appear. If a packet matches an entry, the remaining entries will not be checked.");
+		GUIController.setCommonGraphicOnLabeled(labelTableHeader, GUIController.CommonGraphicImages.TOOLTIP);
+		Tooltip headerTooltip = new Tooltip("Watchdog inspects network traffic and issues a user-customized notification when a packet matches the conditions specified in an entry. The entries are checked in the order that they appear. If a packet matches an entry, the remaining entries will not be checked.");
 		headerTooltip.setWrapText(true);
 		headerTooltip.setMaxWidth(420);
 		labelTableHeader.setTooltip(headerTooltip);
@@ -132,15 +126,19 @@ public class WatchdogController implements Initializable
 
 	private void setButtonGraphics()
 	{
-		GUIController.setGraphicForLabeledControl(btnAddRow, addImageLocation, ContentDisplay.LEFT);
-		GUIController.setGraphicForLabeledControl(btnEditRow, editImageLocation, ContentDisplay.LEFT);
-		GUIController.setGraphicForLabeledControl(btnRemoveRow, removeImageLocation, ContentDisplay.LEFT);
-		GUIController.setGraphicForLabeledControl(btnMoveUp, upImageLocation, ContentDisplay.LEFT);
-		GUIController.setGraphicForLabeledControl(btnMoveDown, downImageLocation, ContentDisplay.LEFT);
-		GUIController.setGraphicForLabeledControl(btnSavePreset, saveImageLocation, ContentDisplay.LEFT);
-		GUIController.setGraphicForLabeledControl(menubtnLoadPreset, loadImageLocation, ContentDisplay.LEFT);
+		GUIController.setCommonGraphicOnLabeled(btnAddRow, GUIController.CommonGraphicImages.ADD);
+		GUIController.setCommonGraphicOnLabeled(btnEditRow, GUIController.CommonGraphicImages.EDIT);
+		GUIController.setCommonGraphicOnLabeled(btnRemoveRow, GUIController.CommonGraphicImages.REMOVE);
+		GUIController.setCommonGraphicOnLabeled(btnMoveUp, GUIController.CommonGraphicImages.UP);
+		GUIController.setCommonGraphicOnLabeled(btnMoveDown, GUIController.CommonGraphicImages.DOWN);
+		GUIController.setCommonGraphicOnLabeled(btnSavePreset, GUIController.CommonGraphicImages.SAVE);
+		GUIController.setCommonGraphicOnLabeled(menubtnLoadPreset, GUIController.CommonGraphicImages.LOAD);
 		
-		GUIController.setConfigureHotkeyGraphic(btnConfigureHotkey);
+		GUIController.setCommonGraphicOnLabeled(btnConfigureHotkey, GUIController.CommonGraphicImages.HOTKEY);
+		
+		GUIController.setCommonGraphicOnLabeled(btnStop, GUIController.CommonGraphicImages.STOP);
+		GUIController.setGraphicForLabeledControl(btnStart, startWatchdogImageLocation, ContentDisplay.LEFT);
+		btnStart.setGraphicTextGap(6);
 	}
 
 	private void setColumnCellFactories()

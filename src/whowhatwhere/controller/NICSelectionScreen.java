@@ -119,7 +119,7 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 	}
 
 	private void autoDetect()
-	{
+	{btnAutoDetect.getWidth();
 		try
 		{
 			autoDetectSuccess = false;

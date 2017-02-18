@@ -1,4 +1,4 @@
-package whowhatwhere.controller.appearancecounter;
+package whowhatwhere.controller;
 
 import java.io.IOException;
 import java.util.List;
@@ -10,8 +10,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TableColumn;
 import javafx.stage.Stage;
-import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
-import whowhatwhere.controller.UserNotes;
+import whowhatwhere.controller.appearancecounter.UserNotesRowModel;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLWithCRUDTableScreen;
 

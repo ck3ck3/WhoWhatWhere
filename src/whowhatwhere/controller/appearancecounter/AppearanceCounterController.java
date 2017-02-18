@@ -1,20 +1,30 @@
 package whowhatwhere.controller.appearancecounter;
 
+import java.net.URL;
+import java.util.ResourceBundle;
+
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import numbertextfield.NumberTextField;
+import whowhatwhere.controller.GUIController;
 
-public class AppearanceCounterController
+public class AppearanceCounterController implements Initializable
 {
+	private final static String startWWWImageLocation = "/buttonGraphics/startWWWIcon.png";
+	private final static String exportToCSVImageLocation = "/buttonGraphics/export CSV.png";
+	
 	@FXML
 	private AnchorPane paneCaptureOptions;
 	@FXML
@@ -94,6 +104,26 @@ public class AppearanceCounterController
 	@FXML
 	private Label labelWWW;
 	
+	
+	@Override
+	public void initialize(URL location, ResourceBundle resources)
+	{
+		setWWWLabel();
+		
+		GUIController.setCommonGraphicOnLabeled(btnConfigCaptureHotkey, GUIController.CommonGraphicImages.HOTKEY);
+		GUIController.setGraphicForLabeledControl(btnStart, startWWWImageLocation, ContentDisplay.LEFT);
+		GUIController.setCommonGraphicOnLabeled(btnStop, GUIController.CommonGraphicImages.STOP);
+		GUIController.setGraphicForLabeledControl(btnExportTableToCSV, exportToCSVImageLocation, ContentDisplay.LEFT);
+	}
+	
+	private void setWWWLabel()
+	{
+		GUIController.setCommonGraphicOnLabeled(labelWWW, GUIController.CommonGraphicImages.TOOLTIP);
+		Tooltip tooltip = new Tooltip("Who What Where listens to network traffic and analyzes IP packets. Analysis includes geographical location, latency and total amount of packets sent and received from each address.");
+		tooltip.setMaxWidth(400);
+		tooltip.setWrapText(true);
+		labelWWW.setTooltip(tooltip);
+	}
 	
 	public AnchorPane getPaneCaptureOptions()
 	{

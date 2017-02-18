@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,11 +21,7 @@ import javafx.concurrent.Task;
 import javafx.geometry.HPos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
@@ -90,11 +85,6 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 
 			if (ipInfo != null)
 				geoIPResults.put(ip, ipInfo);
-			else
-			{
-				ipInfo = showAlertRetryGettingGeoIP(ip);
-				geoIPResults.put(ip, ipInfo);
-			}
 		}
 
 		visualTraceController = getLoader().<VisualTraceController> getController();
@@ -112,24 +102,6 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			imgView.setImage(img);
 			visualTraceController.getPaneStackColor().setStyle("-fx-background-color: #A3CBFE;"); //ocean color background to hide transparent part of image if exists
 		});
-	}
-	
-	private GeoIPInfo showAlertRetryGettingGeoIP(String ip)
-	{
-		Alert failedGeoIP = new Alert(AlertType.WARNING, "Failed to get GeoIP info for ip " + ip + "\nRetry or skip this IP?");
-		
-		ButtonType btnRetry = new ButtonType("Retry", ButtonData.OK_DONE);
-		ButtonType btnSkip = new ButtonType("Skip", ButtonData.CANCEL_CLOSE);
-		failedGeoIP.getButtonTypes().setAll(btnRetry, btnSkip);
-		failedGeoIP.setTitle("Failed to get GeoIP info");
-		failedGeoIP.setHeaderText("Retry or skip?");
-		
-		Optional<ButtonType> result = failedGeoIP.showAndWait();
-		
-		if (result.get() == btnRetry)
-			return GeoIPResolver.getIPInfo(ip);
-		else //skip
-			return new GeoIPInfo(false);
 	}
 	
 	private void resizeIfNeeded()

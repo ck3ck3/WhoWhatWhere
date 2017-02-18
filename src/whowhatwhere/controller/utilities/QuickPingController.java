@@ -39,10 +39,10 @@ public class QuickPingController implements Initializable
 	{
 		comboOutputMethod.setItems(FXCollections.observableArrayList(OutputMethod.values()));
 		
-		GUIController.setTooltipGraphic(labelIP);
+		GUIController.setCommonGraphicOnLabeled(labelIP, GUIController.CommonGraphicImages.TOOLTIP);
 		labelIP.setTooltip(new Tooltip("IP or hostname to ping when the hotkey is pressed"));
 		
-		GUIController.setConfigureHotkeyGraphic(btnConfigureHotkey);
+		GUIController.setCommonGraphicOnLabeled(btnConfigureHotkey, GUIController.CommonGraphicImages.HOTKEY);
 	}
 	
 	public ComboBox<String> getComboToPing()

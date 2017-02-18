@@ -51,10 +51,32 @@ import whowhatwhere.model.networksniffer.NetworkSniffer;
 
 public class GUIController implements CheckForUpdatesResultHandler
 {
+	public enum CommonGraphicImages 
+	{
+		OK("/buttonGraphics/Ok.png"),
+		CANCEL("/buttonGraphics/Cancel.png"),
+		ADD("/buttonGraphics/Add.png"),
+		EDIT("/buttonGraphics/Edit.png"),
+		REMOVE("/buttonGraphics/Delete.png"),
+		UP("/buttonGraphics/Up.png"),
+		DOWN("/buttonGraphics/Down.png"),
+		LOAD("/buttonGraphics/Load.png"),
+		SAVE("/buttonGraphics/Save.png"),
+		STOP("/buttonGraphics/Stop.png"),
+		TOOLTIP("/buttonGraphics/Help.png"),
+		HOTKEY("/buttonGraphics/Keyboard.png");
+		
+		private String imageLocation;
+		
+		private CommonGraphicImages(String location) { imageLocation = location; }
+		
+		public String getLocation() { return imageLocation; }
+	}
+	
 	private final static Logger logger = Logger.getLogger(GUIController.class.getPackage().getName());
+	
+	
 	private final static String applicationIcon16Location = "/appIcons/www16.jpg";
-	private final static String tooltipImageLocation = "/buttonGraphics/Help.png";
-	private final static String configureHotkeyImageLocation = "/buttonGraphics/Keyboard.png";
 	private final static String exitImageLocation = "/buttonGraphics/Exit.png";
 	private final static String textColorForValidText = "black"; 
 	private final static String backgroundColorForValidText = "white";
@@ -401,14 +423,9 @@ public class GUIController implements CheckForUpdatesResultHandler
 		}
 	}
 	
-	public static void setTooltipGraphic(Labeled control)
+	public static void setCommonGraphicOnLabeled(Labeled labeled, CommonGraphicImages image)
 	{
-		setGraphicForLabeledControl(control, tooltipImageLocation, ContentDisplay.RIGHT);
-	}
-	
-	public static void setConfigureHotkeyGraphic(Button btn)
-	{
-		setGraphicForLabeledControl(btn, configureHotkeyImageLocation, ContentDisplay.LEFT);
+		setGraphicForLabeledControl(labeled, image.getLocation(), image == CommonGraphicImages.TOOLTIP ? ContentDisplay.RIGHT : ContentDisplay.LEFT);
 	}
 	
 	public static void setGraphicForLabeledControl(Labeled control, String imageLocation, ContentDisplay direction)

@@ -1,11 +1,16 @@
 package whowhatwhere.controller.commands;
 
+import java.net.URL;
+import java.util.ResourceBundle;
+
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
+import whowhatwhere.controller.GUIController;
 
-public class CmdGUIController
+public class CmdGUIController implements Initializable
 {
 	@FXML
 	private TextArea textAreaOutput;
@@ -13,6 +18,13 @@ public class CmdGUIController
 	private Button btnClose;
 	@FXML
 	private HBox hboxBottom;
+	
+	
+	@Override
+	public void initialize(URL arg0, ResourceBundle arg1)
+	{
+		GUIController.setCommonGraphicOnLabeled(btnClose, GUIController.CommonGraphicImages.OK);
+	}
 
 	public TextArea getTextAreaOutput()
 	{
@@ -28,5 +40,4 @@ public class CmdGUIController
 	{
 		return btnClose;
 	}
-
 }

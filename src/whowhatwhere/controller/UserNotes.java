@@ -16,8 +16,8 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
-import whowhatwhere.controller.appearancecounter.ManageUserNotesScreen;
 
 public class UserNotes
 {
@@ -113,7 +113,7 @@ public class UserNotes
 			return;
 		}
 
-		Stage newStage = userNotesScreen.showScreenOnNewStage("Manage User Notes", null, userNotesScreen.getCloseButton());
+		Stage newStage = userNotesScreen.showScreenOnNewStage("Manage User Notes", Modality.APPLICATION_MODAL, userNotesScreen.getCloseButton());
 		newStage.setOnCloseRequest(windowEvent -> 
 		{
 			windowEvent.consume();

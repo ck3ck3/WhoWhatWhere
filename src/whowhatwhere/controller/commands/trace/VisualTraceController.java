@@ -1,18 +1,22 @@
 package whowhatwhere.controller.commands.trace;
 
+import java.net.URL;
+import java.util.ResourceBundle;
+
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.control.SplitPane;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SplitPane;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import whowhatwhere.controller.GUIController;
 
-public class VisualTraceController
+public class VisualTraceController implements Initializable
 {
-
 	@FXML
 	private ImageView imgView;
 	@FXML
@@ -29,6 +33,13 @@ public class VisualTraceController
 	private ScrollPane scrollPane;
 	@FXML
 	private StackPane paneStackColor;
+	
+	
+	@Override
+	public void initialize(URL arg0, ResourceBundle arg1)
+	{
+		GUIController.setCommonGraphicOnLabeled(btnClose, GUIController.CommonGraphicImages.OK);
+	}
 	
 	public ScrollPane getScrollPane()
 	{
@@ -69,5 +80,4 @@ public class VisualTraceController
 	{
 		return paneStackColor;
 	}
-
 }

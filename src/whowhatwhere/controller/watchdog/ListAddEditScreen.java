@@ -335,7 +335,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 
 	private void setTooltip(Labeled control, String tooltipMsg)
 	{
-		GUIController.setTooltipGraphic(control);
+		GUIController.setCommonGraphicOnLabeled(control, GUIController.CommonGraphicImages.TOOLTIP);
 
 		Tooltip tooltip = new Tooltip(tooltipMsg);
 		tooltip.setWrapText(true);

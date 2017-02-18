@@ -44,7 +44,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
-import javafx.stage.PopupWindow.AnchorLocation;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
@@ -142,7 +141,6 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private TextField textColumnContains;
 	private TabPane tabPane;
 	private Pane paneProtocolBoxes;
-	private Label labelWWW;
 	
 	private HotkeyRegistry hotkeyRegistry;
 	private Button activeButton;
@@ -184,8 +182,6 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		this.hotkeyRegistry = guiController.getHotkeyRegistry();
 		
 		initUIElementsFromController();
-		setWWWLabel();
-		GUIController.setConfigureHotkeyGraphic(btnConfigCaptureHotkey);
 
 		activeButton = btnStart;
 
@@ -198,16 +194,6 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		initButtonHandlers();
 		
 		guiController.setNumberTextFieldsValidationUI(guiController.getTabWWW(), numFieldCaptureTimeout, numFieldPingTimeout, numFieldRowsToRead);
-	}
-	
-	private void setWWWLabel()
-	{
-		GUIController.setTooltipGraphic(labelWWW);
-		Tooltip tooltip = new Tooltip("Who What Where listens to network traffic and analyzes IP packets. Analysis includes geographical location, latency and total amount of packets sent and received from each address.");
-		tooltip.setMaxWidth(400);
-		tooltip.setWrapText(true);
-		tooltip.setAnchorLocation(AnchorLocation.WINDOW_TOP_LEFT);
-		labelWWW.setTooltip(tooltip);
 	}
 	
 	private void initUIElementsFromController()
@@ -249,7 +235,6 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		comboColumns = controller.getComboColumns();
 		textColumnContains = controller.getTextColumnContains();
 		paneProtocolBoxes = controller.getPaneProtocolBoxes();
-		labelWWW = controller.getLabelWWW();
 
 		tabPane = guiController.getTabPane();
 		hotkeyRegistry = guiController.getHotkeyRegistry();
@@ -344,11 +329,11 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	
 	private void setUserNotesColumnBehavior()
 	{
-		Label labelForIPLabel = new Label("User notes");
-		GUIController.setTooltipGraphic(labelForIPLabel);
-		labelForIPLabel.setTooltip(new Tooltip("Add your own label to describe this IP address to easily recognize it in the future"));
-		labelForIPLabel.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
-		columnNotes.setGraphic(labelForIPLabel);
+		Label labelForIPNote = new Label("User notes");
+		GUIController.setCommonGraphicOnLabeled(labelForIPNote, GUIController.CommonGraphicImages.TOOLTIP);
+		labelForIPNote.setTooltip(new Tooltip("Add your own label to describe this IP address to easily recognize it in the future"));
+		labelForIPNote.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
+		columnNotes.setGraphic(labelForIPNote);
 		columnNotes.setText("");
 		
 		columnNotes.setCellFactory(TextFieldTableCell.forTableColumn()); //make Notes column editable
@@ -492,7 +477,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	}
 
 	private void startButtonPressed()
-	{
+	{btnStart.getWidth();
 		StringBuilder errbuf = new StringBuilder();
 		NICInfo device = guiController.getSelectedNIC();
 		final CaptureStartListener thisObj = this;

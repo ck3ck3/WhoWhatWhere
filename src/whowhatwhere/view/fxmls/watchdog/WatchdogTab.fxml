@@ -87,7 +87,7 @@
             <AnchorPane>
                <children>
                   <Button fx:id="btnStart" layoutX="15.0" layoutY="15.0" mnemonicParsing="false" text="Start Watchdog" />
-                  <Button fx:id="btnStop" disable="true" layoutX="122.0" layoutY="15.0" mnemonicParsing="false" text="Stop Watchdog" />
+                  <Button fx:id="btnStop" disable="true" layoutX="147.0" layoutY="15.0" mnemonicParsing="false" text="Stop Watchdog" />
                   <CheckBox fx:id="chkboxHotkey" layoutX="15.0" layoutY="64.0" mnemonicParsing="false" selected="false" text="Enable start/stop Watchdog hotkey" />
                   <HBox fx:id="paneHotkeyConfig" layoutX="231.0" layoutY="60.0" prefHeight="25.0" prefWidth="363.0" spacing="9.0">
                      <children>
