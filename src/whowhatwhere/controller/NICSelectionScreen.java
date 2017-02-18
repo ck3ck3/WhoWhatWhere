@@ -119,7 +119,8 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 	}
 
 	private void autoDetect()
-	{btnAutoDetect.getWidth();
+	{
+		btnAutoDetect.getWidth();
 		try
 		{
 			autoDetectSuccess = false;
@@ -142,19 +143,23 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 				detectPing.setMessageText(String.valueOf(i));
 				List<PacketTypeToMatch> list = new ArrayList<>(1);
 				list.add(detectPing);
-				
+
 				sniffer = new NetworkSniffer();
 
 				task = timer.schedule(() ->
 				{
-					sniffer.cleanup();//stopCapture();
+					try
+					{
+						sniffer.cleanup();
+					}
+					catch (Exception e) {} //if it fails, it fails...
 				}, timeoutInSecs, TimeUnit.SECONDS);
 
 				try
 				{
 					sniffer.startWatchdogCapture(nic, list, false, null, this, new StringBuilder());
 				}
-				catch(UnknownHostException uhe)
+				catch (UnknownHostException uhe)
 				{
 					continue; //move on to the next nic
 				}
@@ -176,8 +181,12 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 			String result = "Auto detect " + (autoDetectSuccess ? "finished successfuly" : "failed");
 			autoDetectStatus.setTitle(result);
 			autoDetectStatus.setHeaderText(result);
-			autoDetectStatus.setContentText("Auto detect " + (autoDetectSuccess ? "finished successfuly and selected " : "failed to find ") + "the appropriate network interface.");
+			autoDetectStatus.setContentText("Auto detect " + (autoDetectSuccess ? "finished successfuly and selected " + comboNIC.getSelectionModel().getSelectedItem().getDescription()
+																				: "failed to find the appropriate network interface"));
 			autoDetectStatus.showAndWait();
+			
+			if (autoDetectSuccess)
+				btnDone.fire();
 		});
 	}
 
@@ -199,7 +208,11 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 		detecting.setVisible(false);
 
 		pingProcess.destroy();
-		sniffer.cleanup();
+		try
+		{
+			sniffer.cleanup();
+		}
+		catch (Exception e) {} //if it fails, it fails...
 
 		comboNIC.setDisable(false);
 		btnAutoDetect.setDisable(false);

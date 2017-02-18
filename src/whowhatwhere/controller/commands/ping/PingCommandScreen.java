@@ -16,6 +16,14 @@ public class PingCommandScreen extends CommandScreen
 	public PingCommandScreen(Stage stage, Scene scene, String ip, String parameters) throws IOException
 	{
 		super(stage, scene);
+		
+		setStageOnShowing(windowEvent ->
+		{
+			Stage currentStage = (Stage) getTextArea().getScene().getWindow();
+			
+			currentStage.setWidth(400);
+			currentStage.setHeight(300);	
+		});
 
 		setCommandStr("ping " + parameters + " " + ip);
 	}

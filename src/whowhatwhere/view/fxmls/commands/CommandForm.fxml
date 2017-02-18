@@ -13,6 +13,6 @@
             <HBox fx:id="hboxBottom" layoutX="7.0" layoutY="-4.0" prefHeight="37.0" prefWidth="666.0" spacing="10.0" AnchorPane.bottomAnchor="4.0" />
          </children>
       </AnchorPane>
-      <Button fx:id="btnClose" layoutX="681.0" layoutY="562.0" mnemonicParsing="false" text="Close this screen" AnchorPane.bottomAnchor="13.0" AnchorPane.rightAnchor="14.0" />
+      <Button fx:id="btnClose" cancelButton="true" layoutX="681.0" layoutY="562.0" mnemonicParsing="false" text="Close" AnchorPane.bottomAnchor="13.0" AnchorPane.rightAnchor="14.0" />
    </children>
 </AnchorPane>

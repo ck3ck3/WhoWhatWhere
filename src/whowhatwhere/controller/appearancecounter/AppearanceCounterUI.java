@@ -477,7 +477,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	}
 
 	private void startButtonPressed()
-	{btnStart.getWidth();
+	{
 		StringBuilder errbuf = new StringBuilder();
 		NICInfo device = guiController.getSelectedNIC();
 		final CaptureStartListener thisObj = this;

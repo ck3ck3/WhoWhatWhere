@@ -41,7 +41,7 @@
       </AnchorPane>
     <AnchorPane layoutY="834.0" prefHeight="52.0" prefWidth="1200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
          <children>
-            <Button fx:id="btnClose" layoutX="1081.0" layoutY="15.0" mnemonicParsing="false" text="Close this screen" AnchorPane.bottomAnchor="12.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="15.0" />
+            <Button fx:id="btnClose" layoutX="1081.0" layoutY="15.0" mnemonicParsing="false" text="Close" AnchorPane.bottomAnchor="12.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="15.0" />
          </children>
       </AnchorPane>
    </children>
