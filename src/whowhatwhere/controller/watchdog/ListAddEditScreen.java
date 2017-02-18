@@ -15,13 +15,11 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.Labeled;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
-import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
 import whowhatwhere.controller.GUIController;
@@ -337,8 +335,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 
 	private void setTooltip(Labeled control, String tooltipMsg)
 	{
-		control.setGraphic(new ImageView(GUIController.imageHelpTooltip));
-		control.setContentDisplay(ContentDisplay.RIGHT);
+		GUIController.setTooltipGraphic(control);
 
 		Tooltip tooltip = new Tooltip(tooltipMsg);
 		tooltip.setWrapText(true);

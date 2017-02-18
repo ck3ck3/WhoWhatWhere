@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,8 +28,8 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
@@ -36,8 +37,10 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TableView.TableViewSelectionModel;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
@@ -54,6 +57,8 @@ import whowhatwhere.model.networksniffer.watchdog.WatchdogMessage;
 
 public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 {
+	private enum RowMovementDirection {UP, DOWN}
+	
 	private final static Logger logger = Logger.getLogger(WatchdogUI.class.getPackage().getName());
 	private final static String watchdogListAddEditFormLocation = "/whowhatwhere/view/fxmls/watchdog/AddEditEntry.fxml";
 
@@ -77,7 +82,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 	private WatchdogController controller;
 
 	private CheckBox chkboxHotkey;
-	private AnchorPane paneHotkeyConfig;
+	private HBox paneHotkeyConfig;
 	private Button btnConfigureHotkey;
 	private Label labelCurrHotkey;
 	private Button btnStart;
@@ -172,6 +177,9 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		controller.getBtnEditRow().setOnAction(generateAddEditEventHandler(true));
 		initRemoveEntryButton();
 		
+		controller.getBtnMoveUp().setOnAction(generateRowMovementButtonHandlers(RowMovementDirection.UP));
+		controller.getBtnMoveDown().setOnAction(generateRowMovementButtonHandlers(RowMovementDirection.DOWN));
+		
 		initSavePresetButton();
 		initLoadPresetButton();
 
@@ -213,6 +221,44 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		});
 
 		activeButton = btnStart;
+	}
+	
+	/**
+	 * @param movementDirection - enum to specify if the row movement is up or down
+	 * @return an EventHandler for the row movement buttons
+	 */
+	private EventHandler<ActionEvent> generateRowMovementButtonHandlers(RowMovementDirection movementDirection)
+	{
+		int moveToPosition = movementDirection == RowMovementDirection.UP ? -1 : 1;
+		
+		return event ->
+		{
+			ObservableList<PacketTypeToMatch> items = table.getItems();
+			TableViewSelectionModel<PacketTypeToMatch> selectionModel = table.getSelectionModel();
+			List<Integer> modifiableIndices = new ArrayList<Integer>(selectionModel.getSelectedIndices());
+			int[] reSelectRows = new int[modifiableIndices.size()];
+			int i = 0;
+			
+			if (movementDirection == RowMovementDirection.DOWN) //if we are moving down, we should start from the last index and go backwards
+				Collections.reverse(modifiableIndices);
+			
+			for (Integer selectedIndex : modifiableIndices)
+			{
+				if (selectedIndex == (movementDirection == RowMovementDirection.UP ? 0 : items.size() - 1)) //if it's the first or last row (depending on movement direction), don't do anything
+				{
+					reSelectRows[i++] = selectedIndex;
+					continue;
+				}
+				
+				PacketTypeToMatch itemToReplace = items.set(selectedIndex + moveToPosition, items.get(selectedIndex));
+				items.set(selectedIndex, itemToReplace);
+				reSelectRows[i++] = selectedIndex + moveToPosition;
+			}
+			
+			selectionModel.clearSelection();
+			selectionModel.selectIndices(reSelectRows[0], reSelectRows);
+			table.refresh();
+		};		
 	}
 	
 	private void initRemoveEntryButton()

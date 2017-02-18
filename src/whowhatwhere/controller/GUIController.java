@@ -21,14 +21,18 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.Labeled;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import numbertextfield.NumberTextField;
@@ -48,12 +52,14 @@ import whowhatwhere.model.networksniffer.NetworkSniffer;
 public class GUIController implements CheckForUpdatesResultHandler
 {
 	private final static Logger logger = Logger.getLogger(GUIController.class.getPackage().getName());
-	private final static String smallQuestionMarkImageLocation = "/qmark-21x21.png";
+	private final static String applicationIcon16Location = "/appIcons/www16.jpg";
+	private final static String tooltipImageLocation = "/buttonGraphics/Help.png";
+	private final static String configureHotkeyImageLocation = "/buttonGraphics/Keyboard.png";
+	private final static String exitImageLocation = "/buttonGraphics/Exit.png";
 	private final static String textColorForValidText = "black"; 
 	private final static String backgroundColorForValidText = "white";
 	private final static String textColorForInvalidText = "#b94a48";
 	private final static String backgroundColorForInvalidText = "#f2dede";
-	public final static Image imageHelpTooltip = new Image(GUIController.class.getResourceAsStream(smallQuestionMarkImageLocation));
 	public final static String voiceForTTS = "kevin16";
 
 	@FXML
@@ -147,10 +153,11 @@ public class GUIController implements CheckForUpdatesResultHandler
 		settings.loadLastRunConfig(instancesWithSettingsToHandle);
 		
 		initMenuBar();
+		setGraphicForLabeledControl(btnExit, exitImageLocation, ContentDisplay.LEFT);
+		btnExit.setGraphicTextGap(8);
 
 		if (settings.getCheckForUpdatesOnStartup())
 			checkForUpdates(true); //only show a message if there is a new version
-		
 	}
 	
 	public AppearanceCounterController getAppearanceCounterController()
@@ -264,6 +271,9 @@ public class GUIController implements CheckForUpdatesResultHandler
 		String website = Main.getWebsite();
 
 		Alert about = generateLabelAndLinkAlert(AlertType.INFORMATION, "About " + appName, appName + " version " + version, "For more information visit ", website);
+		about.initOwner(getStage());
+		
+		addIconAttributionToAboutDialog(about);
 
 		about.showAndWait();
 	}
@@ -331,11 +341,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 		Label lbl = new Label(text);
 		Hyperlink link = new Hyperlink(url);
 
-		link.setOnAction(event ->
-		{
-			Main.openInBrowser(link.getText());
-			alert.close();
-		});
+		link.setOnAction(event -> Main.openInBrowser(link.getText()));
 
 		fp.getChildren().addAll(lbl, link);
 
@@ -344,12 +350,32 @@ public class GUIController implements CheckForUpdatesResultHandler
 		return alert;
 	}
 	
+	private void addIconAttributionToAboutDialog(Alert aboutDialog)
+	{
+		Hyperlink iconSite = new Hyperlink("http://icons8.com");
+		iconSite.setOnAction(event -> Main.openInBrowser(iconSite.getText()));
+		FlowPane line = new FlowPane(new Label("All icons (except for "), new ImageView(new Image(applicationIcon16Location)), new Label(" ) are from"), iconSite);
+		
+		FlowPane existingFowPane = (FlowPane) aboutDialog.getDialogPane().getContent();
+		VBox vbox = new VBox(10);
+		vbox.getChildren().addAll(existingFowPane, line);
+		aboutDialog.getDialogPane().setContent(vbox);
+	}
+	
+	
+	/**Sets the text-color and background-color for valid and invalid text
+	 * @param fields - the {@code NumberTextField}s to apply this on
+	 */
 	public static void setNumberTextFieldValidationUI(NumberTextField... fields)
 	{
 		for (NumberTextField field: fields)
 				field.setColorForText(textColorForValidText, backgroundColorForValidText, textColorForInvalidText, backgroundColorForInvalidText);
 	}
 	
+	/**Sets the text-color and background-color for valid and invalid text, and if {@code parentTab} isn't null, sets all <i>other</i> tabs to be disabled when the {@code fields} are invalid 
+	 * @param parentTab - the tab containing these {@code fields}
+	 * @param fields - the {@code NumberTextField}s to apply this on
+	 */
 	public void setNumberTextFieldsValidationUI(Tab parentTab, NumberTextField... fields)
 	{
 		BooleanExpression andOfAllFields = new SimpleBooleanProperty(true);
@@ -373,6 +399,24 @@ public class GUIController implements CheckForUpdatesResultHandler
 					tab.disableProperty().bind(andOfAllFields.not());					
 				}
 		}
+	}
+	
+	public static void setTooltipGraphic(Labeled control)
+	{
+		setGraphicForLabeledControl(control, tooltipImageLocation, ContentDisplay.RIGHT);
+	}
+	
+	public static void setConfigureHotkeyGraphic(Button btn)
+	{
+		setGraphicForLabeledControl(btn, configureHotkeyImageLocation, ContentDisplay.LEFT);
+	}
+	
+	public static void setGraphicForLabeledControl(Labeled control, String imageLocation, ContentDisplay direction)
+	{
+		if (direction != null)
+			control.setContentDisplay(direction);
+		
+		control.setGraphic(new ImageView(new Image(GUIController.class.getResourceAsStream(imageLocation))));
 	}
 	
 	public Button getBtnExit()

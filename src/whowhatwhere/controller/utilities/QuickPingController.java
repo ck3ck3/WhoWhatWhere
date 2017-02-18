@@ -9,10 +9,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.model.networksniffer.watchdog.OutputMethod;
@@ -41,9 +39,10 @@ public class QuickPingController implements Initializable
 	{
 		comboOutputMethod.setItems(FXCollections.observableArrayList(OutputMethod.values()));
 		
-		labelIP.setGraphic(new ImageView(GUIController.imageHelpTooltip));
-		labelIP.setContentDisplay(ContentDisplay.RIGHT);
+		GUIController.setTooltipGraphic(labelIP);
 		labelIP.setTooltip(new Tooltip("IP or hostname to ping when the hotkey is pressed"));
+		
+		GUIController.setConfigureHotkeyGraphic(btnConfigureHotkey);
 	}
 	
 	public ComboBox<String> getComboToPing()

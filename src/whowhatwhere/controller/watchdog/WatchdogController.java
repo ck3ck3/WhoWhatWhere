@@ -1,14 +1,8 @@
 package whowhatwhere.controller.watchdog;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.ResourceBundle;
 
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -20,12 +14,11 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TableView.TableViewSelectionModel;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.PopupWindow.AnchorLocation;
 import numbertextfield.NumberTextField;
 import whowhatwhere.controller.GUIController;
@@ -33,7 +26,13 @@ import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
 
 public class WatchdogController implements Initializable
 {
-	public enum RowMovementDirection {UP, DOWN}
+	private final static String addImageLocation = "/buttonGraphics/Add.png";
+	private final static String editImageLocation = "/buttonGraphics/Edit.png";
+	private final static String removeImageLocation = "/buttonGraphics/Delete.png";
+	private final static String upImageLocation = "/buttonGraphics/Up.png";
+	private final static String downImageLocation = "/buttonGraphics/Down.png";
+	private final static String loadImageLocation = "/buttonGraphics/Load.png";
+	private final static String saveImageLocation = "/buttonGraphics/Save.png";
 	
 	@FXML
 	private Button btnAddRow;
@@ -76,7 +75,7 @@ public class WatchdogController implements Initializable
 	@FXML
 	private CheckBox chkboxHotkey;
 	@FXML
-	private AnchorPane paneHotkeyConfig;
+	private HBox paneHotkeyConfig;
 	@FXML
 	private Button btnConfigureHotkey;
 	@FXML
@@ -109,68 +108,39 @@ public class WatchdogController implements Initializable
 	public void initialize(URL location, ResourceBundle resources)
 	{
 		setColumnCellFactories();
+		setButtonGraphics();
 		
 		table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-		btnMoveUp.setOnAction(generateRowMovementButtonHandlers(RowMovementDirection.UP));
-		btnMoveDown.setOnAction(generateRowMovementButtonHandlers(RowMovementDirection.DOWN));
-		
 		numFieldCooldown.setMinValue(WatchdogUI.minCooldownValue);
 		numFieldCooldown.setMaxValue(WatchdogUI.maxCooldownValue);
 		
-		labelCooldownSeconds.setGraphic(new ImageView(GUIController.imageHelpTooltip));
-		labelCooldownSeconds.setContentDisplay(ContentDisplay.RIGHT);
+		GUIController.setTooltipGraphic(labelCooldownSeconds);
 		Tooltip cooldownTooltip = new Tooltip("In order to avoid getting flooded with messages, matches that occur during a cooldown period will be ignored and not issue a notification.\nMinimal cooldown period is " + WatchdogUI.minCooldownValue + " seconds.");
 		cooldownTooltip.setWrapText(true);
 		cooldownTooltip.setMaxWidth(350);
 		cooldownTooltip.setAnchorLocation(AnchorLocation.WINDOW_TOP_RIGHT);
 		labelCooldownSeconds.setTooltip(cooldownTooltip);
 		
-		labelTableHeader.setGraphic(new ImageView(GUIController.imageHelpTooltip));
-		labelTableHeader.setContentDisplay(ContentDisplay.RIGHT);
-		Tooltip headerTooltip = new Tooltip("Watchdog inspects packets in the background and issues a user-customized notification when a packet matches the conditions specified in an entry. The entries are checked in the order that they appear. If a packet matches an entry, the remaining entries will not be checked.");
+		GUIController.setTooltipGraphic(labelTableHeader);
+		Tooltip headerTooltip = new Tooltip("Watchdog inspects network traffic in the background and issues a user-customized notification when a packet matches the conditions specified in an entry. The entries are checked in the order that they appear. If a packet matches an entry, the remaining entries will not be checked.");
 		headerTooltip.setWrapText(true);
 		headerTooltip.setMaxWidth(420);
 		labelTableHeader.setTooltip(headerTooltip);
 		
 	}
 
-	/**
-	 * @param movementDirection - enum to specify if the row movement is up or down
-	 * @return an EventHandler for the row movement buttons
-	 */
-	private EventHandler<ActionEvent> generateRowMovementButtonHandlers(RowMovementDirection movementDirection)
+	private void setButtonGraphics()
 	{
-		int moveToPosition = movementDirection == RowMovementDirection.UP ? -1 : 1;
+		GUIController.setGraphicForLabeledControl(btnAddRow, addImageLocation, ContentDisplay.LEFT);
+		GUIController.setGraphicForLabeledControl(btnEditRow, editImageLocation, ContentDisplay.LEFT);
+		GUIController.setGraphicForLabeledControl(btnRemoveRow, removeImageLocation, ContentDisplay.LEFT);
+		GUIController.setGraphicForLabeledControl(btnMoveUp, upImageLocation, ContentDisplay.LEFT);
+		GUIController.setGraphicForLabeledControl(btnMoveDown, downImageLocation, ContentDisplay.LEFT);
+		GUIController.setGraphicForLabeledControl(btnSavePreset, saveImageLocation, ContentDisplay.LEFT);
+		GUIController.setGraphicForLabeledControl(menubtnLoadPreset, loadImageLocation, ContentDisplay.LEFT);
 		
-		return event ->
-		{
-			ObservableList<PacketTypeToMatch> items = table.getItems();
-			TableViewSelectionModel<PacketTypeToMatch> selectionModel = table.getSelectionModel();
-			List<Integer> modifiableIndices = new ArrayList<Integer>(selectionModel.getSelectedIndices());
-			int[] reSelectRows = new int[modifiableIndices.size()];
-			int i = 0;
-			
-			if (movementDirection == RowMovementDirection.DOWN) //if we are moving down, we should start from the last index and go backwards
-				Collections.reverse(modifiableIndices);
-			
-			for (Integer selectedIndex : modifiableIndices)
-			{
-				if (selectedIndex == (movementDirection == RowMovementDirection.UP ? 0 : items.size() - 1)) //if it's the first or last row (depending on movement direction), don't do anything
-				{
-					reSelectRows[i++] = selectedIndex;
-					continue;
-				}
-				
-				PacketTypeToMatch itemToReplace = items.set(selectedIndex + moveToPosition, items.get(selectedIndex));
-				items.set(selectedIndex, itemToReplace);
-				reSelectRows[i++] = selectedIndex + moveToPosition;
-			}
-			
-			selectionModel.clearSelection();
-			selectionModel.selectIndices(reSelectRows[0], reSelectRows);
-			table.refresh();
-		};		
+		GUIController.setConfigureHotkeyGraphic(btnConfigureHotkey);
 	}
 
 	private void setColumnCellFactories()
@@ -281,7 +251,7 @@ public class WatchdogController implements Initializable
 		return chkboxHotkey;
 	}
 
-	public AnchorPane getPaneHotkeyConfig()
+	public HBox getPaneHotkeyConfig()
 	{
 		return paneHotkeyConfig;
 	}

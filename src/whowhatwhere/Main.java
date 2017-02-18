@@ -39,10 +39,10 @@ public class Main extends Application
 
 	private static final String website = "http://ck3ck3.github.io/WhoWhatWhere/";
 
-	private final static String iconResource16 = "/www16.jpg";
-	private final static String iconResource32 = "/www32.jpg";
-	private final static String iconResource48 = "/www48.jpg";
-	private final static String iconResource256 = "/www256.jpg";
+	private final static String iconResource16 = "/appIcons/www16.jpg";
+	private final static String iconResource32 = "/appIcons/www32.jpg";
+	private final static String iconResource48 = "/appIcons/www48.jpg";
+	private final static String iconResource256 = "/appIcons/www256.jpg";
 	public final static String jnetpcapDLLx86Location = "/native/windows/x86/jnetpcap.dll";
 	public final static String jnetpcapDLLx64Location = "/native/windows/x86_64/jnetpcap.dll";
 

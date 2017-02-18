@@ -11,18 +11,17 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import numbertextfield.NumberTextField;
+import whowhatwhere.controller.GUIController;
 import whowhatwhere.model.networksniffer.PacketDirection;
 import whowhatwhere.model.networksniffer.SupportedProtocols;
 import whowhatwhere.model.networksniffer.watchdog.OutputMethod;
 
 public class ListAddEditController implements Initializable
 {
-	private final static String speakerImageLocation = "/speaker.png";
+	private final static String speakerImageLocation = "/buttonGraphics/speaker-21-edited.png";
 	
 	@FXML
 	private ComboBox<OutputMethod> comboOutputMethod;
@@ -114,10 +113,9 @@ public class ListAddEditController implements Initializable
 		numFieldPacketSizeRight.setVisible(false);
 		
 		btnPreview.setVisible(false);
-		btnPreview.setContentDisplay(ContentDisplay.RIGHT);
-		btnPreview.setGraphic(new ImageView(new Image(speakerImageLocation)));
+		GUIController.setGraphicForLabeledControl(btnPreview, speakerImageLocation, ContentDisplay.LEFT);
 	}
-
+	
 	public ComboBox<OutputMethod> getComboOutputMethod()
 	{
 		return comboOutputMethod;

@@ -8,14 +8,14 @@
 
 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="119.0" prefWidth="577.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.utilities.QuickPingController">
    <children>
-      <AnchorPane fx:id="paneAllButHotkeyChkbox" layoutX="14.0" layoutY="10.0">
+      <AnchorPane fx:id="paneAllButHotkeyChkbox" layoutX="14.0" layoutY="10.0" prefHeight="93.0" prefWidth="550.0">
          <children>
             <ComboBox fx:id="comboIPToPing" editable="true" layoutX="111.0" prefHeight="25.0" prefWidth="253.0" />
             <Label fx:id="labelIP" layoutY="4.0" text="IP or hostname" />
-            <AnchorPane fx:id="paneHotkey" layoutX="111.0" layoutY="68.0">
+            <AnchorPane fx:id="paneHotkey" layoutX="111.0" layoutY="68.0" prefHeight="25.0" prefWidth="434.0">
                <children>
                   <Button fx:id="btnConfigureHotkey" mnemonicParsing="false" text="Configure hotkey" />
-                  <Label fx:id="labelCurrentHotkey" layoutX="117.0" layoutY="4.0" text="Current hotkey: " />
+                  <Label fx:id="labelCurrentHotkey" layoutX="148.0" layoutY="4.0" text="Current hotkey: " />
                </children>
             </AnchorPane>
             <Label layoutY="35.0" text="Notification type" />

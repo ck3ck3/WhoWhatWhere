@@ -53,9 +53,12 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 {
 	private final static String visualTraceFormLocation = "/whowhatwhere/view/fxmls/commands/VisualTraceForm.fxml";
 	private final static String baseUrl = "https://maps.googleapis.com/maps/api/staticmap?key=" + GoogleStaticMapsAPIKey.key + "&size=400x340&scale=2&maptype=roadmap";
-	private final static String geoIPIconLocation = "/earth-16.png";
-	private final static String zoomInIconLocation = "/zoom-16.png";
-	
+	private final static String geoIPIconLocation = "/buttonGraphics/earth-16.png";
+	private final static String zoomInIconLocation = "/buttonGraphics/zoom-16.png";
+	private final static int googleMinZoomLevel = 1;
+	private final static int googleMaxZoomLevel = 20;
+	private final static int googleDefaultZoomLevel = 6;
+	private final static int googleZoomLevelStep = 1;
 	private final static String propertyHop = "hop#";
 	private final static String propertyPings = "pings";
 	private final static String propertyHostname = "hostname";
@@ -279,7 +282,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			generateAndShowImage();
 		});
 		
-		Spinner<Integer> spinnerZoom = new Spinner<>(1, 20, 6, 1);
+		Spinner<Integer> spinnerZoom = new Spinner<>(googleMinZoomLevel, googleMaxZoomLevel, googleDefaultZoomLevel, googleZoomLevelStep);
 		spinnerZoom.setPrefWidth(55);
 		spinnerZoom.setPrefHeight(btnZoom.getHeight());
 		spinnerZoom.valueProperty().addListener((ChangeListener<Integer>) (observable, oldValue, newValue) ->

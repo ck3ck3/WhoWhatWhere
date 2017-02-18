@@ -91,6 +91,8 @@ public class AppearanceCounterController
 	private NumberTextField numFieldPingTimeout;
 	@FXML
 	private Pane paneProtocolBoxes;
+	@FXML
+	private Label labelWWW;
 	
 	
 	public AnchorPane getPaneCaptureOptions()
@@ -276,5 +278,10 @@ public class AppearanceCounterController
 	public Button getBtnExportTableToCSV()
 	{
 		return btnExportTableToCSV;
+	}
+
+	public Label getLabelWWW()
+	{
+		return labelWWW;
 	}
 }

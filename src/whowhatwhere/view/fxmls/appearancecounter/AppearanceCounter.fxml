@@ -14,6 +14,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Font?>
 <?import numbertextfield.NumberTextField?>
 
 <AnchorPane xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.appearancecounter.AppearanceCounterController">
@@ -51,7 +52,7 @@
                         <AnchorPane fx:id="paneEnableCaptureHotkey" layoutX="10.0" layoutY="11.0" prefHeight="177.0" prefWidth="705.0">
                            <children>
                               <Button fx:id="btnConfigCaptureHotkey" layoutX="201.0" mnemonicParsing="false" text="Configure hotkey" />
-                              <Label fx:id="labelCurrCaptureHotkey" layoutX="318.0" layoutY="4.0" text="Current hotkey: " />
+                              <Label fx:id="labelCurrCaptureHotkey" layoutX="348.0" layoutY="4.0" text="Current hotkey: " />
                               <CheckBox fx:id="chkboxUseTTS" layoutY="35.0" mnemonicParsing="false" selected="false" text="If the hotkey was used to start or stop a capture, read results using text-to-speech" />
                               <AnchorPane fx:id="paneUseTTS" layoutX="1.0" layoutY="67.0" prefWidth="703.0">
                                  <children>
@@ -90,18 +91,23 @@
             </TitledPane>
          </children>
       </HBox>
-      <AnchorPane layoutX="1.0" layoutY="248.0" AnchorPane.leftAnchor="1.0">
+      <AnchorPane layoutX="1.0" layoutY="240.0" prefHeight="62.0" prefWidth="495.0" AnchorPane.leftAnchor="1.0">
          <children>
-            <Button fx:id="btnStart" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" text="Start capturing" />
-            <Button fx:id="btnStop" layoutX="111.0" layoutY="10.0" mnemonicParsing="false" text="Stop capturing" />
+            <Button fx:id="btnStart" layoutX="150.0" layoutY="10.0" mnemonicParsing="false" text="Start listening" />
+            <Button fx:id="btnStop" layoutX="247.0" layoutY="10.0" mnemonicParsing="false" text="Stop listening" />
             <Label fx:id="labelStatus" layoutX="10.0" layoutY="45.0" text="Status: Idle" />
+            <Label fx:id="labelWWW" layoutX="7.0" layoutY="11.0" text="Who What Where">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Label>
          </children>
       </AnchorPane>
-      <TableView fx:id="tableResults" editable="true" layoutX="14.0" layoutY="319.0" prefHeight="245.0" prefWidth="1158.0" stylesheets="/whowhatwhere/view/fxmls/appearancecounter/tableResults.css" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="62.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="319.0">
+      <TableView fx:id="tableResults" editable="true" layoutX="14.0" layoutY="315.0" prefHeight="249.0" prefWidth="1158.0" stylesheets="/whowhatwhere/view/fxmls/appearancecounter/tableResults.css" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="62.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="315.0">
          <columns>
             <TableColumn fx:id="columnPacketCount" editable="false" prefWidth="115.0" sortType="DESCENDING" text="Packet Count" />
             <TableColumn fx:id="columnIP" minWidth="8.0" prefWidth="115.0" text="IP Address" />
-            <TableColumn fx:id="columnNotes" prefWidth="146.0" text="IP label [set from code]" />
+            <TableColumn fx:id="columnNotes" prefWidth="146.0" text="IP note [set from code]" />
             <TableColumn fx:id="columnOwner" editable="false" minWidth="1.0" prefWidth="188.0" text="Owner" />
             <TableColumn fx:id="columnPing" prefWidth="128.0" text="Ping" />
             <TableColumn fx:id="columnCountry" editable="false" minWidth="0.0" prefWidth="166.0" text="Country" />

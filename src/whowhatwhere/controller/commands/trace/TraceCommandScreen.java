@@ -16,8 +16,6 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
@@ -32,6 +30,7 @@ import whowhatwhere.model.networksniffer.NetworkSniffer;
 
 public class TraceCommandScreen extends CommandScreen
 {
+	private static final String visualTraceIcon = "/buttonGraphics/earth-16.png";
 
 	private Button btnStart = new Button("Start trace");
 	private Button btnStop = new Button("Stop trace");
@@ -86,8 +85,7 @@ public class TraceCommandScreen extends CommandScreen
 
 		btnVisualTrace.setOnAction(event -> openVisualTrace());
 		btnVisualTrace.setStyle("-fx-font-weight: bold;");
-		btnVisualTrace.setGraphic(new ImageView(new Image("/earth-16.png")));
-		btnVisualTrace.setContentDisplay(ContentDisplay.RIGHT);
+		GUIController.setGraphicForLabeledControl(btnVisualTrace, visualTraceIcon, ContentDisplay.LEFT);
 		btnVisualTrace.setDisable(true);
 
 		AnchorPane aPane = new AnchorPane(chkboxResolveNames);

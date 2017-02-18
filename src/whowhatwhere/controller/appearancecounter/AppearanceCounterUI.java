@@ -26,7 +26,6 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
@@ -39,13 +38,13 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
+import javafx.stage.PopupWindow.AnchorLocation;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
@@ -143,8 +142,9 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private TextField textColumnContains;
 	private TabPane tabPane;
 	private Pane paneProtocolBoxes;
-	private HotkeyRegistry hotkeyRegistry;
+	private Label labelWWW;
 	
+	private HotkeyRegistry hotkeyRegistry;
 	private Button activeButton;
 	private List<CheckBox> chkboxListColumns;
 	private Timer timer;
@@ -166,7 +166,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		@Override
 		public void run()
 		{
-			String line = activeButton == btnStart ? "Starting capture" : "Stopping capture";
+			String line = activeButton == btnStart ? "Starting Who What Where" : "Stopping Who What Where";
 
 			isAHotkeyResult = true;
 			tts.speak(line);
@@ -182,7 +182,10 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		userNotes = guiController.getUserNotes();
 
 		this.hotkeyRegistry = guiController.getHotkeyRegistry();
+		
 		initUIElementsFromController();
+		setWWWLabel();
+		GUIController.setConfigureHotkeyGraphic(btnConfigCaptureHotkey);
 
 		activeButton = btnStart;
 
@@ -195,6 +198,16 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		initButtonHandlers();
 		
 		guiController.setNumberTextFieldsValidationUI(guiController.getTabWWW(), numFieldCaptureTimeout, numFieldPingTimeout, numFieldRowsToRead);
+	}
+	
+	private void setWWWLabel()
+	{
+		GUIController.setTooltipGraphic(labelWWW);
+		Tooltip tooltip = new Tooltip("Who What Where listens to network traffic and analyzes IP packets. Analysis includes geographical location, latency and total amount of packets sent and received from each address.");
+		tooltip.setMaxWidth(400);
+		tooltip.setWrapText(true);
+		tooltip.setAnchorLocation(AnchorLocation.WINDOW_TOP_LEFT);
+		labelWWW.setTooltip(tooltip);
 	}
 	
 	private void initUIElementsFromController()
@@ -236,6 +249,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		comboColumns = controller.getComboColumns();
 		textColumnContains = controller.getTextColumnContains();
 		paneProtocolBoxes = controller.getPaneProtocolBoxes();
+		labelWWW = controller.getLabelWWW();
 
 		tabPane = guiController.getTabPane();
 		hotkeyRegistry = guiController.getHotkeyRegistry();
@@ -331,8 +345,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private void setUserNotesColumnBehavior()
 	{
 		Label labelForIPLabel = new Label("User notes");
-		labelForIPLabel.setContentDisplay(ContentDisplay.RIGHT);
-		labelForIPLabel.setGraphic(new ImageView(GUIController.imageHelpTooltip));
+		GUIController.setTooltipGraphic(labelForIPLabel);
 		labelForIPLabel.setTooltip(new Tooltip("Add your own label to describe this IP address to easily recognize it in the future"));
 		labelForIPLabel.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
 		columnNotes.setGraphic(labelForIPLabel);
