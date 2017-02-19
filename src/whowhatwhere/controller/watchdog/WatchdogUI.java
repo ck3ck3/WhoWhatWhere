@@ -22,7 +22,6 @@ import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.jnetpcap.packet.PcapPacket;
 
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -60,10 +59,10 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 	private enum RowMovementDirection {UP, DOWN}
 	
 	private final static Logger logger = Logger.getLogger(WatchdogUI.class.getPackage().getName());
-	private final static String watchdogListAddEditFormLocation = "/whowhatwhere/view/fxmls/watchdog/AddEditEntry.fxml";
+	private final static String watchdogListAddEditFormLocation = "/whowhatwhere/view/fxmls/watchdog/AddEditRule.fxml";
 
-	public final static String presetExtension = ".watchdogPreset";
-	public final static String lastRunFilename = "Last run" + presetExtension;
+	public final static String ruleListExtension = ".watchdogRuleList";
+	public final static String lastRunFilename = "Last run" + ruleListExtension;
 	public final static int minCooldownValue = 1;
 	public final static int defaultnCooldownValue = 3;
 	public final static int maxCooldownValue = 60 * 60 * 24; //24 hours
@@ -98,7 +97,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 
 	private int hotkeyKeyCode;
 	private int hotkeyModifiers;
-	private ObservableList<PacketTypeToMatch> entryList = FXCollections.observableArrayList();
+	private ObservableList<PacketTypeToMatch> ruleList;
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 	private NetworkSniffer sniffer = new NetworkSniffer();
 	private HotkeyRegistry hotkeyRegistry;
@@ -116,7 +115,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 
 			if (savedActiveButton == btnStart)
 			{
-				if (entryList.isEmpty())
+				if (ruleList.isEmpty())
 					return;
 
 				line = "Starting watchdog";
@@ -139,10 +138,10 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		this.guiController.registerForSettingsHandler(this);
 
 		initUIElementsFromController();
+		ruleList = table.getItems();
 		initButtonHandlers();
 		
 		guiController.setNumberTextFieldsValidationUI(guiController.getTabWatchdog(), numFieldCooldown);
-		table.setItems(entryList);
 		userNotesToIPListMap = getUserNotesReverseMap();
 	}
 
@@ -175,22 +174,22 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		
 		controller.getBtnAddRow().setOnAction(generateAddEditEventHandler(false));
 		controller.getBtnEditRow().setOnAction(generateAddEditEventHandler(true));
-		initRemoveEntryButton();
+		initRemoveRowButton();
 		
 		controller.getBtnMoveUp().setOnAction(generateRowMovementButtonHandlers(RowMovementDirection.UP));
 		controller.getBtnMoveDown().setOnAction(generateRowMovementButtonHandlers(RowMovementDirection.DOWN));
 		
-		initSavePresetButton();
-		initLoadPresetButton();
+		initSaveRuleListButton();
+		initLoadRuleListButton();
 
 		radioStopAfterMatch.setOnAction(event -> paneCooldown.setDisable(true));
 		radioKeepLooking.setOnAction(event -> paneCooldown.setDisable(false));
 
 		btnStart.setOnAction(event ->
 		{
-			if (entryList.isEmpty())
+			if (ruleList.isEmpty())
 			{
-				new Alert(AlertType.ERROR, "The list must contain at least one entry").showAndWait();
+				new Alert(AlertType.ERROR, "The list must contain at least one rule").showAndWait();
 				return;
 			}
 
@@ -201,7 +200,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 
 				try
 				{
-					sniffer.startWatchdogCapture(deviceInfo, entryList, radioKeepLooking.isSelected(), numFieldCooldown.getValue(), thisObj, errorBuffer);
+					sniffer.startWatchdogCapture(deviceInfo, ruleList, radioKeepLooking.isSelected(), numFieldCooldown.getValue(), thisObj, errorBuffer);
 				}
 				catch (IllegalArgumentException | UnknownHostException e)
 				{
@@ -261,7 +260,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		};		
 	}
 	
-	private void initRemoveEntryButton()
+	private void initRemoveRowButton()
 	{
 		controller.getBtnRemoveRow().setOnAction(event ->
 		{
@@ -269,14 +268,14 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 
 			if (selectedItems.isEmpty())
 			{
-				new Alert(AlertType.ERROR, "No entries selected.").showAndWait();
+				new Alert(AlertType.ERROR, "No rules selected.").showAndWait();
 				return;
 			}
 			
-			String entryOrEntries = selectedItems.size() == 1 ? "entry" : "entries"; 
-			Alert removalConfirmation = new Alert(AlertType.CONFIRMATION, "Are you sure you want to remove the selected " + entryOrEntries + "?");
-			removalConfirmation.setTitle("Entry removal confirmation");
-			removalConfirmation.setHeaderText("Remove " + entryOrEntries);
+			String ruleOrRules = selectedItems.size() > 1 ? "s" : ""; 
+			Alert removalConfirmation = new Alert(AlertType.CONFIRMATION, "Are you sure you want to remove the selected rule" + ruleOrRules + "?");
+			removalConfirmation.setTitle("Rule removal confirmation");
+			removalConfirmation.setHeaderText("Remove rule" + ruleOrRules);
 			ButtonType btnYes = new ButtonType("Yes", ButtonData.OK_DONE);
 			ButtonType btnNo = new ButtonType("No", ButtonData.CANCEL_CLOSE);
 			removalConfirmation.getButtonTypes().setAll(btnYes, btnNo);
@@ -306,10 +305,10 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 					String errorMsg = null;
 					
 					if (numOfSelectedRows == 0)
-						errorMsg = "Please select an entry to edit";
+						errorMsg = "Please select a rule to edit";
 					else
 						if (numOfSelectedRows > 1)
-							errorMsg = "Only one entry must be selected for edit";
+							errorMsg = "Only one rule must be selected for edit";
 					
 					if (numOfSelectedRows != 1)
 					{
@@ -333,7 +332,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 					return;
 				}
 
-				Stage newStage = watchdogListAddEditScreen.showScreenOnNewStage((isEdit ? "Edit" : "Add") + " an entry", Modality.APPLICATION_MODAL, watchdogListAddEditScreen.getBtnDone(), watchdogListAddEditScreen.getBtnCancel());
+				Stage newStage = watchdogListAddEditScreen.showScreenOnNewStage((isEdit ? "Edit" : "Add") + " a rule", Modality.APPLICATION_MODAL, watchdogListAddEditScreen.getBtnDone(), watchdogListAddEditScreen.getBtnCancel());
 				
 				newStage.setOnCloseRequest(windowEvent ->
 				{
@@ -344,28 +343,28 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		};
 	}
 	
-	private void initSavePresetButton()
+	private void initSaveRuleListButton()
 	{
-		controller.getBtnSavePreset().setOnAction(event ->
+		controller.getBtnSaveRuleList().setOnAction(event ->
 		{
 			TextInputDialog dialog = new TextInputDialog();
-			dialog.setTitle("Save Preset");
-			dialog.setHeaderText("Save this preset for future use");
-			dialog.setContentText("Please enter preset name:");
+			dialog.setTitle("Save rule list");
+			dialog.setHeaderText("Save this rule list for future use");
+			dialog.setContentText("Please enter rule list name:");
 
 			Optional<String> result = dialog.showAndWait();
 
 			result.ifPresent(filename ->
 			{
-				String fullName = filename + WatchdogUI.presetExtension;
+				String fullName = filename + WatchdogUI.ruleListExtension;
 				boolean alreadyExists = false;
 
 				if (new File(fullName).exists()) //if filename already exists
 				{
 					Alert overwriteDialog = new Alert(AlertType.CONFIRMATION,
-							"A preset with that name already exists. Press \"OK\" to overwrite the preset or \"Cancel\" to close this dialog without saving the new preset.");
-					overwriteDialog.setTitle("Preset name already exists");
-					overwriteDialog.setHeaderText("Overwrite existing preset?");
+							"A rule list with that name already exists. Press \"OK\" to overwrite the rule list or \"Cancel\" to close this dialog without saving the new rule list.");
+					overwriteDialog.setTitle("Rule list name already exists");
+					overwriteDialog.setHeaderText("Overwrite existing rule list?");
 
 					Optional<ButtonType> overwriteResult = overwriteDialog.showAndWait();
 					if (overwriteResult.get() == ButtonType.CANCEL)
@@ -376,17 +375,17 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 
 				try
 				{
-					WatchdogUI.saveListToFile(entryList, fullName);
+					WatchdogUI.saveListToFile(ruleList, fullName);
 				}
 				catch (IOException ioe)
 				{
-					new Alert(AlertType.ERROR, "Unable to save preset: " + ioe.getMessage()).showAndWait();
+					new Alert(AlertType.ERROR, "Unable to save rule list: " + ioe.getMessage()).showAndWait();
 					return;
 				}
 
-				MenuItem menuItem = createMenuItem(entryList, filename);
+				MenuItem menuItem = createMenuItem(ruleList, filename);
 
-				ObservableList<MenuItem> items = controller.getMenuBtnLoadPreset().getItems();
+				ObservableList<MenuItem> items = controller.getMenuBtnLoadRuleList().getItems();
 
 				if (alreadyExists)
 					return;
@@ -399,23 +398,23 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		});
 	}
 
-	private void initLoadPresetButton()
+	private void initLoadRuleListButton()
 	{
-		ObservableList<MenuItem> items = controller.getMenuBtnLoadPreset().getItems();
+		ObservableList<MenuItem> items = controller.getMenuBtnLoadRuleList().getItems();
 
 		File dir = new File(System.getProperty("user.dir"));
-		FileFilter fileFilter = new WildcardFileFilter("*" + WatchdogUI.presetExtension);
+		FileFilter fileFilter = new WildcardFileFilter("*" + WatchdogUI.ruleListExtension);
 		List<File> files = new ArrayList<File>(Arrays.asList(dir.listFiles(fileFilter))); //ArrayList because asList() returns an immutable list
 
 		if (files.removeIf(file -> file.getName().equals(WatchdogUI.lastRunFilename))) //if lastRun exists, remove it from the list and put it on top of the button's list
-			items.add(createMenuItem(entryList, WatchdogUI.lastRunFilename.replace(WatchdogUI.presetExtension, "")));
+			items.add(createMenuItem(ruleList, WatchdogUI.lastRunFilename.replace(WatchdogUI.ruleListExtension, "")));
 
 		for (File file : files)
-			items.add(createMenuItem(entryList, file.getName().replace(WatchdogUI.presetExtension, "")));
+			items.add(createMenuItem(ruleList, file.getName().replace(WatchdogUI.ruleListExtension, "")));
 
 		if (items.isEmpty())
 		{
-			MenuItem none = new MenuItem("No presets found");
+			MenuItem none = new MenuItem("No rule lists found");
 
 			none.setDisable(true);
 			items.add(none);
@@ -430,11 +429,11 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		{
 			try
 			{
-				WatchdogUI.loadListFromFile(list, filename + WatchdogUI.presetExtension);
+				WatchdogUI.loadListFromFile(list, filename + WatchdogUI.ruleListExtension);
 			}
 			catch (ClassNotFoundException | IOException e)
 			{
-				new Alert(AlertType.ERROR, "Unable to load preset: " + e.getMessage()).showAndWait();
+				new Alert(AlertType.ERROR, "Unable to load rule list: " + e.getMessage()).showAndWait();
 			}
 		});
 
@@ -519,8 +518,8 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		ois.close();
 		fin.close();
 
-		for (PacketTypeToMatch entry : listToLoadInto)
-			entry.initAfterSerialization();
+		for (PacketTypeToMatch row : listToLoadInto)
+			row.initAfterSerialization();
 	}
 
 	private void setWatchdogHotkey(Properties props)
@@ -547,7 +546,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 
 		try
 		{
-			saveListToFile(entryList, lastRunFilename);
+			saveListToFile(ruleList, lastRunFilename);
 		}
 		catch (IOException ioe)
 		{
@@ -568,16 +567,16 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 
 		try
 		{
-			loadListFromFile(entryList, lastRunFilename);
+			loadListFromFile(ruleList, lastRunFilename);
 		}
 		catch (IOException | ClassNotFoundException ioe) //ignore, don't load
 		{
 		}
 	}
 
-	public ObservableList<PacketTypeToMatch> getEntryList()
+	public ObservableList<PacketTypeToMatch> getRuleList()
 	{
-		return entryList;
+		return ruleList;
 	}
 
 	/**

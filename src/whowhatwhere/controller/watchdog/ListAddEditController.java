@@ -11,7 +11,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import numbertextfield.NumberTextField;
 import whowhatwhere.controller.GUIController;
@@ -87,19 +86,33 @@ public class ListAddEditController implements Initializable
 	private AnchorPane paneWholeForm;
 	@FXML
 	private Button btnPreview;
+	@FXML
+	private Label labelNoteCount;
+	
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
 		paneWholeForm.setOnKeyPressed(keyEvent ->
 		{
-			if (keyEvent.getCode().equals(KeyCode.ESCAPE))
+			Button btnToFire;
+			
+			switch(keyEvent.getCode())
 			{
-				btnCancel.requestFocus();
-				if (btnCancel.isFocused()) //if there's no validation error, to keep consistent with trying to click on Cancel normally
-					btnCancel.fire();
+				case ESCAPE:	btnToFire = btnCancel;	break;
+				case ENTER:		btnToFire = btnDone;	break;
+				default:		btnToFire = null;		break;
+			}
+			
+			if (btnToFire != null)
+			{
+				btnToFire.requestFocus();
+				if (btnToFire.isFocused()) //if there's no validation error
+					btnToFire.fire();
 			}
 		});
+		
+		labelNoteCount.visibleProperty().bind(chkboxUserNotes.selectedProperty());
 		
 		labelIPRange.setVisible(false);
 		
@@ -272,5 +285,10 @@ public class ListAddEditController implements Initializable
 	public Button getBtnPreview()
 	{
 		return btnPreview;
+	}
+
+	public Label getLabelNoteCount()
+	{
+		return labelNoteCount;
 	}
 }

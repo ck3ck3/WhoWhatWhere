@@ -37,7 +37,6 @@ public class PacketTypeToMatch implements Serializable
 
 	private String netmaskValue;
 
-	transient private SimpleStringProperty userNotes;
 	private String userNotesValue;
 	private List<String> ipsFromUserNotes;
 
@@ -53,12 +52,12 @@ public class PacketTypeToMatch implements Serializable
 	transient private SimpleStringProperty dstPort;
 	private NumberRangeValues dstPortValues;
 
-	public PacketTypeToMatch(String ipAddress, String netmask, String userNotes, PacketDirection packetDirection, SupportedProtocols protocol, NumberRangeValues srcPortValues, NumberRangeValues dstPortValues, 
+	public PacketTypeToMatch(String ipAddress, String netmask, String userNotes, List<String> ipsFromUserNotes, PacketDirection packetDirection, SupportedProtocols protocol, NumberRangeValues srcPortValues, NumberRangeValues dstPortValues, 
 			NumberRangeValues packetSizeValues, String message, OutputMethod outputMethod)
 	{
 		setNetmask(netmask); //needs to be set before IP
 		setIpAddress(ipAddress);
-		setUserNotes(userNotes);
+		setUserNotes(userNotes, ipsFromUserNotes);
 		setPacketDirection(packetDirection);
 		setProtocol(protocol);
 		setSrcPort(srcPortValues);
@@ -72,7 +71,7 @@ public class PacketTypeToMatch implements Serializable
 	{
 		setNetmask(netmaskValue); //needs to be set before IP
 		setIpAddress(ipAddressValue);
-		setUserNotes(userNotesValue);
+		setUserNotes(userNotesValue, ipsFromUserNotes);
 		setPacketDirection(packetDirectionValue);
 		setProtocol(protocolValue);
 		setSrcPort(srcPortValues);
@@ -176,21 +175,21 @@ public class PacketTypeToMatch implements Serializable
 		netmaskValue = netmask;
 	}
 
-	public SimpleStringProperty userNotesProperty()
+	public void setUserNotes(String userNotes, List<String> ipsFromUserNotes)
 	{
-		return userNotes;
-	}
-
-	public void setUserNotes(String userNotes)
-	{
-		String stringVal = userNotes == null ? userNotes_EMPTY : userNotes;
-
-		if (this.userNotes == null)
-			this.userNotes = new SimpleStringProperty(stringVal);
-		else
-			this.userNotes.setValue(stringVal);
-
 		userNotesValue = userNotes;
+		this.ipsFromUserNotes = ipsFromUserNotes;
+		
+		if (userNotes != null && !userNotes.isEmpty())
+		{
+			int addressCount = ipsFromUserNotes.size();
+			String stringVal = userNotes + " [" + addressCount + " address" + (addressCount > 1 ? "es]" : "]");
+			
+			if (this.ipAddress == null)
+				this.ipAddress = new SimpleStringProperty(stringVal);
+			else
+				this.ipAddress.setValue(stringVal);
+		}
 	}
 
 	public SimpleStringProperty packetSizeProperty()
@@ -200,7 +199,7 @@ public class PacketTypeToMatch implements Serializable
 
 	public void setPacketSize(NumberRangeValues packetSizeValues)
 	{
-		String newStringValue = packetSizeValues == null ? packetOrPort_EMPTY : NumberRange.numberRangeStringRepresentation(packetSizeValues.getRange(), packetSizeValues.getLeftValue(), packetSizeValues.getRightValue());
+		String newStringValue = packetSizeValues == null ? packetOrPort_EMPTY : NumberRange.numberRangeStringRepresentation(packetSizeValues.getRange(), packetSizeValues.getLeftValue(), packetSizeValues.getRightValue()) + " bytes";
 
 		if (packetSize == null)
 			packetSize = new SimpleStringProperty(newStringValue);

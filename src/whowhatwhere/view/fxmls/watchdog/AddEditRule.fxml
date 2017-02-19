@@ -70,6 +70,7 @@
                         <NumberTextField fx:id="numFieldPacketSizeLeft" allowEmpty="true" disable="true" layoutX="276.0" layoutY="456.0" maxValue="65535" minValue="1" prefHeight="25.0" prefWidth="57.0" />
                         <NumberTextField fx:id="numFieldPacketSizeRight" allowEmpty="true" layoutX="374.0" layoutY="456.0" maxValue="65535" minValue="1" prefWidth="57.0" />
                         <Label fx:id="labelIPRange" disable="true" focusTraversable="false" layoutX="275.0" layoutY="131.0" text="Selected IP range: 255.255.255.255 - 255.255.255.255" />
+                        <Label fx:id="labelNoteCount" focusTraversable="false" layoutX="345.0" layoutY="165.0" />
                      </children>
                   </AnchorPane>
                </content>
@@ -93,7 +94,7 @@
                   <Font size="14.0" />
                </font>
             </TitledPane>
-            <Button fx:id="btnDone" defaultButton="true" layoutX="476.0" layoutY="649.0" mnemonicParsing="false" text="Done" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="104.0" />
+            <Button fx:id="btnDone" layoutX="476.0" layoutY="649.0" mnemonicParsing="false" text="Done" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="104.0" />
             <Button fx:id="btnCancel" layoutX="529.0" layoutY="673.0" mnemonicParsing="false" text="Cancel" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="19.0" />
          </children>
       </AnchorPane>

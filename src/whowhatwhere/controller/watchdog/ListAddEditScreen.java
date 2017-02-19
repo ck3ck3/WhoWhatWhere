@@ -68,6 +68,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 	private CheckBox chkboxNetmask;
 	private Label labelIPRange;
 	private Button btnPreview;
+	private Label labelNoteCount;
 
 	private Map<String, List<String>> userNotesToIPListMap;
 	private boolean isIPFieldValid = false;
@@ -122,6 +123,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 		chkboxNetmask = watchdogListAddEditController.getChkboxNetmask();
 		labelIPRange = watchdogListAddEditController.getLabelIPRange();
 		btnPreview = watchdogListAddEditController.getBtnPreview();
+		labelNoteCount = watchdogListAddEditController.getLabelNoteCount();
 	}
 
 	private void initControlsBehavior(boolean isEdit)
@@ -218,10 +220,10 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 				if (textMessage.getText().isEmpty())
 					throw new IllegalArgumentException("Please enter a text to be used when a match is found.");
 				
-				PacketTypeToMatch newItem = new PacketTypeToMatch(ip, netmask, userNotes, packetDirection, protocol, srcPort, dstPort, packetSize, textMessage.getText(), comboOutputMethod.getValue());
+				List<String> ipsFromUserNotes = userNotes == null ? null : userNotesToIPListMap.get(userNotes);
 				
-				if (userNotes != null)
-					newItem.setIPsFromUserNotes(userNotesToIPListMap.get(userNotes));
+				PacketTypeToMatch newItem = new PacketTypeToMatch(ip, netmask, userNotes, ipsFromUserNotes, packetDirection, protocol, srcPort, dstPort, packetSize, textMessage.getText(), comboOutputMethod.getValue());
+				
 				
 				if (isEdit)
 				{
@@ -422,6 +424,13 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 			chkboxDstPort.setDisable(needToDisablePorts);
 		});
 
+		comboUserNotes.valueProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) ->
+		{
+			int addressCount = userNotesToIPListMap.get(newValue).size();
+			
+			labelNoteCount.setText("Mapped to " + addressCount + " IP address" + (addressCount > 1 ? "es" : ""));
+		});
+		
 		comboSrcPort.valueProperty().addListener(generateNumberRangeChangeListenerForComboValue(numFieldSrcPortLeft, labelSrcPortRight, numFieldSrcPortRight));
 		comboDstPort.valueProperty().addListener(generateNumberRangeChangeListenerForComboValue(numFieldDstPortLeft, labelDstPortRight, numFieldDstPortRight));
 		comboPacketSize.valueProperty().addListener(generateNumberRangeChangeListenerForComboValue(numFieldPacketSizeLeft, labelPacketSizeRight, numFieldPacketSizeRight));
