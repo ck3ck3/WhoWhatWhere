@@ -180,7 +180,7 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 			String result = "Auto detect " + (autoDetectSuccess ? "finished successfuly" : "failed");
 			autoDetectStatus.setTitle(result);
 			autoDetectStatus.setHeaderText(result);
-			autoDetectStatus.setContentText("Auto detect " + (autoDetectSuccess ? "finished successfuly and selected " + comboNIC.getSelectionModel().getSelectedItem().getDescription()
+			autoDetectStatus.setContentText("Auto detect " + (autoDetectSuccess ? "finished successfuly and selected the following adapter:\n" + comboNIC.getSelectionModel().getSelectedItem().getDescription()
 																				: "failed to find the appropriate network interface"));
 			autoDetectStatus.showAndWait();
 			
