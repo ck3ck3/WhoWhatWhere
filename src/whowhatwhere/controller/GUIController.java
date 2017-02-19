@@ -53,18 +53,18 @@ public class GUIController implements CheckForUpdatesResultHandler
 {
 	public enum CommonGraphicImages 
 	{
-		OK("/buttonGraphics/Ok.png"),
-		CANCEL("/buttonGraphics/Cancel.png"),
-		ADD("/buttonGraphics/Add.png"),
-		EDIT("/buttonGraphics/Edit.png"),
-		REMOVE("/buttonGraphics/Delete.png"),
-		UP("/buttonGraphics/Up.png"),
-		DOWN("/buttonGraphics/Down.png"),
-		LOAD("/buttonGraphics/Load.png"),
-		SAVE("/buttonGraphics/Save.png"),
-		STOP("/buttonGraphics/Stop.png"),
-		TOOLTIP("/buttonGraphics/Help.png"),
-		HOTKEY("/buttonGraphics/Keyboard.png");
+		OK		("/buttonGraphics/Ok.png"),
+		CANCEL	("/buttonGraphics/Cancel.png"),
+		ADD		("/buttonGraphics/Add.png"),
+		EDIT	("/buttonGraphics/Edit.png"),
+		REMOVE	("/buttonGraphics/Delete.png"),
+		UP		("/buttonGraphics/Up.png"),
+		DOWN	("/buttonGraphics/Down.png"),
+		LOAD	("/buttonGraphics/Load.png"),
+		SAVE	("/buttonGraphics/Save.png"),
+		STOP	("/buttonGraphics/Stop.png"),
+		TOOLTIP	("/buttonGraphics/Help.png"),
+		HOTKEY	("/buttonGraphics/Keyboard.png");
 		
 		private String imageLocation;
 		
@@ -175,11 +175,16 @@ public class GUIController implements CheckForUpdatesResultHandler
 		settings.loadLastRunConfig(instancesWithSettingsToHandle);
 		
 		initMenuBar();
+		
 		setGraphicForLabeledControl(btnExit, exitImageLocation, ContentDisplay.LEFT);
 		btnExit.setGraphicTextGap(8);
 
 		if (settings.getCheckForUpdatesOnStartup())
 			checkForUpdates(true); //only show a message if there is a new version
+		
+		//show scrollbars only when needed. When not needed, allow to stretch GUI (AnchorPane behavior)
+		scrollPaneMainForm.fitToWidthProperty().bind(scrollPaneMainForm.widthProperty().greaterThan(scrollPaneMainForm.getPrefWidth()));
+		scrollPaneMainForm.fitToHeightProperty().bind(scrollPaneMainForm.heightProperty().greaterThan(scrollPaneMainForm.getPrefHeight()));
 	}
 	
 	public AppearanceCounterController getAppearanceCounterController()
