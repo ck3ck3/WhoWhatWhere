@@ -7,8 +7,8 @@
 
 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="52.0" prefWidth="565.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.utilities.TraceUtilityController">
    <children>
-      <Label layoutX="14.0" layoutY="14.0" text="Enter an IP or hostname to trace:" />
-      <TextField fx:id="textTrace" layoutX="196.0" layoutY="10.0" prefHeight="25.0" prefWidth="295.0" />
+      <Label layoutX="14.0" layoutY="16.0" text="Enter an IP or hostname to trace:" />
+      <TextField fx:id="textTrace" layoutX="196.0" layoutY="10.0" prefHeight="29.0" prefWidth="295.0" />
       <Button fx:id="btnTrace" layoutX="502.0" layoutY="10.0" mnemonicParsing="false" text="Trace" />
    </children>
 </AnchorPane>

@@ -59,8 +59,8 @@
                 	 <content><fx:include fx:id="appearanceCounterPane" source="/whowhatwhere/view/fxmls/appearancecounter/AppearanceCounter.fxml" /></content>
                 </Tab>
                 <Tab fx:id="tabWatchdog" closable="false" text="Watchdog">
-                	<!-- <content><fx:include fx:id="watchdogTab" source="../watchdog/WatchdogTab.fxml" /></content>-->
-                	<content><fx:include fx:id="watchdogPane" source="/whowhatwhere/view/fxmls/watchdog/WatchdogTab.fxml" /></content> 
+                	<!-- <content><fx:include fx:id="watchdogTab" source="../watchdog/Watchdog.fxml" /></content>-->
+                	<content><fx:include fx:id="watchdogPane" source="/whowhatwhere/view/fxmls/watchdog/Watchdog.fxml" /></content> 
                 </Tab>
                 <Tab fx:id="tabUtils" closable="false" text="Utilities">
                   <content>

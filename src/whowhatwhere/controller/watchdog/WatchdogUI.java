@@ -375,7 +375,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 
 				try
 				{
-					WatchdogUI.saveListToFile(ruleList, fullName);
+					saveListToFile(fullName);
 				}
 				catch (IOException ioe)
 				{
@@ -383,7 +383,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 					return;
 				}
 
-				MenuItem menuItem = createMenuItem(ruleList, filename);
+				MenuItem menuItem = createMenuItem(filename);
 
 				ObservableList<MenuItem> items = controller.getMenuBtnLoadRuleList().getItems();
 
@@ -407,10 +407,10 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		List<File> files = new ArrayList<File>(Arrays.asList(dir.listFiles(fileFilter))); //ArrayList because asList() returns an immutable list
 
 		if (files.removeIf(file -> file.getName().equals(WatchdogUI.lastRunFilename))) //if lastRun exists, remove it from the list and put it on top of the button's list
-			items.add(createMenuItem(ruleList, WatchdogUI.lastRunFilename.replace(WatchdogUI.ruleListExtension, "")));
+			items.add(createMenuItem(WatchdogUI.lastRunFilename.replace(WatchdogUI.ruleListExtension, "")));
 
 		for (File file : files)
-			items.add(createMenuItem(ruleList, file.getName().replace(WatchdogUI.ruleListExtension, "")));
+			items.add(createMenuItem(file.getName().replace(WatchdogUI.ruleListExtension, "")));
 
 		if (items.isEmpty())
 		{
@@ -421,7 +421,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		}
 	}
 
-	public static MenuItem createMenuItem(ObservableList<PacketTypeToMatch> list, String filename)
+	public MenuItem createMenuItem(String filename)
 	{
 		MenuItem menuItem = new MenuItem(filename);
 
@@ -429,7 +429,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		{
 			try
 			{
-				WatchdogUI.loadListFromFile(list, filename + WatchdogUI.ruleListExtension);
+				loadListFromFile(filename + WatchdogUI.ruleListExtension);
 			}
 			catch (ClassNotFoundException | IOException e)
 			{
@@ -493,32 +493,32 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		}
 	}
 
-	public static void saveListToFile(List<PacketTypeToMatch> list, String filename) throws IOException
+	public void saveListToFile(String filename) throws IOException
 	{
 		FileOutputStream fout = new FileOutputStream(filename);
 		ObjectOutputStream oos = new ObjectOutputStream(fout);
 
-		oos.writeObject(new ArrayList<>(list));
+		oos.writeObject(new ArrayList<>(ruleList));
 
 		oos.close();
 		fout.close();
 	}
 
 	@SuppressWarnings("unchecked")
-	public static void loadListFromFile(ObservableList<PacketTypeToMatch> listToLoadInto, String filename) throws IOException, ClassNotFoundException
+	public void loadListFromFile(String filename) throws IOException, ClassNotFoundException
 	{
 		FileInputStream fin = new FileInputStream(filename);
 		ObjectInputStream ois = new ObjectInputStream(fin);
 
 		ArrayList<PacketTypeToMatch> temp = (ArrayList<PacketTypeToMatch>) ois.readObject();
 
-		listToLoadInto.clear();
-		listToLoadInto.addAll(temp);
+		ruleList.clear();
+		ruleList.addAll(temp);
 
 		ois.close();
 		fin.close();
 
-		for (PacketTypeToMatch row : listToLoadInto)
+		for (PacketTypeToMatch row : ruleList)
 			row.initAfterSerialization();
 	}
 
@@ -546,7 +546,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 
 		try
 		{
-			saveListToFile(ruleList, lastRunFilename);
+			saveListToFile(lastRunFilename);
 		}
 		catch (IOException ioe)
 		{
@@ -567,7 +567,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 
 		try
 		{
-			loadListFromFile(ruleList, lastRunFilename);
+			loadListFromFile(lastRunFilename);
 		}
 		catch (IOException | ClassNotFoundException ioe) //ignore, don't load
 		{
