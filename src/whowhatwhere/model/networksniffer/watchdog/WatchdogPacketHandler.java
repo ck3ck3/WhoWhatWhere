@@ -129,21 +129,21 @@ public class WatchdogPacketHandler implements PcapPacketHandler<Void>
 			criteriasToAND.add(new CriteriaIP(ipAddress, netmask, item.getPacketDirectionValue()));
 		}
 
-		String userNotesValue = item.getUserNotesValue();
-		if (userNotesValue != null && !userNotesValue.equals(PacketTypeToMatch.userNotes_EMPTY))
+		String ipNotesValue = item.getIPNotesValue();
+		if (ipNotesValue != null && !ipNotesValue.equals(PacketTypeToMatch.ipNotes_EMPTY))
 		{
-			List<String> ipsFromUserNotes = item.getIPsFromUserNotes();
-			int ipsToAdd = ipsFromUserNotes.size();
+			List<String> ipsFromIPNotes = item.getIPsFromIPNotes();
+			int ipsToAdd = ipsFromIPNotes.size();
 
 			if (ipsToAdd > 0)
 			{
 				PacketDirection packetDirectionValue = item.getPacketDirectionValue();
 				
-				CriteriaIP criteriaIP = new CriteriaIP(ipsFromUserNotes.get(0), "255.255.255.255", packetDirectionValue);
+				CriteriaIP criteriaIP = new CriteriaIP(ipsFromIPNotes.get(0), "255.255.255.255", packetDirectionValue);
 				Criteria<PcapPacket, Boolean> orBetweenIPs = criteriaIP;
 
 				for (int i = 1; i < ipsToAdd; i++)
-					orBetweenIPs = new OrCriteria<PcapPacket>(orBetweenIPs, new CriteriaIP(ipsFromUserNotes.get(i), "255.255.255.255", packetDirectionValue));
+					orBetweenIPs = new OrCriteria<PcapPacket>(orBetweenIPs, new CriteriaIP(ipsFromIPNotes.get(i), "255.255.255.255", packetDirectionValue));
 
 				criteriasToAND.add(orBetweenIPs);
 			}

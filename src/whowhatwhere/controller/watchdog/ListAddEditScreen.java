@@ -44,7 +44,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 	private ComboBox<PacketDirection> comboPacketDirection;
 	private TextField textIPAddress;
 	private TextField textNetmask;
-	private ComboBox<String> comboUserNotes;
+	private ComboBox<String> comboIPNotes;
 	private ComboBox<NumberRange> comboPacketSize;
 	private NumberTextField numFieldPacketSizeLeft;
 	private Label labelPacketSizeRight;
@@ -59,7 +59,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 	private Label labelDstPortRight;
 	private NumberTextField numFieldSrcPortRight;
 	private CheckBox chkboxIPAddress;
-	private CheckBox chkboxUserNotes;
+	private CheckBox chkboxIPNotes;
 	private CheckBox chkboxPacketDirection;
 	private CheckBox chkboxProtocol;
 	private CheckBox chkboxSrcPort;
@@ -70,17 +70,17 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 	private Button btnPreview;
 	private Label labelNoteCount;
 
-	private Map<String, List<String>> userNotesToIPListMap;
+	private Map<String, List<String>> ipNotesToIPListMap;
 	private boolean isIPFieldValid = false;
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 
-	public ListAddEditScreen(String fxmlLocation, Stage stage, Scene scene, TableView<PacketTypeToMatch> table, Map<String, List<String>> userNotes, boolean isEdit) throws IOException
+	public ListAddEditScreen(String fxmlLocation, Stage stage, Scene scene, TableView<PacketTypeToMatch> table, Map<String, List<String>> ipNotes, boolean isEdit) throws IOException
 	{
 		super(fxmlLocation, stage, scene);
 
 		watchdogListAddEditController = getLoader().<ListAddEditController> getController();
 		this.table = table;
-		userNotesToIPListMap = userNotes;
+		ipNotesToIPListMap = ipNotes;
 		assignControlsFromController();
 
 		initControlsBehavior(isEdit);
@@ -99,7 +99,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 		comboPacketDirection = watchdogListAddEditController.getComboPacketDirection();
 		textIPAddress = watchdogListAddEditController.getTextIPAddress();
 		textNetmask = watchdogListAddEditController.getTextNetmask();
-		comboUserNotes = watchdogListAddEditController.getComboUserNotes();
+		comboIPNotes = watchdogListAddEditController.getComboIPNotes();
 		comboPacketSize = watchdogListAddEditController.getComboPacketSize();
 		numFieldPacketSizeLeft = watchdogListAddEditController.getNumFieldPacketSizeLeft();
 		labelPacketSizeRight = watchdogListAddEditController.getLabelPacketSizeRight();
@@ -114,7 +114,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 		labelDstPortRight = watchdogListAddEditController.getLabelDstPortRight();
 		numFieldSrcPortRight = watchdogListAddEditController.getNumFieldSrcPortRight();
 		chkboxIPAddress = watchdogListAddEditController.getChkboxIPAddress();
-		chkboxUserNotes = watchdogListAddEditController.getChkboxUserNotes();
+		chkboxIPNotes = watchdogListAddEditController.getChkboxIPNotes();
 		chkboxPacketDirection = watchdogListAddEditController.getChkboxPacketDirection();
 		chkboxProtocol = watchdogListAddEditController.getChkboxProtocol();
 		chkboxSrcPort = watchdogListAddEditController.getChkboxSrcPort();
@@ -207,22 +207,22 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 			{
 				String ip = getValueFromTextField(chkboxIPAddress, textIPAddress);
 				String netmask = getValueFromTextField(chkboxNetmask, textNetmask);
-				String userNotes = getValueFromComboBox(chkboxUserNotes, comboUserNotes);
+				String ipNotes = getValueFromComboBox(chkboxIPNotes, comboIPNotes);
 				PacketDirection packetDirection = getValueFromComboBox(chkboxPacketDirection, comboPacketDirection);
 				SupportedProtocols protocol = getValueFromComboBox(chkboxProtocol, comboProtocol);
 				NumberRangeValues srcPort = getValuesFromNumberRangeControls(chkboxSrcPort, comboSrcPort, numFieldSrcPortLeft, numFieldSrcPortRight);
 				NumberRangeValues dstPort = getValuesFromNumberRangeControls(chkboxDstPort, comboDstPort, numFieldDstPortLeft, numFieldDstPortRight);
 				NumberRangeValues packetSize = getValuesFromNumberRangeControls(chkboxPacketSize, comboPacketSize, numFieldPacketSizeLeft, numFieldPacketSizeRight);
 				
-				if (isAllNull(ip, userNotes, packetDirection, protocol, srcPort, dstPort, packetSize)) //not checking netmask since netmask without ip is meaningless
+				if (isAllNull(ip, ipNotes, packetDirection, protocol, srcPort, dstPort, packetSize)) //not checking netmask since netmask without ip is meaningless
 					throw new IllegalArgumentException("At least one condition must be set.");
 				
 				if (textMessage.getText().isEmpty())
 					throw new IllegalArgumentException("Please enter a text to be used when a match is found.");
 				
-				List<String> ipsFromUserNotes = userNotes == null ? null : userNotesToIPListMap.get(userNotes);
+				List<String> ipsFromipNotes = ipNotes == null ? null : ipNotesToIPListMap.get(ipNotes);
 				
-				PacketTypeToMatch newItem = new PacketTypeToMatch(ip, netmask, userNotes, ipsFromUserNotes, packetDirection, protocol, srcPort, dstPort, packetSize, textMessage.getText(), comboOutputMethod.getValue());
+				PacketTypeToMatch newItem = new PacketTypeToMatch(ip, netmask, ipNotes, ipsFromipNotes, packetDirection, protocol, srcPort, dstPort, packetSize, textMessage.getText(), comboOutputMethod.getValue());
 				
 				
 				if (isEdit)
@@ -331,8 +331,8 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 	private void setTooltipsForControls()
 	{
 		setTooltip(chkboxNetmask, "A netmask defines a range of IP addresses.");
-		setTooltip(chkboxUserNotes,
-				"A user note can be used instead of IP address/netmask. A user note is mapped to one or more IP addresses. User notes can be managed from the menu File -> Manage user notes");
+		setTooltip(chkboxIPNotes,
+				"An IP note can be used instead of IP address/netmask. An IP note is mapped to one or more IP addresses. IP notes can be managed from the menu File -> Manage IP notes");
 	}
 
 	private void setTooltip(Labeled control, String tooltipMsg)
@@ -350,7 +350,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 		chkboxIPAddress.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
 		{
 			if (newValue)
-				chkboxUserNotes.setSelected(false);
+				chkboxIPNotes.setSelected(false);
 			else
 				chkboxNetmask.setSelected(false);
 
@@ -380,7 +380,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 			textNetmask.setDisable(!newValue);
 		});
 
-		chkboxUserNotes.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
+		chkboxIPNotes.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
 		{
 			if (newValue)
 			{
@@ -388,7 +388,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 				chkboxNetmask.setSelected(false);
 			}
 
-			comboUserNotes.setDisable(!newValue);
+			comboIPNotes.setDisable(!newValue);
 		});
 
 		chkboxPacketDirection.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> comboPacketDirection.setDisable(!newValue));
@@ -424,9 +424,9 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 			chkboxDstPort.setDisable(needToDisablePorts);
 		});
 
-		comboUserNotes.valueProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) ->
+		comboIPNotes.valueProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) ->
 		{
-			int addressCount = userNotesToIPListMap.get(newValue).size();
+			int addressCount = ipNotesToIPListMap.get(newValue).size();
 			
 			labelNoteCount.setText("Mapped to " + addressCount + " IP address" + (addressCount > 1 ? "es" : ""));
 		});
@@ -506,11 +506,11 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 			calculateAndShowIPRange(ipAddress, netmask);
 		}
 
-		String userNotes = selectedItem.getUserNotesValue();
-		if (userNotes != null && !userNotes.equals(PacketTypeToMatch.userNotes_EMPTY))
+		String ipNotes = selectedItem.getIPNotesValue();
+		if (ipNotes != null && !ipNotes.equals(PacketTypeToMatch.ipNotes_EMPTY))
 		{
-			chkboxUserNotes.setSelected(true);
-			comboUserNotes.getSelectionModel().select(userNotes);
+			chkboxIPNotes.setSelected(true);
+			comboIPNotes.getSelectionModel().select(ipNotes);
 		}
 
 		PacketDirection packetDirection = selectedItem.getPacketDirectionValue();
@@ -584,8 +584,8 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 
 	private void populateCombos()
 	{
-		String[] notes = Arrays.copyOf(userNotesToIPListMap.keySet().toArray(), userNotesToIPListMap.size(), String[].class);
-		comboUserNotes.setItems(FXCollections.observableArrayList(notes));
+		String[] notes = Arrays.copyOf(ipNotesToIPListMap.keySet().toArray(), ipNotesToIPListMap.size(), String[].class);
+		comboIPNotes.setItems(FXCollections.observableArrayList(notes));
 
 		comboPacketDirection.setItems(FXCollections.observableArrayList(PacketDirection.values()));
 		comboProtocol.setItems(FXCollections.observableArrayList(SupportedProtocols.values()));

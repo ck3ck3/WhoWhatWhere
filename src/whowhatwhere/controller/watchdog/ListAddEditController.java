@@ -35,7 +35,7 @@ public class ListAddEditController implements Initializable
 	@FXML
 	private TextField textNetmask;
 	@FXML
-	private ComboBox<String> comboUserNotes;
+	private ComboBox<String> comboIPNotes;
 	@FXML
 	private ComboBox<NumberRange> comboPacketSize;
 	@FXML
@@ -67,7 +67,7 @@ public class ListAddEditController implements Initializable
 	@FXML
 	private CheckBox chkboxIPAddress;
 	@FXML
-	private CheckBox chkboxUserNotes;
+	private CheckBox chkboxIPNotes;
 	@FXML
 	private CheckBox chkboxPacketDirection;
 	@FXML
@@ -112,7 +112,7 @@ public class ListAddEditController implements Initializable
 			}
 		});
 		
-		labelNoteCount.visibleProperty().bind(chkboxUserNotes.selectedProperty());
+		labelNoteCount.visibleProperty().bind(chkboxIPNotes.selectedProperty());
 		
 		labelIPRange.setVisible(false);
 		
@@ -166,9 +166,9 @@ public class ListAddEditController implements Initializable
 		return textNetmask;
 	}
 
-	public ComboBox<String> getComboUserNotes()
+	public ComboBox<String> getComboIPNotes()
 	{
-		return comboUserNotes;
+		return comboIPNotes;
 	}
 
 	public ComboBox<NumberRange> getComboPacketSize()
@@ -241,9 +241,9 @@ public class ListAddEditController implements Initializable
 		return chkboxIPAddress;
 	}
 
-	public CheckBox getChkboxUserNotes()
+	public CheckBox getChkboxIPNotes()
 	{
-		return chkboxUserNotes;
+		return chkboxIPNotes;
 	}
 
 	public CheckBox getChkboxPacketDirection()

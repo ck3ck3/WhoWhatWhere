@@ -101,7 +101,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 	private NetworkSniffer sniffer = new NetworkSniffer();
 	private HotkeyRegistry hotkeyRegistry;
-	private Map<String, List<String>> userNotesToIPListMap;
+	private Map<String, List<String>> ipNotesToIPListMap;
 	
 	private Runnable hotkeyPressed = new Runnable()
 	{
@@ -142,7 +142,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		initButtonHandlers();
 		
 		guiController.setNumberTextFieldsValidationUI(guiController.getTabWatchdog(), numFieldCooldown);
-		userNotesToIPListMap = getUserNotesReverseMap();
+		ipNotesToIPListMap = getIPNotesReverseMap();
 	}
 
 	private void initUIElementsFromController()
@@ -319,7 +319,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 
 				try
 				{
-					watchdogListAddEditScreen = new ListAddEditScreen(watchdogListAddEditFormLocation, stage, stage.getScene(), table, userNotesToIPListMap, isEdit);
+					watchdogListAddEditScreen = new ListAddEditScreen(watchdogListAddEditFormLocation, stage, stage.getScene(), table, ipNotesToIPListMap, isEdit);
 				}
 				catch (IOException e)
 				{
@@ -580,10 +580,10 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 	}
 
 	/**
-	 * @return a map that maps user note to a list of IPs that have that note
+	 * @return a map that maps ip note to a list of IPs that have that note
 	 */
-	public Map<String, List<String>> getUserNotesReverseMap()
+	public Map<String, List<String>> getIPNotesReverseMap()
 	{
-		return guiController.getUserNotes().getUserNotesReverseMap();
+		return guiController.getIPNotes().getIPNotesReverseMap();
 	}
 }

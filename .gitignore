@@ -1,7 +1,7 @@
 bin
 /src/whowhatwhere/controller/commands/trace/GoogleStaticMapsAPIKey.java
 Who What Where.properties
-userNotes.properties
+ipNotes.properties
 WhoWhatWhere.rar
 QuickPingHistory
 *.watchdogRuleList

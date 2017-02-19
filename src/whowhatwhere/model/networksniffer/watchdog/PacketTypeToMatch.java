@@ -17,7 +17,7 @@ public class PacketTypeToMatch implements Serializable
 	public final static String packetDirection_EMPTY = "";
 	public final static String IPAddress_EMPTY = "";
 	public final static String netmask_EMPTY = "";
-	public final static String userNotes_EMPTY = "";
+	public final static String ipNotes_EMPTY = "";
 	public final static String packetOrPort_EMPTY = "";
 	public final static String protocol_EMPTY = "";
 	public final static String message_EMPTY = "";
@@ -37,8 +37,8 @@ public class PacketTypeToMatch implements Serializable
 
 	private String netmaskValue;
 
-	private String userNotesValue;
-	private List<String> ipsFromUserNotes;
+	private String ipNotesValue;
+	private List<String> ipsFromipNotes;
 
 	transient private SimpleStringProperty packetSize;
 	private NumberRangeValues packetSizeValues;
@@ -52,12 +52,12 @@ public class PacketTypeToMatch implements Serializable
 	transient private SimpleStringProperty dstPort;
 	private NumberRangeValues dstPortValues;
 
-	public PacketTypeToMatch(String ipAddress, String netmask, String userNotes, List<String> ipsFromUserNotes, PacketDirection packetDirection, SupportedProtocols protocol, NumberRangeValues srcPortValues, NumberRangeValues dstPortValues, 
+	public PacketTypeToMatch(String ipAddress, String netmask, String ipNotes, List<String> ipsFromIPNotes, PacketDirection packetDirection, SupportedProtocols protocol, NumberRangeValues srcPortValues, NumberRangeValues dstPortValues, 
 			NumberRangeValues packetSizeValues, String message, OutputMethod outputMethod)
 	{
 		setNetmask(netmask); //needs to be set before IP
 		setIpAddress(ipAddress);
-		setUserNotes(userNotes, ipsFromUserNotes);
+		setIPNotes(ipNotes, ipsFromIPNotes);
 		setPacketDirection(packetDirection);
 		setProtocol(protocol);
 		setSrcPort(srcPortValues);
@@ -71,7 +71,7 @@ public class PacketTypeToMatch implements Serializable
 	{
 		setNetmask(netmaskValue); //needs to be set before IP
 		setIpAddress(ipAddressValue);
-		setUserNotes(userNotesValue, ipsFromUserNotes);
+		setIPNotes(ipNotesValue, ipsFromipNotes);
 		setPacketDirection(packetDirectionValue);
 		setProtocol(protocolValue);
 		setSrcPort(srcPortValues);
@@ -175,15 +175,15 @@ public class PacketTypeToMatch implements Serializable
 		netmaskValue = netmask;
 	}
 
-	public void setUserNotes(String userNotes, List<String> ipsFromUserNotes)
+	public void setIPNotes(String ipNotes, List<String> ipsFromIPNotes)
 	{
-		userNotesValue = userNotes;
-		this.ipsFromUserNotes = ipsFromUserNotes;
+		ipNotesValue = ipNotes;
+		this.ipsFromipNotes = ipsFromIPNotes;
 		
-		if (userNotes != null && !userNotes.isEmpty())
+		if (ipNotes != null && !ipNotes.isEmpty())
 		{
-			int addressCount = ipsFromUserNotes.size();
-			String stringVal = userNotes + " [" + addressCount + " address" + (addressCount > 1 ? "es]" : "]");
+			int addressCount = ipsFromIPNotes.size();
+			String stringVal = ipNotes + " [" + addressCount + " address" + (addressCount > 1 ? "es]" : "]");
 			
 			if (this.ipAddress == null)
 				this.ipAddress = new SimpleStringProperty(stringVal);
@@ -243,14 +243,14 @@ public class PacketTypeToMatch implements Serializable
 		this.dstPortValues = dstPortValues;
 	}
 
-	public List<String> getIPsFromUserNotes()
+	public List<String> getIPsFromIPNotes()
 	{
-		return ipsFromUserNotes;
+		return ipsFromipNotes;
 	}
 
-	public void setIPsFromUserNotes(List<String> ipsFromUserNotes)
+	public void setIPsFromIPNotes(List<String> ipsFromIPNotes)
 	{
-		this.ipsFromUserNotes = ipsFromUserNotes;
+		this.ipsFromipNotes = ipsFromIPNotes;
 	}
 
 	public String getMessageTextValue()
@@ -278,9 +278,9 @@ public class PacketTypeToMatch implements Serializable
 		return netmaskValue;
 	}
 
-	public String getUserNotesValue()
+	public String getIPNotesValue()
 	{
-		return userNotesValue;
+		return ipNotesValue;
 	}
 
 	public SupportedProtocols getProtocolValue()

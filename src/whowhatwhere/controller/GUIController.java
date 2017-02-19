@@ -132,7 +132,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 	private HotkeyRegistry hotkeyRegistry;
 	private boolean isExitAlreadyAddedToSystray = false;
-	private UserNotes userNotes;
+	private IPNotes ipNotes;
 	private SettingsHandler settings;
 	private List<LoadAndSaveSettings> instancesWithSettingsToHandle = new ArrayList<>();
 	private Map<Tab, BooleanExpression> tabToBindExpression = new HashMap<>();
@@ -164,7 +164,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 
 		addExitToSystrayIcon();
 
-		userNotes = new UserNotes();
+		ipNotes = new IPNotes();
 		
 		new AppearanceCounterUI(this);
 		new QuickPingUI(this);
@@ -238,7 +238,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 
 	private void initMenuBar()
 	{
-		menuItemManageNotes.setOnAction(event -> userNotes.openManageUserNotesScreen(getStage()));
+		menuItemManageNotes.setOnAction(event -> ipNotes.openManageIPNotesScreen(getStage()));
 		menuItemMinimize.setOnAction(event -> minimizeToTray());
 		menuItemExit.setOnAction(event -> exitButtonPressed());
 
@@ -476,9 +476,9 @@ public class GUIController implements CheckForUpdatesResultHandler
 		return scrollPaneMainForm;
 	}
 	
-	public UserNotes getUserNotes()
+	public IPNotes getIPNotes()
 	{
-		return userNotes;
+		return ipNotes;
 	}
 	
 	public NetworkSniffer getSniffer()

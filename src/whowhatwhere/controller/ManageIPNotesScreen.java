@@ -10,50 +10,50 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TableColumn;
 import javafx.stage.Stage;
-import whowhatwhere.controller.appearancecounter.UserNotesRowModel;
+import whowhatwhere.controller.appearancecounter.IPNotesRowModel;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLWithCRUDTableScreen;
 
-public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<UserNotesRowModel>
+public class ManageIPNotesScreen extends SecondaryFXMLWithCRUDTableScreen<IPNotesRowModel>
 {
-	private ManageUserNotesController userNotesController;
-	private UserNotes userNotes;
-	private TableColumn<UserNotesRowModel, String> columnIP;
-	private TableColumn<UserNotesRowModel, String> columnNotes;
+	private ManageIPNotesController ipNotesController;
+	private IPNotes ipNotes;
+	private TableColumn<IPNotesRowModel, String> columnIP;
+	private TableColumn<IPNotesRowModel, String> columnNotes;
 	
-	private UserNotesRowModel rowBeingEdited;
+	private IPNotesRowModel rowBeingEdited;
 	private boolean editedCellWasEmpty;
 	
 	private final static String emptyCellString = "(Click to edit)";
 
-	public ManageUserNotesScreen(String fxmlLocation, Stage stage, Scene scene, UserNotes userNotes) throws IOException
+	public ManageIPNotesScreen(String fxmlLocation, Stage stage, Scene scene, IPNotes ipNot) throws IOException
 	{
 		super(fxmlLocation, stage, scene);
 
-		this.userNotes = userNotes;
-		userNotesController = (ManageUserNotesController) controller;
-		columnIP = userNotesController.getColumnIP();
-		columnNotes = userNotesController.getColumnNotes();
+		this.ipNotes = ipNot;
+		ipNotesController = (ManageIPNotesController) controller;
+		columnIP = ipNotesController.getColumnIP();
+		columnNotes = ipNotesController.getColumnNotes();
 		
 		table.getSortOrder().add(columnIP);
 		initGUI();
 	}
 	
 	@Override
-	protected SecondaryFXMLWithCRUDTableController<UserNotesRowModel> initController()
+	protected SecondaryFXMLWithCRUDTableController<IPNotesRowModel> initController()
 	{
-		return getLoader().<ManageUserNotesController> getController();
+		return getLoader().<ManageIPNotesController> getController();
 	}
 
 	@Override
-	protected ObservableList<UserNotesRowModel> getInitialTableItems()
+	protected ObservableList<IPNotesRowModel> getInitialTableItems()
 	{
-		ObservableList<UserNotesRowModel> list = FXCollections.observableArrayList();
+		ObservableList<IPNotesRowModel> list = FXCollections.observableArrayList();
 		
-		for (Object ipObj : userNotes.getIPSet())
+		for (Object ipObj : ipNotes.getIPSet())
 		{
 			String ip = (String)ipObj;
-			list.add(new UserNotesRowModel(ip, userNotes.getUserNote(ip)));
+			list.add(new IPNotesRowModel(ip, ipNotes.getIPNote(ip)));
 		}
 		
 		return list;
@@ -81,8 +81,8 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 			String newContent = rowModel.getNewValue();
 			String previousValue = rowModel.getOldValue();
 			boolean isNewContentValid = isValidIPValue(newContent);
-			UserNotesRowModel rowValue = rowModel.getRowValue();
-			boolean ipAlreadyExists = userNotes.containsIP(newContent);
+			IPNotesRowModel rowValue = rowModel.getRowValue();
+			boolean ipAlreadyExists = ipNotes.containsIP(newContent);
 			
 			if (ipAlreadyExists)
 			{
@@ -97,13 +97,13 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 				{
 					if (isValidNotesValue(rowValue.notesProperty().getValue()))
 					{
-						userNotes.removeUserNote(previousValue);
-						userNotes.addUserNote(newContent, rowValue.notesProperty().getValue());
+						ipNotes.removeIPNote(previousValue);
+						ipNotes.addIPNote(newContent, rowValue.notesProperty().getValue());
 					}
 				}
 				else
 				{
-					new Alert(AlertType.ERROR, "Please enter a valid IP address. If you want to delete this row, please select it and press the \"" + userNotesController.getBtnRemoveRow().getText() + "\" button.").showAndWait();
+					new Alert(AlertType.ERROR, "Please enter a valid IP address. If you want to delete this row, please select it and press the \"" + ipNotesController.getBtnRemoveRow().getText() + "\" button.").showAndWait();
 					rowValue.setIpAddress(emptyCellString);
 				}
 			}
@@ -129,7 +129,7 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 		{
 			String newContent = rowModel.getNewValue();
 			boolean isNewContentValid = isValidNotesValue(newContent);
-			UserNotesRowModel rowValue = rowModel.getRowValue();
+			IPNotesRowModel rowValue = rowModel.getRowValue();
 			
 			rowValue.setNotes(isNewContentValid ? newContent : rowModel.getOldValue());
 			
@@ -138,10 +138,10 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 				String ipAddressValue = rowValue.ipAddressProperty().getValue();
 				
 				if (isValidIPValue(ipAddressValue))
-					userNotes.addUserNote(ipAddressValue, newContent);
+					ipNotes.addIPNote(ipAddressValue, newContent);
 			}
 			else
-				new Alert(AlertType.ERROR, "Please enter a non-empty, non-default note. If you want to delete this row, please select it and press the \"" + userNotesController.getBtnRemoveRow().getText() + "\" button.").showAndWait();
+				new Alert(AlertType.ERROR, "Please enter a non-empty, non-default note. If you want to delete this row, please select it and press the \"" + ipNotesController.getBtnRemoveRow().getText() + "\" button.").showAndWait();
 			
 			table.refresh();
 		});		
@@ -158,34 +158,34 @@ public class ManageUserNotesScreen extends SecondaryFXMLWithCRUDTableScreen<User
 	}
 
 	@Override
-	protected UserNotesRowModel newEmptyTableRow()
+	protected IPNotesRowModel newEmptyTableRow()
 	{
-		return new UserNotesRowModel(emptyCellString, emptyCellString);
+		return new IPNotesRowModel(emptyCellString, emptyCellString);
 	}
 
 	@Override
-	protected String filterRowsToDelete(ObservableList<UserNotesRowModel> initialSelectionOfRowsToDelete)
+	protected String filterRowsToDelete(ObservableList<IPNotesRowModel> initialSelectionOfRowsToDelete)
 	{
 		return null;
 	}
 
 	@Override
-	protected void performForDeleteRows(List<UserNotesRowModel> listOfDeletedRows)
+	protected void performForDeleteRows(List<IPNotesRowModel> listOfDeletedRows)
 	{
-		for (UserNotesRowModel row : listOfDeletedRows)
-			userNotes.removeUserNote(row.ipAddressProperty().getValue());
+		for (IPNotesRowModel row : listOfDeletedRows)
+			ipNotes.removeIPNote(row.ipAddressProperty().getValue());
 	}
 
 	@Override
 	protected void performOnCloseButton() throws IllegalArgumentException
 	{
-		for (UserNotesRowModel item : table.getItems())
+		for (IPNotesRowModel item : table.getItems())
 			if (item.ipAddressProperty().get().equals(emptyCellString) || item.notesProperty().get().equals(emptyCellString))
 			{
 				new Alert(AlertType.ERROR, "At least one row is missing an IP address or note (or both). Either fill the missing data or delete the row.").showAndWait();
 				throw new IllegalArgumentException();
 			}
 		
-		userNotes.saveUserNotes();
+		ipNotes.saveIPNotes();
 	}
 }

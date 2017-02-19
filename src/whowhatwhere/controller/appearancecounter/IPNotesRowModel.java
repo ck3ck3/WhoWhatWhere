@@ -2,12 +2,12 @@ package whowhatwhere.controller.appearancecounter;
 
 import javafx.beans.property.SimpleStringProperty;
 
-public class UserNotesRowModel
+public class IPNotesRowModel
 {
 	private SimpleStringProperty ipAddress;
 	private SimpleStringProperty notes;
 	
-	public UserNotesRowModel(String ipAddress, String notes)
+	public IPNotesRowModel(String ipAddress, String notes)
 	{
 		this.ipAddress = new SimpleStringProperty(ipAddress);
 		this.notes = new SimpleStringProperty(notes);

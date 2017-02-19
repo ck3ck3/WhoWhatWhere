@@ -10,16 +10,16 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import whowhatwhere.controller.appearancecounter.UserNotesRowModel;
+import whowhatwhere.controller.appearancecounter.IPNotesRowModel;
 
-public class ManageUserNotesController extends SecondaryFXMLWithCRUDTableController<UserNotesRowModel>
+public class ManageIPNotesController extends SecondaryFXMLWithCRUDTableController<IPNotesRowModel>
 {
 	@FXML
-	private TableView<UserNotesRowModel> tableEntries;
+	private TableView<IPNotesRowModel> tableEntries;
 	@FXML
-	private TableColumn<UserNotesRowModel, String> columnIP;
+	private TableColumn<IPNotesRowModel, String> columnIP;
 	@FXML
-	private TableColumn<UserNotesRowModel, String> columnNotes;
+	private TableColumn<IPNotesRowModel, String> columnNotes;
 	@FXML
 	private Button btnClose;
 	@FXML
@@ -31,10 +31,10 @@ public class ManageUserNotesController extends SecondaryFXMLWithCRUDTableControl
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
-		columnIP.setCellValueFactory(new PropertyValueFactory<UserNotesRowModel, String>("ipAddress"));
+		columnIP.setCellValueFactory(new PropertyValueFactory<IPNotesRowModel, String>("ipAddress"));
 		columnIP.setCellFactory(TextFieldTableCell.forTableColumn());
 		
-		columnNotes.setCellValueFactory(new PropertyValueFactory<UserNotesRowModel, String>("notes"));
+		columnNotes.setCellValueFactory(new PropertyValueFactory<IPNotesRowModel, String>("notes"));
 		columnNotes.setCellFactory(TextFieldTableCell.forTableColumn());
 		
 		tableEntries.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -44,7 +44,7 @@ public class ManageUserNotesController extends SecondaryFXMLWithCRUDTableControl
 		GUIController.setCommonGraphicOnLabeled(btnClose, GUIController.CommonGraphicImages.OK);
 	}
 	
-	public TableView<UserNotesRowModel> getTable()
+	public TableView<IPNotesRowModel> getTable()
 	{
 		return tableEntries;
 	}
@@ -64,12 +64,12 @@ public class ManageUserNotesController extends SecondaryFXMLWithCRUDTableControl
 		return btnClose;
 	}
 	
-	public TableColumn<UserNotesRowModel, String> getColumnIP()
+	public TableColumn<IPNotesRowModel, String> getColumnIP()
 	{
 		return columnIP;
 	}
 	
-	public TableColumn<UserNotesRowModel, String> getColumnNotes()
+	public TableColumn<IPNotesRowModel, String> getColumnNotes()
 	{
 		return columnNotes;
 	}

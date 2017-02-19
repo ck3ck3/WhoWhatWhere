@@ -50,7 +50,7 @@ import whowhatwhere.Main;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
 import whowhatwhere.controller.LoadAndSaveSettings;
-import whowhatwhere.controller.UserNotes;
+import whowhatwhere.controller.IPNotes;
 import whowhatwhere.controller.commands.Commands;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.TextToSpeech;
@@ -155,7 +155,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private int captureHotkeyModifiers;
 	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 	private String suggestedPathForCSVFile;
-	private UserNotes userNotes;
+	private IPNotes ipNotes;
 	private IPInfoRowModel rowWithNoteBeingEdited;
 	private boolean editedNotedWasEmpty;
 
@@ -177,7 +177,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		this.controller = guiController.getAppearanceCounterController();
 		this.guiController = guiController;
 		this.guiController.registerForSettingsHandler(this);
-		userNotes = guiController.getUserNotes();
+		ipNotes = guiController.getIPNotes();
 
 		this.hotkeyRegistry = guiController.getHotkeyRegistry();
 		
@@ -323,13 +323,13 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		columnRegion.setCellValueFactory(new PropertyValueFactory<>("region"));
 		columnCity.setCellValueFactory(new PropertyValueFactory<>("city"));
 
-		setUserNotesColumnBehavior();
+		setIPNotesColumnBehavior();
 		generatePopupMenus();
 	}
 	
-	private void setUserNotesColumnBehavior()
+	private void setIPNotesColumnBehavior()
 	{
-		Label labelForIPNote = new Label("User notes");
+		Label labelForIPNote = new Label("IP notes");
 		GUIController.setCommonGraphicOnLabeled(labelForIPNote, GUIController.CommonGraphicImages.TOOLTIP);
 		labelForIPNote.setTooltip(new Tooltip("Add your own label to describe this IP address to easily recognize it in the future"));
 		labelForIPNote.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
@@ -359,11 +359,11 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 			rowModel.getRowValue().setNotes(newContent);
 
 			if (newContent.equals(emptyNotesString)) //if user deleted an existing note
-				userNotes.removeUserNote(ipAddress); //doesn't do anything if the key didn't exist
+				ipNotes.removeIPNote(ipAddress); //doesn't do anything if the key didn't exist
 			else
-				userNotes.addUserNote(ipAddress, newContent);
+				ipNotes.addIPNote(ipAddress, newContent);
 			
-			userNotes.saveUserNotes();
+			ipNotes.saveIPNotes();
 		});
 	}
 	
@@ -653,7 +653,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		Map<String, String> colMapping = new HashMap<>();
 		
 		colMapping.put("Packet Count", ipInfoRowModel.packetCountProperty().getValue().toString());
-		colMapping.put("User Notes", ipInfoRowModel.notesProperty().getValue());
+//		colMapping.put("IP Notes", ipInfoRowModel.notesProperty().getValue());
 		colMapping.put("IP Address", ipInfoRowModel.ipAddressProperty().getValue());
 		colMapping.put("Owner", ipInfoRowModel.ownerProperty().getValue());
 		colMapping.put("Ping", ipInfoRowModel.pingProperty().getValue());
@@ -784,7 +784,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 			if (chkboxPing.isSelected())
 				ping = NetworkSniffer.pingAsString(ip, numFieldPingTimeout.getValue());
 			
-			notes = userNotes.getUserNote(ip, emptyNotesString);
+			notes = ipNotes.getIPNote(ip, emptyNotesString);
 
 			row = new IPInfoRowModel(id, amountOfAppearances, ip, notes, owner, ping, country, region, city);
 			data.add(row);
@@ -905,7 +905,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		for (CheckBox box : chkboxListColumns)
 			props.put(propsTTSCheckBox + box.getText(), ((Boolean) box.isSelected()).toString());
 		
-		userNotes.saveUserNotes();
+		ipNotes.saveIPNotes();
 		props.put(propsExportCSVPath, suggestedPathForCSVFile);
 	}
 }

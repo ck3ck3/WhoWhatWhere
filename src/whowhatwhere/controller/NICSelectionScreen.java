@@ -133,7 +133,7 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 			String ipToPing = "8.8.8.8";
 			pingProcess = Runtime.getRuntime().exec("ping -t " + ipToPing);
 
-			PacketTypeToMatch detectPing = new PacketTypeToMatch(ipToPing, null, PacketTypeToMatch.userNotes_EMPTY, null, PacketDirection.Outgoing, SupportedProtocols.ICMP, null, null, null, "",
+			PacketTypeToMatch detectPing = new PacketTypeToMatch(ipToPing, null, PacketTypeToMatch.ipNotes_EMPTY, null, PacketDirection.Outgoing, SupportedProtocols.ICMP, null, null, null, "",
 					OutputMethod.TTS);
 
 			for (int i = 0; i < listOfDevices.size() && isAutoDetectRunning; i++)
