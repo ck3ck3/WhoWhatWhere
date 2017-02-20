@@ -20,7 +20,7 @@ import whowhatwhere.model.networksniffer.watchdog.OutputMethod;
 
 public class ListAddEditController implements Initializable
 {
-	private final static String speakerImageLocation = "/buttonGraphics/speaker.png";
+	private final static String speakerImageLocation = "/buttonGraphics/Speaker.png";
 	
 	@FXML
 	private ComboBox<OutputMethod> comboOutputMethod;

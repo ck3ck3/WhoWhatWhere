@@ -14,7 +14,7 @@ import whowhatwhere.model.networksniffer.NICInfo;
 
 public class NICSelectionController implements Initializable
 {
-	private final static String autoDetectImageLocation = "/buttonGraphics/Auto detect.png";
+	private final static String autoDetectImageLocation = "/buttonGraphics/Auto-detect.png";
 	
 	@FXML
 	private ComboBox<NICInfo> comboNIC;

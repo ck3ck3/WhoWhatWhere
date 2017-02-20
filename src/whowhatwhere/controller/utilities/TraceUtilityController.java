@@ -12,7 +12,7 @@ import whowhatwhere.controller.GUIController;
 
 public class TraceUtilityController implements Initializable
 {
-	private final static String traceImageLocation = "/buttonGraphics/globe earth.png";
+	private final static String traceImageLocation = "/buttonGraphics/Globe-Earth.png";
 	
 	@FXML
 	private TextField textTrace;

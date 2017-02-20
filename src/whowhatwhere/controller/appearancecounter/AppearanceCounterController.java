@@ -23,7 +23,7 @@ import whowhatwhere.controller.GUIController;
 public class AppearanceCounterController implements Initializable
 {
 	private final static String startWWWImageLocation = "/buttonGraphics/startWWWIcon.png";
-	private final static String exportToCSVImageLocation = "/buttonGraphics/export CSV.png";
+	private final static String exportToCSVImageLocation = "/buttonGraphics/Export-CSV.png";
 	
 	@FXML
 	private AnchorPane paneCaptureOptions;

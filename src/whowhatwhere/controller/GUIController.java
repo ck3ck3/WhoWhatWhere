@@ -77,7 +77,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 	
 	
 	private final static String applicationIcon16Location = "/appIcons/www16.jpg";
-	private final static String exitImageLocation = "/buttonGraphics/Exit.png";
+	private final static String exitImageLocation = "/buttonGraphics/exit.png";
 	private final static String textColorForValidText = "black"; 
 	private final static String backgroundColorForValidText = "white";
 	private final static String textColorForInvalidText = "#b94a48";

@@ -118,12 +118,12 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 				if (ruleList.isEmpty())
 					return;
 
-				line = "Starting watchdog";
+				line = "Watchdog started";
 				changeUIAccordingToListeningState(true);
 			}
 			else
 			{
-				line = "Stopping watchdog";
+				line = "Watchdog stopped";
 				changeUIAccordingToListeningState(false);
 			}
 

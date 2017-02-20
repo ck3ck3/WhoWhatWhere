@@ -21,12 +21,12 @@
    <children>
       <HBox fillHeight="false" layoutX="10.0" layoutY="50.0" spacing="15.0">
          <children>
-            <TitledPane collapsible="false" prefHeight="234.0" prefWidth="515.0" text="Capture options">
+            <TitledPane collapsible="false" prefHeight="234.0" prefWidth="515.0" text="Monitoring settings">
                <content>
                   <AnchorPane fx:id="paneCaptureOptions" prefHeight="190.0" prefWidth="427.0">
                      <children>
-                        <CheckBox fx:id="chkboxFilterProtocols" layoutX="10.0" layoutY="14.0" mnemonicParsing="false" text="Only count specific protocols:" />
-                        <Pane fx:id="paneProtocolBoxes" layoutX="198.0" layoutY="14.0">
+                        <CheckBox fx:id="chkboxFilterProtocols" layoutX="10.0" layoutY="110.0" mnemonicParsing="false" text="Only count specific protocols:" />
+                        <Pane fx:id="paneProtocolBoxes" layoutX="198.0" layoutY="110.0">
                            <children>
                               <CheckBox fx:id="chkboxUDP" mnemonicParsing="false" text="UDP" />
                               <CheckBox fx:id="chkboxTCP" layoutX="51.0" mnemonicParsing="false" text="TCP" />
@@ -34,26 +34,26 @@
                               <CheckBox fx:id="chkboxHTTP" layoutX="160.0" mnemonicParsing="false" text="HTTP" />
                            </children>
                         </Pane>
-                        <Label layoutX="270.0" layoutY="110.0" text="seconds" />
+                        <Label layoutX="279.0" layoutY="14.0" text="seconds" />
                         <CheckBox fx:id="chkboxGetLocation" layoutX="10.0" layoutY="46.0" mnemonicParsing="false" selected="false" text="Get location info for each IP address" />
-                        <CheckBox fx:id="chkboxTimedCapture" layoutX="10.0" layoutY="110.0" mnemonicParsing="false" selected="false" text="Automatically stop capturing after" />
+                        <CheckBox fx:id="chkboxTimedCapture" layoutX="10.0" layoutY="14.0" mnemonicParsing="false" selected="false" text="Automatically stop monitoring after" />
                         <CheckBox fx:id="chkboxPing" layoutX="10.0" layoutY="78.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="208.0" selected="false" text="Ping each IP address (timeout after" />
-                        <Label layoutX="272.0" layoutY="78.0" text="milliseconds)" />
-                        <NumberTextField fx:id="numFieldCaptureTimeout" layoutX="216.0" layoutY="106.0" minValue="1" prefHeight="25.0" prefWidth="49.0" />
-                        <NumberTextField fx:id="numFieldPingTimeout" layoutX="220.0" layoutY="74.0" minValue="1" prefHeight="25.0" prefWidth="47.0" />
+                        <Label layoutX="277.0" layoutY="78.0" text="milliseconds)" />
+                        <NumberTextField fx:id="numFieldCaptureTimeout" layoutX="225.0" layoutY="10.0" minValue="1" prefHeight="25.0" prefWidth="49.0" />
+                        <NumberTextField fx:id="numFieldPingTimeout" layoutX="225.0" layoutY="74.0" minValue="1" prefHeight="25.0" prefWidth="47.0" />
                      </children>
                   </AnchorPane>
                </content>
             </TitledPane>
-            <TitledPane collapsible="false" prefHeight="234.0" prefWidth="628.0" text="Hotkey options">
+            <TitledPane collapsible="false" prefHeight="234.0" prefWidth="628.0" text="Hotkey settings">
                <content>
                   <AnchorPane prefWidth="697.0">
                      <children>
                         <AnchorPane fx:id="paneEnableCaptureHotkey" layoutX="10.0" layoutY="11.0" prefHeight="177.0" prefWidth="580.0">
                            <children>
-                              <Button fx:id="btnConfigCaptureHotkey" layoutX="201.0" mnemonicParsing="false" text="Configure hotkey" />
-                              <Label fx:id="labelCurrCaptureHotkey" layoutX="348.0" layoutY="4.0" text="Current hotkey: " />
-                              <CheckBox fx:id="chkboxUseTTS" layoutY="35.0" mnemonicParsing="false" selected="false" text="If the hotkey was used to start or stop a capture, read results using text-to-speech" />
+                              <Button fx:id="btnConfigCaptureHotkey" layoutX="219.0" mnemonicParsing="false" text="Configure hotkey" />
+                              <Label fx:id="labelCurrCaptureHotkey" layoutX="366.0" layoutY="4.0" text="Current hotkey: " />
+                              <CheckBox fx:id="chkboxUseTTS" layoutY="35.0" mnemonicParsing="false" selected="false" text="If the hotkey was used to start or stop monitoring, read results using text-to-speech" />
                               <AnchorPane fx:id="paneUseTTS" layoutX="1.0" layoutY="67.0" prefHeight="109.0" prefWidth="573.0">
                                  <children>
                                     <Label layoutY="64.0" text="Read values of these columns:" />
@@ -84,7 +84,7 @@
                               </AnchorPane>
                            </children>
                         </AnchorPane>
-                        <CheckBox fx:id="chkboxUseCaptureHotkey" layoutX="10.0" layoutY="14.0" mnemonicParsing="false" selected="false" text="Enable start/stop capture hotkey" />
+                        <CheckBox fx:id="chkboxUseCaptureHotkey" layoutX="10.0" layoutY="14.0" mnemonicParsing="false" selected="false" text="Enable start/stop monitoring hotkey" />
                      </children>
                   </AnchorPane>
                </content>
@@ -93,8 +93,8 @@
       </HBox>
       <AnchorPane layoutX="1.0" layoutY="288.0" prefHeight="64.0" prefWidth="495.0" AnchorPane.leftAnchor="1.0">
          <children>
-            <Button fx:id="btnStart" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" text="Start listening" />
-            <Button fx:id="btnStop" layoutX="133.0" layoutY="10.0" mnemonicParsing="false" text="Stop listening" />
+            <Button fx:id="btnStart" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" text="Start monitoring" />
+            <Button fx:id="btnStop" layoutX="145.0" layoutY="10.0" mnemonicParsing="false" text="Stop monitoring" />
             <Label fx:id="labelStatus" layoutX="10.0" layoutY="49.0" text="Status: Idle" />
          </children>
       </AnchorPane>

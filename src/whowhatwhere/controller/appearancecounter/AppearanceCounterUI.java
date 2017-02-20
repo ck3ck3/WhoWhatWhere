@@ -11,6 +11,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 
@@ -90,11 +91,11 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 
 	private final static int maxPingTimeout = 3000;
 	private final static String statusIdle = "Status: Idle";
-	private final static String statusGettingReady = "Status: Getting ready to start capture...";
-	private final static String statusCapturing = "Status: Capture in progress...";
-	private final static String statusStopping = "Status: Stopping capture...";
+	private final static String statusGettingReady = "Status: Getting ready to start monitoring...";
+	private final static String statusCapturing = "Status: Monitoring...";
+	private final static String statusStopping = "Status: Stopping...";
 	private final static String statusResults = "Status: Fetching results...";
-	private final static String msgTimerExpired = "Timer expired, stopping capture";
+	private final static String msgTimerExpired = "Timer expired, monitoring stopped";
 	private final static String captureHotkeyID = "WhoWhatWhere capture hotkey";
 	private final static String voiceForTTS = GUIController.voiceForTTS;
 	
@@ -164,7 +165,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		@Override
 		public void run()
 		{
-			String line = activeButton == btnStart ? "Starting Who What Where" : "Stopping Who What Where";
+			String line = activeButton == btnStart ? "Monitoring started" : "Monitoring stopped";
 
 			isAHotkeyResult = true;
 			tts.speak(line);
@@ -329,9 +330,9 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	
 	private void setIPNotesColumnBehavior()
 	{
-		Label labelForIPNote = new Label("IP notes");
+		Label labelForIPNote = new Label("IP Notes");
 		GUIController.setCommonGraphicOnLabeled(labelForIPNote, GUIController.CommonGraphicImages.TOOLTIP);
-		labelForIPNote.setTooltip(new Tooltip("Add your own label to describe this IP address to easily recognize it in the future"));
+		labelForIPNote.setTooltip(new Tooltip("Add your own note to describe this IP address and easily recognize it in the future"));
 		labelForIPNote.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
 		columnNotes.setGraphic(labelForIPNote);
 		columnNotes.setText("");
@@ -588,9 +589,17 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 					String colValue = columnMapping.get(colName);
 
 					if (colValue.isEmpty() || (colName.equals(getColumnHeaderText(columnNotes)) && colValue.equals(emptyNotesString)))
-						continue;
-
-					lines[i].append(colName + ": " + colValue + ". ");
+						colValue = "No data";
+					
+					String colNameToSay = colName;
+					
+					if (colName.equals(getColumnHeaderText(columnIP)))
+						colValue = colValue.replaceAll("", " ").replaceAll(Pattern.quote("."), ",").trim(); //turns "123.123.123.123" to "1 2 3, 1 2 3, 1 2 3, 1 2 3", so TTS will read each digit and with a pause between octets
+					
+					if (colNameToSay.contains("IP"))
+						colNameToSay = colNameToSay.replace("IP", "I P");
+					
+					lines[i].append(colNameToSay + ": " + colValue + ". ");
 				}
 			}
 		}
@@ -598,7 +607,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		String result = "";
 
 		for (int i = 0; i < rowsToRead; i++)
-			result += lines[i].toString();
+			result += lines[i].toString() + "\n";
 
 		tts.speak(result);
 	}
@@ -652,14 +661,14 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	{
 		Map<String, String> colMapping = new HashMap<>();
 		
-		colMapping.put("Packet Count", ipInfoRowModel.packetCountProperty().getValue().toString());
-//		colMapping.put("IP Notes", ipInfoRowModel.notesProperty().getValue());
-		colMapping.put("IP Address", ipInfoRowModel.ipAddressProperty().getValue());
-		colMapping.put("Owner", ipInfoRowModel.ownerProperty().getValue());
-		colMapping.put("Ping", ipInfoRowModel.pingProperty().getValue());
-		colMapping.put("Country", ipInfoRowModel.countryProperty().getValue());
-		colMapping.put("Region", ipInfoRowModel.regionProperty().getValue());
-		colMapping.put("City", ipInfoRowModel.cityProperty().getValue());
+		colMapping.put(getColumnHeaderText(columnPacketCount), ipInfoRowModel.packetCountProperty().getValue().toString());
+		colMapping.put(getColumnHeaderText(columnNotes), ipInfoRowModel.notesProperty().getValue());
+		colMapping.put(getColumnHeaderText(columnIP), ipInfoRowModel.ipAddressProperty().getValue());
+		colMapping.put(getColumnHeaderText(columnOwner), ipInfoRowModel.ownerProperty().getValue());
+		colMapping.put(getColumnHeaderText(columnPing), ipInfoRowModel.pingProperty().getValue());
+		colMapping.put(getColumnHeaderText(columnCountry), ipInfoRowModel.countryProperty().getValue());
+		colMapping.put(getColumnHeaderText(columnRegion), ipInfoRowModel.regionProperty().getValue());
+		colMapping.put(getColumnHeaderText(columnCity), ipInfoRowModel.cityProperty().getValue());
 		
 		return colMapping;
 	}

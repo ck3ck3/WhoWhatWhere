@@ -16,7 +16,6 @@
 		<resources>
 			<resource>
 				<directory>resources</directory>
-
 			</resource>
 		</resources>
 		<plugins>
@@ -27,6 +26,129 @@
 					<source>1.8</source>
 					<target>1.8</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>whowhatwhere.Main</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.0.2</version>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/classes/whowhatwhere/view/fxmls</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/whowhatwhere/view/fxmls</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.5.0</version>
+				<executions>
+					<execution>
+						<id>Delete old rar</id>
+						<phase>clean</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>cmd</executable>
+							<workingDirectory>dist</workingDirectory>
+							<arguments>
+								<argument>/c</argument>
+								<argument>del</argument>
+								<argument>WhoWhatWhere.rar</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>Create empty WhoWhatWhere dir for exe output</id>
+						<phase>clean</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>cmd</executable>
+							<workingDirectory>dist/RarGenerator</workingDirectory>
+							<arguments>
+								<argument>/c</argument>
+								<argument>mkdir</argument>
+								<argument>WhoWhatWhere</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>Create exe file</id>
+						<phase>package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>launch4jc</executable>
+							<workingDirectory>dist/RarGenerator</workingDirectory>
+							<arguments>
+								<argument>WhoWhatWhere-launch4j.xml</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>Create rar file</id>
+						<phase>package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>rar</executable>
+							<workingDirectory>dist/RarGenerator</workingDirectory>
+							<arguments>
+								<argument>a</argument>
+								<argument>../WhoWhatWhere.rar</argument>
+								<argument>WhoWhatWhere</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>Delete temp WhoWhatWhere dir</id>
+						<phase>package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>cmd</executable>
+							<workingDirectory>dist/RarGenerator</workingDirectory>
+							<arguments>
+								<argument>cmd</argument>
+								<argument>/c</argument>
+								<argument>rmdir</argument>
+								<argument>/s</argument>
+								<argument>/q</argument>
+								<argument>WhoWhatWhere</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
@@ -66,6 +188,11 @@
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
 			<version>3.5</version>
+		</dependency>
+		<dependency>
+			<groupId>ck3</groupId>
+			<artifactId>NumberTextField</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
 </project>

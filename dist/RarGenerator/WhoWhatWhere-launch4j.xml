@@ -2,7 +2,7 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>WhoWhatWhere\WhoWhatWhere.jar</jar>
+  <jar>E:\githome\git\WhoWhatWhere\target\WhoWhatWhere-0.0.1-SNAPSHOT-jar-with-dependencies.jar</jar>
   <outfile>WhoWhatWhere\WhoWhatWhere.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
