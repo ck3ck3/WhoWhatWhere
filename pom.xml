@@ -15,7 +15,7 @@
 		<sourceDirectory>src</sourceDirectory>
 		<resources>
 			<resource>
-				<directory>resources</directory>
+				<directory>src/main/resources</directory>
 			</resource>
 		</resources>
 		<plugins>
@@ -55,7 +55,7 @@
 							<outputDirectory>${basedir}/target/classes/whowhatwhere/view/fxmls</outputDirectory>
 							<resources>
 								<resource>
-									<directory>src/whowhatwhere/view/fxmls</directory>
+									<directory>src/main/java/whowhatwhere/view/fxmls</directory>
 									<filtering>true</filtering>
 								</resource>
 							</resources>
