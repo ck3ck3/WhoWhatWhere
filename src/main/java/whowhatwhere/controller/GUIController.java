@@ -17,6 +17,7 @@ import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -33,6 +34,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import numbertextfield.NumberTextField;
@@ -150,8 +152,12 @@ public class GUIController implements CheckForUpdatesResultHandler
 		catch (IllegalStateException ise)
 		{
 			if (ise.getMessage().contains("Can't find dependent libraries"))
-				generateLabelAndLinkAlert(AlertType.ERROR, "Application cannot be started", "WinPcap is not installed!", "Please download and install WinPcap from",
-						"http://www.winpcap.org/install/default.htm").showAndWait();
+			{
+				Alert alert = new Alert(AlertType.ERROR, "Application cannot be started");
+				alert.setHeaderText("WinPcap is not installed!"); 
+				alert.getDialogPane().contentProperty().set(generateLabelAndLinkPane("Please download and install WinPcap from", "http://www.winpcap.org/install/default.htm", Font.getDefault().getSize()));
+				alert.showAndWait();
+			}
 			else
 				new Alert(AlertType.ERROR, "Critical error, application cannot be started:\n" + ise.getMessage()).showAndWait();
 
@@ -297,10 +303,24 @@ public class GUIController implements CheckForUpdatesResultHandler
 		String version = Main.getReleaseVersion();
 		String website = Main.getWebsite();
 
-		Alert about = generateLabelAndLinkAlert(AlertType.INFORMATION, "About " + appName, appName + " version " + version, "For more information visit ", website);
+		Alert about = new Alert(AlertType.INFORMATION, "About " + appName);
 		about.initOwner(getStage());
+		about.setTitle("About " + appName);
+		about.setHeaderText(appName + " version " + version);
 		
-		addIconAttributionToAboutDialog(about);
+		FlowPane infoPane = generateLabelAndLinkPane("For more information visit ", website, Font.getDefault().getSize() + 2);
+		infoPane.setPadding(new Insets(0, 0, 15, 0));
+		
+		FlowPane copyright = generateLabelAndLinkPane("Copyright (C) 2017  ck3ck3 ", "mailto:WhoWhatWhereInfo@gmail.com", Font.getDefault().getSize());
+		Hyperlink mailLink = (Hyperlink) copyright.getChildren().get(1);
+		mailLink.setText("WhoWhatWhereInfo@gmail.com");
+		copyright.setPadding(new Insets(0, 0, 15, 0));
+		
+		VBox aboutVBox = new VBox();
+		aboutVBox.getChildren().addAll(infoPane, copyright, getAttributionLinksForAboutDialog());
+		about.getDialogPane().contentProperty().set(aboutVBox);
+		about.getDialogPane().setPrefWidth(450);
+		
 
 		about.showAndWait();
 	}
@@ -344,7 +364,11 @@ public class GUIController implements CheckForUpdatesResultHandler
 			Alert alert;
 
 			if (newVersionExists)
-				alert = generateLabelAndLinkAlert(AlertType.INFORMATION, "Check for updates", "New version available!", "Download the new version at ", Main.getWebsite());
+			{
+				alert = new Alert(AlertType.INFORMATION, "Check for updates");
+				alert.setHeaderText("New version available!");
+				alert.getDialogPane().contentProperty().set(generateLabelAndLinkPane("Download the new version at ", Main.getWebsite(), Font.getDefault().getSize()));
+			}
 			else
 			{
 				alert = new Alert(AlertType.INFORMATION);
@@ -357,36 +381,42 @@ public class GUIController implements CheckForUpdatesResultHandler
 				alert.showAndWait();
 		});
 	}
-
-	private Alert generateLabelAndLinkAlert(AlertType type, String title, String header, String text, String url)
+	
+	private FlowPane generateLabelAndLinkPane(String text, String url, double fontSize)
 	{
-		Alert alert = new Alert(type);
-		alert.setTitle(title);
-		alert.setHeaderText(header);
+		Font font = new Font(fontSize);
 
-		FlowPane fp = new FlowPane();
-		Label lbl = new Label(text);
+		Label label = new Label(text);
+		label.setFont(font);
+		
 		Hyperlink link = new Hyperlink(url);
+		link.setFont(font);
+		link.setOnAction(event -> Main.openInBrowser(url));
 
-		link.setOnAction(event -> Main.openInBrowser(link.getText()));
+		FlowPane flowPane = new FlowPane();
+		flowPane.getChildren().addAll(label, link);
 
-		fp.getChildren().addAll(lbl, link);
-
-		alert.getDialogPane().contentProperty().set(fp);
-
-		return alert;
+		return flowPane;
 	}
 	
-	private void addIconAttributionToAboutDialog(Alert aboutDialog)
+	private VBox getAttributionLinksForAboutDialog()
 	{
-		Hyperlink iconSite = new Hyperlink("http://icons8.com");
-		iconSite.setOnAction(event -> Main.openInBrowser(iconSite.getText()));
-		FlowPane line = new FlowPane(new Label("All icons (except for "), new ImageView(new Image(applicationIcon16Location)), new Label(" ) are from"), iconSite);
+		FlowPane iconsAttributionPane = generateLabelAndLinkPane("All icons (except for ", "http://icons8.com", Font.getDefault().getSize());
+		Label labelToAdd = new Label(") are from");
+		labelToAdd.setGraphic(new ImageView(new Image(applicationIcon16Location)));
+		labelToAdd.setContentDisplay(ContentDisplay.LEFT);
+		labelToAdd.setGraphicTextGap(2);
+		iconsAttributionPane.getChildren().add(1, labelToAdd);
 		
-		FlowPane existingFowPane = (FlowPane) aboutDialog.getDialogPane().getContent();
-		VBox vbox = new VBox(10);
-		vbox.getChildren().addAll(existingFowPane, line);
-		aboutDialog.getDialogPane().setContent(vbox);
+		FlowPane softwareAttributionPane = generateLabelAndLinkPane("Click", getClass().getResource(Main.attributionHTMLLocation).toString(), Font.getDefault().getSize());
+		Hyperlink tempLink = (Hyperlink) softwareAttributionPane.getChildren().get(1);
+		tempLink.setText("here");
+		softwareAttributionPane.getChildren().add(new Label("to see a list of the software libraries used in Who What Where."));
+		
+		VBox vbox = new VBox();
+		vbox.getChildren().addAll(iconsAttributionPane, softwareAttributionPane);
+		
+		return vbox;
 	}
 	
 	

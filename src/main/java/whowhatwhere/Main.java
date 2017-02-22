@@ -37,12 +37,13 @@ public class Main extends Application
 	private final static String releaseVersion = "1.10";
 	private final static String urlForLatestRelease = "https://api.github.com/repos/ck3ck3/WhoWhatWhere/releases/latest";
 
-	private static final String website = "http://ck3ck3.github.io/WhoWhatWhere/";
+	private static final String website = "http://ck3ck3.github.io/WhoWhatWhere";
 
 	private final static String iconResource16 = "/appIcons/www16.jpg";
 	private final static String iconResource32 = "/appIcons/www32.jpg";
 	private final static String iconResource48 = "/appIcons/www48.jpg";
 	private final static String iconResource256 = "/appIcons/www256.jpg";
+	public final static String attributionHTMLLocation = "/attribution.html";
 	public final static String jnetpcapDLLx86Location = "/native/windows/x86/jnetpcap.dll";
 	public final static String jnetpcapDLLx64Location = "/native/windows/x86_64/jnetpcap.dll";
 
