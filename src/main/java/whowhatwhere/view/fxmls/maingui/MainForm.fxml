@@ -11,13 +11,10 @@
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.BorderPane?>
 
-<ScrollPane fx:id="scrollPaneMainForm" fitToHeight="false" fitToWidth="false" prefHeight="721.0" prefWidth="1205.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.GUIController">
-	<content>
-		<BorderPane>
-			<top>
-				<MenuBar BorderPane.alignment="CENTER">
+<AnchorPane prefHeight="730.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.GUIController">
+	<children>
+				<MenuBar prefHeight="25.0" prefWidth="1205.0">
 					<menus>
 						<Menu mnemonicParsing="false" text="File">
 							<items>
@@ -49,48 +46,47 @@
 						</Menu>
 					</menus>
 				</MenuBar>
-			</top>
-			<center>
-				<TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
-					<tabs>
-						<Tab fx:id="tabWWW" closable="false" text="Who What Where">
-							<content>
-								<fx:include fx:id="appearanceCounterPane" source="../appearancecounter/AppearanceCounter.fxml" />
-							</content>
-						</Tab>
-						<Tab fx:id="tabWatchdog" closable="false" text="Watchdog">
-							<content>
-								<fx:include fx:id="watchdogPane" source="../watchdog/Watchdog.fxml" />
-							</content>
-						</Tab>
-						<Tab fx:id="tabUtils" closable="false" text="Utilities">
-							<content>
-								<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-									<children>
-										<TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="14.0" prefHeight="145.0" prefWidth="586.0" text="Quick ping">
-											<content>
-												<fx:include fx:id="quickPingPane" source="../utilities/QuickPing.fxml" />
-											</content>
-										</TitledPane>
-										<TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="175.0" prefHeight="78.0" prefWidth="586.0" text="Visual Trace">
-											<content>
-												<fx:include fx:id="tracePane" source="../utilities/Trace.fxml" />
-											</content>
-										</TitledPane>
-									</children>
-								</AnchorPane>
-							</content>
-						</Tab>
-					</tabs>
-				</TabPane>
-			</center>
-			<bottom>
-				<AnchorPane BorderPane.alignment="CENTER">
+
+				<ScrollPane fx:id="scrollPaneMainForm" fitToHeight="false" fitToWidth="false" layoutY="25.0" prefHeight="657.0" prefWidth="1205.0" AnchorPane.bottomAnchor="48.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
+					<content>
+						<TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE">
+							<tabs>
+								<Tab fx:id="tabWWW" closable="false" text="Who What Where">
+									<content>
+										<fx:include fx:id="appearanceCounterPane" source="../appearancecounter/AppearanceCounter.fxml" />
+									</content>
+								</Tab>
+								<Tab fx:id="tabWatchdog" closable="false" text="Watchdog">
+									<content>
+										<fx:include fx:id="watchdogPane" source="../watchdog/Watchdog.fxml" />
+									</content>
+								</Tab>
+								<Tab fx:id="tabUtils" closable="false" text="Utilities">
+									<content>
+										<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+											<children>
+												<TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="14.0" prefHeight="145.0" prefWidth="586.0" text="Quick ping">
+													<content>
+														<fx:include fx:id="quickPingPane" source="../utilities/QuickPing.fxml" />
+													</content>
+												</TitledPane>
+												<TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="175.0" prefHeight="78.0" prefWidth="586.0" text="Visual Trace">
+													<content>
+														<fx:include fx:id="tracePane" source="../utilities/Trace.fxml" />
+													</content>
+												</TitledPane>
+											</children>
+										</AnchorPane>
+									</content>
+								</Tab>
+							</tabs>
+						</TabPane>
+					</content>
+				</ScrollPane>
+				<AnchorPane layoutY="682.0" maxHeight="51.0" minHeight="51.0" prefHeight="51.0" prefWidth="1205.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="679.0">
 					<children>
-						<Button fx:id="btnExit" mnemonicParsing="false" prefHeight="29.0" prefWidth="75.0" text="Exit" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="17.0" />
+						<Button fx:id="btnExit" mnemonicParsing="false" prefHeight="29.0" prefWidth="75.0" text="Exit" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="35.0" />
 					</children>
 				</AnchorPane>
-			</bottom>
-		</BorderPane>
-	</content>
-</ScrollPane>
+	</children>
+</AnchorPane>

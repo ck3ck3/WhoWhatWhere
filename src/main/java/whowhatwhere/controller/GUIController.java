@@ -22,7 +22,6 @@ import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.TrayIcon.MessageType;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,9 +29,14 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.json.JSONObject;
+
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker.State;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -53,6 +57,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.scene.web.WebEngine;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import numbertextfield.NumberTextField;
@@ -69,7 +74,7 @@ import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.networksniffer.NICInfo;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 
-public class GUIController implements CheckForUpdatesResultHandler
+public class GUIController
 {
 	public enum CommonGraphicImages 
 	{
@@ -156,6 +161,8 @@ public class GUIController implements CheckForUpdatesResultHandler
 	private SettingsHandler settings;
 	private List<LoadAndSaveSettings> instancesWithSettingsToHandle = new ArrayList<>();
 	private Map<Tab, BooleanExpression> tabToBindExpression = new HashMap<>();
+	private WebEngine engine;
+	private ChangeListenerForUpdate changeListenerForUpdate;
 
 	
 	/**
@@ -326,7 +333,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 		about.setTitle("About " + appName);
 		about.setHeaderText(appName + " version " + version);
 		
-		FlowPane infoPane = generateLabelAndLinkPane("For more information visit ", website, Font.getDefault().getSize() + 2);
+		FlowPane infoPane = generateLabelAndLinkPane("For more information visit", website, Font.getDefault().getSize() + 2);
 		infoPane.setPadding(new Insets(0, 0, 15, 0));
 		
 		FlowPane copyright = generateLabelAndLinkPane("Copyright (C) 2017  ck3ck3 ", "mailto:WhoWhatWhereInfo@gmail.com", Font.getDefault().getSize());
@@ -337,10 +344,52 @@ public class GUIController implements CheckForUpdatesResultHandler
 		VBox aboutVBox = new VBox();
 		aboutVBox.getChildren().addAll(infoPane, copyright, getAttributionLinksForAboutDialog());
 		about.getDialogPane().contentProperty().set(aboutVBox);
-		about.getDialogPane().setPrefWidth(450);
+		about.getDialogPane().setPrefWidth(440);
 		
-
 		about.showAndWait();
+	}
+	
+	private class ChangeListenerForUpdate implements ChangeListener<State>
+	{
+		private boolean silent;
+		
+		public ChangeListenerForUpdate(boolean silent)
+		{
+			this.silent = silent;
+		}
+		
+		@Override
+		public void changed(ObservableValue<? extends State> observable, State oldValue, State newValue)
+		{
+			if (newValue == State.SUCCEEDED)
+			{
+				JSONObject jsonObject = new JSONObject(engine.getDocument().getDocumentElement().getTextContent());
+				String version = (String) jsonObject.get("tag_name");
+				String releaseNotes = (String) jsonObject.get("body");
+				checkForUpdatesResult(silent, !version.equals(Main.getReleaseVersion()), version, releaseNotes);
+			}
+			else
+				if (newValue == State.FAILED)
+				{
+					Throwable throwable = engine.getLoadWorker().getException();
+					String errorMsg = throwable != null ? throwable.getMessage() : "Failed to check for updates";
+					
+					if (!silent)
+					{
+						Alert alert = new Alert(AlertType.ERROR);
+						alert.setHeaderText("Unable to check for updates");
+						alert.setContentText(errorMsg);
+						alert.showAndWait();
+					}
+
+					logger.log(Level.SEVERE, "Failed to check for updates", throwable != null ? throwable : errorMsg);
+				}
+		}
+		
+		public void setSilent(boolean silent)
+		{
+			this.silent = silent;
+		}
 	}
 
 	/**
@@ -350,54 +399,39 @@ public class GUIController implements CheckForUpdatesResultHandler
 	 */
 	private void checkForUpdates(boolean silent)
 	{
-		new Thread(() ->
+		if (engine == null)
 		{
-			try
-			{
-				Main.isUpdateAvailable(this, silent);
-			}
-			catch (IOException e)
-			{
-				if (!silent)
-				{
-					Platform.runLater(() ->
-					{
-						Alert alert = new Alert(AlertType.ERROR);
-						alert.setHeaderText("Unable to check for updates");
-						alert.setContentText(e.getMessage());
-						alert.showAndWait();
-					});
-				}
-
-				logger.log(Level.SEVERE, "Failed to check for updates", e);
-			}
-		}).start();
+			engine = new WebEngine();
+			changeListenerForUpdate = new ChangeListenerForUpdate(silent);
+			engine.getLoadWorker().stateProperty().addListener(changeListenerForUpdate);
+		}
+		else
+			changeListenerForUpdate.setSilent(silent);
+		
+		engine.load(Main.getURLForLatestRelease());
 	}
 
-	@Override
-	public void checkForUpdatesResult(boolean newVersionExists, boolean silent)
+	private void checkForUpdatesResult(boolean silent, boolean newVersionExists, String latestVersion, String latestReleaseNotes)
 	{
-		Platform.runLater(() ->
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("Check for updates");
+		alert.initOwner(getStage());
+
+		if (newVersionExists)
 		{
-			Alert alert;
+			alert.setHeaderText("New version available!");
+			alert.getDialogPane().contentProperty().set(generateLabelAndLinkPane("Download the latest version (" + latestVersion + ") at", Main.getWebsite(), Font.getDefault().getSize() + 2));
+			FlowPane flowPane = (FlowPane) alert.getDialogPane().getContent();
+			flowPane.getChildren().add(new Label("\nLatest release notes:\n\n" + latestReleaseNotes));
+		}
+		else
+		{
+			alert.setHeaderText("No new updates available.");
+			alert.setContentText("You are running the latest version.");
+		}
 
-			if (newVersionExists)
-			{
-				alert = new Alert(AlertType.INFORMATION, "Check for updates");
-				alert.setHeaderText("New version available!");
-				alert.getDialogPane().contentProperty().set(generateLabelAndLinkPane("Download the new version at ", Main.getWebsite(), Font.getDefault().getSize()));
-			}
-			else
-			{
-				alert = new Alert(AlertType.INFORMATION);
-				alert.setTitle("Check for updates");
-				alert.setHeaderText("No new updates available.");
-				alert.setContentText("You are running the latest version.");
-			}
-
-			if (newVersionExists || !silent)
-				alert.showAndWait();
-		});
+		if (newVersionExists || !silent)
+			alert.showAndWait();
 	}
 	
 	private FlowPane generateLabelAndLinkPane(String text, String url, double fontSize)
@@ -411,8 +445,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 		link.setFont(font);
 		link.setOnAction(event -> Main.openInBrowser(url));
 
-		FlowPane flowPane = new FlowPane();
-		flowPane.getChildren().addAll(label, link);
+		FlowPane flowPane = new FlowPane(label, link);
 
 		return flowPane;
 	}
@@ -429,7 +462,7 @@ public class GUIController implements CheckForUpdatesResultHandler
 		FlowPane softwareAttributionPane = generateLabelAndLinkPane("Click", getClass().getResource(Main.attributionHTMLLocation).toString(), Font.getDefault().getSize());
 		Hyperlink tempLink = (Hyperlink) softwareAttributionPane.getChildren().get(1);
 		tempLink.setText("here");
-		softwareAttributionPane.getChildren().add(new Label("to see a list of the software libraries used in Who What Where."));
+		softwareAttributionPane.getChildren().add(new Label("to see which software libraries used in Who What Where."));
 		
 		VBox vbox = new VBox();
 		vbox.getChildren().addAll(iconsAttributionPane, softwareAttributionPane);

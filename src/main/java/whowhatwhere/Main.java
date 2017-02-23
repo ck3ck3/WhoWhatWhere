@@ -25,17 +25,12 @@ import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-
-import org.apache.commons.io.IOUtils;
-import org.json.JSONObject;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -46,14 +41,13 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import whowhatwhere.controller.CheckForUpdatesResultHandler;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.ToolTipDefaultsFixer;
 
 public class Main extends Application
 {
 	private final static String releaseVersion = "1.10";
-	private final static String urlForLatestRelease = "https://api.github.com/repos/ck3ck3/WhoWhatWhere/releases/latest";
+	private final static String urlForLatestRelease = "http://bit.ly/WhoWhatWhereUpdate";
 
 	private static final String website = "http://ck3ck3.github.io/WhoWhatWhere";
 
@@ -83,9 +77,9 @@ public class Main extends Application
 
 			ToolTipDefaultsFixer.setTooltipTimers(250, 15000, 200);
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(mainFormLocation));
-			Parent root = (Parent)loader.load();
+			Parent root = (Parent) loader.load();
 			GUIController gui = (GUIController) loader.getController();
-			
+
 			Scene scene = new Scene(root);
 			primaryStage.setTitle(appTitle);
 			primaryStage.setScene(scene);
@@ -163,18 +157,6 @@ public class Main extends Application
 		}
 	}
 
-	public static void isUpdateAvailable(CheckForUpdatesResultHandler resultHandler, boolean silent) throws IOException
-	{
-		InputStream inputStream = new URL(urlForLatestRelease).openStream();
-		String response = IOUtils.toString(inputStream);
-		IOUtils.closeQuietly(inputStream);
-
-		JSONObject jsonObject = new JSONObject(response);
-		String version = (String) jsonObject.get("tag_name");
-
-		resultHandler.checkForUpdatesResult(!version.equals(getReleaseVersion()), silent);
-	}
-
 	public static void openInBrowser(String link)
 	{
 		if (Desktop.isDesktopSupported())
@@ -216,5 +198,10 @@ public class Main extends Application
 	public static String getExecutablefilename()
 	{
 		return executableFilename;
+	}
+	
+	public static String getURLForLatestRelease()
+	{
+		return urlForLatestRelease;
 	}
 }
