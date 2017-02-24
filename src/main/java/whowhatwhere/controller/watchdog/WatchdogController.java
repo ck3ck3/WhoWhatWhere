@@ -46,6 +46,7 @@ import javafx.util.Callback;
 import numbertextfield.NumberTextField;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
+import javafx.scene.control.ScrollPane;
 
 public class WatchdogController implements Initializable
 {
@@ -119,6 +120,9 @@ public class WatchdogController implements Initializable
 	private AnchorPane paneTableAndControls;
 	@FXML
 	private Label labelRuleList;
+	@FXML
+	private ScrollPane scrollPane;
+	
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
@@ -131,6 +135,10 @@ public class WatchdogController implements Initializable
 
 		numFieldCooldown.setMinValue(WatchdogUI.minCooldownValue);
 		numFieldCooldown.setMaxValue(WatchdogUI.maxCooldownValue);
+		
+		//show scrollbars only when needed. When not needed, allow to stretch GUI (AnchorPane behavior)
+		scrollPane.fitToWidthProperty().bind(scrollPane.widthProperty().greaterThan(scrollPane.getPrefWidth()));
+		scrollPane.fitToHeightProperty().bind(scrollPane.heightProperty().greaterThan(scrollPane.getPrefHeight()));
 	}
 
 	private void setButtonsDisableStates()

@@ -5,26 +5,25 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="730.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.GUIController">
+<AnchorPane fx:id="paneRoot" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.GUIController">
 	<children>
-				<MenuBar prefHeight="25.0" prefWidth="1205.0">
+				<MenuBar prefHeight="25.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 					<menus>
-						<Menu mnemonicParsing="false" text="File">
+						<Menu text="_File">
 							<items>
 								<MenuItem fx:id="menuItemManageNotes" mnemonicParsing="false" text="Manage IP notes" />
 								<MenuItem fx:id="menuItemMinimize" mnemonicParsing="false" text="Minimize to tray" />
 								<SeparatorMenuItem mnemonicParsing="false" />
-								<MenuItem fx:id="menuItemExit" mnemonicParsing="false" text="Exit" />
+								<MenuItem fx:id="menuItemExit" text="E_xit" />
 							</items>
 						</Menu>
-						<Menu mnemonicParsing="false" text="Options">
+						<Menu text="_Options">
 							<items>
 								<MenuItem fx:id="menuItemSelectNIC" mnemonicParsing="false" text="Select network adapter" />
 								<CheckMenuItem fx:id="menuItemChkCheckUpdateStartup" mnemonicParsing="false" text="Check for updates on startup" />
@@ -38,7 +37,7 @@
 								</Menu>
 							</items>
 						</Menu>
-						<Menu mnemonicParsing="false" text="Help">
+						<Menu text="_Help">
 							<items>
 								<MenuItem fx:id="menuItemUpdate" mnemonicParsing="false" text="Check for updates" />
 								<MenuItem fx:id="menuItemAbout" mnemonicParsing="false" text="About" />
@@ -46,10 +45,7 @@
 						</Menu>
 					</menus>
 				</MenuBar>
-
-				<ScrollPane fx:id="scrollPaneMainForm" fitToHeight="false" fitToWidth="false" layoutY="25.0" prefHeight="657.0" prefWidth="1205.0" AnchorPane.bottomAnchor="48.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
-					<content>
-						<TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE">
+						<TabPane fx:id="tabPane" layoutY="25.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
 							<tabs>
 								<Tab fx:id="tabWWW" closable="false" text="Who What Where">
 									<content>
@@ -81,12 +77,6 @@
 								</Tab>
 							</tabs>
 						</TabPane>
-					</content>
-				</ScrollPane>
-				<AnchorPane layoutY="682.0" maxHeight="51.0" minHeight="51.0" prefHeight="51.0" prefWidth="1205.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="679.0">
-					<children>
-						<Button fx:id="btnExit" mnemonicParsing="false" prefHeight="29.0" prefWidth="75.0" text="Exit" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="35.0" />
-					</children>
-				</AnchorPane>
+						<Button fx:id="btnExit" layoutX="1094.0" layoutY="694.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="75.0" text="Exit" AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="33.0" />
 	</children>
 </AnchorPane>

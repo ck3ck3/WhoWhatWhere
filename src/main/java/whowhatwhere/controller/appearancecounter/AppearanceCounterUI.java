@@ -612,7 +612,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 					String colNameToSay = colName;
 					
 					if (colName.equals(getColumnHeaderText(columnIP)))
-						colValue = colValue.replaceAll("", " ").replaceAll(Pattern.quote("."), ",").trim(); //turns "123.123.123.123" to "1 2 3, 1 2 3, 1 2 3, 1 2 3", so TTS will read each digit and with a pause between octets
+						colValue = colValue.replaceAll("", " ").replaceAll(Pattern.quote(" ."), ",").trim(); //turns "123.123.123.123" to "1 2 3, 1 2 3, 1 2 3, 1 2 3", so TTS will read each digit and with a pause between octets
 					
 					if (colNameToSay.contains("IP"))
 						colNameToSay = colNameToSay.replace("IP", "I P");

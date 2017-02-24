@@ -6,6 +6,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TitledPane?>
@@ -15,102 +16,107 @@
 <?import javafx.scene.text.Font?>
 <?import numbertextfield.NumberTextField?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.watchdog.WatchdogController">
-   <children>
-      <AnchorPane fx:id="paneTableAndControls" layoutX="14.0" layoutY="237.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="0.0">
+
+<ScrollPane fx:id="scrollPane" prefHeight="490.0" prefWidth="1202.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.watchdog.WatchdogController">
+   <content>
+      <AnchorPane>
          <children>
-            <TableView fx:id="table" prefHeight="192.0" stylesheets="/whowhatwhere/view/fxmls/watchdog/watchdogTable.css" tableMenuButtonVisible="true" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="12.0">
-               <columns>
-                  <TableColumn fx:id="columnIP" minWidth="180.0" prefWidth="230.0" text="IP address/note" />
-                  <TableColumn fx:id="columnPacketDirection" prefWidth="120.0" text="Packet direction" />
-                  <TableColumn fx:id="columnProtocol" prefWidth="100.0" text="Protocol" />
-                  <TableColumn prefWidth="75.0" text="Ports">
-                     <columns>
-                        <TableColumn fx:id="columnSrcPort" prefWidth="115.0" text="Source port" />
-                        <TableColumn fx:id="columnDstPort" prefWidth="115.0" text="Destination port" />
-                     </columns>
-                  </TableColumn>
-                  <TableColumn fx:id="columnPacketSize" prefWidth="125.0" text="Total packet size" />
-                  <TableColumn prefWidth="322.0" text="When a match is found">
-                     <columns>
-                        <TableColumn fx:id="columnMsgOutputMethod" prefWidth="162.0" text="Notification type" />
-                        <TableColumn fx:id="columnMsgText" prefWidth="180.0" text="Notification text" />
-                     </columns>
-                  </TableColumn>
-               </columns>
-            </TableView>
-            <HBox layoutY="200.0" spacing="27.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+            <AnchorPane fx:id="paneTableAndControls" layoutX="14.0" layoutY="237.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="0.0">
                <children>
-                  <HBox spacing="7.0">
+                  <TableView fx:id="table" prefHeight="192.0" stylesheets="/whowhatwhere/view/fxmls/watchdog/watchdogTable.css" tableMenuButtonVisible="true" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="12.0">
+                     <columns>
+                        <TableColumn fx:id="columnIP" minWidth="180.0" prefWidth="230.0" text="IP address/note" />
+                        <TableColumn fx:id="columnPacketDirection" prefWidth="120.0" text="Packet direction" />
+                        <TableColumn fx:id="columnProtocol" prefWidth="100.0" text="Protocol" />
+                        <TableColumn prefWidth="75.0" text="Ports">
+                           <columns>
+                              <TableColumn fx:id="columnSrcPort" prefWidth="115.0" text="Source port" />
+                              <TableColumn fx:id="columnDstPort" prefWidth="115.0" text="Destination port" />
+                           </columns>
+                        </TableColumn>
+                        <TableColumn fx:id="columnPacketSize" prefWidth="125.0" text="Total packet size" />
+                        <TableColumn prefWidth="322.0" text="When a match is found">
+                           <columns>
+                              <TableColumn fx:id="columnMsgOutputMethod" prefWidth="162.0" text="Notification type" />
+                              <TableColumn fx:id="columnMsgText" prefWidth="180.0" text="Notification text" />
+                           </columns>
+                        </TableColumn>
+                     </columns>
+                  </TableView>
+                  <HBox layoutY="200.0" spacing="27.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                      <children>
-                        <Button fx:id="btnAddRow" mnemonicParsing="false" text="Add rule" />
-                        <Button fx:id="btnEditRow" mnemonicParsing="false" text="Edit rule" />
-                        <Button fx:id="btnRemoveRow" mnemonicParsing="false" text="Remove rule" />
-                     </children>
-                  </HBox>
-                  <HBox spacing="7.0">
-                     <children>
-                        <Button fx:id="btnMoveUp" mnemonicParsing="false" text="Move selected rule up" />
-                        <Button fx:id="btnMoveDown" mnemonicParsing="false" text="Move selected rule down" />
-                     </children>
-                  </HBox>
-                  <HBox spacing="7.0">
-                     <children>
-                        <MenuButton fx:id="menubtnLoadRuleList" mnemonicParsing="false" text="Load rule list" />
-                        <Button fx:id="btnSaveRuleList" mnemonicParsing="false" text="Save rule list" />
+                        <HBox spacing="7.0">
+                           <children>
+                              <Button fx:id="btnAddRow" mnemonicParsing="false" text="Add rule" />
+                              <Button fx:id="btnEditRow" mnemonicParsing="false" text="Edit rule" />
+                              <Button fx:id="btnRemoveRow" mnemonicParsing="false" text="Remove rule" />
+                           </children>
+                        </HBox>
+                        <HBox spacing="7.0">
+                           <children>
+                              <Button fx:id="btnMoveUp" mnemonicParsing="false" text="Move selected rule up" />
+                              <Button fx:id="btnMoveDown" mnemonicParsing="false" text="Move selected rule down" />
+                           </children>
+                        </HBox>
+                        <HBox spacing="7.0">
+                           <children>
+                              <MenuButton fx:id="menubtnLoadRuleList" mnemonicParsing="false" text="Load rule list" />
+                              <Button fx:id="btnSaveRuleList" mnemonicParsing="false" text="Save rule list" />
+                           </children>
+                        </HBox>
                      </children>
                   </HBox>
                </children>
-            </HBox>
-         </children>
-      </AnchorPane>
-      <TitledPane collapsible="false" layoutX="648.0" layoutY="48.0" prefHeight="140.0" prefWidth="526.0" text="Settings">
-         <content>
-            <AnchorPane fx:id="paneConfig" prefWidth="525.0">
-               <children>
-                  <RadioButton fx:id="radioStopAfterMatch" layoutX="38.0" layoutY="39.0" mnemonicParsing="false" text="Stop Watchdog">
-                     <toggleGroup>
-                        <ToggleGroup fx:id="tglStopOrContinue" />
-                     </toggleGroup>
-                  </RadioButton>
-                  <RadioButton fx:id="radioKeepLooking" layoutX="38.0" layoutY="72.0" mnemonicParsing="false" text="Keep Watchdog running and start a cooldown period of" toggleGroup="$tglStopOrContinue" />
-                  <AnchorPane fx:id="paneCooldown" layoutX="360.0" layoutY="69.0">
+            </AnchorPane>
+            <TitledPane collapsible="false" layoutX="648.0" layoutY="48.0" prefHeight="140.0" prefWidth="526.0" text="Settings">
+               <content>
+                  <AnchorPane fx:id="paneConfig" prefWidth="525.0">
                      <children>
-                        <Label fx:id="labelCooldownSeconds" layoutX="52.0" layoutY="3.0" text="seconds" />
-                        <NumberTextField fx:id="numFieldCooldown" maxValue="0" prefHeight="25.0" prefWidth="46.0" />
+                        <RadioButton fx:id="radioStopAfterMatch" layoutX="38.0" layoutY="39.0" mnemonicParsing="false" text="Stop Watchdog">
+                           <toggleGroup>
+                              <ToggleGroup fx:id="tglStopOrContinue" />
+                           </toggleGroup>
+                        </RadioButton>
+                        <RadioButton fx:id="radioKeepLooking" layoutX="38.0" layoutY="72.0" mnemonicParsing="false" text="Keep Watchdog running and start a cooldown period of" toggleGroup="$tglStopOrContinue" />
+                        <AnchorPane fx:id="paneCooldown" layoutX="360.0" layoutY="69.0">
+                           <children>
+                              <Label fx:id="labelCooldownSeconds" layoutX="52.0" layoutY="3.0" text="seconds" />
+                              <NumberTextField fx:id="numFieldCooldown" maxValue="0" prefHeight="25.0" prefWidth="46.0" />
+                           </children>
+                        </AnchorPane>
+                        <Label layoutX="20.0" layoutY="10.0" text="When a match is found:" />
                      </children>
                   </AnchorPane>
-                  <Label layoutX="20.0" layoutY="10.0" text="When a match is found:" />
-               </children>
-            </AnchorPane>
-         </content>
-      </TitledPane>
-      <TitledPane collapsible="false" layoutX="14.0" layoutY="48.0" prefHeight="140.0" prefWidth="619.0" text="Start / stop">
-         <content>
-            <AnchorPane>
-               <children>
-                  <Button fx:id="btnStart" layoutX="15.0" layoutY="15.0" mnemonicParsing="false" text="Start Watchdog" />
-                  <Button fx:id="btnStop" disable="true" layoutX="147.0" layoutY="15.0" mnemonicParsing="false" text="Stop Watchdog" />
-                  <CheckBox fx:id="chkboxHotkey" layoutX="15.0" layoutY="64.0" mnemonicParsing="false" selected="false" text="Enable start/stop Watchdog hotkey" />
-                  <HBox fx:id="paneHotkeyConfig" layoutX="231.0" layoutY="60.0" prefHeight="25.0" prefWidth="363.0" spacing="9.0">
+               </content>
+            </TitledPane>
+            <TitledPane collapsible="false" layoutX="14.0" layoutY="48.0" prefHeight="140.0" prefWidth="619.0" text="Start / stop">
+               <content>
+                  <AnchorPane>
                      <children>
-                        <Button fx:id="btnConfigureHotkey" mnemonicParsing="false" text="Configure hotkey" />
-                        <Label fx:id="labelCurrHotkey" text="Current hotkey: ">
-                           <padding>
-                              <Insets top="4.0" />
-                           </padding>
-                        </Label>
+                        <Button fx:id="btnStart" layoutX="15.0" layoutY="15.0" mnemonicParsing="false" text="Start Watchdog" />
+                        <Button fx:id="btnStop" disable="true" layoutX="147.0" layoutY="15.0" mnemonicParsing="false" text="Stop Watchdog" />
+                        <CheckBox fx:id="chkboxHotkey" layoutX="15.0" layoutY="64.0" mnemonicParsing="false" selected="false" text="Enable start/stop Watchdog hotkey" />
+                        <HBox fx:id="paneHotkeyConfig" layoutX="231.0" layoutY="60.0" prefHeight="25.0" prefWidth="363.0" spacing="9.0">
+                           <children>
+                              <Button fx:id="btnConfigureHotkey" mnemonicParsing="false" text="Configure hotkey" />
+                              <Label fx:id="labelCurrHotkey" text="Current hotkey: ">
+                                 <padding>
+                                    <Insets top="4.0" />
+                                 </padding>
+                              </Label>
+                           </children>
+                        </HBox>
                      </children>
-                  </HBox>
-               </children>
-            </AnchorPane>
-         </content>
-      </TitledPane>
-      <Label fx:id="labelTableHeader" layoutX="14.0" layoutY="14.0" text="Watchdog">
-         <font>
-            <Font size="14.0" />
-         </font>
-      </Label>
-      <Label fx:id="labelRuleList" layoutX="14.0" layoutY="206.0" text="Rule list:" />
-   </children>
-</AnchorPane>
+                  </AnchorPane>
+               </content>
+            </TitledPane>
+            <Label fx:id="labelTableHeader" layoutX="14.0" layoutY="14.0" text="Watchdog">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Label>
+            <Label fx:id="labelRuleList" layoutX="14.0" layoutY="206.0" text="Rule list:" />
+         </children>
+      </AnchorPane>
+   </content>
+</ScrollPane>

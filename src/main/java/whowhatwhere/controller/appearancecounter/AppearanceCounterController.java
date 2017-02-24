@@ -37,6 +37,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import numbertextfield.NumberTextField;
 import whowhatwhere.controller.GUIController;
+import javafx.scene.control.ScrollPane;
 
 public class AppearanceCounterController implements Initializable
 {
@@ -121,6 +122,8 @@ public class AppearanceCounterController implements Initializable
 	private Pane paneProtocolBoxes;
 	@FXML
 	private Label labelWWW;
+	@FXML
+	private ScrollPane scrollPane;
 	
 	
 	@Override
@@ -132,6 +135,10 @@ public class AppearanceCounterController implements Initializable
 		GUIController.setGraphicForLabeledControl(btnStart, startWWWImageLocation, ContentDisplay.LEFT);
 		GUIController.setCommonGraphicOnLabeled(btnStop, GUIController.CommonGraphicImages.STOP);
 		GUIController.setGraphicForLabeledControl(btnExportTableToCSV, exportToCSVImageLocation, ContentDisplay.LEFT);
+		
+		//show scrollbars only when needed. When not needed, allow to stretch GUI (AnchorPane behavior)
+		scrollPane.fitToWidthProperty().bind(scrollPane.widthProperty().greaterThan(scrollPane.getPrefWidth()));
+		scrollPane.fitToHeightProperty().bind(scrollPane.heightProperty().greaterThan(scrollPane.getPrefHeight()));
 	}
 	
 	private void setWWWLabel()

@@ -49,11 +49,11 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.Labeled;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -110,7 +110,7 @@ public class GUIController
 	public final static String voiceForTTS = "kevin16";
 
 	@FXML
-	private ScrollPane scrollPaneMainForm;
+	private AnchorPane paneRoot;
 	@FXML
 	private Button btnExit;
 	@FXML
@@ -164,6 +164,8 @@ public class GUIController
 	private WebEngine engine;
 	private ChangeListenerForUpdate changeListenerForUpdate;
 
+
+	
 	
 	/**
 	 * <b>MUST</b> be called after the stage is shown
@@ -189,7 +191,7 @@ public class GUIController
 			shutdownApp();
 		}
 
-		hotkeyRegistry = new HotkeyRegistry(scrollPaneMainForm);
+		hotkeyRegistry = new HotkeyRegistry(paneRoot);
 
 		btnExit.setOnAction(e -> exitButtonPressed());
 
@@ -212,10 +214,6 @@ public class GUIController
 
 		if (settings.getCheckForUpdatesOnStartup())
 			checkForUpdates(true); //only show a message if there is a new version
-		
-		//show scrollbars only when needed. When not needed, allow to stretch GUI (AnchorPane behavior)
-		scrollPaneMainForm.fitToWidthProperty().bind(scrollPaneMainForm.widthProperty().greaterThan(scrollPaneMainForm.getPrefWidth()));
-		scrollPaneMainForm.fitToHeightProperty().bind(scrollPaneMainForm.heightProperty().greaterThan(scrollPaneMainForm.getPrefHeight()));
 	}
 	
 	public AppearanceCounterController getAppearanceCounterController()
@@ -554,12 +552,7 @@ public class GUIController
 
 	public Stage getStage()
 	{
-		return (Stage) scrollPaneMainForm.getScene().getWindow();
-	}
-	
-	public ScrollPane getScrollPane()
-	{
-		return scrollPaneMainForm;
+		return (Stage) paneRoot.getScene().getWindow();
 	}
 	
 	public IPNotes getIPNotes()
