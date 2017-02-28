@@ -45,8 +45,8 @@ import whowhatwhere.controller.MessagesI18n;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.watchdog.OutputMethod;
+import whowhatwhere.model.tts.MaryTTS;
 import whowhatwhere.model.tts.TTSVoice;
-import whowhatwhere.model.tts.TextToSpeech;
 
 public class QuickPingUI implements LoadAndSaveSettings, ConfigurableTTS
 {
@@ -68,7 +68,7 @@ public class QuickPingUI implements LoadAndSaveSettings, ConfigurableTTS
 
 	private int hotkeyKeyCode;
 	private int hotkeyModifiers;
-	private TextToSpeech tts;
+	private MaryTTS tts;
 	private HotkeyRegistry hotkeyRegistry;
 
 	private ComboBox<String> comboIPToPing;
@@ -206,7 +206,7 @@ public class QuickPingUI implements LoadAndSaveSettings, ConfigurableTTS
 	private void loadTTS(Properties props)
 	{
 		String voiceName = PropertiesByType.getStringProperty(props, propsTTSVoiceName, voiceForTTS);
-		tts = new TextToSpeech(TTSVoice.nameToVoice(voiceName));
+		tts = new MaryTTS(voiceName);
 	}
 
 	public void loadLastRunConfig(Properties props)

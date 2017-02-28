@@ -21,22 +21,19 @@ package whowhatwhere.model.tts;
 import java.util.HashMap;
 import java.util.Map;
 
-import whowhatwhere.model.tts.TextToSpeech.ExistingTTSEngines;
-
 public enum TTSVoice
 {
-	dfki_pavoque_neutral_hsmm	(ExistingTTSEngines.MaryTTS, TTSLanguage.DE,	Gender.MALE,	"dfki-pavoque-neutral-hsmm"),
-	dfki_poppy_hsmm				(ExistingTTSEngines.MaryTTS, TTSLanguage.EB_GB,	Gender.FEMALE,	"dfki-poppy-hsmm"),
-	dfki_prudence_hsmm			(ExistingTTSEngines.MaryTTS, TTSLanguage.EB_GB,	Gender.FEMALE,	"dfki-prudence-hsmm"),
-	dfki_obadiah_hsmm			(ExistingTTSEngines.MaryTTS, TTSLanguage.EB_GB,	Gender.MALE,	"dfki-obadiah-hsmm"),
-	dfki_spike_hsmm				(ExistingTTSEngines.MaryTTS, TTSLanguage.EB_GB,	Gender.MALE,	"dfki-spike-hsmm"),
-//	kevin16						(ExistingTTSEngines.FreeTTS, TTSLanguage.EN_US,	Gender.MALE,	"kevin16"),
-	cmu_bdl_hsmm				(ExistingTTSEngines.MaryTTS, TTSLanguage.EN_US,	Gender.MALE,	"cmu-bdl-hsmm"),
-	cmu_rms_hsmm				(ExistingTTSEngines.MaryTTS, TTSLanguage.EN_US,	Gender.MALE,	"cmu-rms-hsmm"),
-	enst_camille_hsmm			(ExistingTTSEngines.MaryTTS, TTSLanguage.FR_FR,	Gender.FEMALE,	"enst-camille-hsmm"),
-	enst_dennys_hsmm			(ExistingTTSEngines.MaryTTS, TTSLanguage.FR_CA,	Gender.MALE,	"enst-dennys-hsmm"),
-	upmc_pierre_hsmm			(ExistingTTSEngines.MaryTTS, TTSLanguage.FR_FR,	Gender.MALE,	"upmc-pierre-hsmm"),
-	istc_lucia_hsmm				(ExistingTTSEngines.MaryTTS, TTSLanguage.IT,	Gender.FEMALE,	"istc-lucia-hsmm");
+	dfki_pavoque_neutral_hsmm	(TTSLanguage.DE,	Gender.MALE,	"dfki-pavoque-neutral-hsmm"),
+	dfki_poppy_hsmm				(TTSLanguage.EB_GB,	Gender.FEMALE,	"dfki-poppy-hsmm"),
+	dfki_prudence_hsmm			(TTSLanguage.EB_GB,	Gender.FEMALE,	"dfki-prudence-hsmm"),
+	dfki_obadiah_hsmm			(TTSLanguage.EB_GB,	Gender.MALE,	"dfki-obadiah-hsmm"),
+	dfki_spike_hsmm				(TTSLanguage.EB_GB,	Gender.MALE,	"dfki-spike-hsmm"),
+	cmu_bdl_hsmm				(TTSLanguage.EN_US,	Gender.MALE,	"cmu-bdl-hsmm"),
+	cmu_rms_hsmm				(TTSLanguage.EN_US,	Gender.MALE,	"cmu-rms-hsmm"),
+	enst_camille_hsmm			(TTSLanguage.FR_FR,	Gender.FEMALE,	"enst-camille-hsmm"),
+	enst_dennys_hsmm			(TTSLanguage.FR_CA,	Gender.MALE,	"enst-dennys-hsmm"),
+	upmc_pierre_hsmm			(TTSLanguage.FR_FR,	Gender.MALE,	"upmc-pierre-hsmm"),
+	istc_lucia_hsmm				(TTSLanguage.IT,	Gender.FEMALE,	"istc-lucia-hsmm");
 	
 	private enum Gender {MALE, FEMALE}
 	
@@ -48,14 +45,12 @@ public enum TTSVoice
 			nameToVoiceMap.put(voice.getVoiceName(), voice);
 	}
 	
-	private ExistingTTSEngines engine;
 	private TTSLanguage language;
 	private Gender gender;
 	private String voiceName;
 		
-	private TTSVoice(ExistingTTSEngines engine, TTSLanguage language, Gender gender, String voiceName)
+	private TTSVoice(TTSLanguage language, Gender gender, String voiceName)
 	{
-		this.engine = engine;
 		this.language = language;
 		this.gender = gender;
 		this.voiceName = voiceName;
@@ -71,11 +66,6 @@ public enum TTSVoice
 	{
 		return "[" + language + ", " + gender.toString().toLowerCase() + "] " + voiceName;
 		
-	}
-
-	/*package*/ ExistingTTSEngines getEngine()
-	{
-		return engine;
 	}
 
 	public TTSLanguage getLanguage()

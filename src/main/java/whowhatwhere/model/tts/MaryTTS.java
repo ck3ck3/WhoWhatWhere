@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package whowhatwhere.model.tts.engines;
+package whowhatwhere.model.tts;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,7 +27,7 @@ import marytts.exceptions.MaryConfigurationException;
 import marytts.exceptions.SynthesisException;
 import marytts.util.data.audio.AudioPlayer;
 
-public class MaryTTS implements TTSEngine
+public class MaryTTS 
 {
 	private final static Logger logger = Logger.getLogger(MaryTTS.class.getPackage().getName());
 	
@@ -37,6 +37,11 @@ public class MaryTTS implements TTSEngine
 	public MaryTTS()
 	{
 		this(defaultVoice);
+	}
+	
+	public MaryTTS(TTSVoice voice)
+	{
+		this(voice.getVoiceName());
 	}
 	
 	public MaryTTS(String voiceName)
@@ -54,14 +59,27 @@ public class MaryTTS implements TTSEngine
 		}
 	}
 	
-	@Override
+	public TTSVoice getCurrentVoice()
+	{
+		return TTSVoice.nameToVoice(maryTTS.getVoice());
+	}
+	
+	public void setVoice(TTSVoice voice)
+	{
+		setVoice(voice.getVoiceName());
+	}
+	
 	public void setVoice(String voiceName)
 	{
 		maryTTS.setVoice(voiceName);
 	}
+	
+	public void speak(String text)
+	{
+		new Thread(() -> speakBlocking(text)).start();
+	}
 
-	@Override
-	public synchronized void speak(String text) //synchronized so that together with the call to join(), calls to this method will wait until previous calls are finished
+	private synchronized void speakBlocking(String text) //synchronized so that together with the call to join(), calls to this method will wait until previous calls are finished
 	{
 		try
 		{

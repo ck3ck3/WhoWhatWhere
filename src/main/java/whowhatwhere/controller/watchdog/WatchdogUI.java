@@ -71,8 +71,8 @@ import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
 import whowhatwhere.model.networksniffer.watchdog.WatchdogListener;
 import whowhatwhere.model.networksniffer.watchdog.WatchdogMessage;
+import whowhatwhere.model.tts.MaryTTS;
 import whowhatwhere.model.tts.TTSVoice;
-import whowhatwhere.model.tts.TextToSpeech;
 
 public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, ConfigurableTTS
 {
@@ -119,7 +119,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 	private int hotkeyKeyCode;
 	private int hotkeyModifiers;
 	private ObservableList<PacketTypeToMatch> ruleList;
-	private TextToSpeech tts;
+	private MaryTTS tts;
 	private NetworkSniffer sniffer = new NetworkSniffer();
 	private HotkeyRegistry hotkeyRegistry;
 	private Map<String, List<String>> ipNotesToIPListMap;
@@ -579,7 +579,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 	private void loadTTS(Properties props)
 	{
 		String voiceName = PropertiesByType.getStringProperty(props, propsTTSVoiceName, voiceForTTS);
-		tts = new TextToSpeech(TTSVoice.nameToVoice(voiceName));
+		tts = new MaryTTS(voiceName);
 	}
 
 	public void loadLastRunConfig(Properties props)

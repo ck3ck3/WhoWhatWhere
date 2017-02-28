@@ -33,8 +33,8 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
+import whowhatwhere.model.tts.MaryTTS;
 import whowhatwhere.model.tts.TTSVoice;
-import whowhatwhere.model.tts.TextToSpeech;
 import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen;
 
 public class VoiceSelectionScreen extends SecondaryFXMLScreen
@@ -56,7 +56,7 @@ public class VoiceSelectionScreen extends SecondaryFXMLScreen
 	private Button btnDone;
 	private TextField textWWW;
 
-	private TextToSpeech tts = new TextToSpeech(TTSVoice.nameToVoice(GUIController.defaultTTSVoiceName));
+	private MaryTTS tts = new MaryTTS(GUIController.defaultTTSVoiceName);
 	
 	private ConfigurableTTS www;
 	private ConfigurableTTS watchdog;

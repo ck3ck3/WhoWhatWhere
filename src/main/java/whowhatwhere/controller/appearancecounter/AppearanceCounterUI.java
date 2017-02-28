@@ -81,8 +81,8 @@ import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.SupportedProtocols;
 import whowhatwhere.model.networksniffer.appearancecounter.AppearanceCounterResults;
 import whowhatwhere.model.networksniffer.appearancecounter.IpAppearancesCounter;
+import whowhatwhere.model.tts.MaryTTS;
 import whowhatwhere.model.tts.TTSVoice;
-import whowhatwhere.model.tts.TextToSpeech;
 
 public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSettings, ConfigurableTTS
 {
@@ -175,7 +175,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private NetworkSniffer sniffer = new NetworkSniffer();
 	private int captureHotkeyKeyCode;
 	private int captureHotkeyModifiers;
-	private TextToSpeech tts;
+	private MaryTTS tts;
 	private String suggestedPathForCSVFile;
 	private IPNotes ipNotes;
 	private IPInfoRowModel rowWithNoteBeingEdited;
@@ -910,7 +910,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private void loadTTS(Properties props)
 	{
 		String voiceName = PropertiesByType.getStringProperty(props, propsTTSVoiceName, voiceForTTS);
-		tts = new TextToSpeech(TTSVoice.nameToVoice(voiceName));
+		tts = new MaryTTS(voiceName);
 	}
 
 	public void saveCurrentRunValuesToProperties(Properties props)
