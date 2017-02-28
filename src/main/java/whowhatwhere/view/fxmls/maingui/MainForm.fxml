@@ -26,6 +26,7 @@
 						<Menu text="_Options">
 							<items>
 								<MenuItem fx:id="menuItemSelectNIC" mnemonicParsing="false" text="Select network adapter" />
+                  <MenuItem fx:id="menuItemTTSSelection" mnemonicParsing="false" text="Configure text to speech" />
 								<CheckMenuItem fx:id="menuItemChkCheckUpdateStartup" mnemonicParsing="false" text="Check for updates on startup" />
 								<CheckMenuItem fx:id="menuItemChkDisplayBalloon" mnemonicParsing="false" text="Display info balloon after minimizing" />
 								<CheckMenuItem fx:id="menuItemChkStartMinimized" mnemonicParsing="false" text="Start minimized" />

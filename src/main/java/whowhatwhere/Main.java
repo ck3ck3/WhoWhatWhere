@@ -62,6 +62,10 @@ public class Main extends Application
 	private final static String appTitle = "Who What Where";
 	private final static String executableFilename = "WhoWhatWhere.exe";
 	private final static String mainFormLocation = "/whowhatwhere/view/fxmls/maingui/MainForm.fxml";
+	
+	private final static int tooltipOpenDelay = 250;
+	private final static int tooltipVisibleDuration = 15000;
+	private final static int tooltipCloseDelay = 200;
 
 	private static Logger logger = Logger.getLogger(Main.class.getPackage().getName());
 
@@ -75,7 +79,7 @@ public class Main extends Application
 			if (!initSysTray(primaryStage))
 				logger.log(Level.WARNING, "Unable to initialize system tray");
 
-			ToolTipDefaultsFixer.setTooltipTimers(250, 15000, 200);
+			ToolTipDefaultsFixer.setTooltipTimers(tooltipOpenDelay, tooltipVisibleDuration, tooltipCloseDelay);
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(mainFormLocation));
 			Parent root = (Parent) loader.load();
 			GUIController gui = (GUIController) loader.getController();
@@ -83,8 +87,9 @@ public class Main extends Application
 			Scene scene = new Scene(root);
 			primaryStage.setTitle(appTitle);
 			primaryStage.setScene(scene);
-			primaryStage.show();
+			gui.setStage(primaryStage);
 			gui.init();
+			primaryStage.show();
 
 		}
 		catch (IOException e)

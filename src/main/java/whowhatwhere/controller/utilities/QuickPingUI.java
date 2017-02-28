@@ -21,7 +21,9 @@ package whowhatwhere.controller.utilities;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,15 +37,18 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
+import whowhatwhere.controller.ConfigurableTTS;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
 import whowhatwhere.controller.LoadAndSaveSettings;
+import whowhatwhere.controller.MessagesI18n;
 import whowhatwhere.model.PropertiesByType;
-import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.watchdog.OutputMethod;
+import whowhatwhere.model.tts.TTSVoice;
+import whowhatwhere.model.tts.TextToSpeech;
 
-public class QuickPingUI implements LoadAndSaveSettings
+public class QuickPingUI implements LoadAndSaveSettings, ConfigurableTTS
 {
 	private final static Logger logger = Logger.getLogger(QuickPingUI.class.getPackage().getName());
 
@@ -52,17 +57,18 @@ public class QuickPingUI implements LoadAndSaveSettings
 	private final static String propsHotkeyModifiers = "QuickPingHotkeyModifiers";
 	private final static String propsComboValue = "QuickPingComboValue";
 	private final static String propsOutputMethod = "QuickPingOutputMethod";
+	private final static String propsTTSVoiceName = "quickPingTTSVoice";
 
 	private final static String historyFile = "QuickPingHistory";
 	private final static String hotkeyID = "QuickPing hotkey";
-	private final static String voiceForTTS = GUIController.voiceForTTS;
+	private final static String voiceForTTS = GUIController.defaultTTSVoiceName;
 
 	private GUIController guiController;
 	private QuickPingController controller;
 
 	private int hotkeyKeyCode;
 	private int hotkeyModifiers;
-	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
+	private TextToSpeech tts;
 	private HotkeyRegistry hotkeyRegistry;
 
 	private ComboBox<String> comboIPToPing;
@@ -82,43 +88,68 @@ public class QuickPingUI implements LoadAndSaveSettings
 
 			if (address.isEmpty())
 			{
-				outputMessage("Please enter an address to ping", address);
+				outputMessage(MessagesI18n.emptyAddress, address);
 				return;
 			}
 
 			if (!items.contains(address))
 				items.add(address);
 
-			String ping = NetworkSniffer.pingAsString(address, -1); //default timeout
+			String ping = NetworkSniffer.pingAsString(address, NetworkSniffer.defaultPingTimeout);
 
-			if (ping.contains("milliseconds"))
-				outputMessage(ping, address);
+			if (ping.equals(NetworkSniffer.pingTimeout))
+				outputMessage(MessagesI18n.pingTimeout, address);
 			else
-				if (ping.contains("Timeout"))
-					outputMessage("Ping time out", address);
+				if (ping.equals(NetworkSniffer.pingError))
+					outputMessage(MessagesI18n.pingFailed, address);
 				else
-					outputMessage("Ping failed", address);
+					outputMessage(ping, address);
 		}
 
 		private void outputMessage(String message, String pingAddress)
 		{
-			Alert popup = new Alert(AlertType.INFORMATION, message);
-			popup.setTitle("Quick ping result");
-			popup.setHeaderText("Ping result for " + pingAddress);
-
 			switch (comboOutputMethod.getSelectionModel().getSelectedItem())
 			{
 				case TTS:
-					tts.speak(message);
+					sayWithTTS(message);
 					break;
 				case POPUP:
-					popup.show();
+					showPopup(message, pingAddress);
 					break;
 				case TTS_AND_POPUP:
-					tts.speak(message);
-					popup.show();
+					sayWithTTS(message);
+					showPopup(message, pingAddress);
 					break;
 			}
+		}
+		
+		private void sayWithTTS(String message)
+		{
+			String langCode = tts.getCurrentVoice().getLanguage().getLanguageCode();
+			ResourceBundle bundle = ResourceBundle.getBundle(MessagesI18n.i18nBundleLocation, new Locale(langCode));
+			boolean isPingResult = message.contains(" milliseconds");
+			String translatedMessage;
+			
+			if (isPingResult)
+			{
+				int spaceIndex = message.indexOf(' ');
+				translatedMessage = message.substring(0, spaceIndex + 1) + bundle.getString(MessagesI18n.milliseconds_speak);
+			}
+			else
+				translatedMessage = bundle.getString(message);
+			
+			tts.speak(translatedMessage);
+		}
+		
+		private void showPopup(String message, String pingAddress)
+		{
+			ResourceBundle bundle = ResourceBundle.getBundle(MessagesI18n.i18nBundleLocation, new Locale("en"));
+			boolean isPingResult = message.contains(" milliseconds");
+			
+			Alert popup = new Alert(AlertType.INFORMATION, isPingResult ? message : bundle.getString(message));
+			popup.setTitle("Quick ping result");
+			popup.setHeaderText("Ping result for " + pingAddress);
+			popup.show();
 		}
 	};
 
@@ -156,6 +187,7 @@ public class QuickPingUI implements LoadAndSaveSettings
 		props.put(propsHotkeyModifiers, Integer.toString(hotkeyRegistry.getHotkeyModifiers(hotkeyID)));
 		props.put(propsComboValue, comboIPToPing.getEditor().getText());
 		props.put(propsOutputMethod, comboOutputMethod.getSelectionModel().getSelectedItem().name());
+		props.put(propsTTSVoiceName, tts.getCurrentVoice().getVoiceName());
 
 		StringBuilder historyBuilder = new StringBuilder();
 		for (String item : comboIPToPing.getItems())
@@ -169,7 +201,12 @@ public class QuickPingUI implements LoadAndSaveSettings
 		{
 			logger.log(Level.SEVERE, "Unable to save Ping-to-Speech history: " + e.getMessage(), e);
 		}
-
+	}
+	
+	private void loadTTS(Properties props)
+	{
+		String voiceName = PropertiesByType.getStringProperty(props, propsTTSVoiceName, voiceForTTS);
+		tts = new TextToSpeech(TTSVoice.nameToVoice(voiceName));
 	}
 
 	public void loadLastRunConfig(Properties props)
@@ -187,6 +224,7 @@ public class QuickPingUI implements LoadAndSaveSettings
 		comboOutputMethod.getSelectionModel().select(OutputMethod.valueOf((String) props.getOrDefault(propsOutputMethod, OutputMethod.TTS)));
 
 		setHotkey(props);
+		loadTTS(props);
 	}
 
 	private void setHotkey(Properties props)
@@ -209,5 +247,17 @@ public class QuickPingUI implements LoadAndSaveSettings
 			paneHotkey.setDisable(true);
 			controller.getPaneAllButHotkeyChkbox().setDisable(true);
 		}
+	}
+	
+	@Override
+	public void setTTSVoice(TTSVoice voice)
+	{
+		tts.setVoice(voice);
+	}
+
+	@Override
+	public TTSVoice getTTSVoice()
+	{
+		return tts.getCurrentVoice();
 	}
 }

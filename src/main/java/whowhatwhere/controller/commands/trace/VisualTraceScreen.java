@@ -108,7 +108,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		visualTraceController = getLoader().<VisualTraceController> getController();
 		imgView = visualTraceController.getImgView();
 		
-		generateTraceInfoGUI();
+		generateTraceInfoGUI();	
 		generateAndShowImage();
 
 		setStageOnShowing(event -> Platform.runLater(() -> resizeIfNeeded()));
@@ -350,46 +350,49 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		String path = pathInit;
 		int markersLeftToTurnRed = 2; // the first two markers are the first and last markers
 		int checkboxIndexForPath = 0;
-		
+System.out.println("before reordering list");		
 		List<CheckBox> reorderedListOfCheckBoxes = getReorderedListOfCheckboxes();
-
+System.out.println("before loop");
 		for (CheckBox checkBox : reorderedListOfCheckBoxes)
-		{
+		{System.out.println("in loop, checkbox = " + checkBox.getText());
 			String text = checkBox.getText();
 			String ip;
 
 			if (checkBox.isSelected())
 			{
 				char label = text.charAt(0);
-
+System.out.println("checkbox is selected");
 				ip = checkboxToIP.get(checkBox);
+System.out.println("getting geoip info from the map for ip " + ip);				
 				GeoIPInfo ipInfo = ipToGeoipInfo.get(ip); 
-
+System.out.println("checking for private ip");
 				if (!isPublicIP(ip) || ipInfo == null || !ipInfo.getSuccess()) //not a public ip with a location, skip it
 				{
 					checkBox.setSelected(false);
 					checkBox.setDisable(true);
 					continue;
 				}
-
+System.out.println("setting currentMarker");
 				String currentMarker = "&markers=color:" + (markersLeftToTurnRed-- > 0 ? "red" : "blue") + "%7Clabel:" + label;
-
+System.out.println("setting location");
 				String location = getLocationString(ipInfo);
 				markers += currentMarker + "%7C" + location;
-
+System.out.println("start path creation");
 				//for path string, we need the original order of locations, not the redorderedList
 				CheckBox chkboxForPath;
 				do { chkboxForPath = listOfChkBoxes.get(checkboxIndexForPath++); } while(!chkboxForPath.isSelected());
+System.out.println("after do-while");				
 				String ipForPath = checkboxToIP.get(chkboxForPath);
+System.out.println("after setting ipForPath, before locationForPath");				
 				String locationForPath = getLocationString(ipToGeoipInfo.get(ipForPath));
-				
+System.out.println("checking if path equals pathinit");				
 				if (!path.equals(pathInit)) //if it's not the first part of the path
 					locationForPath = "%7C" + locationForPath;
-
+System.out.println("before last line of loop");
 				path += locationForPath;
 			}
 		}
-		
+System.out.println("after loop");		
 		String result = baseUrl + markers + path; 
 		
 		if (centerOnIP != null)

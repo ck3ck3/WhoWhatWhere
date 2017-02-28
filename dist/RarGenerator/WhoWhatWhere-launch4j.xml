@@ -2,7 +2,7 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>E:\githome\git\WhoWhatWhere\target\WhoWhatWhere-0.0.1-SNAPSHOT-jar-with-dependencies.jar</jar>
+  <jar>E:\githome\git\WhoWhatWhere\target\WhoWhatWhere-0.0.1-SNAPSHOT.jar</jar>
   <outfile>WhoWhatWhere\WhoWhatWhere.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
@@ -24,6 +24,12 @@
     <runtimeBits>64/32</runtimeBits>
     <opt>-Dglass.win.minHiDPI=1</opt>
   </jre>
+  <splash>
+    <file>E:\githome\git\WhoWhatWhere\dist\RarGenerator\splash.bmp</file>
+    <waitForWindow>true</waitForWindow>
+    <timeout>120</timeout>
+    <timeoutErr>false</timeoutErr>
+  </splash>
   <messages>
     <startupErr>An error occurred while starting the application.</startupErr>
     <bundledJreErr>This application was configured to use a bundled Java Runtime Environment but the runtime is missing or corrupted.</bundledJreErr>

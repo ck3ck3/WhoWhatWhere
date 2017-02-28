@@ -61,18 +61,20 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
+import whowhatwhere.controller.ConfigurableTTS;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
 import whowhatwhere.controller.LoadAndSaveSettings;
 import whowhatwhere.model.PropertiesByType;
-import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.networksniffer.NICInfo;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
 import whowhatwhere.model.networksniffer.watchdog.WatchdogListener;
 import whowhatwhere.model.networksniffer.watchdog.WatchdogMessage;
+import whowhatwhere.model.tts.TTSVoice;
+import whowhatwhere.model.tts.TextToSpeech;
 
-public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
+public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, ConfigurableTTS
 {
 	private enum RowMovementDirection {UP, DOWN}
 	
@@ -86,7 +88,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 	public final static int maxCooldownValue = 60 * 60 * 24; //24 hours
 	
 	private final static String hotkeyID = "Watchdog hotkey";
-	private final static String voiceForTTS = GUIController.voiceForTTS;
+	private final static String voiceForTTS = GUIController.defaultTTSVoiceName;
 
 	private final static String propsChkboxHotkey = "chkboxWatchdogHotkey";
 	private final static String propsHotkeyKeycode = "watchdogHotkeyKeycode";
@@ -94,6 +96,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 	private final static String propsRadioStopAfterMatch = "radioStopAfterMatch";
 	private final static String propsRadioKeepLooking = "radioKeepLooking";
 	private final static String propsNumFieldCooldown = "numFieldCooldown";
+	private final static String propsTTSVoiceName = "watchdogTTSVoice";
 
 	private GUIController guiController;
 	private WatchdogController controller;
@@ -116,7 +119,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 	private int hotkeyKeyCode;
 	private int hotkeyModifiers;
 	private ObservableList<PacketTypeToMatch> ruleList;
-	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
+	private TextToSpeech tts;
 	private NetworkSniffer sniffer = new NetworkSniffer();
 	private HotkeyRegistry hotkeyRegistry;
 	private Map<String, List<String>> ipNotesToIPListMap;
@@ -337,7 +340,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 
 				try
 				{
-					watchdogListAddEditScreen = new ListAddEditScreen(watchdogListAddEditFormLocation, stage, stage.getScene(), table, ipNotesToIPListMap, isEdit);
+					watchdogListAddEditScreen = new ListAddEditScreen(watchdogListAddEditFormLocation, stage, stage.getScene(), table, ipNotesToIPListMap, isEdit, tts);
 				}
 				catch (IOException e)
 				{
@@ -561,6 +564,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 		props.put(propsRadioStopAfterMatch, ((Boolean) radioStopAfterMatch.isSelected()).toString());
 		props.put(propsRadioKeepLooking, ((Boolean) radioKeepLooking.isSelected()).toString());
 		props.put(propsNumFieldCooldown, Integer.toString(numFieldCooldown.getValue()));
+		props.put(propsTTSVoiceName, tts.getCurrentVoice().getVoiceName());
 
 		try
 		{
@@ -571,10 +575,17 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 			logger.log(Level.SEVERE, "Unable to save Watchdog list: " + ioe.getMessage(), ioe);
 		}
 	}
+	
+	private void loadTTS(Properties props)
+	{
+		String voiceName = PropertiesByType.getStringProperty(props, propsTTSVoiceName, voiceForTTS);
+		tts = new TextToSpeech(TTSVoice.nameToVoice(voiceName));
+	}
 
 	public void loadLastRunConfig(Properties props)
 	{
 		setWatchdogHotkey(props);
+		loadTTS(props);
 
 		numFieldCooldown.setText(PropertiesByType.getStringProperty(props, propsNumFieldCooldown, String.valueOf(defaultnCooldownValue)));
 
@@ -603,5 +614,17 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings
 	public Map<String, List<String>> getIPNotesReverseMap()
 	{
 		return guiController.getIPNotes().getIPNotesReverseMap();
+	}
+	
+	@Override
+	public void setTTSVoice(TTSVoice voice)
+	{
+		tts.setVoice(voice);
+	}
+
+	@Override
+	public TTSVoice getTTSVoice()
+	{
+		return tts.getCurrentVoice();
 	}
 }

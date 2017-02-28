@@ -16,41 +16,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package whowhatwhere.model;
+package whowhatwhere.model.tts;
 
-import com.sun.speech.freetts.Voice;
-import com.sun.speech.freetts.VoiceManager;
-
-public class TextToSpeech
+public enum TTSLanguage
 {
-	private Voice voice;
-	private boolean isMuted = false;
-
-	public TextToSpeech(String voiceName)
+	DE("German"),
+	EB_GB("English (UK)"),
+	EN_US("English (US)"),
+	FR_CA("French (CA)"),
+	FR_FR("French (FR)"),
+	IT("Italian");
+	
+	private String fullLangName;
+	
+	private TTSLanguage(String fullLangName)
 	{
-		System.setProperty("freetts.voices", "com.sun.speech.freetts.en.us.cmu_us_kal.KevinVoiceDirectory");
-		voice = VoiceManager.getInstance().getVoice(voiceName);
-		voice.allocate();
+		this.fullLangName = fullLangName;
 	}
-
-	public void speak(String line)
+	
+	@Override
+	public String toString()
 	{
-		if (!isMuted() && line != null)
-			new Thread(() -> voice.speak(line)).start();
+		return fullLangName;
 	}
-
-	public boolean isMuted()
+	
+	public String getLanguageCode()
 	{
-		return isMuted;
-	}
-
-	public void setMuted(boolean isMuted)
-	{
-		this.isMuted = isMuted;
-	}
-
-	public void cleanup()
-	{
-		voice.deallocate();
+		switch(this)
+		{
+			case DE:	return "de";
+			case FR_CA:	return "fr";
+			case FR_FR:	return "fr";
+			case IT:	return "it";
+			default:	return "en";
+		}
 	}
 }

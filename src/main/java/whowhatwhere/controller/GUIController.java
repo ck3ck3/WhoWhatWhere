@@ -58,6 +58,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.web.WebEngine;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import numbertextfield.NumberTextField;
@@ -70,9 +71,9 @@ import whowhatwhere.controller.utilities.TraceUtilityController;
 import whowhatwhere.controller.utilities.TraceUtilityUI;
 import whowhatwhere.controller.watchdog.WatchdogController;
 import whowhatwhere.controller.watchdog.WatchdogUI;
-import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.networksniffer.NICInfo;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
+import whowhatwhere.model.tts.TTSVoice;
 
 public class GUIController
 {
@@ -89,7 +90,8 @@ public class GUIController
 		SAVE	("/buttonGraphics/Save.png"),
 		STOP	("/buttonGraphics/Stop.png"),
 		TOOLTIP	("/buttonGraphics/Help.png"),
-		HOTKEY	("/buttonGraphics/Keyboard.png");
+		HOTKEY	("/buttonGraphics/Keyboard.png"),
+		SPEAKER	("/buttonGraphics/Speaker.png");
 		
 		private String imageLocation;
 		
@@ -99,7 +101,8 @@ public class GUIController
 	}
 	
 	private final static Logger logger = Logger.getLogger(GUIController.class.getPackage().getName());
-	
+	private final static String NICSelectionFormLocation = "/whowhatwhere/view/fxmls/maingui/NICSelectionForm.fxml";
+	private final static String TTSSelectionFormLocation = "/whowhatwhere/view/fxmls/maingui/VoiceSelectionForm.fxml";
 	
 	private final static String applicationIcon16Location = "/appIcons/www16.jpg";
 	private final static String exitImageLocation = "/buttonGraphics/exit.png";
@@ -107,8 +110,8 @@ public class GUIController
 	private final static String backgroundColorForValidText = "white";
 	private final static String textColorForInvalidText = "#b94a48";
 	private final static String backgroundColorForInvalidText = "#f2dede";
-	public final static String voiceForTTS = "kevin16";
-
+	public final static String defaultTTSVoiceName = TTSVoice.cmu_bdl_hsmm.getVoiceName();
+	
 	@FXML
 	private AnchorPane paneRoot;
 	@FXML
@@ -151,10 +154,12 @@ public class GUIController
 	private WatchdogController watchdogPaneController;
 	@FXML
 	private TraceUtilityController tracePaneController;
+	@FXML
+	private MenuItem menuItemTTSSelection;
 
 
+	private Stage stage;
 	private NetworkSniffer sniffer;
-	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
 	private HotkeyRegistry hotkeyRegistry;
 	private boolean isExitAlreadyAddedToSystray = false;
 	private IPNotes ipNotes;
@@ -163,12 +168,16 @@ public class GUIController
 	private Map<Tab, BooleanExpression> tabToBindExpression = new HashMap<>();
 	private WebEngine engine;
 	private ChangeListenerForUpdate changeListenerForUpdate;
-
+	private NICInfo selectedNIC;
+	private ConfigurableTTS www;
+	private ConfigurableTTS watchdog;
+	private ConfigurableTTS quickPing;
+	
 
 	
 	
 	/**
-	 * <b>MUST</b> be called after the stage is shown
+	 * <b>MUST</b> be called after the stage and scene have been set
 	 */
 	public void init()
 	{
@@ -178,7 +187,9 @@ public class GUIController
 		}
 		catch (IllegalStateException ise)
 		{
-			if (ise.getMessage().contains("Can't find dependent libraries"))
+			String exceptionMsg = ise.getMessage();
+			
+			if (exceptionMsg != null && exceptionMsg.contains("Can't find dependent libraries"))
 			{
 				Alert alert = new Alert(AlertType.ERROR, "Application cannot be started");
 				alert.setHeaderText("WinPcap is not installed!"); 
@@ -186,7 +197,7 @@ public class GUIController
 				alert.showAndWait();
 			}
 			else
-				new Alert(AlertType.ERROR, "Critical error, application cannot be started:\n" + ise.getMessage()).showAndWait();
+				new Alert(AlertType.ERROR, "Critical error, application cannot be started.\n" + (exceptionMsg != null ? exceptionMsg : "")).showAndWait();
 
 			shutdownApp();
 		}
@@ -199,9 +210,9 @@ public class GUIController
 
 		ipNotes = new IPNotes();
 		
-		new AppearanceCounterUI(this);
-		new QuickPingUI(this);
-		new WatchdogUI(this);
+		www = new AppearanceCounterUI(this);
+		quickPing = new QuickPingUI(this);
+		watchdog = new WatchdogUI(this);
 		new TraceUtilityUI(this);
 		
 		settings = new SettingsHandler(this);
@@ -276,7 +287,8 @@ public class GUIController
 		menuItemMinimize.setOnAction(event -> minimizeToTray());
 		menuItemExit.setOnAction(event -> exitButtonPressed());
 
-		menuItemSelectNIC.setOnAction(ae -> settings.showNICSelectionScreen());
+		menuItemSelectNIC.setOnAction(ae -> showNICSelectionScreen());
+		menuItemTTSSelection.setOnAction(ae -> showTTSSelectionScreen());
 		menuItemChkCheckUpdateStartup.setOnAction(ae -> settings.setCheckForUpdatesOnStartup(((CheckMenuItem) ae.getSource()).isSelected()));
 		menuItemChkDisplayBalloon.setOnAction(ae -> settings.setShowMessageOnMinimize(((CheckMenuItem) ae.getSource()).isSelected()));
 		menuItemChkAllUsers.setOnAction(settings.handleStartWithWindowsClick(true, menuItemChkThisUserOnly));
@@ -301,7 +313,6 @@ public class GUIController
 
 			hotkeyRegistry.cleanup();
 			sniffer.cleanup();
-			tts.cleanup();
 		}
 		catch (Exception e) //just in case
 		{
@@ -468,7 +479,6 @@ public class GUIController
 		return vbox;
 	}
 	
-	
 	/**Sets the text-color and background-color for valid and invalid text
 	 * @param fields - the {@code NumberTextField}s to apply this on
 	 */
@@ -520,6 +530,65 @@ public class GUIController
 		control.setGraphic(new ImageView(new Image(GUIController.class.getResourceAsStream(imageLocation))));
 	}
 	
+	public void showNICSelectionScreen()
+	{
+		List<NICInfo> listOfDevices = sniffer.getListOfDevicesWithIP();
+
+		if (listOfDevices == null || listOfDevices.size() == 0)
+		{
+			new Alert(AlertType.ERROR, "Unable to find any network interfaces. Terminating application.").showAndWait();
+			logger.log(Level.SEVERE, "Unable to find any network interfaces");
+			shutdownApp();
+		}
+
+		Stage stage = getStage();
+
+		if (selectedNIC == null)
+			selectedNIC = new NICInfo(); //the selected NICInfo will be copied into this object
+
+		NICSelectionScreen selectionScreen = null;
+
+		try
+		{
+			selectionScreen = new NICSelectionScreen(NICSelectionFormLocation, stage, stage.getScene(), selectedNIC);
+		}
+		catch (Exception e)
+		{
+			new Alert(AlertType.ERROR, "Unable to load network adapter selection screen. Terminating application.").showAndWait();
+			logger.log(Level.SEVERE, "Unable to load network adapter selection screen", e);
+			shutdownApp();
+		}
+
+		Stage newStage = selectionScreen.showScreenOnNewStage("Choose a network adapter", Modality.APPLICATION_MODAL, selectionScreen.getCloseButton());
+
+		newStage.setOnCloseRequest(windowEvent ->
+		{
+			if (selectedNIC.getDescription() == null) //if we don't have a NIC set
+			{
+				windowEvent.consume();
+				new Alert(AlertType.ERROR, "You must select a network adapter.").showAndWait();
+			}
+		});
+	}
+	
+	private void showTTSSelectionScreen()
+	{
+		VoiceSelectionScreen selectionScreen = null;
+		Stage stage = getStage();
+
+		try
+		{
+			selectionScreen = new VoiceSelectionScreen(TTSSelectionFormLocation, stage, stage.getScene(), www, watchdog, quickPing);
+		}
+		catch (Exception e)
+		{
+			new Alert(AlertType.ERROR, "Unable to load voice selection screen.").showAndWait();
+			logger.log(Level.SEVERE, "Unable to load voice screen", e);
+		}
+		
+		selectionScreen.showScreenOnNewStage("Select voice", Modality.APPLICATION_MODAL, selectionScreen.getCloseButton());
+	}
+	
 	public Button getBtnExit()
 	{
 		return btnExit;
@@ -552,7 +621,12 @@ public class GUIController
 
 	public Stage getStage()
 	{
-		return (Stage) paneRoot.getScene().getWindow();
+		return stage;
+	}
+	
+	public void setStage(Stage stage)
+	{
+		this.stage = stage;
 	}
 	
 	public IPNotes getIPNotes()
@@ -567,7 +641,12 @@ public class GUIController
 	
 	public NICInfo getSelectedNIC()
 	{
-		return settings.getSelectedNIC();
+		return selectedNIC;
+	}
+	
+	public void setSelectedNIC(NICInfo nic)
+	{
+		selectedNIC = nic;
 	}
 	
 	public CheckMenuItem getMenuItemChkStartMinimized()

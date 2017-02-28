@@ -66,13 +66,13 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
+import whowhatwhere.controller.ConfigurableTTS;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
-import whowhatwhere.controller.LoadAndSaveSettings;
 import whowhatwhere.controller.IPNotes;
+import whowhatwhere.controller.LoadAndSaveSettings;
 import whowhatwhere.controller.commands.Commands;
 import whowhatwhere.model.PropertiesByType;
-import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.geoipresolver.GeoIPInfo;
 import whowhatwhere.model.geoipresolver.GeoIPResolver;
 import whowhatwhere.model.networksniffer.CaptureStartListener;
@@ -81,8 +81,10 @@ import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.SupportedProtocols;
 import whowhatwhere.model.networksniffer.appearancecounter.AppearanceCounterResults;
 import whowhatwhere.model.networksniffer.appearancecounter.IpAppearancesCounter;
+import whowhatwhere.model.tts.TTSVoice;
+import whowhatwhere.model.tts.TextToSpeech;
 
-public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSettings
+public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSettings, ConfigurableTTS
 {
 	private final static Logger logger = Logger.getLogger(AppearanceCounterUI.class.getPackage().getName());
 	
@@ -106,6 +108,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private final static String propsTextColumnContains = "textColumnContains";
 	private final static String propsTTSCheckBox = "TTSCheckBox ";
 	private final static String propsExportCSVPath = "Export to CSV path";
+	private final static String propsTTSVoiceName = "wwwTTSVoice";
 
 	private final static int maxPingTimeout = 3000;
 	private final static String statusIdle = "Status: Idle";
@@ -115,7 +118,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private final static String statusResults = "Status: Fetching results...";
 	private final static String msgTimerExpired = "Timer expired, monitoring stopped";
 	private final static String captureHotkeyID = "WhoWhatWhere capture hotkey";
-	private final static String voiceForTTS = GUIController.voiceForTTS;
+	private final static String voiceForTTS = GUIController.defaultTTSVoiceName;
 	
 	private final static String emptyNotesString = "(Click to add notes)";
 
@@ -172,7 +175,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private NetworkSniffer sniffer = new NetworkSniffer();
 	private int captureHotkeyKeyCode;
 	private int captureHotkeyModifiers;
-	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
+	private TextToSpeech tts;
 	private String suggestedPathForCSVFile;
 	private IPNotes ipNotes;
 	private IPInfoRowModel rowWithNoteBeingEdited;
@@ -321,11 +324,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
             }
 		});
 
-		chkboxUseTTS.selectedProperty().addListener((ov, old_val, new_val) ->
-		{
-			tts.setMuted(!new_val);
-			paneUseTTS.setDisable(!new_val);
-		});
+		chkboxUseTTS.selectedProperty().addListener((ov, old_val, new_val) -> paneUseTTS.setDisable(!new_val));
 	}
 
 	private void initTable()
@@ -521,7 +520,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 
 				fillTable(results.getAppearanceCounterResults());
 
-				if (isAHotkeyResult)
+				if (isAHotkeyResult && chkboxUseTTS.isSelected())
 				{
 					readResults();
 					isAHotkeyResult = false;
@@ -895,7 +894,6 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 
 		boolean useTTS = chkboxUseTTS.isSelected();
 		paneUseTTS.setDisable(!useTTS);
-		tts.setMuted(!useTTS);
 	}
 
 	public void loadLastRunConfig(Properties props)
@@ -903,9 +901,16 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		setProtocolCheckboxes(props);
 		setCaptureOptionsPane(props);
 		setCaptureHotkeyAndPane(props);
+		loadTTS(props);
 		setDisabledPanes();
 		
 		suggestedPathForCSVFile = PropertiesByType.getStringProperty(props, propsExportCSVPath, System.getProperty("user.dir"));
+	}
+
+	private void loadTTS(Properties props)
+	{
+		String voiceName = PropertiesByType.getStringProperty(props, propsTTSVoiceName, voiceForTTS);
+		tts = new TextToSpeech(TTSVoice.nameToVoice(voiceName));
 	}
 
 	public void saveCurrentRunValuesToProperties(Properties props)
@@ -928,11 +933,24 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		props.put(propsChkboxFilterResults, ((Boolean) chkboxFilterResults.isSelected()).toString());
 		props.put(propsComboColumnsSelection, comboColumns.getValue());
 		props.put(propsTextColumnContains, textColumnContains.getText());
+		props.put(propsTTSVoiceName, tts.getCurrentVoice().getVoiceName());
 
 		for (CheckBox box : chkboxListColumns)
 			props.put(propsTTSCheckBox + box.getText(), ((Boolean) box.isSelected()).toString());
 		
 		ipNotes.saveIPNotes();
 		props.put(propsExportCSVPath, suggestedPathForCSVFile);
+	}
+
+	@Override
+	public void setTTSVoice(TTSVoice voice)
+	{
+		tts.setVoice(voice);
+	}
+
+	@Override
+	public TTSVoice getTTSVoice()
+	{
+		return tts.getCurrentVoice();
 	}
 }

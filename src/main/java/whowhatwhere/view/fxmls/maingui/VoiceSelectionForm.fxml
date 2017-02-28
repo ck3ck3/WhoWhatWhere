@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import numbertextfield.NumberTextField?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="269.0" prefWidth="883.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.VoiceSelectionController">
+   <children>
+      <AnchorPane fx:id="paneSettings" layoutX="14.0" layoutY="10.0">
+         <children>
+            <RadioButton fx:id="radioSameVoice" layoutY="4.0" mnemonicParsing="false" text="One voice for all features (English only)">
+               <toggleGroup>
+                  <ToggleGroup fx:id="oneVoiceOrMultiple" />
+               </toggleGroup>
+            </RadioButton>
+            <RadioButton fx:id="radioDiffVoices" layoutY="37.0" mnemonicParsing="false" text="Choose a voice for each feature" toggleGroup="$oneVoiceOrMultiple" />
+            <AnchorPane fx:id="paneSameVoice" layoutX="245.0">
+               <children>
+                  <ComboBox fx:id="comboSameVoice" prefHeight="25.0" prefWidth="279.0" />
+                  <Button fx:id="btnPreviewSame" layoutX="294.0" mnemonicParsing="false" text="Preview" />
+                  <TextField fx:id="textSame" layoutX="382.0" prefHeight="25.0" prefWidth="228.0" promptText="Enter text to preview" text="The quick brown fox jumps over the lazy dog" />
+               </children>
+            </AnchorPane>
+            <AnchorPane fx:id="paneDiffVoices" layoutX="59.0" layoutY="66.0">
+               <children>
+                  <Label layoutY="4.0" text="Who What Where (English only)" />
+                  <ComboBox fx:id="comboWWW" layoutX="186.0" prefHeight="25.0" prefWidth="279.0" />
+                  <Button fx:id="btnPreviewWWW" layoutX="480.0" mnemonicParsing="false" text="Preview" />
+                  <Label layoutY="55.0" text="Watchdog" />
+                  <ComboBox fx:id="comboWatchdog" layoutX="186.0" layoutY="51.0" prefHeight="25.0" prefWidth="279.0" />
+                  <TextField fx:id="textWatchdog" layoutX="568.0" layoutY="51.0" prefHeight="25.0" prefWidth="228.0" promptText="Enter text to preview" text="The quick brown fox jumps over the lazy dog" />
+                  <Button fx:id="btnPreviewWatchdog" layoutX="480.0" layoutY="51.0" mnemonicParsing="false" text="Preview" />
+                  <Label layoutY="109.0" text="Quick ping" />
+                  <ComboBox fx:id="comboQuickPing" layoutX="186.0" layoutY="105.0" prefHeight="25.0" prefWidth="279.0" />
+                  <Button fx:id="btnPreviewQuickPing" layoutX="480.0" layoutY="105.0" mnemonicParsing="false" text="Preview" />
+                  <NumberTextField fx:id="numFieldQuickPing" layoutX="568.0" layoutY="105.0" maxValue="3000" minValue="0" prefHeight="25.0" prefWidth="42.0" text="64" />
+                  <Label fx:id="labelLocalizedMS" layoutX="619.0" layoutY="109.0" text="milliseconds" />
+                  <TextField fx:id="textWWW" layoutX="567.0" prefHeight="25.0" prefWidth="228.0" promptText="Enter text to preview" text="The quick brown fox jumps over the lazy dog" />
+               </children>
+            </AnchorPane>
+         </children>
+      </AnchorPane>
+      <Button fx:id="btnDone" layoutX="817.0" layoutY="276.0" mnemonicParsing="false" text="Done" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="14.0" />
+   </children>
+</AnchorPane>

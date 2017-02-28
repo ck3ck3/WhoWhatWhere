@@ -26,7 +26,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
@@ -38,8 +37,6 @@ import whowhatwhere.model.networksniffer.watchdog.OutputMethod;
 
 public class ListAddEditController implements Initializable
 {
-	private final static String speakerImageLocation = "/buttonGraphics/Speaker.png";
-	
 	@FXML
 	private ComboBox<OutputMethod> comboOutputMethod;
 	@FXML
@@ -144,7 +141,7 @@ public class ListAddEditController implements Initializable
 		numFieldPacketSizeRight.setVisible(false);
 		
 		btnPreview.setVisible(false);
-		GUIController.setGraphicForLabeledControl(btnPreview, speakerImageLocation, ContentDisplay.LEFT);
+		GUIController.setCommonGraphicOnLabeled(btnPreview, GUIController.CommonGraphicImages.SPEAKER);
 		GUIController.setCommonGraphicOnLabeled(btnDone, GUIController.CommonGraphicImages.OK);
 		GUIController.setCommonGraphicOnLabeled(btnCancel, GUIController.CommonGraphicImages.CANCEL);
 	}

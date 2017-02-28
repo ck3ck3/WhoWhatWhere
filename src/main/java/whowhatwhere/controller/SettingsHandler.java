@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -36,8 +37,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckMenuItem;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import whowhatwhere.Main;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.networksniffer.NICInfo;
@@ -49,7 +50,6 @@ public class SettingsHandler
 {
 	private final static String propsFileLocation = Main.getAppName() + ".properties";
 	private final static String defaultPropsResource = "/defaultLastRun.properties";
-	private final static String NICSelectionFormLocation = "/whowhatwhere/view/fxmls/maingui/NICSelectionForm.fxml";
 
 	private final static String propsNICDescription = "Selected NIC description";
 	private final static String propsShowMessageOnMinimize = "showMinimizeMessage";
@@ -66,7 +66,6 @@ public class SettingsHandler
 	private boolean showMessageOnMinimize;
 	private boolean ignoreRunPathDiff;
 	private boolean checkForUpdatesOnStartup;
-	private NICInfo selectedNIC;
 	private NetworkSniffer sniffer;
 
 	private GUIController guiController;
@@ -85,7 +84,7 @@ public class SettingsHandler
 		for (LoadAndSaveSettings instance : instancesWithSettingsToHandle)
 			instance.saveCurrentRunValuesToProperties(props);
 
-		props.put(propsNICDescription, selectedNIC.getDescription());
+		props.put(propsNICDescription, guiController.getSelectedNIC().getDescription());
 
 		props.put(propsCheckForUpdatesOnStartup, String.valueOf(checkForUpdatesOnStartup));
 		props.put(propsShowMessageOnMinimize, String.valueOf(showMessageOnMinimize));
@@ -154,8 +153,12 @@ public class SettingsHandler
 	public void loadLastRunConfig(List<LoadAndSaveSettings> instancesWithSettingsToHandle)
 	{
 		Properties props = loadProperties();
+		List<Runnable> needsToRunAfterStageIsShown = new ArrayList<Runnable>();
+		
+		needsToRunAfterStageIsShown.add(() -> loadLastRunDimensions(props));
 
-		loadNICInfo(PropertiesByType.getStringProperty(props, propsNICDescription, ""));
+		if (!loadNICInfo(PropertiesByType.getStringProperty(props, propsNICDescription, "")))
+			needsToRunAfterStageIsShown.add(() -> guiController.showNICSelectionScreen());
 
 		checkForUpdatesOnStartup = PropertiesByType.getBoolProperty(props, propsCheckForUpdatesOnStartup, true);
 		guiController.getMenuItemChkCheckUpdateStartup().setSelected(checkForUpdatesOnStartup);
@@ -171,7 +174,18 @@ public class SettingsHandler
 		ignoreRunPathDiff = PropertiesByType.getBoolProperty(props, propsIgnoreRunPathDiff, false);
 		loadStartWithWindowsSetting();
 
-		loadLastRunDimensions(props);
+		Stage stage = guiController.getStage();
+		EventHandler<WindowEvent> originalOnShown = stage.getOnShown();
+		stage.setOnShown(event -> 
+		{
+			if (originalOnShown != null) //if there was already an event handler, run it
+				originalOnShown.handle(event);
+			
+			for (Runnable runThis : needsToRunAfterStageIsShown)
+				Platform.runLater(runThis);
+
+			stage.setOnShown(originalOnShown); //only do this on the first time, after that it's back to the original event handler
+		});
 
 		for (LoadAndSaveSettings instance : instancesWithSettingsToHandle)
 			instance.loadLastRunConfig(props);
@@ -303,7 +317,11 @@ public class SettingsHandler
 		return false;
 	}
 
-	private void loadNICInfo(String nicDescription)
+	/**
+	 * @param nicDescription
+	 * @return true if the NICInfo was successfully loaded, false if it wasn't, and we need to run guiController.showNICSelectionScreen() after the stage is shown 
+	 */
+	private boolean loadNICInfo(String nicDescription)
 	{
 		NICInfo nic = null;
 
@@ -311,7 +329,7 @@ public class SettingsHandler
 		{
 			nic = getNICByDescription(nicDescription);
 			if (nic != null)
-				selectedNIC = nic;
+				guiController.setSelectedNIC(nic);
 		}
 
 		if (nic == null) //couldn't find the NIC
@@ -319,51 +337,12 @@ public class SettingsHandler
 			List<NICInfo> listOfDevices = sniffer.getListOfDevicesWithIP();
 
 			if (listOfDevices.size() == 1) //if there's only one option
-				selectedNIC = listOfDevices.get(0);
+				guiController.setSelectedNIC(listOfDevices.get(0));
 			else
-				showNICSelectionScreen();
+				return false;
 		}
-	}
-
-	public void showNICSelectionScreen()
-	{
-		List<NICInfo> listOfDevices = sniffer.getListOfDevicesWithIP();
-
-		if (listOfDevices == null || listOfDevices.size() == 0)
-		{
-			new Alert(AlertType.ERROR, "Unable to find any network interfaces. Terminating application.").showAndWait();
-			logger.log(Level.SEVERE, "Unable to find any network interfaces");
-			guiController.shutdownApp();
-		}
-
-		Stage stage = guiController.getStage();
-
-		if (selectedNIC == null)
-			selectedNIC = new NICInfo(); //the selected NICInfo will be copied into this object
-
-		NICSelectionScreen selectionScreen = null;
-
-		try
-		{
-			selectionScreen = new NICSelectionScreen(NICSelectionFormLocation, stage, stage.getScene(), selectedNIC);
-		}
-		catch (Exception e)
-		{
-			new Alert(AlertType.ERROR, "Unable to load network adapter selection screen. Terminating application.").showAndWait();
-			logger.log(Level.SEVERE, "Unable to load network adapter selection screen", e);
-			guiController.shutdownApp();
-		}
-
-		Stage newStage = selectionScreen.showScreenOnNewStage("Choose a network adapter", Modality.APPLICATION_MODAL, selectionScreen.getCloseButton());
-
-		newStage.setOnCloseRequest(windowEvent ->
-		{
-			if (selectedNIC.getDescription() == null) //if we don't have a NIC set
-			{
-				windowEvent.consume();
-				new Alert(AlertType.ERROR, "You must select a network adapter.").showAndWait();
-			}
-		});
+		
+		return true;
 	}
 
 	private NICInfo getNICByDescription(String description)
@@ -374,12 +353,7 @@ public class SettingsHandler
 
 		return null;
 	}
-
-	public NICInfo getSelectedNIC()
-	{
-		return selectedNIC;
-	}
-
+	
 	public boolean getCheckForUpdatesOnStartup()
 	{
 		return checkForUpdatesOnStartup;

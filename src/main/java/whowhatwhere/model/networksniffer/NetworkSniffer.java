@@ -50,6 +50,11 @@ import whowhatwhere.model.networksniffer.watchdog.WatchdogPacketHandler;
 public class NetworkSniffer
 {
 	private static final Logger logger = Logger.getLogger(NetworkSniffer.class.getPackage().getName());
+	
+	public final static int defaultPingTimeout = -1;
+	public final static String pingError = "Error";
+	public final static String pingTimeout = "Request timed out";
+	
 	private static boolean initSuccessful;
 	private static List<String> errorList = new ArrayList<String>();
 
@@ -316,15 +321,14 @@ public class NetworkSniffer
 	 * @param ip
 	 *            - IP to ping
 	 * @param timeout
-	 *            - timeout in ms. -1 for default timeout
+	 *            - timeout in ms. {@code defaultPingTimeout} for default timeout
 	 * @return The string "X milliseconds" (where X is the ping result). If the
-	 *         ping timed out, returns "Timeout". If an error occurred, returns
-	 *         "Error"
+	 *         ping timed out, returns {@code pingTimeout}. If an error occurred, returns
+	 *         {@code pingError}
 	 */
 	public static String pingAsString(String ip, int timeout)
 	{
-		String command = "ping -n 1 " + (timeout > 0 ? "-w " + timeout + " " : "") + ip;
-		String errorString = "Error";
+		String command = "ping -n 1 " + (timeout != defaultPingTimeout ? "-w " + timeout + " " : "") + ip;
 		Process exec;
 
 		try
@@ -336,7 +340,7 @@ public class NetworkSniffer
 			String ping;
 
 			if (!results.contains("ms"))
-				ping = "Timeout";
+				ping = pingTimeout;
 			else
 				ping = results.replace("ms", " milliseconds"); //replace ms to milliseconds for a more user-friendly string
 
@@ -344,8 +348,8 @@ public class NetworkSniffer
 		}
 		catch (IOException e)
 		{
-			logger.log(Level.SEVERE, "Unable to execute ping (failed to load Ping (command) screen)", e);
-			return errorString;
+			logger.log(Level.SEVERE, "Unable to execute ping command", e);
+			return pingError;
 		}
 	}
 }

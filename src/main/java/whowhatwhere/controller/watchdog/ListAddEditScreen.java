@@ -41,18 +41,16 @@ import javafx.scene.control.Tooltip;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
 import whowhatwhere.controller.GUIController;
-import whowhatwhere.model.TextToSpeech;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.PacketDirection;
 import whowhatwhere.model.networksniffer.SupportedProtocols;
 import whowhatwhere.model.networksniffer.watchdog.OutputMethod;
 import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
+import whowhatwhere.model.tts.TextToSpeech;
 import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen;
 
 public class ListAddEditScreen extends SecondaryFXMLScreen
 {
-	private final static String voiceForTTS = GUIController.voiceForTTS;
-	
 	private ListAddEditController watchdogListAddEditController;
 	private TableView<PacketTypeToMatch> table;
 
@@ -90,17 +88,18 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 
 	private Map<String, List<String>> ipNotesToIPListMap;
 	private boolean isIPFieldValid = false;
-	private TextToSpeech tts = new TextToSpeech(voiceForTTS);
+	private TextToSpeech tts;
 
-	public ListAddEditScreen(String fxmlLocation, Stage stage, Scene scene, TableView<PacketTypeToMatch> table, Map<String, List<String>> ipNotes, boolean isEdit) throws IOException
+	public ListAddEditScreen(String fxmlLocation, Stage stage, Scene scene, TableView<PacketTypeToMatch> table, Map<String, List<String>> ipNotes, boolean isEdit, TextToSpeech tts) throws IOException
 	{
 		super(fxmlLocation, stage, scene);
 
 		watchdogListAddEditController = getLoader().<ListAddEditController> getController();
 		this.table = table;
+		this.tts = tts;
 		ipNotesToIPListMap = ipNotes;
+		
 		assignControlsFromController();
-
 		initControlsBehavior(isEdit);
 
 		if (isEdit)
