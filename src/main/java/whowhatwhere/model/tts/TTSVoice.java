@@ -23,6 +23,8 @@ import java.util.Map;
 
 public enum TTSVoice
 {
+	bits1_hsmm					(TTSLanguage.DE,	Gender.FEMALE,	"bits1-hsmm"),
+	bits3_hsmm					(TTSLanguage.DE,	Gender.MALE,	"bits3-hsmm"),
 	dfki_pavoque_neutral_hsmm	(TTSLanguage.DE,	Gender.MALE,	"dfki-pavoque-neutral-hsmm"),
 	dfki_poppy_hsmm				(TTSLanguage.EB_GB,	Gender.FEMALE,	"dfki-poppy-hsmm"),
 	dfki_prudence_hsmm			(TTSLanguage.EB_GB,	Gender.FEMALE,	"dfki-prudence-hsmm"),

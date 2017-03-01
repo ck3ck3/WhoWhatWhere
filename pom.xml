@@ -14,6 +14,10 @@
 			<id>jcenter.bintray.com</id>
 			<url>https://jcenter.bintray.com</url>
 		</repository>
+		<repository>
+			<id>dl.bintray.com</id>
+			<url>https://dl.bintray.com/marytts/marytts</url>
+		</repository>
 	</repositories>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
@@ -220,6 +224,16 @@
 		<dependency>
 			<groupId>de.dfki.mary</groupId>
 			<artifactId>marytts-runtime</artifactId>
+			<version>5.2</version>
+		</dependency>
+		<dependency>
+			<groupId>de.dfki.mary</groupId>
+			<artifactId>voice-bits1-hsmm</artifactId>
+			<version>5.2</version>
+		</dependency>
+		<dependency>
+			<groupId>de.dfki.mary</groupId>
+			<artifactId>voice-bits3-hsmm</artifactId>
 			<version>5.2</version>
 		</dependency>
 		<dependency>
