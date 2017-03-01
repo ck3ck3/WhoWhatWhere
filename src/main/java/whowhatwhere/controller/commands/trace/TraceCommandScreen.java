@@ -58,6 +58,7 @@ public class TraceCommandScreen extends CommandScreen
 	private Label labelTimeout = new Label("Ping timeout (in milliseconds)");
 	private NumberTextField numFieldTimeout = new NumberTextField("200", 1, 3000);
 	private Button btnVisualTrace = new Button("Show visual trace");
+	private Stage stageVisualTrace;
 
 	private String ip;
 
@@ -101,7 +102,14 @@ public class TraceCommandScreen extends CommandScreen
 		numFieldTimeout.setPrefSize(45, 25);
 		GUIController.setNumberTextFieldValidationUI(numFieldTimeout);
 
-		btnVisualTrace.setOnAction(event -> openVisualTrace());
+		btnVisualTrace.setOnAction(event -> 
+		{
+			if (stageVisualTrace == null)
+				openVisualTrace();
+			else
+				stageVisualTrace.toFront();
+			
+		});
 		btnVisualTrace.setStyle("-fx-font-weight: bold;");
 		GUIController.setGraphicForLabeledControl(btnVisualTrace, visualTraceIcon, ContentDisplay.LEFT);
 		btnVisualTrace.setDisable(true);
@@ -171,9 +179,8 @@ public class TraceCommandScreen extends CommandScreen
 			return;
 		}
 
-		Button btnClose = visualTraceScreen.getVisualTraceController().getBtnClose();
-
-		visualTraceScreen.showScreenOnNewStage("Visual trace of " + ip, null, btnClose);
+		stageVisualTrace = visualTraceScreen.showScreenOnNewStage("Visual trace of " + ip, null, visualTraceScreen.getBtnClose());
+		stageVisualTrace.setOnHidden(event -> stageVisualTrace = null);
 	}
 
 	private List<String> getOutputAsList()

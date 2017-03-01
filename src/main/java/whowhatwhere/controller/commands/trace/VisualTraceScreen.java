@@ -76,6 +76,9 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 	private final static Logger logger = Logger.getLogger(VisualTraceScreen.class.getPackage().getName());
 
 	private VisualTraceController visualTraceController;
+	private Label labelUnderMap;
+	private Pane paneStackColor;
+	private Pane paneTraceInfo;
 	private List<String> tracertOutput;
 	private Map<CheckBox, String> checkboxToIP = new HashMap<>();
 	private Map<String, GeoIPInfo> geoIPResults = new HashMap<>();
@@ -92,6 +95,9 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 
 		visualTraceController = getLoader().<VisualTraceController> getController();
 		imgView = visualTraceController.getImgView();
+		labelUnderMap = visualTraceController.getLoadingLabel();
+		paneStackColor = visualTraceController.getPaneStackColor();
+		paneTraceInfo = visualTraceController.getPaneTraceInfo();
 
 		initImgService();
 		populateGeoIPResults();
@@ -106,10 +112,17 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		imgService = new GenerateImageFromURLService(this);
 		imgService.setOnSucceeded(event ->
 		{
-			getVisualTraceController().getLoadingLabel().setVisible(false);
+			labelUnderMap.setVisible(false);
 			Image img = imgService.getValue();
 			imgView.setImage(img);
-			visualTraceController.getPaneStackColor().setStyle("-fx-background-color: #A3CBFE;"); //ocean color background to hide transparent part of image if exists
+			
+			if (img == null)
+			{
+				labelUnderMap.setText("No data to show");
+				labelUnderMap.setVisible(true);
+			}
+			else
+				paneStackColor.setStyle("-fx-background-color: #A3CBFE;"); //ocean color background to hide transparent part of image if exists
 		});
 	}
 
@@ -128,7 +141,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 	private void resizeIfNeeded()
 	{
 		SplitPane splitPane = visualTraceController.getSplitPane();
-		double traceInfoWidth = visualTraceController.getPaneTraceInfo().getWidth();
+		double traceInfoWidth = paneTraceInfo.getWidth();
 		double splitPaneDividerPosition = splitPane.getDividerPositions()[0];
 		double splitPaneWidth = splitPane.getWidth();
 
@@ -150,7 +163,6 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 	{
 		int row = 1, col = 0;
 		GridPane gridPane = new GridPane();
-		Pane paneTraceInfo = visualTraceController.getPaneTraceInfo();
 		paneTraceInfo.getChildren().add(gridPane);
 		gridPane.setHgap(10);
 
@@ -362,9 +374,10 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 	{
 		Platform.runLater(() ->
 		{
-			visualTraceController.getPaneStackColor().setStyle("");
+			paneStackColor.setStyle("");
 			imgView.setImage(null);
-			getVisualTraceController().getLoadingLabel().setVisible(true);
+			labelUnderMap.setText("Loading...");
+			labelUnderMap.setVisible(true);
 			imgService.restart();
 		});
 	}
@@ -410,7 +423,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 	private String generatePath()
 	{
 		String pathInit = "&path=";
-		String path = pathInit;
+		String path = "";
 
 		for (int i = 0; i < listOfChkBoxes.size(); i++)
 		{
@@ -422,13 +435,13 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			String ipForPath = checkboxToIP.get(checkBox);
 			String locationForPath = getLocationString(ipToGeoipInfo.get(ipForPath));
 
-			if (!path.equals(pathInit)) //if it's not the first part of the path
+			if (!path.isEmpty()) //if it's not the first part of the path
 				locationForPath = "%7C" + locationForPath;
 
 			path += locationForPath;
 		}
 
-		return path;
+		return (path.isEmpty() ? "" : pathInit + path);
 	}
 
 	private String generateZoom(String centerOnIP, int zoom)
@@ -474,13 +487,15 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		do
 		{
 			checkedBox = listOfChkBoxes.get(firstSelectedBox++);
-		} while (!checkedBox.isSelected());
+		} while (!checkedBox.isSelected() && firstSelectedBox < listOfChkBoxes.size());
+		
 		reorderedListOfCheckBoxes.add(checkedBox);
 
 		do
 		{
 			checkedBox = listOfChkBoxes.get(lastSelectedBox--);
-		} while (!checkedBox.isSelected());
+		} while (!checkedBox.isSelected() && lastSelectedBox >= 0);
+		
 		if (!reorderedListOfCheckBoxes.contains(checkedBox))
 			reorderedListOfCheckBoxes.add(checkedBox);
 		else
@@ -512,9 +527,14 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		return location;
 	}
 
-	public VisualTraceController getVisualTraceController()
+	public Button getBtnClose()
 	{
-		return visualTraceController;
+		return visualTraceController.getBtnClose();
+	}
+	
+	public Label getLabelUnderMap()
+	{
+		return labelUnderMap;
 	}
 
 	private static class GenerateImageFromURLService extends Service<Image>
@@ -539,6 +559,10 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 				protected Image call() throws Exception
 				{
 					String url = traceScreen.generateURL(centerOnIP, zoom);
+					
+					if (url.equals(baseUrl))
+						return null;
+					
 					centerOnIP = null; //reset for next use
 
 					Image img = urlToImageCache.get(url);
