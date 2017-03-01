@@ -20,12 +20,8 @@ package whowhatwhere.controller.commands.trace;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.net.URLEncoder;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,7 +72,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 	private final static String propertyPings = "pings";
 	private final static String propertyHostname = "hostname";
 	private final static String propertyIP = "ip";
-	
+
 	private final static Logger logger = Logger.getLogger(VisualTraceScreen.class.getPackage().getName());
 
 	private VisualTraceController visualTraceController;
@@ -94,25 +90,20 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		super(visualTraceFormLocation, postCloseStage, postCloseScene);
 		this.tracertOutput = listOfIPs;
 
-		imgService = new GenerateImageFromURLService(this);
-
-		for (String line : listOfIPs)
-		{
-			String ip = TraceCommandScreen.extractIPFromLine(line);
-			GeoIPInfo ipInfo = GeoIPResolver.getIPInfo(ip);
-
-			if (ipInfo != null)
-				geoIPResults.put(ip, ipInfo);
-		}
-
 		visualTraceController = getLoader().<VisualTraceController> getController();
 		imgView = visualTraceController.getImgView();
-		
-		generateTraceInfoGUI();	
+
+		initImgService();
+		populateGeoIPResults();
+		generateTraceInfoGUI();
 		generateAndShowImage();
 
 		setStageOnShowing(event -> Platform.runLater(() -> resizeIfNeeded()));
-		
+	}
+
+	private void initImgService()
+	{
+		imgService = new GenerateImageFromURLService(this);
 		imgService.setOnSucceeded(event ->
 		{
 			getVisualTraceController().getLoadingLabel().setVisible(false);
@@ -121,21 +112,33 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			visualTraceController.getPaneStackColor().setStyle("-fx-background-color: #A3CBFE;"); //ocean color background to hide transparent part of image if exists
 		});
 	}
-	
+
+	private void populateGeoIPResults()
+	{
+		for (String line : tracertOutput)
+		{
+			String ip = TraceCommandScreen.extractIPFromLine(line);
+			GeoIPInfo ipInfo = GeoIPResolver.getIPInfo(ip);
+
+			if (ipInfo != null)
+				geoIPResults.put(ip, ipInfo);
+		}
+	}
+
 	private void resizeIfNeeded()
 	{
 		SplitPane splitPane = visualTraceController.getSplitPane();
 		double traceInfoWidth = visualTraceController.getPaneTraceInfo().getWidth();
 		double splitPaneDividerPosition = splitPane.getDividerPositions()[0];
 		double splitPaneWidth = splitPane.getWidth();
-		
+
 		if (traceInfoWidth > splitPaneDividerPosition * splitPaneWidth) //if trace info is wider than what is visible
 		{
 			double idealWidth = traceInfoWidth + (1 - splitPaneDividerPosition) * splitPaneWidth + 30;
 			Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
-			
-			Stage stage = (Stage)imgView.getScene().getWindow();
-			
+
+			Stage stage = (Stage) imgView.getScene().getWindow();
+
 			if (primaryScreenBounds.getWidth() > idealWidth) //if the resolution is wide enough to contain the view without scrollers
 				stage.setWidth(idealWidth);
 			else
@@ -150,69 +153,92 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		Pane paneTraceInfo = visualTraceController.getPaneTraceInfo();
 		paneTraceInfo.getChildren().add(gridPane);
 		gridPane.setHgap(10);
-		
+
 		createLabelsOnGridPane(gridPane, tracertOutput.get(0).contains("["));
 
 		char label = 'A';
 		for (String line : tracertOutput)
 		{
-			CheckBox box = new CheckBox(String.valueOf(label));
+			Map<String, String> valueMap = getMapOfValues(line);
+			String ip = valueMap.get(propertyIP);
+
 			col = 0;
 
-			box.setSelected(true);
-			box.selectedProperty().addListener((observable, oldValue, newValue) -> 
-			{
-				Toggle selectedZoomBtn = zoomToggleGroup.getSelectedToggle();
-				if (selectedZoomBtn != null)
-					selectedZoomBtn.setSelected(false);
-				
-				generateAndShowImage();
-			});
+			GeoIPInfo geoIPInfo = geoIPResults.get(ip);
+			ipToGeoipInfo.put(ip, geoIPInfo);
 
+			CheckBox box = generateCheckbox(label, geoIPInfo);
 			listOfChkBoxes.add(box);
 			gridPane.add(box, col++, row);
 			GridPane.setHalignment(box, HPos.CENTER);
 
-			Map<String, String> valueMap = getListOfValues(line);
-			
-			String ip = valueMap.get(propertyIP);
 			checkboxToIP.put(box, ip);
-			ipToGeoipInfo.put(ip, geoIPResults.get(ip));
-			
-			List<String> orderedPropertyList = Arrays.asList(propertyHop, propertyPings, propertyHostname, propertyIP);
-			for (String key : orderedPropertyList)
-			{
-				String value = valueMap.get(key);
-				if (value != null)
-				{
-					Label tempLabel = new Label(value);
-					gridPane.add(tempLabel, col++, row);
-					
-					if (key.equals(propertyHop))
-						GridPane.setHalignment(tempLabel, HPos.CENTER);
-				}
-			}
 
+			col = addPropertiesToGridPane(valueMap, gridPane, col, row);
 			addButtonsToGridPane(ip, gridPane, col, row);
 
 			if (label != 'Z')
 				label++; //trace is limited to 30 hops, so no need to worry about '9'
 			else
 				label = '0';
-			
+
 			row++;
 		}
 	}
-	
+
+	private CheckBox generateCheckbox(char label, GeoIPInfo geoIPInfo)
+	{
+		CheckBox box = new CheckBox(String.valueOf(label));
+
+		boolean hasLocation = geoIPInfo.getSuccess();
+		box.setSelected(hasLocation);
+		box.setDisable(!hasLocation);
+
+		box.selectedProperty().addListener((observable, oldValue, newValue) ->
+		{
+			Toggle selectedZoomBtn = zoomToggleGroup.getSelectedToggle();
+			if (selectedZoomBtn != null)
+				selectedZoomBtn.setSelected(false);
+
+			generateAndShowImage();
+		});
+
+		return box;
+	}
+
 	/**
-	 * @param fullLine - full line from tracert output
-	 * @return - a map of values with these keys: propertyHop, propertyPings, propertyHostname (if available), propertyIP
+	 * @return the updated col value, after the new property columns were added
 	 */
-	private Map<String, String> getListOfValues(String fullLine)
+	private int addPropertiesToGridPane(Map<String, String> valueMap, GridPane gridPane, int col, int row)
+	{
+		String[] orderedProperties = new String[] { propertyHop, propertyPings, propertyHostname, propertyIP };
+		for (String key : orderedProperties)
+		{
+			String value = valueMap.get(key);
+			if (value != null)
+			{
+				Label tempLabel = new Label(value);
+				gridPane.add(tempLabel, col++, row);
+
+				if (key.equals(propertyHop))
+					GridPane.setHalignment(tempLabel, HPos.CENTER);
+			}
+		}
+
+		return col;
+	}
+
+	/**
+	 * @param fullLine
+	 *            - full line from tracert output
+	 * @return - a map of values with these keys: propertyHop, propertyPings,
+	 *         propertyHostname (if available), propertyIP
+	 */
+	private Map<String, String> getMapOfValues(String fullLine)
 	{
 		List<String> values = new ArrayList<>();
 		boolean containsHostname = false;
-		
+
 		String[] splitBySpace = fullLine.trim().split(" ");
 		for (String str : splitBySpace)
 		{
@@ -226,33 +252,33 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 				else
 				{
 					if (str.contains("["))
-						{
-							values.add(str.substring(1, str.length() - 1));
-							containsHostname = true;
-						}
+					{
+						values.add(str.substring(1, str.length() - 1));
+						containsHostname = true;
+					}
 					else
 						values.add(str);
 				}
 			}
 		}
-		
-		String pings = values.get(1) + "  " + values.get(2) + "  " +values.get(3) + "  ";
+
+		String pings = values.get(1) + "  " + values.get(2) + "  " + values.get(3) + "  ";
 		values.set(1, pings);
 		values.remove(3); //remove in descending order to prevent lower indices from changing
 		values.remove(2);
-		
+
 		Map<String, String> mappedResults = new HashMap<>();
 		int index = 0;
-		
+
 		mappedResults.put(propertyHop, values.get(index++));
 		mappedResults.put(propertyPings, values.get(index++));
 		if (containsHostname)
 			mappedResults.put(propertyHostname, values.get(index++));
 		mappedResults.put(propertyIP, values.get(index++));
-		
+
 		return mappedResults;
 	}
-	
+
 	private void addButtonsToGridPane(String ip, GridPane gridPane, int col, int row)
 	{
 		ToggleButton btnZoom = new ToggleButton();
@@ -265,13 +291,13 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			@SuppressWarnings("unchecked")
 			Spinner<Integer> spinnerZoom = (Spinner<Integer>) hbox.getChildren().get(1);
 			spinnerZoom.setDisable(!newValue);
-			
+
 			if (newValue) //selected
 				imgService.setCenterOnIP(ip, spinnerZoom.getValue());
-			
+
 			generateAndShowImage();
 		});
-		
+
 		Spinner<Integer> spinnerZoom = new Spinner<>(googleMinZoomLevel, googleMaxZoomLevel, googleDefaultZoomLevel, googleZoomLevelStep);
 		spinnerZoom.setPrefWidth(55);
 		spinnerZoom.setPrefHeight(btnZoom.getHeight());
@@ -286,8 +312,8 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		spinnerZoom.setEditable(false);
 		spinnerZoom.setDisable(true);
 		HBox zoomControls = new HBox(btnZoom, spinnerZoom);
-		
-		Button btnGeoIP = new Button(); 
+
+		Button btnGeoIP = new Button();
 		btnGeoIP.setGraphic(new ImageView(new Image(getClass().getResourceAsStream(geoIPIconLocation))));
 		btnGeoIP.setTooltip(new Tooltip("Show more detailed GeoIP info online (opens in a browser window)"));
 		btnGeoIP.setOnAction(event -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + ip));
@@ -296,17 +322,17 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		gridPane.add(btnGeoIP, col++, row);
 		GridPane.setHalignment(btnZoom, HPos.CENTER);
 		GridPane.setHalignment(btnGeoIP, HPos.CENTER);
-		
-		if (!ipToGeoipInfo.get(ip).getSuccess() || !isPublicIP(ip)) //no geoip info for this ip
+
+		if (!ipToGeoipInfo.get(ip).getSuccess()) //no geoip info for this ip
 			btnZoom.setDisable(true);
 	}
-	
+
 	private void createLabelsOnGridPane(GridPane gridPane, boolean withHostnames)
 	{
 		Font defaultFont = Font.getDefault();
 		Font font = Font.font(defaultFont.getName(), FontWeight.BOLD, defaultFont.getSize());
 		int col = 0;
-		
+
 		Label labelMapNode = new Label("Map label");
 		Label labelHopNum = new Label("Hop #");
 		Label labelPings = new Label("Ping results");
@@ -321,7 +347,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		labelIPAddress.setFont(font);
 		labelFocusHere.setFont(font);
 		labelGeoIPInfo.setFont(font);
-		
+
 		gridPane.add(labelMapNode, col++, 0);
 		gridPane.add(labelHopNum, col++, 0);
 		gridPane.add(labelPings, col++, 0);
@@ -345,56 +371,70 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 
 	private String generateURL(String centerOnIP, int zoom)
 	{
+		String markersSegment = generateMarkers();
+		String pathSegment = generatePath();
+		String zoomSegment = generateZoom(centerOnIP, zoom);
+
+		return baseUrl + markersSegment + pathSegment + zoomSegment;
+	}
+
+	private String generateMarkers()
+	{
 		String markers = "";
-		String pathInit = "&path=";
-		String path = pathInit;
 		int markersLeftToTurnRed = 2; // the first two markers are the first and last markers
-		int checkboxIndexForPath = 0;
-System.out.println("before reordering list");		
+
 		List<CheckBox> reorderedListOfCheckBoxes = getReorderedListOfCheckboxes();
-System.out.println("before loop");
+
 		for (CheckBox checkBox : reorderedListOfCheckBoxes)
-		{System.out.println("in loop, checkbox = " + checkBox.getText());
+		{
 			String text = checkBox.getText();
 			String ip;
 
 			if (checkBox.isSelected())
 			{
 				char label = text.charAt(0);
-System.out.println("checkbox is selected");
+
 				ip = checkboxToIP.get(checkBox);
-System.out.println("getting geoip info from the map for ip " + ip);				
-				GeoIPInfo ipInfo = ipToGeoipInfo.get(ip); 
-System.out.println("checking for private ip");
-				if (!isPublicIP(ip) || ipInfo == null || !ipInfo.getSuccess()) //not a public ip with a location, skip it
-				{
-					checkBox.setSelected(false);
-					checkBox.setDisable(true);
-					continue;
-				}
-System.out.println("setting currentMarker");
+				GeoIPInfo ipInfo = ipToGeoipInfo.get(ip);
+
 				String currentMarker = "&markers=color:" + (markersLeftToTurnRed-- > 0 ? "red" : "blue") + "%7Clabel:" + label;
-System.out.println("setting location");
+
 				String location = getLocationString(ipInfo);
 				markers += currentMarker + "%7C" + location;
-System.out.println("start path creation");
-				//for path string, we need the original order of locations, not the redorderedList
-				CheckBox chkboxForPath;
-				do { chkboxForPath = listOfChkBoxes.get(checkboxIndexForPath++); } while(!chkboxForPath.isSelected());
-System.out.println("after do-while");				
-				String ipForPath = checkboxToIP.get(chkboxForPath);
-System.out.println("after setting ipForPath, before locationForPath");				
-				String locationForPath = getLocationString(ipToGeoipInfo.get(ipForPath));
-System.out.println("checking if path equals pathinit");				
-				if (!path.equals(pathInit)) //if it's not the first part of the path
-					locationForPath = "%7C" + locationForPath;
-System.out.println("before last line of loop");
-				path += locationForPath;
 			}
 		}
-System.out.println("after loop");		
-		String result = baseUrl + markers + path; 
-		
+
+		return markers;
+	}
+
+	private String generatePath()
+	{
+		String pathInit = "&path=";
+		String path = pathInit;
+
+		for (int i = 0; i < listOfChkBoxes.size(); i++)
+		{
+			CheckBox checkBox = listOfChkBoxes.get(i);
+
+			if (!checkBox.isSelected())
+				continue;
+
+			String ipForPath = checkboxToIP.get(checkBox);
+			String locationForPath = getLocationString(ipToGeoipInfo.get(ipForPath));
+
+			if (!path.equals(pathInit)) //if it's not the first part of the path
+				locationForPath = "%7C" + locationForPath;
+
+			path += locationForPath;
+		}
+
+		return path;
+	}
+
+	private String generateZoom(String centerOnIP, int zoom)
+	{
+		String result = "";
+
 		if (centerOnIP != null)
 		{
 			GeoIPInfo ipInfo = ipToGeoipInfo.get(centerOnIP);
@@ -407,46 +447,55 @@ System.out.println("after loop");
 			{
 				logger.log(Level.SEVERE, "Unable to encode this URL: " + location, e);
 			}
-			result += "&center=" + location + "&zoom=" + zoom;
+			result = "&center=" + location + "&zoom=" + zoom;
 		}
 
 		return result;
 	}
-	
-		
-	/**If two markers are set on the same spot in Google static maps, it will show the first marker set. In order to show the first and last markers we need
-	 * them to be set before other markers. The rest of the markers should come in reverse order so that the last marker set is visible (style choice).
-	 * @return returns a list based on listOfChkBoxes but in a different order: first, last, {reverse order of first+1 to last-1}
+
+	/**
+	 * If two markers are set on the same spot in Google static maps, it will
+	 * show the first marker set. In order to show the first and last markers in
+	 * the route we need them to be set before other markers. The rest of the
+	 * markers should come in reverse order so that the last marker set is
+	 * visible (style choice).
+	 * 
+	 * @return returns a list based on listOfChkBoxes but in a different order:
+	 *         first, last, {reverse order of first+1 to last-1}
 	 */
 	private List<CheckBox> getReorderedListOfCheckboxes()
 	{
 		List<CheckBox> reorderedListOfCheckBoxes = new ArrayList<>();
-		
+
 		CheckBox checkedBox;
-		int firstCheckedBox = 0;
-		int lastChckedBox = listOfChkBoxes.size() - 1;
-		
-		do { checkedBox = listOfChkBoxes.get(firstCheckedBox++); } while(!checkedBox.isSelected());
+		int firstSelectedBox = 0;
+		int lastSelectedBox = listOfChkBoxes.size() - 1;
+
+		do
+		{
+			checkedBox = listOfChkBoxes.get(firstSelectedBox++);
+		} while (!checkedBox.isSelected());
 		reorderedListOfCheckBoxes.add(checkedBox);
-		
-		do { checkedBox = listOfChkBoxes.get(lastChckedBox--); } while(!checkedBox.isSelected());
+
+		do
+		{
+			checkedBox = listOfChkBoxes.get(lastSelectedBox--);
+		} while (!checkedBox.isSelected());
 		if (!reorderedListOfCheckBoxes.contains(checkedBox))
 			reorderedListOfCheckBoxes.add(checkedBox);
 		else
 			return reorderedListOfCheckBoxes; //if there's just one box to add, don't add it twice.
-		
-		for (int i = lastChckedBox; i >= firstCheckedBox; i--)
+
+		for (int i = lastSelectedBox; i >= firstSelectedBox; i--)
 		{
 			checkedBox = listOfChkBoxes.get(i);
-			if (!checkedBox.isSelected())
-				continue;
-			
-			reorderedListOfCheckBoxes.add(checkedBox);	
+			if (checkedBox.isSelected())
+				reorderedListOfCheckBoxes.add(checkedBox);
 		}
 
 		return reorderedListOfCheckBoxes;
 	}
-	
+
 	private String getLocationString(GeoIPInfo ipInfo)
 	{
 		String region = ipInfo.getRegion();
@@ -461,22 +510,6 @@ System.out.println("after loop");
 		}
 
 		return location;
-	}
-
-	private boolean isPublicIP(String ip)
-	{
-		Inet4Address address;
-
-		try
-		{
-			address = (Inet4Address) InetAddress.getByName(ip);
-		}
-		catch (UnknownHostException exception)
-		{
-			return false; // not a real error, just not a valid IP.
-		}
-
-		return !(address.isSiteLocalAddress() || address.isAnyLocalAddress() || address.isLinkLocalAddress() || address.isLoopbackAddress() || address.isMulticastAddress());
 	}
 
 	public VisualTraceController getVisualTraceController()
@@ -507,7 +540,7 @@ System.out.println("after loop");
 				{
 					String url = traceScreen.generateURL(centerOnIP, zoom);
 					centerOnIP = null; //reset for next use
-					
+
 					Image img = urlToImageCache.get(url);
 					if (img == null)
 					{
