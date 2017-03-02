@@ -82,11 +82,12 @@
                <content>
                   <AnchorPane>
                      <children>
-                        <Label focusTraversable="false" layoutX="22.0" layoutY="49.0" text="Notification text" />
-                        <TextField fx:id="textMessage" layoutX="149.0" layoutY="44.0" prefHeight="27.0" prefWidth="240.0" text="Match found" />
                         <Label focusTraversable="false" layoutX="22.0" layoutY="13.0" text="Notification type" />
                         <ComboBox fx:id="comboOutputMethod" layoutX="149.0" layoutY="9.0" prefHeight="27.0" prefWidth="240.0" />
-                        <Button fx:id="btnPreview" layoutX="397.0" layoutY="44.0" mnemonicParsing="false" text="Preview" />
+                        <Button fx:id="btnConfigTTS" layoutX="488.0" layoutY="44.0" mnemonicParsing="false" text="Change voice" />
+                        <Label focusTraversable="false" layoutX="22.0" layoutY="49.0" text="Notification text" />
+                        <TextField fx:id="textMessage" layoutX="149.0" layoutY="44.0" prefHeight="27.0" prefWidth="240.0" text="Match found" />
+                        <Button fx:id="btnPreview" layoutX="397.0" layoutY="44.0" mnemonicParsing="false" prefHeight="27.0" text="Preview" />
                      </children>
                   </AnchorPane>
                </content>

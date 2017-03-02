@@ -21,6 +21,7 @@ package whowhatwhere.controller.utilities;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -51,6 +52,8 @@ public class QuickPingController implements Initializable
 	private AnchorPane paneAllButHotkeyChkbox;
 	@FXML
 	private Label labelIP;
+	@FXML
+	private Label labelTTSTooltip;
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
@@ -59,6 +62,11 @@ public class QuickPingController implements Initializable
 		
 		GUIController.setCommonGraphicOnLabeled(labelIP, GUIController.CommonGraphicImages.TOOLTIP);
 		labelIP.setTooltip(new Tooltip("IP or hostname to ping when the hotkey is pressed"));
+		
+		GUIController.setCommonGraphicOnLabeled(labelTTSTooltip, GUIController.CommonGraphicImages.TOOLTIP);
+		labelTTSTooltip.setTooltip(new Tooltip("The voice (and language) can be configured from the Options menu."));
+		
+		comboOutputMethod.valueProperty().addListener((ChangeListener<OutputMethod>) (observable, oldValue, newValue) -> labelTTSTooltip.setVisible(newValue == OutputMethod.TTS || newValue == OutputMethod.TTS_AND_POPUP));
 		
 		GUIController.setCommonGraphicOnLabeled(btnConfigureHotkey, GUIController.CommonGraphicImages.HOTKEY);
 	}

@@ -103,6 +103,8 @@ public class ListAddEditController implements Initializable
 	private Button btnPreview;
 	@FXML
 	private Label labelNoteCount;
+	@FXML
+	private Button btnConfigTTS;
 	
 	
 	@Override
@@ -141,6 +143,7 @@ public class ListAddEditController implements Initializable
 		numFieldPacketSizeRight.setVisible(false);
 		
 		btnPreview.setVisible(false);
+		GUIController.setCommonGraphicOnLabeled(btnConfigTTS, GUIController.CommonGraphicImages.VOICE_CONFIG);
 		GUIController.setCommonGraphicOnLabeled(btnPreview, GUIController.CommonGraphicImages.SPEAKER);
 		GUIController.setCommonGraphicOnLabeled(btnDone, GUIController.CommonGraphicImages.OK);
 		GUIController.setCommonGraphicOnLabeled(btnCancel, GUIController.CommonGraphicImages.CANCEL);
@@ -305,5 +308,10 @@ public class ListAddEditController implements Initializable
 	public Label getLabelNoteCount()
 	{
 		return labelNoteCount;
+	}
+	
+	public Button getBtnConfigTTS()
+	{
+		return btnConfigTTS;
 	}
 }

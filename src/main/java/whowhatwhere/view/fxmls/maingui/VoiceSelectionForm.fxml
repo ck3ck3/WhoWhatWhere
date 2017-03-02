@@ -32,11 +32,11 @@
                   <Label layoutY="4.0" text="Who What Where (English only)" />
                   <ComboBox fx:id="comboWWW" layoutX="186.0" prefHeight="25.0" prefWidth="279.0" />
                   <Button fx:id="btnPreviewWWW" layoutX="480.0" mnemonicParsing="false" text="Preview" />
-                  <Label layoutY="55.0" text="Watchdog" />
+                  <Label layoutY="55.0" text="Watchdog (any language)" />
                   <ComboBox fx:id="comboWatchdog" layoutX="186.0" layoutY="51.0" prefHeight="25.0" prefWidth="279.0" />
                   <TextField fx:id="textWatchdog" layoutX="568.0" layoutY="51.0" prefHeight="25.0" prefWidth="228.0" promptText="Enter text to preview" text="The quick brown fox jumps over the lazy dog" />
                   <Button fx:id="btnPreviewWatchdog" layoutX="480.0" layoutY="51.0" mnemonicParsing="false" text="Preview" />
-                  <Label layoutY="109.0" text="Quick ping" />
+                  <Label layoutY="109.0" text="Quick ping (any language)" />
                   <ComboBox fx:id="comboQuickPing" layoutX="186.0" layoutY="105.0" prefHeight="25.0" prefWidth="279.0" />
                   <Button fx:id="btnPreviewQuickPing" layoutX="480.0" layoutY="105.0" mnemonicParsing="false" text="Preview" />
                   <NumberTextField fx:id="numFieldQuickPing" layoutX="568.0" layoutY="105.0" maxValue="3000" minValue="0" prefHeight="25.0" prefWidth="42.0" text="64" />

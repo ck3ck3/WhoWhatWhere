@@ -20,6 +20,7 @@
             </AnchorPane>
             <Label layoutY="35.0" text="Notification type" />
             <ComboBox fx:id="comboOutputMethod" layoutX="111.0" layoutY="31.0" prefHeight="25.0" prefWidth="202.0" />
+            <Label fx:id="labelTTSTooltip" layoutX="322.0" layoutY="35.0" />
          </children>
       </AnchorPane>
       <CheckBox fx:id="chkboxHotkey" layoutX="14.0" layoutY="82.0" mnemonicParsing="false" selected="false" text="Enable hotkey" />

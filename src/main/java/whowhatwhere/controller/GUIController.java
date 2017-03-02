@@ -20,6 +20,7 @@ package whowhatwhere.controller;
 
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
+import java.awt.Toolkit;
 import java.awt.TrayIcon;
 import java.awt.TrayIcon.MessageType;
 import java.util.ArrayList;
@@ -37,12 +38,10 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker.State;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Hyperlink;
@@ -60,7 +59,6 @@ import javafx.scene.text.Font;
 import javafx.scene.web.WebEngine;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
 import whowhatwhere.controller.appearancecounter.AppearanceCounterController;
@@ -79,19 +77,20 @@ public class GUIController
 {
 	public enum CommonGraphicImages 
 	{
-		OK		("/buttonGraphics/Ok.png"),
-		CANCEL	("/buttonGraphics/Cancel.png"),
-		ADD		("/buttonGraphics/Add.png"),
-		EDIT	("/buttonGraphics/Edit.png"),
-		REMOVE	("/buttonGraphics/Delete.png"),
-		UP		("/buttonGraphics/Up.png"),
-		DOWN	("/buttonGraphics/Down.png"),
-		LOAD	("/buttonGraphics/Load.png"),
-		SAVE	("/buttonGraphics/Save.png"),
-		STOP	("/buttonGraphics/Stop.png"),
-		TOOLTIP	("/buttonGraphics/Help.png"),
-		HOTKEY	("/buttonGraphics/Keyboard.png"),
-		SPEAKER	("/buttonGraphics/Speaker.png");
+		OK				("/buttonGraphics/Ok.png"),
+		CANCEL			("/buttonGraphics/Cancel.png"),
+		ADD				("/buttonGraphics/Add.png"),
+		EDIT			("/buttonGraphics/Edit.png"),
+		REMOVE			("/buttonGraphics/Delete.png"),
+		UP				("/buttonGraphics/Up.png"),
+		DOWN			("/buttonGraphics/Down.png"),
+		LOAD			("/buttonGraphics/Load.png"),
+		SAVE			("/buttonGraphics/Save.png"),
+		STOP			("/buttonGraphics/Stop.png"),
+		TOOLTIP			("/buttonGraphics/Help.png"),
+		HOTKEY			("/buttonGraphics/Keyboard.png"),
+		SPEAKER			("/buttonGraphics/Speaker.png"),
+		VOICE_CONFIG	("/buttonGraphics/Voice Presentation.png");
 		
 		private String imageLocation;
 		
@@ -105,7 +104,6 @@ public class GUIController
 	private final static String TTSSelectionFormLocation = "/whowhatwhere/view/fxmls/maingui/VoiceSelectionForm.fxml";
 	
 	private final static String applicationIcon16Location = "/appIcons/www16.jpg";
-	private final static String exitImageLocation = "/buttonGraphics/exit.png";
 	private final static String textColorForValidText = "black"; 
 	private final static String backgroundColorForValidText = "white";
 	private final static String textColorForInvalidText = "#b94a48";
@@ -114,8 +112,6 @@ public class GUIController
 	
 	@FXML
 	private AnchorPane paneRoot;
-	@FXML
-	private Button btnExit;
 	@FXML
 	private MenuItem menuItemMinimize;
 	@FXML
@@ -156,12 +152,14 @@ public class GUIController
 	private TraceUtilityController tracePaneController;
 	@FXML
 	private MenuItem menuItemTTSSelection;
+	@FXML
+	private CheckMenuItem menuItemChkMinimizeOnXBtn;
 
 
+	private TrayIcon trayIcon;
 	private Stage stage;
 	private NetworkSniffer sniffer;
 	private HotkeyRegistry hotkeyRegistry;
-	private boolean isExitAlreadyAddedToSystray = false;
 	private IPNotes ipNotes;
 	private SettingsHandler settings;
 	private List<LoadAndSaveSettings> instancesWithSettingsToHandle = new ArrayList<>();
@@ -169,12 +167,11 @@ public class GUIController
 	private WebEngine engine;
 	private ChangeListenerForUpdate changeListenerForUpdate;
 	private NICInfo selectedNIC;
+	private boolean minimizeRequestCameFromXBtn = false;
 	private ConfigurableTTS www;
 	private ConfigurableTTS watchdog;
 	private ConfigurableTTS quickPing;
-	
-
-	
+		
 	
 	/**
 	 * <b>MUST</b> be called after the stage and scene have been set
@@ -204,9 +201,7 @@ public class GUIController
 
 		hotkeyRegistry = new HotkeyRegistry(paneRoot);
 
-		btnExit.setOnAction(e -> exitButtonPressed());
-
-		addExitToSystrayIcon();
+		initSysTray();
 
 		ipNotes = new IPNotes();
 		
@@ -220,9 +215,6 @@ public class GUIController
 		
 		initMenuBar();
 		
-		setGraphicForLabeledControl(btnExit, exitImageLocation, ContentDisplay.LEFT);
-		btnExit.setGraphicTextGap(8);
-
 		if (settings.getCheckForUpdatesOnStartup())
 			checkForUpdates(true); //only show a message if there is a new version
 	}
@@ -252,44 +244,22 @@ public class GUIController
 		instancesWithSettingsToHandle.add(instace);
 	}
 
-	private void addExitToSystrayIcon()
-	{
-		if (!SystemTray.isSupported())
-			return;
-
-		SystemTray tray = SystemTray.getSystemTray();
-
-		tray.addPropertyChangeListener("trayIcons", pce ->
-		{
-			TrayIcon[] trayIcons = tray.getTrayIcons();
-
-			if (!isExitAlreadyAddedToSystray && trayIcons.length == 1) //only for the first time the systray icon appears in systray
-			{
-				PopupMenu popup = trayIcons[0].getPopupMenu();
-				java.awt.MenuItem exit = new java.awt.MenuItem("Exit");
-
-				exit.addActionListener(al -> exitButtonPressed());
-
-				popup.addSeparator();
-				popup.add(exit);
-
-				isExitAlreadyAddedToSystray = true;
-			}
-
-			if (trayIcons.length == 1 && settings.getShowMessageOnMinimize())
-				trayIcons[0].displayMessage("Minimized to tray", "Still running in the background, double click this icon to restore the window. Use the \"Exit\" button to exit.", MessageType.INFO);
-		});
-	}
-
 	private void initMenuBar()
 	{
 		menuItemManageNotes.setOnAction(event -> ipNotes.openManageIPNotesScreen(getStage()));
 		menuItemMinimize.setOnAction(event -> minimizeToTray());
-		menuItemExit.setOnAction(event -> exitButtonPressed());
+		menuItemExit.setOnAction(event -> exitRequestedByUser());
 
 		menuItemSelectNIC.setOnAction(ae -> showNICSelectionScreen());
 		menuItemTTSSelection.setOnAction(ae -> showTTSSelectionScreen());
+		menuItemChkStartMinimized.setOnAction(ae -> settings.setStartMinimized(((CheckMenuItem) ae.getSource()).isSelected()));
 		menuItemChkCheckUpdateStartup.setOnAction(ae -> settings.setCheckForUpdatesOnStartup(((CheckMenuItem) ae.getSource()).isSelected()));
+		menuItemChkMinimizeOnXBtn.setOnAction(ae -> 
+		{
+			boolean isSelected = ((CheckMenuItem) ae.getSource()).isSelected();
+			setXBtnBehavior(isSelected);
+			settings.setMinimizeOnXBtn(isSelected);
+		});
 		menuItemChkDisplayBalloon.setOnAction(ae -> settings.setShowMessageOnMinimize(((CheckMenuItem) ae.getSource()).isSelected()));
 		menuItemChkAllUsers.setOnAction(settings.handleStartWithWindowsClick(true, menuItemChkThisUserOnly));
 		menuItemChkThisUserOnly.setOnAction(settings.handleStartWithWindowsClick(false, menuItemChkAllUsers));
@@ -300,12 +270,10 @@ public class GUIController
 	
 	public void minimizeToTray()
 	{
-		Stage stage = getStage();
-
-		Event.fireEvent(stage, new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+		performMinimizeToTray.run();
 	}
 
-	private void exitButtonPressed()
+	private void exitRequestedByUser()
 	{
 		try
 		{
@@ -391,7 +359,7 @@ public class GUIController
 						alert.showAndWait();
 					}
 
-					logger.log(Level.SEVERE, "Failed to check for updates", throwable != null ? throwable : errorMsg);
+					logger.log(Level.WARNING, "Failed to check for updates", throwable != null ? throwable : errorMsg);
 				}
 		}
 		
@@ -571,7 +539,7 @@ public class GUIController
 		});
 	}
 	
-	private void showTTSSelectionScreen()
+	public void showTTSSelectionScreen()
 	{
 		VoiceSelectionScreen selectionScreen = null;
 		Stage stage = getStage();
@@ -586,14 +554,81 @@ public class GUIController
 			logger.log(Level.SEVERE, "Unable to load voice screen", e);
 		}
 		
-		selectionScreen.showScreenOnNewStage("Select voice", Modality.APPLICATION_MODAL, selectionScreen.getCloseButton());
+		selectionScreen.showScreenOnNewStage("Choose text to speech voices", Modality.APPLICATION_MODAL, selectionScreen.getCloseButton());
 	}
 	
-	public Button getBtnExit()
+	public void setXBtnBehavior(boolean minimize)
 	{
-		return btnExit;
+		if (!minimize)
+			stage.setOnCloseRequest(we -> exitRequestedByUser());
+		else
+			if (!SystemTray.isSupported())
+				logger.log(Level.WARNING, "Minimize to tray is not supported.");
+			else
+			{
+				stage.setOnCloseRequest(we ->
+				{
+					we.consume(); //ignore the application's title window exit button, instead minimize to systray
+					minimizeRequestCameFromXBtn = true;
+					performMinimizeToTray.run();
+				});
+			}
+		
+		menuItemChkDisplayBalloon.setDisable(!minimize);
 	}
+	
+	private void initSysTray()
+	{
+		stage.getIcons().addAll(Main.appIconList);
+		java.awt.Image image = Toolkit.getDefaultToolkit().getImage(Main.class.getResource(Main.iconResource16));
 
+		Platform.setImplicitExit(false); //needed to keep the app running while minimized to tray
+
+		trayIcon = new TrayIcon(image, Main.getAppName());
+
+		Runnable restoreApplication = () ->
+		{
+			stage.show();
+			 SystemTray.getSystemTray().remove(trayIcon);
+		};
+
+		trayIcon.addActionListener(ae -> Platform.runLater(restoreApplication));
+
+		java.awt.PopupMenu popupMenu = new PopupMenu();
+		
+		java.awt.MenuItem restore = new java.awt.MenuItem("Restore");
+		restore.addActionListener(al -> Platform.runLater(restoreApplication));
+		popupMenu.add(restore);
+		
+		java.awt.MenuItem exit = new java.awt.MenuItem("Exit");
+		exit.addActionListener(al -> exitRequestedByUser());
+		popupMenu.addSeparator();
+		popupMenu.add(exit);
+
+		trayIcon.setPopupMenu(popupMenu);
+	}
+	
+	private Runnable performMinimizeToTray = () ->
+	{
+		Platform.runLater(() ->
+		{
+			try
+			{
+				SystemTray.getSystemTray().add(trayIcon);
+				stage.hide();
+				if (minimizeRequestCameFromXBtn && settings.getShowMessageOnMinimize())
+					trayIcon.displayMessage(Main.getAppName() + " is running in the background", "Double click this icon to restore the window. To exit the program, right click this icon and choose Exit"
+							+ ", or use the File menu. You can configure the behavior of the X button through the Options menu.", MessageType.INFO);
+				
+				minimizeRequestCameFromXBtn = false;
+			}
+			catch (Exception e)
+			{
+				logger.log(Level.WARNING, "Unable to minimize to tray", e);
+			}
+		});
+	};
+	
 	public TabPane getTabPane()
 	{
 		return tabPane;
@@ -672,5 +707,10 @@ public class GUIController
 	public CheckMenuItem getMenuItemChkThisUserOnly()
 	{
 		return menuItemChkThisUserOnly;
+	}
+	
+	public CheckMenuItem getMenuItemChkMinimizeOnXBtn()
+	{
+		return menuItemChkMinimizeOnXBtn;
 	}
 }

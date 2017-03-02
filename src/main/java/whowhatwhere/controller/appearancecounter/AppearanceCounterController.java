@@ -35,7 +35,9 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.stage.PopupWindow.AnchorLocation;
 import numbertextfield.NumberTextField;
+import whowhatwhere.Main;
 import whowhatwhere.controller.GUIController;
 import javafx.scene.control.ScrollPane;
 
@@ -130,6 +132,14 @@ public class AppearanceCounterController implements Initializable
 	public void initialize(URL location, ResourceBundle resources)
 	{
 		setWWWLabel();
+		
+		Tooltip tip = new Tooltip("The hotkey can be activated even while " + Main.getAppName() + " isn't visible on the screen. "
+				+ "The table contents can be read out to you so you don't have to look at the screen. The text to speech voice can be configured from the Options menu.");
+		tip.setWrapText(true);
+		tip.setMaxWidth(400);
+		tip.setAnchorLocation(AnchorLocation.WINDOW_TOP_RIGHT);
+		chkboxUseTTS.setTooltip(tip);
+		GUIController.setCommonGraphicOnLabeled(chkboxUseTTS, GUIController.CommonGraphicImages.TOOLTIP);
 		
 		GUIController.setCommonGraphicOnLabeled(btnConfigCaptureHotkey, GUIController.CommonGraphicImages.HOTKEY);
 		GUIController.setGraphicForLabeledControl(btnStart, startWWWImageLocation, ContentDisplay.LEFT);

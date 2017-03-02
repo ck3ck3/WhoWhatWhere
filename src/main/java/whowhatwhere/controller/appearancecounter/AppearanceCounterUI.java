@@ -181,17 +181,13 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private IPInfoRowModel rowWithNoteBeingEdited;
 	private boolean editedNotedWasEmpty;
 
-	private Runnable captureHotkeyPressed = new Runnable()
+	private Runnable captureHotkeyPressed = () ->
 	{
-		@Override
-		public void run()
-		{
-			String line = activeButton == btnStart ? "Monitoring started" : "Monitoring stopped";
+		String line = activeButton == btnStart ? "Monitoring started" : "Monitoring stopped";
 
-			isAHotkeyResult = true;
-			tts.speak(line);
-			activeButton.fire();
-		}
+		isAHotkeyResult = true;
+		tts.speak(line);
+		activeButton.fire();
 	};
 
 	public AppearanceCounterUI(GUIController guiController)

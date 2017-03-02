@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -122,34 +121,29 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 	private MaryTTS tts;
 	private NetworkSniffer sniffer = new NetworkSniffer();
 	private HotkeyRegistry hotkeyRegistry;
-	private Map<String, List<String>> ipNotesToIPListMap;
 	
-	private Runnable hotkeyPressed = new Runnable()
+	private Runnable hotkeyPressed = () ->
 	{
-		@Override
-		public void run()
+		String line;
+		Button savedActiveButton = activeButton;
+
+		activeButton.fire();
+
+		if (savedActiveButton == btnStart)
 		{
-			String line;
-			Button savedActiveButton = activeButton;
+			if (ruleList.isEmpty())
+				return;
 
-			activeButton.fire();
-
-			if (savedActiveButton == btnStart)
-			{
-				if (ruleList.isEmpty())
-					return;
-
-				line = "Watchdog started";
-				changeUIAccordingToListeningState(true);
-			}
-			else
-			{
-				line = "Watchdog stopped";
-				changeUIAccordingToListeningState(false);
-			}
-
-			tts.speak(line);
+			line = "Watchdog started";
+			changeUIAccordingToListeningState(true);
 		}
+		else
+		{
+			line = "Watchdog stopped";
+			changeUIAccordingToListeningState(false);
+		}
+
+		tts.speak(line);
 	};
 
 	public WatchdogUI(GUIController guiController)
@@ -163,7 +157,6 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 		initButtonHandlers();
 		
 		guiController.setNumberTextFieldsValidationUI(guiController.getTabWatchdog(), numFieldCooldown);
-		ipNotesToIPListMap = getIPNotesReverseMap();
 	}
 
 	private void initUIElementsFromController()
@@ -340,7 +333,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 
 				try
 				{
-					watchdogListAddEditScreen = new ListAddEditScreen(watchdogListAddEditFormLocation, stage, stage.getScene(), table, ipNotesToIPListMap, isEdit, tts);
+					watchdogListAddEditScreen = new ListAddEditScreen(watchdogListAddEditFormLocation, stage, stage.getScene(), isEdit, table, tts, guiController);
 				}
 				catch (IOException e)
 				{
@@ -608,14 +601,6 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 		return ruleList;
 	}
 
-	/**
-	 * @return a map that maps ip note to a list of IPs that have that note
-	 */
-	public Map<String, List<String>> getIPNotesReverseMap()
-	{
-		return guiController.getIPNotes().getIPNotesReverseMap();
-	}
-	
 	@Override
 	public void setTTSVoice(TTSVoice voice)
 	{

@@ -48,7 +48,7 @@
                         </AnchorPane>
                      </content>
                   </TitledPane>
-                  <TitledPane collapsible="false" prefHeight="234.0" prefWidth="628.0" text="Hotkey settings">
+                  <TitledPane collapsible="false" prefHeight="234.0" prefWidth="628.0" text="Hotkey and text to speech settings">
                      <content>
                         <AnchorPane prefWidth="697.0">
                            <children>
@@ -56,7 +56,7 @@
                                  <children>
                                     <Button fx:id="btnConfigCaptureHotkey" layoutX="219.0" mnemonicParsing="false" text="Configure hotkey" />
                                     <Label fx:id="labelCurrCaptureHotkey" layoutX="366.0" layoutY="4.0" text="Current hotkey: " />
-                                    <CheckBox fx:id="chkboxUseTTS" layoutY="35.0" mnemonicParsing="false" selected="false" text="If the hotkey was used to start or stop monitoring, read results using text-to-speech" />
+                                    <CheckBox fx:id="chkboxUseTTS" layoutY="35.0" mnemonicParsing="false" selected="false" text="Read results using text to speech if the hotkey was used" />
                                     <AnchorPane fx:id="paneUseTTS" layoutX="1.0" layoutY="67.0" prefHeight="109.0" prefWidth="573.0">
                                        <children>
                                           <Label layoutY="64.0" text="Read values of these columns:" />

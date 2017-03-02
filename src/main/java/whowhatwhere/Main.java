@@ -19,21 +19,17 @@
 package whowhatwhere;
 
 import java.awt.Desktop;
-import java.awt.MenuItem;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.Toolkit;
-import java.awt.TrayIcon;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -51,10 +47,13 @@ public class Main extends Application
 
 	private static final String website = "http://ck3ck3.github.io/WhoWhatWhere";
 
-	private final static String iconResource16 = "/appIcons/www16.jpg";
-	private final static String iconResource32 = "/appIcons/www32.jpg";
-	private final static String iconResource48 = "/appIcons/www48.jpg";
-	private final static String iconResource256 = "/appIcons/www256.jpg";
+	public final static String iconResource16 = "/appIcons/www16.jpg";
+	public final static String iconResource32 = "/appIcons/www32.jpg";
+	public final static String iconResource48 = "/appIcons/www48.jpg";
+	public final static String iconResource256 = "/appIcons/www256.jpg";
+	public final static List<Image> appIconList = Arrays.asList(new Image(Main.class.getResourceAsStream(iconResource16)), new Image(Main.class.getResourceAsStream(iconResource32)),
+			new Image(Main.class.getResourceAsStream(iconResource48)), new Image(Main.class.getResourceAsStream(iconResource256)));
+	
 	public final static String attributionHTMLLocation = "/attribution.html";
 	public final static String jnetpcapDLLx86Location = "/native/windows/x86/jnetpcap.dll";
 	public final static String jnetpcapDLLx64Location = "/native/windows/x86_64/jnetpcap.dll";
@@ -75,9 +74,6 @@ public class Main extends Application
 		try
 		{
 			initLogger();
-
-			if (!initSysTray(primaryStage))
-				logger.log(Level.WARNING, "Unable to initialize system tray");
 
 			ToolTipDefaultsFixer.setTooltipTimers(tooltipOpenDelay, tooltipVisibleDuration, tooltipCloseDelay);
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(mainFormLocation));
@@ -106,61 +102,6 @@ public class Main extends Application
 		logger.addHandler(fh);
 	}
 
-	private boolean initSysTray(Stage primaryStage)
-	{
-		TrayIcon trayIcon;
-		SystemTray tray;
-
-		if (!SystemTray.isSupported())
-			return false;
-		else
-		{
-			primaryStage.getIcons().addAll(new Image(Main.class.getResourceAsStream(iconResource16)), new Image(Main.class.getResourceAsStream(iconResource32)),
-					new Image(Main.class.getResourceAsStream(iconResource48)), new Image(Main.class.getResourceAsStream(iconResource256)));
-
-			tray = SystemTray.getSystemTray();
-			java.awt.Image image = Toolkit.getDefaultToolkit().getImage(Main.class.getResource(iconResource16));
-
-			Platform.setImplicitExit(false); //needed to keep the app running while minimized to tray
-
-			trayIcon = new TrayIcon(image, appTitle);
-
-			Runnable restoreApplication = () ->
-			{
-				primaryStage.show();
-				tray.remove(trayIcon);
-			};
-
-			trayIcon.addActionListener(ae -> Platform.runLater(restoreApplication));
-
-			PopupMenu popupMenu = new PopupMenu();
-			MenuItem restore = new MenuItem("Restore");
-
-			restore.addActionListener(al -> Platform.runLater(restoreApplication));
-
-			popupMenu.add(restore);
-			trayIcon.setPopupMenu(popupMenu);
-
-			primaryStage.setOnCloseRequest(we ->
-			{
-				we.consume(); //ignore the application's title window exit button, instead minimize to systray
-				Platform.runLater(() ->
-				{
-					try
-					{
-						tray.add(trayIcon);
-						primaryStage.hide();
-					}
-					catch (Exception e)
-					{
-						logger.log(Level.WARNING, "Unable to minimize to tray", e);
-					}
-				});
-			});
-
-			return true;
-		}
-	}
 
 	public static void openInBrowser(String link)
 	{

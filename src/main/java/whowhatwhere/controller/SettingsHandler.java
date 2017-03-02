@@ -56,6 +56,7 @@ public class SettingsHandler
 	private final static String propsStartMinimized = "startMinimized";
 	private final static String propsIgnoreRunPathDiff = "ignorePathDiff";
 	private final static String propsCheckForUpdatesOnStartup = "checkForUpdatesOnStartup";
+	private final static String propsMinimizeOnXBtn = "minimizeOnXBtn";
 	private final static String propsWidth = "lastRunWidth";
 	private final static String propsHeight = "lastRunHeight";
 	private final static String propsX = "lastRunX";
@@ -65,7 +66,9 @@ public class SettingsHandler
 
 	private boolean showMessageOnMinimize;
 	private boolean ignoreRunPathDiff;
+	private boolean startMinimized;
 	private boolean checkForUpdatesOnStartup;
+	private boolean minimizeOnXBtn;
 	private NetworkSniffer sniffer;
 
 	private GUIController guiController;
@@ -88,7 +91,8 @@ public class SettingsHandler
 
 		props.put(propsCheckForUpdatesOnStartup, String.valueOf(checkForUpdatesOnStartup));
 		props.put(propsShowMessageOnMinimize, String.valueOf(showMessageOnMinimize));
-		props.put(propsStartMinimized, String.valueOf(guiController.getMenuItemChkStartMinimized().isSelected()));
+		props.put(propsMinimizeOnXBtn, String.valueOf(minimizeOnXBtn));
+		props.put(propsStartMinimized, String.valueOf(startMinimized));
 		props.put(propsIgnoreRunPathDiff, String.valueOf(ignoreRunPathDiff));
 		props.put(propsWidth, String.valueOf(stage.getWidth()));
 		props.put(propsHeight, String.valueOf(stage.getHeight()));
@@ -162,11 +166,15 @@ public class SettingsHandler
 
 		checkForUpdatesOnStartup = PropertiesByType.getBoolProperty(props, propsCheckForUpdatesOnStartup, true);
 		guiController.getMenuItemChkCheckUpdateStartup().setSelected(checkForUpdatesOnStartup);
+		
+		minimizeOnXBtn = PropertiesByType.getBoolProperty(props, propsMinimizeOnXBtn, true);
+		guiController.getMenuItemChkMinimizeOnXBtn().setSelected(minimizeOnXBtn);
+		guiController.setXBtnBehavior(minimizeOnXBtn);
 
 		showMessageOnMinimize = PropertiesByType.getBoolProperty(props, propsShowMessageOnMinimize, true);
 		guiController.getMenuItemChkDisplayBalloon().setSelected(showMessageOnMinimize);
 
-		boolean startMinimized = PropertiesByType.getBoolProperty(props, propsStartMinimized, false);
+		startMinimized = PropertiesByType.getBoolProperty(props, propsStartMinimized, false);
 		guiController.getMenuItemChkStartMinimized().setSelected(startMinimized);
 		if (startMinimized)
 			Platform.runLater(() -> guiController.minimizeToTray());
@@ -372,5 +380,25 @@ public class SettingsHandler
 	public void setShowMessageOnMinimize(boolean value)
 	{
 		showMessageOnMinimize = value;
+	}
+	
+	public void setStartMinimized(boolean value)
+	{
+		startMinimized = value;
+	}
+	
+	public boolean getStartMinimized()
+	{
+		return startMinimized;
+	}
+	
+	public boolean getMinimizeOnXBtn()
+	{
+		return minimizeOnXBtn;
+	}
+	
+	public void setMinimizeOnXBtn(boolean value)
+	{
+		minimizeOnXBtn = value;
 	}
 }
