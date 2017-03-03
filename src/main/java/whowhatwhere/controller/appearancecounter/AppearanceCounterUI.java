@@ -19,7 +19,7 @@
 package whowhatwhere.controller.appearancecounter;
 
 import java.io.File;
-import java.time.LocalDateTime;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -35,6 +37,7 @@ import org.apache.commons.io.FileUtils;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -115,7 +118,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private final static String statusGettingReady = "Status: Getting ready to start monitoring...";
 	private final static String statusCapturing = "Status: Monitoring...";
 	private final static String statusStopping = "Status: Stopping...";
-	private final static String statusResults = "Status: Fetching results...";
+	private final static String statusResults = "Status: Monitoring finished, processing results...";
 	private final static String msgTimerExpired = "Timer expired, monitoring stopped";
 	private final static String captureHotkeyID = "WhoWhatWhere capture hotkey";
 	private final static String voiceForTTS = GUIController.defaultTTSVoiceName;
@@ -180,6 +183,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private IPNotes ipNotes;
 	private IPInfoRowModel rowWithNoteBeingEdited;
 	private boolean editedNotedWasEmpty;
+	private Duration captureTimerExpiresIn;
 
 	private Runnable captureHotkeyPressed = () ->
 	{
@@ -512,6 +516,9 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 			@Override
 			protected void succeeded() //capture finished
 			{
+				if (labelStatus.textProperty().isBound()) //from the timer
+					labelStatus.textProperty().unbind();
+				
 				labelStatus.setText(statusResults);
 
 				fillTable(results.getAppearanceCounterResults());
@@ -739,6 +746,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 				Platform.runLater(() ->
 				{
 					btnStop.setDisable(true);
+					labelStatus.textProperty().unbind();
 					labelStatus.setText(statusStopping);
 				});
 
@@ -823,16 +831,33 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	{
 		Platform.runLater(() ->
 		{
-			String timerExpires = "";
+			SimpleStringProperty timerExpires = new SimpleStringProperty(statusCapturing);
+			labelStatus.textProperty().bind(timerExpires);
 
 			if (isTimedTaskRunning)
 			{
 				Integer secondsToCapture = numFieldCaptureTimeout.getValue();
-				timer.schedule(timerTask, secondsToCapture * 1000);
-				timerExpires = " Timer set to expire at " + LocalDateTime.now().plusSeconds(secondsToCapture).toString().split("T")[1].split("\\.")[0];
+				timer.schedule(timerTask, secondsToCapture * 1000); //stop the capture in secondsToCapture seconds 
+				
+				captureTimerExpiresIn = Duration.ofSeconds(secondsToCapture);
+				ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
+				timer.scheduleAtFixedRate(() ->
+				{
+					Platform.runLater(() -> 
+					{
+						if (!captureTimerExpiresIn.isZero())
+						{
+							timerExpires.set(String.format("%s%d:%02d%n", statusCapturing + " Timer expires in ", captureTimerExpiresIn.toMinutes(), captureTimerExpiresIn.minusMinutes(captureTimerExpiresIn.toMinutes()).getSeconds()));
+							captureTimerExpiresIn = captureTimerExpiresIn.minusSeconds(1);
+						}
+						else
+						{
+							timer.shutdown();
+							timerExpires.set(statusResults);
+						}
+					});
+				}, 0, 1, TimeUnit.SECONDS);
 			}
-
-			labelStatus.setText(statusCapturing + timerExpires);
 		});
 	}
 
