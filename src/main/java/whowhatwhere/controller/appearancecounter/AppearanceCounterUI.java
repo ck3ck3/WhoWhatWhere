@@ -184,6 +184,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private IPInfoRowModel rowWithNoteBeingEdited;
 	private boolean editedNotedWasEmpty;
 	private Duration captureTimerExpiresIn;
+	private ScheduledThreadPoolExecutor displayTimer;
 
 	private Runnable captureHotkeyPressed = () ->
 	{
@@ -738,6 +739,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 				if (isTimedTaskRunning)
 				{
 					timerTask.cancel();
+					displayTimer.shutdown();
 					isTimedTaskRunning = false;
 				}
 
@@ -840,19 +842,27 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 				timer.schedule(timerTask, secondsToCapture * 1000); //stop the capture in secondsToCapture seconds 
 				
 				captureTimerExpiresIn = Duration.ofSeconds(secondsToCapture);
-				ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
-				timer.scheduleAtFixedRate(() ->
+				displayTimer = new ScheduledThreadPoolExecutor(1);
+				displayTimer.scheduleAtFixedRate(() ->
 				{
 					Platform.runLater(() -> 
 					{
 						if (!captureTimerExpiresIn.isZero())
 						{
-							timerExpires.set(String.format("%s%d:%02d%n", statusCapturing + " Timer expires in ", captureTimerExpiresIn.toMinutes(), captureTimerExpiresIn.minusMinutes(captureTimerExpiresIn.toMinutes()).getSeconds()));
+							long hours = captureTimerExpiresIn.toHours();
+							Duration minutes = captureTimerExpiresIn.minusHours(hours);
+							Duration seconds = minutes.minusMinutes(minutes.toMinutes());
+							
+							if (hours > 0)
+								timerExpires.set(String.format("%s%d:%02d:%02d", statusCapturing + " Timer expires in ", hours, minutes.toMinutes(), seconds.getSeconds()));
+							else
+								timerExpires.set(String.format("%s%d:%02d", statusCapturing + " Timer expires in ", minutes.toMinutes(), seconds.getSeconds()));
+							
 							captureTimerExpiresIn = captureTimerExpiresIn.minusSeconds(1);
 						}
 						else
 						{
-							timer.shutdown();
+							displayTimer.shutdown();
 							timerExpires.set(statusResults);
 						}
 					});
