@@ -31,22 +31,22 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
-import whowhatwhere.controller.SecondaryFXMLWithCRUDTableController;
+import whowhatwhere.controller.SecondaryFXMLWithEditableCRUDTableController;
 
 
 /**
  * This class represents a secondary FXML screen that has a table with CRUD abilities, add/remove/close buttons and editable cells for data input.
- * This class must be used together with a controller class that inherits from {@code SecondaryFXMLWithCRUDTableController<T>}.<br>
+ * This class must be used together with a controller class that inherits from {@code SecondaryFXMLWithEditableCRUDTableController<T>}.<br>
  * That controller is defined in this abstract class as<br> 
- * {@code protected SecondaryFXMLWithCRUDTableController<T> controller;}<br>
+ * {@code protected SecondaryFXMLWithEditableCRUDTableController<T> controller;}<br>
  *  and assigned in the constructor: {@code controller = initController();}<br>
  *  <b>The inheriting class must call {@code initGUI()} in its constructor </b> in order to initialize the GUI. 
  *  This is not done in this class' constructor in order to allow to initialize the inheriting class' members first, so they can be used in methods like {@code getInitialTableItems(), setOnEditCommit()}.
  * @param <T> - the type of the table's data model.
  */
-public abstract class SecondaryFXMLWithCRUDTableScreen<T> extends SecondaryFXMLScreen
+public abstract class SecondaryFXMLWithEditableCRUDTableScreen<T> extends SecondaryFXMLScreen
 {
-	protected SecondaryFXMLWithCRUDTableController<T> controller;
+	protected SecondaryFXMLWithEditableCRUDTableController<T> controller;
 	protected TableView<T> table;
 	
 	/**
@@ -60,7 +60,7 @@ public abstract class SecondaryFXMLWithCRUDTableScreen<T> extends SecondaryFXMLS
 	 * @throws IOException
 	 *             - if an error occurred while trying to load the fxml
 	 */
-	public SecondaryFXMLWithCRUDTableScreen(String fxmlLocation, Stage stage, Scene scene) throws IOException
+	public SecondaryFXMLWithEditableCRUDTableScreen(String fxmlLocation, Stage stage, Scene scene) throws IOException
 	{
 		super(fxmlLocation, stage, scene);
 		
@@ -81,11 +81,11 @@ public abstract class SecondaryFXMLWithCRUDTableScreen<T> extends SecondaryFXMLS
 	
 	/**
 	 * Typically implemented as follows:<br> {@code return getLoader().<ControllerClass> getController();}<br>
-	 * where {@code ControllerClass} is the implemented controller class that inherits from {@code SecondaryFXMLWithCRUDTableController<T>}
+	 * where {@code ControllerClass} is the implemented controller class that inherits from {@code SecondaryFXMLWithEditableCRUDTableController<T>}
 	 * <br><b>Note:</b> Since this method is called from the parent class' constructor ({@code super(...)}),  it cannot make use of any of the inheriting class' members, since they haven't been initialized yet.
 	 * @return The controller for the implemented class
 	 */
-	protected abstract SecondaryFXMLWithCRUDTableController<T> initController();
+	protected abstract SecondaryFXMLWithEditableCRUDTableController<T> initController();
 	
 	/**
 	 * This method sets the initial items in the table.<br>

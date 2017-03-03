@@ -30,7 +30,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import whowhatwhere.controller.appearancecounter.IPNotesRowModel;
 
-public class ManageIPNotesController extends SecondaryFXMLWithCRUDTableController<IPNotesRowModel>
+public class ManageIPNotesController extends SecondaryFXMLWithEditableCRUDTableController<IPNotesRowModel>
 {
 	@FXML
 	private TableView<IPNotesRowModel> tableEntries;

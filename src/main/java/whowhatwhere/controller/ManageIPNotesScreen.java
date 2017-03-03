@@ -30,9 +30,9 @@ import javafx.scene.control.TableColumn;
 import javafx.stage.Stage;
 import whowhatwhere.controller.appearancecounter.IPNotesRowModel;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
-import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLWithCRUDTableScreen;
+import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLWithEditableCRUDTableScreen;
 
-public class ManageIPNotesScreen extends SecondaryFXMLWithCRUDTableScreen<IPNotesRowModel>
+public class ManageIPNotesScreen extends SecondaryFXMLWithEditableCRUDTableScreen<IPNotesRowModel>
 {
 	private ManageIPNotesController ipNotesController;
 	private IPNotes ipNotes;
@@ -58,7 +58,7 @@ public class ManageIPNotesScreen extends SecondaryFXMLWithCRUDTableScreen<IPNote
 	}
 	
 	@Override
-	protected SecondaryFXMLWithCRUDTableController<IPNotesRowModel> initController()
+	protected SecondaryFXMLWithEditableCRUDTableController<IPNotesRowModel> initController()
 	{
 		return getLoader().<ManageIPNotesController> getController();
 	}

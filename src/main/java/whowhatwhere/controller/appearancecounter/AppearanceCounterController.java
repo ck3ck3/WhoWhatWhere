@@ -134,7 +134,7 @@ public class AppearanceCounterController implements Initializable
 		setWWWLabel();
 		
 		Tooltip tip = new Tooltip("The hotkey can be activated even while " + Main.getAppName() + " isn't visible on the screen. "
-				+ "The table contents can be read out to you so you don't have to look at the screen. The text to speech voice can be configured from the Options menu.");
+				+ "The table contents will be read out to you so you don't have to look at the screen. The text to speech voice can be configured from the Options menu.");
 		tip.setWrapText(true);
 		tip.setMaxWidth(400);
 		tip.setAnchorLocation(AnchorLocation.WINDOW_TOP_RIGHT);

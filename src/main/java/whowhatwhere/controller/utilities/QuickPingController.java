@@ -64,7 +64,7 @@ public class QuickPingController implements Initializable
 		labelIP.setTooltip(new Tooltip("IP or hostname to ping when the hotkey is pressed"));
 		
 		GUIController.setCommonGraphicOnLabeled(labelTTSTooltip, GUIController.CommonGraphicImages.TOOLTIP);
-		labelTTSTooltip.setTooltip(new Tooltip("The voice (and language) can be configured from the Options menu."));
+		labelTTSTooltip.setTooltip(new Tooltip("Voice and language can be configured from the Options menu."));
 		
 		comboOutputMethod.valueProperty().addListener((ChangeListener<OutputMethod>) (observable, oldValue, newValue) -> labelTTSTooltip.setVisible(newValue == OutputMethod.TTS || newValue == OutputMethod.TTS_AND_POPUP));
 		
