@@ -14,20 +14,20 @@
 	<children>
 				<MenuBar prefHeight="25.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 					<menus>
-						<Menu text="_File">
+						<Menu mnemonicParsing="false" text="File">
 							<items>
-								<MenuItem fx:id="menuItemManageNotes" mnemonicParsing="false" text="Manage IP notes" />
-								<MenuItem fx:id="menuItemMinimize" mnemonicParsing="false" text="Minimize to tray" />
+								<MenuItem fx:id="menuItemManageNotes" mnemonicParsing="false" text="  Manage IP notes" />
+								<MenuItem fx:id="menuItemMinimize" mnemonicParsing="false" text="  Minimize to system tray" />
 								<SeparatorMenuItem mnemonicParsing="false" />
-								<MenuItem fx:id="menuItemExit" text="E_xit" />
+								<MenuItem fx:id="menuItemExit" mnemonicParsing="false" text="  Exit" />
 							</items>
 						</Menu>
-						<Menu text="_Options">
+						<Menu mnemonicParsing="false" text="Options">
 							<items>
 								<MenuItem fx:id="menuItemSelectNIC" mnemonicParsing="false" text="Select network adapter" />
                   <MenuItem fx:id="menuItemTTSSelection" mnemonicParsing="false" text="Configure text to speech voices" />
 								<CheckMenuItem fx:id="menuItemChkCheckUpdateStartup" mnemonicParsing="false" text="Check for updates on startup" />
-                  <CheckMenuItem fx:id="menuItemChkMinimizeOnXBtn" mnemonicParsing="false" text="The X button in the top-right corner minimizes to tray" />
+                  <CheckMenuItem fx:id="menuItemChkMinimizeOnXBtn" mnemonicParsing="false" text="Minimize to system tray on close" />
 								<CheckMenuItem fx:id="menuItemChkDisplayBalloon" mnemonicParsing="false" text="Display info balloon after minimizing" />
 								<CheckMenuItem fx:id="menuItemChkStartMinimized" mnemonicParsing="false" text="Start minimized" />
 								<Menu mnemonicParsing="false" text="Start with Windows">
@@ -38,10 +38,10 @@
 								</Menu>
 							</items>
 						</Menu>
-						<Menu text="_Help">
+						<Menu mnemonicParsing="false" text="Help">
 							<items>
-								<MenuItem fx:id="menuItemUpdate" mnemonicParsing="false" text="Check for updates" />
-								<MenuItem fx:id="menuItemAbout" mnemonicParsing="false" text="About" />
+								<MenuItem fx:id="menuItemUpdate" mnemonicParsing="false" text="  Check for updates" />
+								<MenuItem fx:id="menuItemAbout" mnemonicParsing="false" text="  About" />
 							</items>
 						</Menu>
 					</menus>
