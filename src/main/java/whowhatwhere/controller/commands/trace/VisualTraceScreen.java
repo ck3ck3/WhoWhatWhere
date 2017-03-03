@@ -87,11 +87,13 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 	private ImageView imgView;
 	private ToggleGroup zoomToggleGroup = new ToggleGroup();
 	private Map<String, GeoIPInfo> ipToGeoipInfo = new HashMap<>();
+	private boolean containsHostnames;
 
-	public VisualTraceScreen(List<String> listOfIPs, Stage postCloseStage, Scene postCloseScene) throws IOException
+	public VisualTraceScreen(List<String> listOfIPs, boolean containsHostnames, Stage postCloseStage, Scene postCloseScene) throws IOException
 	{
 		super(visualTraceFormLocation, postCloseStage, postCloseScene);
 		this.tracertOutput = listOfIPs;
+		this.containsHostnames = containsHostnames;
 
 		visualTraceController = getLoader().<VisualTraceController> getController();
 		imgView = visualTraceController.getImgView();
@@ -118,7 +120,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			
 			if (img == null)
 			{
-				labelUnderMap.setText("No data to show");
+				labelUnderMap.setText("No hops selected");
 				labelUnderMap.setVisible(true);
 			}
 			else
@@ -166,7 +168,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		paneTraceInfo.getChildren().add(gridPane);
 		gridPane.setHgap(10);
 
-		createLabelsOnGridPane(gridPane, tracertOutput.get(0).contains("["));
+		createLabelsOnGridPane(gridPane);
 
 		char label = 'A';
 		for (String line : tracertOutput)
@@ -226,15 +228,15 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		String[] orderedProperties = new String[] { propertyHop, propertyPings, propertyHostname, propertyIP };
 		for (String key : orderedProperties)
 		{
+			if (!containsHostnames && key.equals(propertyHostname))
+				continue;
+			
 			String value = valueMap.get(key);
-			if (value != null)
-			{
-				Label tempLabel = new Label(value);
-				gridPane.add(tempLabel, col++, row);
+			Label tempLabel = new Label(value);
+			gridPane.add(tempLabel, col++, row);
 
-				if (key.equals(propertyHop))
-					GridPane.setHalignment(tempLabel, HPos.CENTER);
-			}
+			if (key.equals(propertyHop))
+				GridPane.setHalignment(tempLabel, HPos.CENTER);
 		}
 
 		return col;
@@ -339,7 +341,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 			btnZoom.setDisable(true);
 	}
 
-	private void createLabelsOnGridPane(GridPane gridPane, boolean withHostnames)
+	private void createLabelsOnGridPane(GridPane gridPane)
 	{
 		Font defaultFont = Font.getDefault();
 		Font font = Font.font(defaultFont.getName(), FontWeight.BOLD, defaultFont.getSize());
@@ -363,7 +365,7 @@ public class VisualTraceScreen extends SecondaryFXMLScreen
 		gridPane.add(labelMapNode, col++, 0);
 		gridPane.add(labelHopNum, col++, 0);
 		gridPane.add(labelPings, col++, 0);
-		if (withHostnames)
+		if (containsHostnames)
 			gridPane.add(labelHostname, col++, 0);
 		gridPane.add(labelIPAddress, col++, 0);
 		gridPane.add(labelFocusHere, col++, 0);

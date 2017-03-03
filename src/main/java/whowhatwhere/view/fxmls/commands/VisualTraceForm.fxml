@@ -21,20 +21,24 @@
                         <Pane fx:id="paneTraceInfo" />
                      </content>
                   </ScrollPane>
-                <AnchorPane minHeight="0.0" minWidth="0.0" SplitPane.resizableWithParent="false">
-                     <children>
-                        <StackPane fx:id="paneStackColor" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <ScrollPane SplitPane.resizableWithParent="false">
+                     <content>
+                      <AnchorPane minHeight="0.0" minWidth="0.0">
                            <children>
-                              <ImageView fx:id="imgView" fitHeight="680.0" fitWidth="800.0" pickOnBounds="true" preserveRatio="true" />
+                              <StackPane fx:id="paneStackColor" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                 <children>
+                                    <ImageView fx:id="imgView" fitHeight="680.0" fitWidth="800.0" pickOnBounds="true" preserveRatio="true" />
+                                 </children>
+                              </StackPane>
+                              <Label fx:id="labelLoading" layoutX="300.0" layoutY="320.0" text="Loading..." visible="false">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
                            </children>
-                        </StackPane>
-                        <Label fx:id="labelLoading" layoutX="300.0" layoutY="320.0" text="Loading..." visible="false">
-                           <font>
-                              <Font size="30.0" />
-                           </font>
-                        </Label>
-                     </children>
-                  </AnchorPane>
+                        </AnchorPane>
+                     </content>
+                  </ScrollPane>
               </items>
             </SplitPane>
          </children>

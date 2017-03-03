@@ -61,6 +61,7 @@ public class TraceCommandScreen extends CommandScreen
 	private Stage stageVisualTrace;
 
 	private String ip;
+	private boolean containsHostnames;
 
 	private final String introMarker = "==================================\n";
 	private final String introMsg = "Press the start button to start tracing.\nWhen the trace is complete, you can press the \"" + btnVisualTrace.getText()
@@ -86,6 +87,7 @@ public class TraceCommandScreen extends CommandScreen
 			btnStop.setDisable(false);
 			innerHBox.setDisable(true);
 			setCommandStr(generateCommandString());
+			containsHostnames = chkboxResolveNames.isSelected();
 			endedGracefully = true;
 			runCommand();
 		});
@@ -171,7 +173,7 @@ public class TraceCommandScreen extends CommandScreen
 		
 		try
 		{
-			visualTraceScreen = new VisualTraceScreen(listOfIPs, stage, stage.getScene());
+			visualTraceScreen = new VisualTraceScreen(listOfIPs, containsHostnames, stage, stage.getScene());
 		}
 		catch (IOException e)
 		{

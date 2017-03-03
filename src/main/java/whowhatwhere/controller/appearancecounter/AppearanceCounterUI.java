@@ -37,7 +37,6 @@ import org.apache.commons.io.FileUtils;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -517,9 +516,6 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 			@Override
 			protected void succeeded() //capture finished
 			{
-				if (labelStatus.textProperty().isBound()) //from the timer
-					labelStatus.textProperty().unbind();
-				
 				labelStatus.setText(statusResults);
 
 				fillTable(results.getAppearanceCounterResults());
@@ -748,7 +744,6 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 				Platform.runLater(() ->
 				{
 					btnStop.setDisable(true);
-					labelStatus.textProperty().unbind();
 					labelStatus.setText(statusStopping);
 				});
 
@@ -833,8 +828,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	{
 		Platform.runLater(() ->
 		{
-			SimpleStringProperty timerExpires = new SimpleStringProperty(statusCapturing);
-			labelStatus.textProperty().bind(timerExpires);
+			labelStatus.setText(statusCapturing);
 
 			if (isTimedTaskRunning)
 			{
@@ -847,6 +841,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 				{
 					Platform.runLater(() -> 
 					{
+						String status;
 						if (!captureTimerExpiresIn.isZero())
 						{
 							long hours = captureTimerExpiresIn.toHours();
@@ -854,17 +849,19 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 							Duration seconds = minutes.minusMinutes(minutes.toMinutes());
 							
 							if (hours > 0)
-								timerExpires.set(String.format("%s%d:%02d:%02d", statusCapturing + " Timer expires in ", hours, minutes.toMinutes(), seconds.getSeconds()));
+								status = String.format("%s%d:%02d:%02d", statusCapturing + " Timer expires in ", hours, minutes.toMinutes(), seconds.getSeconds());
 							else
-								timerExpires.set(String.format("%s%d:%02d", statusCapturing + " Timer expires in ", minutes.toMinutes(), seconds.getSeconds()));
+								status = String.format("%s%d:%02d", statusCapturing + " Timer expires in ", minutes.toMinutes(), seconds.getSeconds());
 							
 							captureTimerExpiresIn = captureTimerExpiresIn.minusSeconds(1);
 						}
 						else
 						{
 							displayTimer.shutdown();
-							timerExpires.set(statusResults);
+							status = statusResults;
 						}
+						
+						labelStatus.setText(status);
 					});
 				}, 0, 1, TimeUnit.SECONDS);
 			}
