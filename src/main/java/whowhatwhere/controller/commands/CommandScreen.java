@@ -21,6 +21,7 @@ package whowhatwhere.controller.commands;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -70,8 +71,11 @@ public abstract class CommandScreen extends SecondaryFXMLScreen implements LiveO
 	@Override
 	public void lineReady(String line)
 	{
-		cmdController.getTextAreaOutput().appendText(line + "\n");
-		output.append(line + "\n");
+		Platform.runLater(() ->
+		{
+			cmdController.getTextAreaOutput().appendText(line + "\n");
+			output.append(line + "\n");
+		});
 	}
 
 	@Override

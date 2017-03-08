@@ -58,6 +58,11 @@
 										<fx:include fx:id="watchdogPane" source="../watchdog/Watchdog.fxml" />
 									</content>
 								</Tab>
+								<Tab fx:id="tabVisualTrace" closable="false" text="Visual trace">
+									<content>
+										<fx:include fx:id="visualTracePane" source="../utilities/VisualTrace.fxml" />
+									</content>
+								</Tab>
 								<Tab fx:id="tabUtils" closable="false" text="Utilities">
 									<content>
 										<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">

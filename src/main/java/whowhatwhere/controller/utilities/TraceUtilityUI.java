@@ -40,11 +40,11 @@ public class TraceUtilityUI implements LoadAndSaveSettings
 	{
 		this.guiController = guiController;
 		this.guiController.registerForSettingsHandler(this);
-		controller = guiController.getTracePaneController();
+//		controller = guiController.getTracePaneController();
 		textTrace = controller.getTextTrace();
 		btnTrace = controller.getBtnTrace();
 		
-		btnTrace.setOnAction(event -> Commands.traceCommand(textTrace.getText(), guiController.getStage()));
+//		btnTrace.setOnAction(event -> Commands.traceCommand(textTrace.getText(), guiController.getStage()));
 
 		textTrace.setOnKeyPressed(ke ->
 		{

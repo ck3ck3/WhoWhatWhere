@@ -63,10 +63,10 @@ import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
 import whowhatwhere.controller.appearancecounter.AppearanceCounterController;
 import whowhatwhere.controller.appearancecounter.AppearanceCounterUI;
+import whowhatwhere.controller.utilities.NewVisualTraceController;
+import whowhatwhere.controller.utilities.NewVisualTraceUI;
 import whowhatwhere.controller.utilities.QuickPingController;
 import whowhatwhere.controller.utilities.QuickPingUI;
-import whowhatwhere.controller.utilities.TraceUtilityController;
-import whowhatwhere.controller.utilities.TraceUtilityUI;
 import whowhatwhere.controller.watchdog.WatchdogController;
 import whowhatwhere.controller.watchdog.WatchdogUI;
 import whowhatwhere.model.networksniffer.NICInfo;
@@ -129,6 +129,8 @@ public class GUIController
 	@FXML
 	private Tab tabUtils;
 	@FXML
+	private Tab tabVisualTrace;
+	@FXML
 	private MenuItem menuItemSelectNIC;
 	@FXML
 	private CheckMenuItem menuItemChkCheckUpdateStartup;
@@ -149,7 +151,7 @@ public class GUIController
 	@FXML
 	private WatchdogController watchdogPaneController;
 	@FXML
-	private TraceUtilityController tracePaneController;
+	private NewVisualTraceController visualTracePaneController;
 	@FXML
 	private MenuItem menuItemTTSSelection;
 	@FXML
@@ -171,6 +173,7 @@ public class GUIController
 	private ConfigurableTTS www;
 	private ConfigurableTTS watchdog;
 	private ConfigurableTTS quickPing;
+	private NewVisualTraceUI visualTraceUI;
 		
 	
 	/**
@@ -208,7 +211,8 @@ public class GUIController
 		www = new AppearanceCounterUI(this);
 		quickPing = new QuickPingUI(this);
 		watchdog = new WatchdogUI(this);
-		new TraceUtilityUI(this);
+		
+		visualTraceUI = new NewVisualTraceUI(this);
 		
 		settings = new SettingsHandler(this);
 		settings.loadLastRunConfig(instancesWithSettingsToHandle);
@@ -232,11 +236,6 @@ public class GUIController
 	public WatchdogController getWatchdogPaneController()
 	{
 		return watchdogPaneController;
-	}
-	
-	public TraceUtilityController getTracePaneController()
-	{
-		return tracePaneController;
 	}
 	
 	public void registerForSettingsHandler(LoadAndSaveSettings instace)
@@ -638,6 +637,11 @@ public class GUIController
 	{
 		return tabUtils;
 	}
+	
+	public Tab getVisualTraceTab()
+	{
+		return tabVisualTrace;
+	}
 
 	public Tab getTabWWW()
 	{
@@ -712,5 +716,15 @@ public class GUIController
 	public CheckMenuItem getMenuItemChkMinimizeOnXBtn()
 	{
 		return menuItemChkMinimizeOnXBtn;
+	}
+	
+	public NewVisualTraceController getNewVisualTraceController()
+	{
+		return visualTracePaneController;
+	}
+	
+	public NewVisualTraceUI getVisualTraceUI()
+	{
+		return visualTraceUI;
 	}
 }

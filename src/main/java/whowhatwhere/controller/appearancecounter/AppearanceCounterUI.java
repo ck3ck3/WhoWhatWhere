@@ -483,7 +483,11 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 			pingIP.setOnAction(event -> Commands.pingCommand(row.getItem().ipAddressProperty().getValue(), guiController.getStage()));
 
 			MenuItem traceIP = new MenuItem("Visual trace this IP");
-			traceIP.setOnAction(event -> Commands.traceCommand(row.getItem().ipAddressProperty().getValue(), guiController.getStage()));
+			traceIP.setOnAction(event -> 
+			{
+				tabPane.getSelectionModel().select(guiController.getVisualTraceTab());
+				guiController.getVisualTraceUI().setAddressAndStartTrace(row.getItem().ipAddressProperty().getValue());
+			});
 
 			ContextMenu rowMenu = new ContextMenu(copyMenu, getGeoIPinfo, sendIPToQuickPing, pingIP, traceIP);
 

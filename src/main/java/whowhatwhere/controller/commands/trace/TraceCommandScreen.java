@@ -21,174 +21,82 @@ package whowhatwhere.controller.commands.trace;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
-import javafx.geometry.Insets;
+import javafx.application.Platform;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextArea;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import numbertextfield.NumberTextField;
-import whowhatwhere.Main;
-import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.commands.CommandScreen;
-import whowhatwhere.model.geoipresolver.GeoIPResolver;
-import whowhatwhere.model.networksniffer.NetworkSniffer;
+import whowhatwhere.controller.utilities.TraceOutputReceiver;
 
 public class TraceCommandScreen extends CommandScreen
 {
-	private static final String visualTraceIcon = "/buttonGraphics/earth-16.png";
-
-	private Button btnStart = new Button("Start trace");
 	private Button btnStop = new Button("Stop trace");
 	private boolean endedGracefully;
-	private HBox innerHBox = new HBox();
-	private CheckBox chkboxResolveNames = new CheckBox("Resolve hostnames");
-	private Label labelTimeout = new Label("Ping timeout (in milliseconds)");
-	private NumberTextField numFieldTimeout = new NumberTextField("200", 1, 3000);
-	private Button btnVisualTrace = new Button("Show visual trace");
-	private Stage stageVisualTrace;
 
-	private String ip;
-	private boolean containsHostnames;
-
-	private final String introMarker = "==================================\n";
-	private final String introMsg = "Press the start button to start tracing.\nWhen the trace is complete, you can press the \"" + btnVisualTrace.getText()
-			+ "\" button, or select an IP address and right click it to see more GeoIP info about it\n\n" + introMarker;
-
-	public TraceCommandScreen(Stage stage, Scene scene, String ip) throws IOException
+	private TraceOutputReceiver outputReceiver;
+	
+	
+	public TraceCommandScreen(Stage stage, Scene scene, String ip, boolean resolveHostnames, Integer pingTimeout, TraceOutputReceiver outputReceiver) throws IOException
 	{
 		super(stage, scene);
-		this.ip = ip;
-
+		
+		this.outputReceiver = outputReceiver; 
+		
+		endedGracefully = true;
+		
+		setCommandStr(generateCommandString(ip, resolveHostnames, pingTimeout));
 		initTraceScreen();
-	}
+	}	
 
 	public void initTraceScreen()
 	{
-		HBox bottomHBox = getBottomHBox();
-		TextArea textArea = getTextArea();
+		getCloseButton().setVisible(false);	
+		getBottomHBox().getChildren().add(btnStop);
 
-		btnStart.setOnAction(event ->
-		{
-			textArea.setText(introMsg);
-			btnStart.setDisable(true);
-			btnStop.setDisable(false);
-			innerHBox.setDisable(true);
-			setCommandStr(generateCommandString());
-			containsHostnames = chkboxResolveNames.isSelected();
-			endedGracefully = true;
-			runCommand();
-		});
-		
 		btnStop.setOnAction(event ->
 		{
 			endedGracefully = false;
 			btnStop.setDisable(true);
 			stopCommand();
 		});
-		
-		btnStop.setDisable(true);
-
-		numFieldTimeout.setPrefSize(45, 25);
-		GUIController.setNumberTextFieldValidationUI(numFieldTimeout);
-
-		btnVisualTrace.setOnAction(event -> 
+	}
+	
+	public void setOnCloseRequestBehavior(Stage thisStage)
+	{
+		thisStage.setOnCloseRequest(event -> 
 		{
-			if (stageVisualTrace == null)
-				openVisualTrace();
-			else
-				stageVisualTrace.toFront();
-			
+			event.consume();
+			if (!btnStop.isDisabled())
+				btnStop.fire();
 		});
-		btnVisualTrace.setStyle("-fx-font-weight: bold;");
-		GUIController.setGraphicForLabeledControl(btnVisualTrace, visualTraceIcon, ContentDisplay.LEFT);
-		btnVisualTrace.setDisable(true);
-
-		AnchorPane aPane = new AnchorPane(chkboxResolveNames);
-		chkboxResolveNames.setLayoutY(4);
-		labelTimeout.setPadding(new Insets(4, 0, 0, 0));
-		innerHBox.setSpacing(10);
-		
-		innerHBox.getChildren().addAll(aPane, labelTimeout, numFieldTimeout, btnVisualTrace);
-		bottomHBox.getChildren().addAll(btnStart, btnStop, innerHBox);
-
-		textArea.setText(introMsg);
-
-		MenuItem moreInfo = new MenuItem("See more GeoIP results for selected IP address in browser");
-		moreInfo.setOnAction(event ->
-		{
-			String selectedText = textArea.getSelectedText();
-
-			if (NetworkSniffer.isValidIPv4(selectedText))
-				Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + selectedText);
-			else
-				new Alert(AlertType.ERROR, "The selected text \"" + selectedText + "\" is not an IP address").showAndWait();
-		});
-
-		MenuItem copyIPtoClipboard = new MenuItem("Copy to clipboard");
-		copyIPtoClipboard.setOnAction(event ->
-		{
-			String selectedText = textArea.getSelectedText();
-
-			final Clipboard clipboard = Clipboard.getSystemClipboard();
-			final ClipboardContent content = new ClipboardContent();
-			content.putString(selectedText);
-			clipboard.setContent(content);
-		});
-
-		textArea.setContextMenu(new ContextMenu(moreInfo, copyIPtoClipboard));
 	}
 
 	@Override
 	public void endOfOutput()
 	{
-		btnStart.setDisable(false);
-		btnStop.setDisable(true);
-		btnVisualTrace.setDisable(false);
-		innerHBox.setDisable(false);
-	}
-
-	private String generateCommandString()
-	{
-		return "tracert " + (chkboxResolveNames.isSelected() ? " " : "-d ") + ("-w " + numFieldTimeout.getValue() + " ") + ip;
-	}
-
-	private void openVisualTrace()
-	{
-		List<String> listOfIPs = getOutputAsList();
-		VisualTraceScreen visualTraceScreen;
-		Stage stage = (Stage)btnStart.getScene().getWindow();
+		super.endOfOutput();
 		
-		try
+		Platform.runLater(() -> 
 		{
-			visualTraceScreen = new VisualTraceScreen(listOfIPs, containsHostnames, stage, stage.getScene());
-		}
-		catch (IOException e)
-		{
-			logger.log(Level.SEVERE, "Unable to load Visual Trace screen", e);
-			return;
-		}
+			btnStop.setDisable(true);
+						
+			if (outputReceiver != null)
+				outputReceiver.traceFinished(getOutputAsList());
+			
+			getCloseButton().fire();	
+		});
+	}
 
-		stageVisualTrace = visualTraceScreen.showScreenOnNewStage("Visual trace of " + ip, null, visualTraceScreen.getBtnClose());
-		stageVisualTrace.setOnHidden(event -> stageVisualTrace = null);
+	private String generateCommandString(String ip, boolean resolveHostnames, Integer pingTimeout)
+	{
+		return "tracert " + (resolveHostnames ? "" : "-d ") + (pingTimeout == null ? "" : "-w " + pingTimeout + " ") + ip;
 	}
 
 	private List<String> getOutputAsList()
 	{
 		List<String> outputList = new ArrayList<>();
-		String lines[] = getTextArea().getText().split(introMarker)[1].split("\n"); //get actual command output, after our intro string
+		String lines[] = getTextArea().getText().split("\n");
 		int lastLineToRead = lines.length - (endedGracefully ? 2 : 0); //if ended gracefully, the last two lines are not relevant
 
 		for (int i = 3; i < lastLineToRead; i++) //first few lines are not relevant
@@ -208,7 +116,7 @@ public class TraceCommandScreen extends CommandScreen
 		return outputList;
 	}
 	
-	static String extractIPFromLine(String line)
+	public static String extractIPFromLine(String line)
 	{
 		String spaceSeparated[] = line.split(" ");
 		String tempIP = spaceSeparated[spaceSeparated.length - 1];
@@ -218,5 +126,4 @@ public class TraceCommandScreen extends CommandScreen
 		
 		return tempIP;
 	}
-
 }
