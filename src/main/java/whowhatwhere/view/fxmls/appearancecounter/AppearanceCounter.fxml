@@ -101,12 +101,12 @@
                   <Label fx:id="labelStatus" layoutX="10.0" layoutY="49.0" text="Status: Idle" />
                </children>
             </AnchorPane>
-            <TableView fx:id="tableResults" editable="true" layoutX="10.0" layoutY="361.0" prefHeight="213.0" prefWidth="1158.0" stylesheets="/whowhatwhere/view/fxmls/appearancecounter/tableResults.css" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="52.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="361.0">
+            <TableView fx:id="tableResults" editable="true" layoutX="10.0" layoutY="361.0" prefHeight="213.0" prefWidth="1158.0" stylesheets="/whowhatwhere/view/fxmls/appearancecounter/tableResults.css" AnchorPane.bottomAnchor="52.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="361.0">
                <columns>
                   <TableColumn fx:id="columnPacketCount" editable="false" prefWidth="115.0" sortType="DESCENDING" text="Packet Count" />
                   <TableColumn fx:id="columnIP" minWidth="8.0" prefWidth="115.0" text="IP Address" />
                   <TableColumn fx:id="columnNotes" prefWidth="146.0" text="IP note [set from code]" />
-                  <TableColumn fx:id="columnOwner" editable="false" minWidth="1.0" prefWidth="188.0" text="Owner" />
+                  <TableColumn fx:id="columnOwner" editable="false" minWidth="1.0" prefWidth="201.0" text="Organization" />
                   <TableColumn fx:id="columnPing" prefWidth="128.0" text="Ping" />
                   <TableColumn fx:id="columnCountry" editable="false" minWidth="0.0" prefWidth="166.0" text="Country" />
                   <TableColumn fx:id="columnRegion" editable="false" minWidth="0.0" prefWidth="143.0" text="Region" />
@@ -116,7 +116,7 @@
             <Button fx:id="btnExportTableToCSV" disable="true" layoutX="981.0" layoutY="582.0" mnemonicParsing="false" text="Export table contents to CSV file" AnchorPane.bottomAnchor="19.0" AnchorPane.rightAnchor="18.0" />
             <Label fx:id="labelWWW" layoutX="10.0" layoutY="15.0" text="Who What Where">
                <font>
-                  <Font size="14.0" />
+                  <Font name="System Bold" size="16.0" />
                </font>
             </Label>
          </children>

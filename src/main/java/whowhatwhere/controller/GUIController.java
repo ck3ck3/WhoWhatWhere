@@ -63,10 +63,10 @@ import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
 import whowhatwhere.controller.appearancecounter.AppearanceCounterController;
 import whowhatwhere.controller.appearancecounter.AppearanceCounterUI;
-import whowhatwhere.controller.utilities.NewVisualTraceController;
-import whowhatwhere.controller.utilities.NewVisualTraceUI;
-import whowhatwhere.controller.utilities.QuickPingController;
-import whowhatwhere.controller.utilities.QuickPingUI;
+import whowhatwhere.controller.quickping.QuickPingController;
+import whowhatwhere.controller.quickping.QuickPingUI;
+import whowhatwhere.controller.visualtrace.VisualTraceController;
+import whowhatwhere.controller.visualtrace.VisualTraceUI;
 import whowhatwhere.controller.watchdog.WatchdogController;
 import whowhatwhere.controller.watchdog.WatchdogUI;
 import whowhatwhere.model.networksniffer.NICInfo;
@@ -127,7 +127,7 @@ public class GUIController
 	@FXML
 	private Tab tabWatchdog;
 	@FXML
-	private Tab tabUtils;
+	private Tab tabQuickPing;
 	@FXML
 	private Tab tabVisualTrace;
 	@FXML
@@ -151,7 +151,7 @@ public class GUIController
 	@FXML
 	private WatchdogController watchdogPaneController;
 	@FXML
-	private NewVisualTraceController visualTracePaneController;
+	private VisualTraceController visualTracePaneController;
 	@FXML
 	private MenuItem menuItemTTSSelection;
 	@FXML
@@ -173,7 +173,7 @@ public class GUIController
 	private ConfigurableTTS www;
 	private ConfigurableTTS watchdog;
 	private ConfigurableTTS quickPing;
-	private NewVisualTraceUI visualTraceUI;
+	private VisualTraceUI visualTraceUI;
 		
 	
 	/**
@@ -212,7 +212,7 @@ public class GUIController
 		quickPing = new QuickPingUI(this);
 		watchdog = new WatchdogUI(this);
 		
-		visualTraceUI = new NewVisualTraceUI(this);
+		visualTraceUI = new VisualTraceUI(this);
 		
 		settings = new SettingsHandler(this);
 		settings.loadLastRunConfig(instancesWithSettingsToHandle);
@@ -633,9 +633,9 @@ public class GUIController
 		return tabPane;
 	}
 
-	public Tab getTabUtilities()
+	public Tab getTabQuickPing()
 	{
-		return tabUtils;
+		return tabQuickPing;
 	}
 	
 	public Tab getVisualTraceTab()
@@ -718,12 +718,12 @@ public class GUIController
 		return menuItemChkMinimizeOnXBtn;
 	}
 	
-	public NewVisualTraceController getNewVisualTraceController()
+	public VisualTraceController getVisualTraceController()
 	{
 		return visualTracePaneController;
 	}
 	
-	public NewVisualTraceUI getVisualTraceUI()
+	public VisualTraceUI getVisualTraceUI()
 	{
 		return visualTraceUI;
 	}

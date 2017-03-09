@@ -27,7 +27,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 import whowhatwhere.controller.commands.CommandScreen;
-import whowhatwhere.controller.utilities.TraceOutputReceiver;
+import whowhatwhere.controller.visualtrace.TraceOutputReceiver;
 
 public class TraceCommandScreen extends CommandScreen
 {

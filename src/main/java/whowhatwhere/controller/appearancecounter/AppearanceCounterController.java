@@ -28,6 +28,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -39,7 +40,7 @@ import javafx.stage.PopupWindow.AnchorLocation;
 import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
 import whowhatwhere.controller.GUIController;
-import javafx.scene.control.ScrollPane;
+import whowhatwhere.controller.ToolTipUtilities;
 
 public class AppearanceCounterController implements Initializable
 {
@@ -135,9 +136,7 @@ public class AppearanceCounterController implements Initializable
 		
 		Tooltip tip = new Tooltip("The hotkey can be activated even while " + Main.getAppName() + " isn't visible on the screen. "
 				+ "The table contents will be read out to you so you don't have to look at the screen. The text to speech voice can be configured from the Options menu.");
-		tip.setWrapText(true);
-		tip.setMaxWidth(400);
-		tip.setAnchorLocation(AnchorLocation.WINDOW_TOP_RIGHT);
+		ToolTipUtilities.setTooltipProperties(tip, true, 12.0, 400.0, AnchorLocation.WINDOW_TOP_RIGHT); 
 		chkboxUseTTS.setTooltip(tip);
 		GUIController.setCommonGraphicOnLabeled(chkboxUseTTS, GUIController.CommonGraphicImages.TOOLTIP);
 		
@@ -155,8 +154,7 @@ public class AppearanceCounterController implements Initializable
 	{
 		GUIController.setCommonGraphicOnLabeled(labelWWW, GUIController.CommonGraphicImages.TOOLTIP);
 		Tooltip tooltip = new Tooltip("Who What Where listens to network traffic and analyzes IP packets. Analysis includes geographical location, latency and total amount of packets sent and received from each address.");
-		tooltip.setMaxWidth(400);
-		tooltip.setWrapText(true);
+		ToolTipUtilities.setTooltipProperties(tooltip, true, 400.0, 12.0, null);
 		labelWWW.setTooltip(tooltip);
 	}
 	

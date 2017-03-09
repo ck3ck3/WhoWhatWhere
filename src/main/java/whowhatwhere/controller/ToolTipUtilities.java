@@ -2,20 +2,23 @@ package whowhatwhere.controller;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+
 import javafx.scene.control.Tooltip;
+import javafx.scene.text.Font;
+import javafx.stage.PopupWindow.AnchorLocation;
 import javafx.util.Duration;
 
-/**Gist taken from https://gist.github.com/darmbrust/9559744d1b1dada434a3 , modified to return void and ignore exceptions.<br>
- * {@link ToolTipDefaultsFixer}
- *
- * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
- */
-public class ToolTipDefaultsFixer
+public class ToolTipUtilities
 {
+	/**Gist taken from https://gist.github.com/darmbrust/9559744d1b1dada434a3 , modified to return void and ignore exceptions.<br>
+	 * {@link ToolTipUtilities}
+	 *
+	 * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
+	 */
 	/**
 	 * Returns true if successful. Current defaults are 1000, 5000, 200;
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({"rawtypes"})
 	public static void setTooltipTimers(long openDelay, long visibleDuration, long closeDelay)
 	{
 		try
@@ -37,5 +40,22 @@ public class ToolTipDefaultsFixer
 			}
 		}
 		catch (Exception e)	{} //if it fails, it fails, no big deal, no action we can take to fix.
+	}
+	
+	/**Any parameter can be null to keep its default value
+	 */
+	public static void setTooltipProperties(Tooltip tooltip, Boolean wrap, Double maxWidth, Double fontSize, AnchorLocation anchorLocation)
+	{
+		if (wrap != null)
+			tooltip.setWrapText(wrap);
+		
+		if (maxWidth != null)
+			tooltip.setMaxWidth(maxWidth);
+		
+		if (fontSize != null)
+			tooltip.setFont(new Font(fontSize));
+		
+		if (anchorLocation != null)
+			tooltip.setAnchorLocation(anchorLocation);
 	}
 }

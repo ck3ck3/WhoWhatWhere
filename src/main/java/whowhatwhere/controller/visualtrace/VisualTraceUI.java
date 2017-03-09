@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package whowhatwhere.controller.utilities;
+package whowhatwhere.controller.visualtrace;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -66,21 +66,21 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.text.Font;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import numbertextfield.NumberTextField;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.LoadAndSaveSettings;
 import whowhatwhere.controller.commands.Commands;
-import whowhatwhere.controller.commands.trace.GoogleStaticMapsAPIKey;
 import whowhatwhere.controller.commands.trace.TraceCommandScreen;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.geoipresolver.GeoIPInfo;
 import whowhatwhere.model.geoipresolver.GeoIPResolver;
 
-public class NewVisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
+public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 {
-	private final static Logger logger = Logger.getLogger(NewVisualTraceUI.class.getPackage().getName());
+	private final static Logger logger = Logger.getLogger(VisualTraceUI.class.getPackage().getName());
 	
 	private final static String propsSplitterPosition = "traceSplitterPosition";
 	private final static String propsResolveHostname = "traceResolveHostnames";
@@ -94,7 +94,7 @@ public class NewVisualTraceUI implements TraceOutputReceiver, LoadAndSaveSetting
 	private final static int googleDefaultZoomLevel = 6;
 	private final static int googleZoomLevelStep = 1;
 	
-	private NewVisualTraceController controller;
+	private VisualTraceController controller;
 	private SplitPane splitPane;
 	private TextField textTrace;
 	private CheckBox chkResolveHostnames;
@@ -117,9 +117,9 @@ public class NewVisualTraceUI implements TraceOutputReceiver, LoadAndSaveSetting
 	private boolean noTraceDoneYet = true;
 
 
-	public NewVisualTraceUI(GUIController guiController)
+	public VisualTraceUI(GUIController guiController)
 	{
-		controller = guiController.getNewVisualTraceController();
+		controller = guiController.getVisualTraceController();
 		initControls();
 		guiController.registerForSettingsHandler(this);
 		
@@ -157,7 +157,7 @@ public class NewVisualTraceUI implements TraceOutputReceiver, LoadAndSaveSetting
 		splitPane = controller.getSplitPane();
 		textTrace = controller.getTextTrace();
 		chkResolveHostnames = controller.getChkResolveHostnames();
-		numFieldReplyTimeout = controller.getNumFieldReplyTimeout();
+		numFieldReplyTimeout = controller.getNumFieldPingTimeout();
 		btnTrace = controller.getBtnTrace();
 		imgView = controller.getImgView();
 		rightPane = controller.getRightPane();
@@ -233,11 +233,12 @@ public class NewVisualTraceUI implements TraceOutputReceiver, LoadAndSaveSetting
 					ToggleButton btnZoom = new ToggleButton();
 					btnZoom.setToggleGroup(zoomToggleGroup);
 					GUIController.setGraphicForLabeledControl(btnZoom, zoomInIconLocation, ContentDisplay.CENTER);
-					btnZoom.setTooltip(new Tooltip("Zoom in on this location (into the center of the city)"));
+					Tooltip zoomTooltip = new Tooltip("Zoom in on this location (into the center of the city)");
+					btnZoom.setFont(new Font(12));
+					btnZoom.setTooltip(zoomTooltip);
 					btnZoom.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
 					{
 						HBox hbox = (HBox) btnZoom.getParent();
-						@SuppressWarnings("unchecked")
 						Spinner<Integer> spinnerZoom = (Spinner<Integer>) hbox.getChildren().get(1);
 						spinnerZoom.setDisable(!newValue);
 
@@ -256,6 +257,7 @@ public class NewVisualTraceUI implements TraceOutputReceiver, LoadAndSaveSetting
 						generateAndShowImage();
 					});
 					Tooltip spinnerTooltip = new Tooltip("Set zoom level (1-20)");
+					spinnerTooltip.setFont(new Font(12));
 					spinnerZoom.setTooltip(spinnerTooltip);
 					spinnerZoom.getEditor().setTooltip(spinnerTooltip);
 					spinnerZoom.setEditable(false);
@@ -676,13 +678,13 @@ public class NewVisualTraceUI implements TraceOutputReceiver, LoadAndSaveSetting
 
 	private static class GenerateImageFromURLService extends Service<Image>
 	{
-		private NewVisualTraceUI traceScreen;
+		private VisualTraceUI traceScreen;
 		private String centerOnIP; //IP location to center on, only relevant ONCE for the next use. Ignored when null.
 		private Map<String, Image> urlToImageCache = new HashMap<>();
 		private int zoom;
 		private String existingURL;
 
-		public GenerateImageFromURLService(NewVisualTraceUI traceScreen)
+		public GenerateImageFromURLService(VisualTraceUI traceScreen)
 		{
 			this.traceScreen = traceScreen;
 			this.centerOnIP = null;

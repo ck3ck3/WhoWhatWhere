@@ -64,6 +64,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
@@ -349,7 +350,9 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	{
 		Label labelForIPNote = new Label("IP Notes");
 		GUIController.setCommonGraphicOnLabeled(labelForIPNote, GUIController.CommonGraphicImages.TOOLTIP);
-		labelForIPNote.setTooltip(new Tooltip("Add your own note to describe this IP address and easily recognize it in the future"));
+		Tooltip tooltip = new Tooltip("Add your own note to describe this IP address and easily recognize it in the future");
+		tooltip.setFont(new Font(12));
+		labelForIPNote.setTooltip(tooltip);
 		labelForIPNote.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
 		columnNotes.setGraphic(labelForIPNote);
 		columnNotes.setText("");
@@ -476,7 +479,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 			sendIPToQuickPing.setOnAction(event ->
 			{
 				guiController.getQuickPingController().getComboToPing().getEditor().setText(row.getItem().ipAddressProperty().getValue());
-				tabPane.getSelectionModel().select(guiController.getTabUtilities());
+				tabPane.getSelectionModel().select(guiController.getTabQuickPing());
 			});
 
 			MenuItem pingIP = new MenuItem("Ping this IP");

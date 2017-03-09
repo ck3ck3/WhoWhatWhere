@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package whowhatwhere.controller.utilities;
+package whowhatwhere.controller.visualtrace;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -34,6 +34,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -46,10 +47,10 @@ import javafx.stage.PopupWindow.AnchorLocation;
 import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
 import whowhatwhere.controller.GUIController;
+import whowhatwhere.controller.ToolTipUtilities;
 import whowhatwhere.model.geoipresolver.GeoIPResolver;
-import javafx.scene.control.SplitPane;
 
-public class NewVisualTraceController implements Initializable
+public class VisualTraceController implements Initializable
 {
 	private final static String geoIPIconLocation = "/buttonGraphics/earth-16.png";
 	
@@ -70,9 +71,9 @@ public class NewVisualTraceController implements Initializable
 	@FXML
 	private Pane rightPane;
 	@FXML
-	private Label labelReplyTimeout;
+	private Label labelPingTimeout;
 	@FXML
-	private NumberTextField numFieldReplyTimeout;
+	private NumberTextField numFieldPingTimeout;
 	@FXML
 	private TableView<TraceLineInfo> tableTrace;
 	@FXML
@@ -166,7 +167,7 @@ public class NewVisualTraceController implements Initializable
 		imgView.fitWidthProperty().bind(rightPane.widthProperty().subtract(10));
 		
 		DoubleBinding imgViewHeightAccordingToPaneHeight = rightPane.heightProperty().multiply(1);
-		DoubleBinding imgViewHeightAccordingToItsWidth = imgView.fitWidthProperty().multiply((double)NewVisualTraceUI.googleMapHeight / (double)NewVisualTraceUI.googleMapWidth);
+		DoubleBinding imgViewHeightAccordingToItsWidth = imgView.fitWidthProperty().multiply((double)VisualTraceUI.googleMapHeight / (double)VisualTraceUI.googleMapWidth);
 		imgView.fitHeightProperty().bind(Bindings.min(imgViewHeightAccordingToItsWidth, imgViewHeightAccordingToPaneHeight));
 		
 		rightPane.widthProperty().addListener((ChangeListener<Number>) (observable, oldValue, newValue) -> labelLoading.setLayoutX(newValue.doubleValue() / 2 - labelLoading.getWidth() / 2));
@@ -199,20 +200,17 @@ public class NewVisualTraceController implements Initializable
 	private void setGraphics()
 	{
 		GUIController.setCommonGraphicOnLabeled(labelVisualTrace, GUIController.CommonGraphicImages.TOOLTIP);
-		GUIController.setNumberTextFieldValidationUI(numFieldReplyTimeout);
-		GUIController.setCommonGraphicOnLabeled(labelReplyTimeout, GUIController.CommonGraphicImages.TOOLTIP);
+		GUIController.setNumberTextFieldValidationUI(numFieldPingTimeout);
+		GUIController.setCommonGraphicOnLabeled(labelPingTimeout, GUIController.CommonGraphicImages.TOOLTIP);
 		
 		Tooltip visualTraceTooltip = new Tooltip("Trace the route from your computer to another host on the internet and see it visually on a map."
 				+ "\nNote: GeoIP isn't always accurate. Every line in the table has a button that launches more GeoIP results in the browser, for a \"second opinion\"");
-		visualTraceTooltip.setWrapText(true);
-		visualTraceTooltip.setMaxWidth(470);
+		ToolTipUtilities.setTooltipProperties(visualTraceTooltip, true, 470.0, 12.0, null);
 		labelVisualTrace.setTooltip(visualTraceTooltip);
 		
-		Tooltip replyTimeoutTooltip = new Tooltip("The maximum amount of milliseconds to wait for each hop to reply.\nEmpty value means default timeout.");
-		replyTimeoutTooltip.setWrapText(true);
-		replyTimeoutTooltip.setMaxHeight(400);
-		replyTimeoutTooltip.setAnchorLocation(AnchorLocation.WINDOW_TOP_LEFT);
-		labelReplyTimeout.setTooltip(replyTimeoutTooltip);
+		Tooltip pingTimeoutTooltip = new Tooltip("The ping timeout (in milliseconds) for each of the 3 pings for every hop.\nEmpty value means default timeout.");
+		ToolTipUtilities.setTooltipProperties(pingTimeoutTooltip, true, 400.0, 12.0, AnchorLocation.WINDOW_TOP_LEFT); 
+		labelPingTimeout.setTooltip(pingTimeoutTooltip);
 	}
 	
 	
@@ -246,9 +244,9 @@ public class NewVisualTraceController implements Initializable
 		return chkResolveHostnames;
 	}
 	
-	public NumberTextField getNumFieldReplyTimeout()
+	public NumberTextField getNumFieldPingTimeout()
 	{
-		return numFieldReplyTimeout;
+		return numFieldPingTimeout;
 	}
 
 	public Pane getLeftPane()

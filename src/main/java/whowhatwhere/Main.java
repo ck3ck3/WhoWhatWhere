@@ -38,7 +38,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import whowhatwhere.controller.GUIController;
-import whowhatwhere.controller.ToolTipDefaultsFixer;
+import whowhatwhere.controller.ToolTipUtilities;
 
 public class Main extends Application
 {
@@ -75,7 +75,7 @@ public class Main extends Application
 		{
 			initLogger();
 
-			ToolTipDefaultsFixer.setTooltipTimers(tooltipOpenDelay, tooltipVisibleDuration, tooltipCloseDelay);
+			ToolTipUtilities.setTooltipTimers(tooltipOpenDelay, tooltipVisibleDuration, tooltipCloseDelay);
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(mainFormLocation));
 			Parent root = (Parent) loader.load();
 			GUIController gui = (GUIController) loader.getController();

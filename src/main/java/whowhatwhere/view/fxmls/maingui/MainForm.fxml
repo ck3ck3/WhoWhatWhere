@@ -53,32 +53,19 @@
 										<fx:include fx:id="appearanceCounterPane" source="../appearancecounter/AppearanceCounter.fxml" />
 									</content>
 								</Tab>
-								<Tab fx:id="tabWatchdog" closable="false" text="Watchdog">
+								<Tab fx:id="tabQuickPing" closable="false" text="Quick Ping">
 									<content>
-										<fx:include fx:id="watchdogPane" source="../watchdog/Watchdog.fxml" />
+										<fx:include fx:id="quickPingPane" source="../quickping/QuickPing.fxml" />
 									</content>
 								</Tab>
 								<Tab fx:id="tabVisualTrace" closable="false" text="Visual trace">
 									<content>
-										<fx:include fx:id="visualTracePane" source="../utilities/VisualTrace.fxml" />
+										<fx:include fx:id="visualTracePane" source="../visualtrace/VisualTrace.fxml" />
 									</content>
 								</Tab>
-								<Tab fx:id="tabUtils" closable="false" text="Utilities">
+								<Tab fx:id="tabWatchdog" closable="false" text="Watchdog">
 									<content>
-										<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-											<children>
-												<TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="14.0" prefHeight="145.0" prefWidth="586.0" text="Quick ping">
-													<content>
-														<fx:include fx:id="quickPingPane" source="../utilities/QuickPing.fxml" />
-													</content>
-												</TitledPane>
-												<TitledPane animated="false" collapsible="false" layoutX="14.0" layoutY="175.0" prefHeight="78.0" prefWidth="586.0" text="Visual Trace">
-													<content>
-														<fx:include fx:id="tracePane" source="../utilities/Trace.fxml" />
-													</content>
-												</TitledPane>
-											</children>
-										</AnchorPane>
+										<fx:include fx:id="watchdogPane" source="../watchdog/Watchdog.fxml" />
 									</content>
 								</Tab>
 							</tabs>

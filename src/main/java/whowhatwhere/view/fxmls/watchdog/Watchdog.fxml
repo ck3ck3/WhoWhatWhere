@@ -16,14 +16,13 @@
 <?import javafx.scene.text.Font?>
 <?import numbertextfield.NumberTextField?>
 
-
 <ScrollPane fx:id="scrollPane" prefHeight="490.0" prefWidth="1202.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.watchdog.WatchdogController">
    <content>
       <AnchorPane>
          <children>
             <AnchorPane fx:id="paneTableAndControls" layoutX="14.0" layoutY="237.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="0.0">
                <children>
-                  <TableView fx:id="table" prefHeight="192.0" stylesheets="/whowhatwhere/view/fxmls/watchdog/watchdogTable.css" tableMenuButtonVisible="true" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="12.0">
+                  <TableView fx:id="table" prefHeight="192.0" stylesheets="/whowhatwhere/view/fxmls/watchdog/watchdogTable.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="12.0">
                      <columns>
                         <TableColumn fx:id="columnIP" minWidth="180.0" prefWidth="230.0" text="IP address/note" />
                         <TableColumn fx:id="columnPacketDirection" prefWidth="120.0" text="Packet direction" />
@@ -112,7 +111,7 @@
             </TitledPane>
             <Label fx:id="labelTableHeader" layoutX="14.0" layoutY="14.0" text="Watchdog">
                <font>
-                  <Font size="14.0" />
+                  <Font name="System Bold" size="16.0" />
                </font>
             </Label>
             <Label fx:id="labelRuleList" layoutX="14.0" layoutY="206.0" text="Rule list:" />

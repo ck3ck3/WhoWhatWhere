@@ -26,7 +26,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import whowhatwhere.controller.commands.ping.PingCommandScreen;
 import whowhatwhere.controller.commands.trace.TraceCommandScreen;
-import whowhatwhere.controller.utilities.TraceOutputReceiver;
+import whowhatwhere.controller.visualtrace.TraceOutputReceiver;
 
 public class Commands
 {

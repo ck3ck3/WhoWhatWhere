@@ -66,7 +66,7 @@ public class GeoIPResolver
 		}
 		catch (Exception e)
 		{
-			logger.log(Level.SEVERE, "Unable to get GeoIP info for IP " + ip, e);
+			logger.log(Level.WARNING, "Unable to get GeoIP info for IP " + ip, e);
 			return parseResponse(null);
 		}
 

@@ -41,6 +41,7 @@ import javafx.scene.control.Tooltip;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
 import whowhatwhere.controller.GUIController;
+import whowhatwhere.controller.ToolTipUtilities;
 import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.networksniffer.PacketDirection;
 import whowhatwhere.model.networksniffer.SupportedProtocols;
@@ -363,8 +364,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 		GUIController.setCommonGraphicOnLabeled(control, GUIController.CommonGraphicImages.TOOLTIP);
 
 		Tooltip tooltip = new Tooltip(tooltipMsg);
-		tooltip.setWrapText(true);
-		tooltip.setMaxWidth(400);
+		ToolTipUtilities.setTooltipProperties(tooltip, true, 400.0, 12.0, null);
 		control.setTooltip(tooltip);
 	}
 
