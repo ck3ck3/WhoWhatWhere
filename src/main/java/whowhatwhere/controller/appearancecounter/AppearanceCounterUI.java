@@ -437,14 +437,13 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 															 //this reference points to the object that will be used for the actual populated row,
 															 //so the event handlers can safely use it.
 			
+			Clipboard clipboard = Clipboard.getSystemClipboard();
+			ClipboardContent content = new ClipboardContent();
+			
 			MenuItem copyRowAsCSV = new MenuItem("Copy whole row in CSV format");
 			copyRowAsCSV.setOnAction(event ->
 			{
-				Clipboard clipboard = Clipboard.getSystemClipboard();
-				ClipboardContent content = new ClipboardContent();
-
 				content.putString(String.join(",", row.getItem().getFullRowDataAsOrderedList()));
-				
 				clipboard.setContent(content);
 			});
 			
@@ -458,9 +457,6 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 				MenuItem itemForcolumn = new MenuItem(columnName);
 				itemForcolumn.setOnAction(event ->
 				{
-					Clipboard clipboard = Clipboard.getSystemClipboard();
-					ClipboardContent content = new ClipboardContent();
-					
 					Map<String, String> mapColumnNameToPropertyValue = mapColumnNameToPropertyValue(row.getItem());
 					
 					String valueToCopy = mapColumnNameToPropertyValue.get(columnName);

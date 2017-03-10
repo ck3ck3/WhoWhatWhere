@@ -139,4 +139,13 @@ public class TraceLineInfo
 	{
 		this.location.set(location);
 	}
+	
+	public String toString()
+	{
+		String hostname = hostnameProperty().get();
+		String location = locationProperty().get();
+		
+		return label + "\t" + hopNumberProperty().get() + "\t" + pingResultsProperty().get() + "\t" + (hostname != null && !hostname.isEmpty() ? hostname + "\t" : "") 
+				+ ipAddressProperty().get() + (location != null && !location.isEmpty() ? "\t" + location : "");
+	}
 }

@@ -136,7 +136,7 @@ public class AppearanceCounterController implements Initializable
 		
 		Tooltip tip = new Tooltip("The hotkey can be activated even while " + Main.getAppName() + " isn't visible on the screen. "
 				+ "The table contents will be read out to you so you don't have to look at the screen. The text to speech voice can be configured from the Options menu.");
-		ToolTipUtilities.setTooltipProperties(tip, true, 12.0, 400.0, AnchorLocation.WINDOW_TOP_RIGHT); 
+		ToolTipUtilities.setTooltipProperties(tip, true, 400.0, 12.0, AnchorLocation.WINDOW_TOP_RIGHT); 
 		chkboxUseTTS.setTooltip(tip);
 		GUIController.setCommonGraphicOnLabeled(chkboxUseTTS, GUIController.CommonGraphicImages.TOOLTIP);
 		

@@ -27,23 +27,30 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
+import javafx.scene.text.Font;
 import javafx.stage.PopupWindow.AnchorLocation;
+import javafx.util.Callback;
 import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
 import whowhatwhere.controller.GUIController;
@@ -52,7 +59,7 @@ import whowhatwhere.model.geoipresolver.GeoIPResolver;
 
 public class VisualTraceController implements Initializable
 {
-	private final static String geoIPIconLocation = "/buttonGraphics/earth-16.png";
+	private final static String traceIconLocation = "/buttonGraphics/Globe-Earth.png";
 	
 	@FXML
 	private SplitPane splitPane;
@@ -87,11 +94,9 @@ public class VisualTraceController implements Initializable
 	@FXML
 	private TableColumn<TraceLineInfo, String> columnIPAddress;
 	@FXML
-	private TableColumn<TraceLineInfo, String> columnCityCountry;
+	private TableColumn<TraceLineInfo, String> columnLocation;
 	@FXML
 	private TableColumn<TraceLineInfo, String> columnZoomButton;
-	@FXML
-	private TableColumn<TraceLineInfo, String> columnGeoIPButton;
 	@FXML
 	private Label labelVisualTrace;
 
@@ -122,46 +127,57 @@ public class VisualTraceController implements Initializable
 		initWdithAndHeightConstraints();
 		setTableToAutoFitColumns();
 		setGraphics();
+		setTableContextMenu();
+		setMapContextMenu();
+		
+		textTrace.setOnKeyPressed(keyEvent ->
+		{
+			if (keyEvent.getCode() == KeyCode.ENTER)
+				btnTrace.fire();
+		});
 	}
 	
 	private void initColumns()
 	{
+		setColumnHeadersTooltips();
+		
 		columnHop.setCellValueFactory(new PropertyValueFactory<>(TraceLineInfo.Columns.HOP.getColumnName()));
 		columnPing.setCellValueFactory(new PropertyValueFactory<>(TraceLineInfo.Columns.PINGS.getColumnName()));
 		columnHostname.setCellValueFactory(new PropertyValueFactory<>(TraceLineInfo.Columns.HOSTNAME.getColumnName()));
 		columnIPAddress.setCellValueFactory(new PropertyValueFactory<>(TraceLineInfo.Columns.IP.getColumnName()));
-		columnCityCountry.setCellValueFactory(new PropertyValueFactory<>(TraceLineInfo.Columns.LOCATION.getColumnName()));
-		
-		columnGeoIPButton.setCellFactory(param -> new TableCell<TraceLineInfo, String>()
-		{
-			@Override
-			public void updateItem(String item, boolean empty)
-			{
-				super.updateItem(item, empty);
-			
-				if (empty)
-				{
-					setGraphic(null);
-					setText(null);
-				}
-				else
-				{
-					Button btn = new Button();
-					
-					GUIController.setGraphicForLabeledControl(btn, geoIPIconLocation, ContentDisplay.CENTER);
-					btn.setOnAction((ActionEvent event) ->
-					{
-						TraceLineInfo info = getTableView().getItems().get(getIndex());
-						Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + info.ipAddressProperty().get());
-					});
-					
-					setGraphic(btn);
-					setText(null);
-				}
-			}
-		});
+		columnLocation.setCellValueFactory(new PropertyValueFactory<>(TraceLineInfo.Columns.LOCATION.getColumnName()));
 	}
 	
+	private void setColumnHeadersTooltips()
+	{
+		Label labelForMapPin = new Label("Map pin");
+		GUIController.setCommonGraphicOnLabeled(labelForMapPin, GUIController.CommonGraphicImages.TOOLTIP);
+		Tooltip tooltipForMapPin = new Tooltip("Show/hide hops on the map");
+		tooltipForMapPin.setFont(new Font(12));
+		labelForMapPin.setTooltip(tooltipForMapPin);
+		labelForMapPin.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
+		columnMapPin.setGraphic(labelForMapPin);
+		columnMapPin.setText("");
+		
+		Label labelForLocation = new Label("Location");
+		GUIController.setCommonGraphicOnLabeled(labelForLocation, GUIController.CommonGraphicImages.TOOLTIP);
+		Tooltip tooltipForLocation = new Tooltip("GeoIP isn't always accurate. Right click on any row to see more GeoIP results in your browser");
+		ToolTipUtilities.setTooltipProperties(tooltipForLocation, true, 400.0, 12.0, AnchorLocation.CONTENT_TOP_LEFT);
+		labelForLocation.setTooltip(tooltipForLocation);
+		labelForLocation.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
+		columnLocation.setGraphic(labelForLocation);
+		columnLocation.setText("");
+		
+		Label labelForZoom = new Label("Zoom in");
+		GUIController.setCommonGraphicOnLabeled(labelForZoom, GUIController.CommonGraphicImages.TOOLTIP);
+		Tooltip tooltipForZoom = new Tooltip("Toggle the buton to zoom in on the location. Untoggle to see the full route again. This does NOT give extra accuracy to the location of the IP, just zooms in to the center of the city.");
+		ToolTipUtilities.setTooltipProperties(tooltipForZoom, true, 400.0, 12.0, AnchorLocation.CONTENT_TOP_LEFT);
+		labelForZoom.setTooltip(tooltipForZoom);
+		labelForZoom.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
+		columnZoomButton.setGraphic(labelForZoom);
+		columnZoomButton.setText("");
+	}
+
 	private void initWdithAndHeightConstraints()
 	{
 		imgView.fitWidthProperty().bind(rightPane.widthProperty().subtract(10));
@@ -199,18 +215,120 @@ public class VisualTraceController implements Initializable
 	
 	private void setGraphics()
 	{
-		GUIController.setCommonGraphicOnLabeled(labelVisualTrace, GUIController.CommonGraphicImages.TOOLTIP);
+		GUIController.setGraphicForLabeledControl(btnTrace, traceIconLocation, ContentDisplay.LEFT);
 		GUIController.setNumberTextFieldValidationUI(numFieldPingTimeout);
-		GUIController.setCommonGraphicOnLabeled(labelPingTimeout, GUIController.CommonGraphicImages.TOOLTIP);
 		
-		Tooltip visualTraceTooltip = new Tooltip("Trace the route from your computer to another host on the internet and see it visually on a map."
-				+ "\nNote: GeoIP isn't always accurate. Every line in the table has a button that launches more GeoIP results in the browser, for a \"second opinion\"");
+		GUIController.setCommonGraphicOnLabeled(labelVisualTrace, GUIController.CommonGraphicImages.TOOLTIP);
+		Tooltip visualTraceTooltip = new Tooltip("Trace the route from your computer to another host on the internet and see it visually on a map.");
 		ToolTipUtilities.setTooltipProperties(visualTraceTooltip, true, 470.0, 12.0, null);
 		labelVisualTrace.setTooltip(visualTraceTooltip);
 		
+		GUIController.setCommonGraphicOnLabeled(labelPingTimeout, GUIController.CommonGraphicImages.TOOLTIP);
 		Tooltip pingTimeoutTooltip = new Tooltip("The ping timeout (in milliseconds) for each of the 3 pings for every hop.\nEmpty value means default timeout.");
 		ToolTipUtilities.setTooltipProperties(pingTimeoutTooltip, true, 400.0, 12.0, AnchorLocation.WINDOW_TOP_LEFT); 
 		labelPingTimeout.setTooltip(pingTimeoutTooltip);
+		
+		GUIController.setCommonGraphicOnLabeled(chkResolveHostnames, GUIController.CommonGraphicImages.TOOLTIP);
+		Tooltip resolveHostnamesTooltip = new Tooltip("Tries to resolve each IP's hostname, but might take longer for the trace to finish or to be canceled.");
+		ToolTipUtilities.setTooltipProperties(resolveHostnamesTooltip, true, 400.0, 12.0, AnchorLocation.WINDOW_TOP_LEFT); 
+		chkResolveHostnames.setTooltip(resolveHostnamesTooltip);
+	}
+	
+	private void setTableContextMenu()
+	{
+		tableTrace.setRowFactory(new Callback<TableView<TraceLineInfo>, TableRow<TraceLineInfo>>()
+		{
+			@Override
+			public TableRow<TraceLineInfo> call(TableView<TraceLineInfo> param)
+			{
+				TableRow<TraceLineInfo> row = new TableRow<TraceLineInfo>();
+				Clipboard clipboard = Clipboard.getSystemClipboard();
+				ClipboardContent content = new ClipboardContent();
+				
+				MenuItem copyMapImage = new MenuItem("Map image");
+				copyMapImage.setOnAction(event ->
+				{
+					content.putImage(imgView.getImage());
+					clipboard.setContent(content);
+				});
+				
+				MenuItem copyWholeTable = new MenuItem("Whole table");
+				copyWholeTable.setOnAction(event ->
+				{
+					StringBuilder result = new StringBuilder();
+					
+					for (TraceLineInfo line : tableTrace.getItems())
+						result.append(line.toString() + "\n");
+					
+					content.putString(result.toString().trim());
+					clipboard.setContent(content);
+				});
+				
+				MenuItem copyRow = new MenuItem("Whole row");
+				copyRow.setOnAction(event ->
+				{
+					content.putString(row.getItem().toString().trim());
+					clipboard.setContent(content);
+				});
+				
+				MenuItem copyPingResults = new MenuItem("Ping results");
+				copyPingResults.setOnAction(event ->
+				{
+					content.putString(row.getItem().pingResultsProperty().get().trim());
+					clipboard.setContent(content);
+				});
+				
+				MenuItem copyHostname = new MenuItem("Hostname");
+				copyHostname.setOnAction(event ->
+				{
+					content.putString(row.getItem().hostnameProperty().get().trim());
+					clipboard.setContent(content);
+				});
+				
+				MenuItem copyIPAddress = new MenuItem("IP address");
+				copyIPAddress.setOnAction(event ->
+				{
+					content.putString(row.getItem().ipAddressProperty().get().trim());
+					clipboard.setContent(content);
+				});
+				
+				MenuItem copyLocation = new MenuItem("Location");
+				copyLocation.setOnAction(event ->
+				{
+					content.putString(row.getItem().locationProperty().get().trim());
+					clipboard.setContent(content);
+				});				
+				
+				Menu copyMenu = new Menu("Copy", null, copyMapImage, copyWholeTable, copyRow, copyPingResults, copyHostname, copyIPAddress, copyLocation);
+				
+				MenuItem moreGeoIPInfo = new MenuItem("Show more GeoIP information in the browser");
+				moreGeoIPInfo.setOnAction(event -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + row.getItem().ipAddressProperty().get()));
+				
+				ContextMenu rowMenu = new ContextMenu(copyMenu, moreGeoIPInfo);
+				
+				row.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(row.itemProperty())).then(rowMenu).otherwise((ContextMenu) null));
+				
+				return row;
+			}});
+	}
+	
+	private void setMapContextMenu()
+	{
+		imgView.setOnContextMenuRequested(event ->
+		{
+			MenuItem copyMap = new MenuItem("Copy map image");
+			copyMap.setOnAction(mapEvent ->
+			{
+				Clipboard clipboard = Clipboard.getSystemClipboard();
+				ClipboardContent content = new ClipboardContent();
+				
+				content.putImage(imgView.getImage());
+				clipboard.setContent(content);
+			});
+			
+			ContextMenu menu = new ContextMenu(copyMap);
+			menu.show(imgView.getScene().getWindow(), event.getScreenX(), event.getScreenY());
+		});
 	}
 	
 	
@@ -289,18 +407,13 @@ public class VisualTraceController implements Initializable
 		return columnIPAddress;
 	}
 
-	public TableColumn<TraceLineInfo, String> getColumnCityCountry()
+	public TableColumn<TraceLineInfo, String> getColumnLocation()
 	{
-		return columnCityCountry;
+		return columnLocation;
 	}
 
 	public TableColumn<TraceLineInfo, String> getColumnZoom()
 	{
 		return columnZoomButton;
-	}
-
-	public TableColumn<TraceLineInfo, String> getColumnGeoIPInfo()
-	{
-		return columnGeoIPButton;
 	}
 }
