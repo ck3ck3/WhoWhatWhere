@@ -30,14 +30,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.json.JSONObject;
-
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
@@ -56,10 +51,10 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import javafx.scene.web.WebEngine;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
+import whowhatwhere.CheckForUpdateResult;
 import whowhatwhere.Main;
 import whowhatwhere.controller.appearancecounter.AppearanceCounterController;
 import whowhatwhere.controller.appearancecounter.AppearanceCounterUI;
@@ -166,8 +161,6 @@ public class GUIController
 	private SettingsHandler settings;
 	private List<LoadAndSaveSettings> instancesWithSettingsToHandle = new ArrayList<>();
 	private Map<Tab, BooleanExpression> tabToBindExpression = new HashMap<>();
-	private WebEngine engine;
-	private ChangeListenerForUpdate changeListenerForUpdate;
 	private NICInfo selectedNIC;
 	private boolean minimizeRequestCameFromXBtn = false;
 	private ConfigurableTTS www;
@@ -325,49 +318,6 @@ public class GUIController
 		about.showAndWait();
 	}
 	
-	private class ChangeListenerForUpdate implements ChangeListener<State>
-	{
-		private boolean silent;
-		
-		public ChangeListenerForUpdate(boolean silent)
-		{
-			this.silent = silent;
-		}
-		
-		@Override
-		public void changed(ObservableValue<? extends State> observable, State oldValue, State newValue)
-		{
-			if (newValue == State.SUCCEEDED)
-			{
-				JSONObject jsonObject = new JSONObject(engine.getDocument().getDocumentElement().getTextContent());
-				String version = (String) jsonObject.get("tag_name");
-				String releaseNotes = (String) jsonObject.get("body");
-				checkForUpdatesResult(silent, !version.equals(Main.getReleaseVersion()), version, releaseNotes);
-			}
-			else
-				if (newValue == State.FAILED)
-				{
-					Throwable throwable = engine.getLoadWorker().getException();
-					String errorMsg = throwable != null ? throwable.getMessage() : "Failed to check for updates";
-					
-					if (!silent)
-					{
-						Alert alert = new Alert(AlertType.ERROR);
-						alert.setHeaderText("Unable to check for updates");
-						alert.setContentText(errorMsg);
-						alert.showAndWait();
-					}
-
-					logger.log(Level.WARNING, "Failed to check for updates", throwable != null ? throwable : errorMsg);
-				}
-		}
-		
-		public void setSilent(boolean silent)
-		{
-			this.silent = silent;
-		}
-	}
-
 	/**
 	 * @param silent
 	 *            - if true, a message will be shown only if there's a new
@@ -375,41 +325,53 @@ public class GUIController
 	 */
 	private void checkForUpdates(boolean silent)
 	{
-		if (engine == null)
+		new Thread(() ->
 		{
-			engine = new WebEngine();
-			changeListenerForUpdate = new ChangeListenerForUpdate(silent);
-			engine.getLoadWorker().stateProperty().addListener(changeListenerForUpdate);
-		}
-		else
-			changeListenerForUpdate.setSilent(silent);
-		
-		engine.load(Main.getURLForLatestRelease());
-	}
-
-	private void checkForUpdatesResult(boolean silent, boolean newVersionExists, String latestVersion, String latestReleaseNotes)
-	{
-		Alert alert = new Alert(AlertType.INFORMATION);
-		alert.setTitle("Check for updates");
-		alert.initOwner(getStage());
-
-		if (newVersionExists)
-		{
-			alert.setHeaderText("New version available!");
-			alert.getDialogPane().contentProperty().set(generateLabelAndLinkPane("Download the latest version (" + latestVersion + ") at", Main.getWebsite(), Font.getDefault().getSize() + 2));
-			FlowPane flowPane = (FlowPane) alert.getDialogPane().getContent();
-			flowPane.getChildren().add(new Label("\nLatest release notes:\n\n" + latestReleaseNotes));
-		}
-		else
-		{
-			alert.setHeaderText("No new updates available.");
-			alert.setContentText("You are running the latest version.");
-		}
-
-		if (newVersionExists || !silent)
-			alert.showAndWait();
+			CheckForUpdateResult result = Main.checkForUpdate();
+			Platform.runLater(() -> showCheckForUpdateResult(silent, result));
+		}).start();
 	}
 	
+	private void showCheckForUpdateResult(boolean silent, CheckForUpdateResult result)
+	{
+		if (!result.isCheckSuccessful())
+		{
+			if (!silent)
+			{
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setHeaderText("Unable to check for updates");
+				alert.setContentText(result.getErrorMessage());
+				alert.showAndWait();
+			}
+		}
+		else
+		{
+			boolean updateAvailable = result.isUpdateAvailable();
+			
+			if (!silent || updateAvailable)
+			{
+				Alert alert = new Alert(AlertType.INFORMATION);
+				alert.setTitle("Check for updates");
+				alert.initOwner(getStage());
+				
+				if (updateAvailable)
+				{
+					alert.setHeaderText("New version available!");
+					alert.getDialogPane().contentProperty().set(generateLabelAndLinkPane("Download the latest version (" + result.getNewVersion() + ") at", Main.getWebsite(), Font.getDefault().getSize() + 2));
+					FlowPane flowPane = (FlowPane) alert.getDialogPane().getContent();
+					flowPane.getChildren().add(new Label("\nLatest release notes:\n\n" + result.getReleaseNotes()));
+				}
+				else
+				{
+					alert.setHeaderText("No new updates available.");
+					alert.setContentText("You are running the latest version.");
+				}
+				
+				alert.showAndWait();
+			}
+		}		
+	}
+
 	private FlowPane generateLabelAndLinkPane(String text, String url, double fontSize)
 	{
 		Font font = new Font(fontSize);

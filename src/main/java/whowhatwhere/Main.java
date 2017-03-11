@@ -29,7 +29,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.json.JSONObject;
+
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -101,10 +109,36 @@ public class Main extends Application
 		fh.setFormatter(new SimpleFormatter());
 		logger.addHandler(fh);
 	}
-
-
+	
+	public static CheckForUpdateResult checkForUpdate()
+	{
+		CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+		
+		HttpGet getRequest = new HttpGet(urlForLatestRelease);
+	    try
+		{
+	    	CloseableHttpResponse getResponse = httpClient.execute(getRequest);
+			String output = IOUtils.toString(getResponse.getEntity().getContent());
+			httpClient.close();
+			
+			JSONObject jsonObject = new JSONObject(output);
+			String version = (String) jsonObject.get("tag_name");
+			String releaseNotes = (String) jsonObject.get("body");
+			
+			return new CheckForUpdateResult(!version.equals(releaseVersion), version, releaseNotes);
+		}
+		catch (IOException ioe)
+		{
+			logger.log(Level.WARNING, "Failed to check for updates", ioe);
+			return new CheckForUpdateResult(ioe.getMessage());
+		}
+	}
+	
 	public static void openInBrowser(String link)
 	{
+		boolean fail = false;
+		String errorMsg = "Unable to open " + link + " in the browser";
+		
 		if (Desktop.isDesktopSupported())
 		{
 			try
@@ -114,11 +148,15 @@ public class Main extends Application
 			}
 			catch (IOException | URISyntaxException e)
 			{
-				String msg = "Unable to open \"" + link + "\" in the browser";
-				new Alert(AlertType.ERROR, msg).showAndWait();
-				logger.log(Level.SEVERE, msg, e);
+				fail = true;
+				logger.log(Level.SEVERE, errorMsg, e);
 			}
 		}
+		else
+			fail = true;
+		
+		if (fail)
+			Platform.runLater(() ->	new Alert(AlertType.ERROR, errorMsg).showAndWait());
 	}
 
 	public static void main(String[] args)
@@ -144,10 +182,5 @@ public class Main extends Application
 	public static String getExecutablefilename()
 	{
 		return executableFilename;
-	}
-	
-	public static String getURLForLatestRelease()
-	{
-		return urlForLatestRelease;
 	}
 }
