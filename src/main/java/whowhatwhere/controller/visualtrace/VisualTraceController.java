@@ -19,6 +19,8 @@
 package whowhatwhere.controller.visualtrace;
 
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import com.sun.javafx.scene.control.skin.TableViewSkin;
@@ -27,6 +29,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -36,6 +39,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
@@ -170,7 +174,7 @@ public class VisualTraceController implements Initializable
 		
 		Label labelForZoom = new Label("Zoom in");
 		GUIController.setCommonGraphicOnLabeled(labelForZoom, GUIController.CommonGraphicImages.TOOLTIP);
-		Tooltip tooltipForZoom = new Tooltip("Toggle the buton to zoom in on the location. Untoggle to see the full route again. This does NOT give extra accuracy to the location of the IP, just zooms in to the center of the city.");
+		Tooltip tooltipForZoom = new Tooltip("Toggle the buton to zoom in on the location. Untoggle to see the full route again. Note that this does not give extra accuracy to the location of the IP, it just zooms in to the center of the city.");
 		ToolTipUtilities.setTooltipProperties(tooltipForZoom, true, 400.0, 12.0, AnchorLocation.CONTENT_TOP_LEFT);
 		labelForZoom.setTooltip(tooltipForZoom);
 		labelForZoom.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
@@ -186,10 +190,34 @@ public class VisualTraceController implements Initializable
 		DoubleBinding imgViewHeightAccordingToItsWidth = imgView.fitWidthProperty().multiply((double)VisualTraceUI.googleMapHeight / (double)VisualTraceUI.googleMapWidth);
 		imgView.fitHeightProperty().bind(Bindings.min(imgViewHeightAccordingToItsWidth, imgViewHeightAccordingToPaneHeight));
 		
-		rightPane.widthProperty().addListener((ChangeListener<Number>) (observable, oldValue, newValue) -> labelLoading.setLayoutX(newValue.doubleValue() / 2 - labelLoading.getWidth() / 2));
-		rightPane.heightProperty().addListener((ChangeListener<Number>) (observable, oldValue, newValue) -> labelLoading.setLayoutY(newValue.doubleValue() / 2 - labelLoading.getHeight() / 2));
+		rightPane.widthProperty().addListener((ChangeListener<Number>) (observable, oldValue, newValue) -> 
+		{
+			labelLoading.autosize();
+			labelLoading.setLayoutX(imgView.getFitWidth() / 2 - labelLoading.getWidth() / 2);
+		});
+		rightPane.heightProperty().addListener((ChangeListener<Number>) (observable, oldValue, newValue) ->
+		{
+			labelLoading.autosize();
+			labelLoading.setLayoutY(imgView.getFitHeight() / 2 - labelLoading.getHeight() / 2);	
+		});
 		
-		tableTrace.prefWidthProperty().bind(leftPane.widthProperty().subtract(14));
+		splitPane.getDividers().get(0).positionProperty().addListener((ChangeListener<Number>) (observable, oldValue, newValue) ->
+		{
+			if (btnTrace.getScene() == null) //the stage isn't initialized yet, we don't have real sizes at this point
+				return;
+			
+			double endOfTraceBtn = btnTrace.getLayoutX() + btnTrace.getWidth();
+			double minX = endOfTraceBtn / splitPane.getWidth();
+			
+			if (newValue.doubleValue() * splitPane.getWidth() < endOfTraceBtn) //don't let the splitter go past the end of the trace button
+				splitPane.setDividerPosition(0, minX);
+		});
+
+		DoubleBinding maxTableWidth = columnMapPin.widthProperty().add(columnHop.widthProperty().add(columnPing.widthProperty().add(columnIPAddress.widthProperty().
+										add(Bindings.when(columnHostname.visibleProperty()).then(columnHostname.widthProperty()).otherwise(0).add(columnLocation.widthProperty().
+												add(columnZoomButton.widthProperty().add(10)))))));
+		DoubleBinding splitterLocation = leftPane.widthProperty().subtract(14);
+		tableTrace.prefWidthProperty().bind(Bindings.min(maxTableWidth, splitterLocation));
 		
 		DoubleBinding tableHeightAccordingToPaneHeight = leftPane.heightProperty().subtract(tableTrace.layoutYProperty());
 		DoubleBinding tableHeightAccordingToAmountOfRows = tableTrace.fixedCellSizeProperty().multiply(Bindings.size(tableTrace.getItems()).add(3));
@@ -199,17 +227,13 @@ public class VisualTraceController implements Initializable
 	private void setTableToAutoFitColumns()
 	{
 		tableTrace.setSkin(new TableViewSkinWithAutoFitColumns(tableTrace));
-		tableTrace.getItems().addListener(new ListChangeListener<TraceLineInfo>()
+		tableTrace.getItems().addListener((ListChangeListener<TraceLineInfo>) c ->
 		{
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends TraceLineInfo> c)
-			{
-				TableViewSkinWithAutoFitColumns skin = (TableViewSkinWithAutoFitColumns) tableTrace.getSkin();
+			TableViewSkinWithAutoFitColumns skin = (TableViewSkinWithAutoFitColumns) tableTrace.getSkin();
 
-				for (TableColumn<TraceLineInfo, ?> column : tableTrace.getColumns())
-					if (column.isVisible())
-						skin.resizeColumnToFitContent(column, -1);
-			}
+			for (TableColumn<TraceLineInfo, ?> column : tableTrace.getColumns())
+				if (column.isVisible())
+					skin.resizeColumnToFitContent(column, -1);
 		});		
 	}
 	
@@ -224,7 +248,7 @@ public class VisualTraceController implements Initializable
 		labelVisualTrace.setTooltip(visualTraceTooltip);
 		
 		GUIController.setCommonGraphicOnLabeled(labelPingTimeout, GUIController.CommonGraphicImages.TOOLTIP);
-		Tooltip pingTimeoutTooltip = new Tooltip("The ping timeout (in milliseconds) for each of the 3 pings for every hop.\nEmpty value means default timeout.");
+		Tooltip pingTimeoutTooltip = new Tooltip("The ping timeout (in milliseconds) for each of the 3 pings for every hop.\nDefault value is 3000.");
 		ToolTipUtilities.setTooltipProperties(pingTimeoutTooltip, true, 400.0, 12.0, AnchorLocation.WINDOW_TOP_LEFT); 
 		labelPingTimeout.setTooltip(pingTimeoutTooltip);
 		
@@ -245,14 +269,14 @@ public class VisualTraceController implements Initializable
 				Clipboard clipboard = Clipboard.getSystemClipboard();
 				ClipboardContent content = new ClipboardContent();
 				
-				MenuItem copyMapImage = new MenuItem("Map image");
+				MenuItem copyMapImage = new MenuItem("  Map image");
 				copyMapImage.setOnAction(event ->
 				{
 					content.putImage(imgView.getImage());
 					clipboard.setContent(content);
 				});
 				
-				MenuItem copyWholeTable = new MenuItem("Whole table");
+				MenuItem copyWholeTable = new MenuItem("  Whole table");
 				copyWholeTable.setOnAction(event ->
 				{
 					StringBuilder result = new StringBuilder();
@@ -264,47 +288,55 @@ public class VisualTraceController implements Initializable
 					clipboard.setContent(content);
 				});
 				
-				MenuItem copyRow = new MenuItem("Whole row");
+				MenuItem copyRow = new MenuItem("  Whole row");
 				copyRow.setOnAction(event ->
 				{
 					content.putString(row.getItem().toString().trim());
 					clipboard.setContent(content);
 				});
 				
-				MenuItem copyPingResults = new MenuItem("Ping results");
+				MenuItem copyPingResults = new MenuItem("  Ping results");
 				copyPingResults.setOnAction(event ->
 				{
 					content.putString(row.getItem().pingResultsProperty().get().trim());
 					clipboard.setContent(content);
 				});
 				
-				MenuItem copyHostname = new MenuItem("Hostname");
+				MenuItem copyHostname = new MenuItem("  Hostname");
 				copyHostname.setOnAction(event ->
 				{
 					content.putString(row.getItem().hostnameProperty().get().trim());
 					clipboard.setContent(content);
 				});
 				
-				MenuItem copyIPAddress = new MenuItem("IP address");
+				MenuItem copyIPAddress = new MenuItem("  IP address");
 				copyIPAddress.setOnAction(event ->
 				{
 					content.putString(row.getItem().ipAddressProperty().get().trim());
 					clipboard.setContent(content);
 				});
 				
-				MenuItem copyLocation = new MenuItem("Location");
+				MenuItem copyLocation = new MenuItem("  Location");
 				copyLocation.setOnAction(event ->
 				{
 					content.putString(row.getItem().locationProperty().get().trim());
 					clipboard.setContent(content);
 				});				
 				
-				Menu copyMenu = new Menu("Copy", null, copyMapImage, copyWholeTable, copyRow, copyPingResults, copyHostname, copyIPAddress, copyLocation);
+				List<MenuItem> copyMenuItems = Arrays.asList(copyPingResults, copyIPAddress, copyLocation, new SeparatorMenuItem(), copyRow, copyWholeTable, copyMapImage);
 				
-				MenuItem moreGeoIPInfo = new MenuItem("Show more GeoIP information in the browser");
+				Menu copyMenu = new Menu("  Copy", null, (MenuItem[]) copyMenuItems.toArray());
+				copyMenu.setOnShowing(event ->
+				{
+					ObservableList<MenuItem> items = copyMenu.getItems();
+					if (row.getItem().hostnameProperty().isNotEmpty().get() && !items.contains(copyHostname))
+						items.add(1, copyHostname);
+				});
+
+				MenuItem moreGeoIPInfo = new MenuItem("  Show GeoIP results from multiple sources");
 				moreGeoIPInfo.setOnAction(event -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + row.getItem().ipAddressProperty().get()));
 				
-				ContextMenu rowMenu = new ContextMenu(copyMenu, moreGeoIPInfo);
+				ContextMenu rowMenu = new ContextMenu(moreGeoIPInfo, copyMenu);
 				
 				row.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(row.itemProperty())).then(rowMenu).otherwise((ContextMenu) null));
 				
@@ -316,7 +348,7 @@ public class VisualTraceController implements Initializable
 	{
 		imgView.setOnContextMenuRequested(event ->
 		{
-			MenuItem copyMap = new MenuItem("Copy map image");
+			MenuItem copyMap = new MenuItem("  Copy map image");
 			copyMap.setOnAction(mapEvent ->
 			{
 				Clipboard clipboard = Clipboard.getSystemClipboard();
@@ -365,16 +397,6 @@ public class VisualTraceController implements Initializable
 	public NumberTextField getNumFieldPingTimeout()
 	{
 		return numFieldPingTimeout;
-	}
-
-	public Pane getLeftPane()
-	{
-		return leftPane;
-	}
-
-	public Pane getRightPane()
-	{
-		return rightPane;
 	}
 
 	public TableView<TraceLineInfo> getTableTrace()

@@ -145,6 +145,7 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 			detecting.setVisible(true);
 			btnAutoDetect.setDisable(true);
 			comboNIC.setDisable(true);
+			btnDone.setDisable(true);
 			final int timeoutInSecs = 5;
 
 			String ipToPing = "8.8.8.8";
@@ -182,9 +183,8 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 				}
 			}
 		}
-		catch (Exception e)
+		catch (Exception e) //if it fails, it fails...
 		{
-			Platform.runLater(() -> new Alert(AlertType.ERROR, "Unable to auto-detect: " + e.getMessage()).showAndWait());
 		}
 		finally
 		{
@@ -233,5 +233,6 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 
 		comboNIC.setDisable(false);
 		btnAutoDetect.setDisable(false);
+		btnDone.setDisable(false);
 	}
 }

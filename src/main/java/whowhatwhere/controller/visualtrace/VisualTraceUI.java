@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -65,7 +66,6 @@ import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
@@ -84,7 +84,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	
 	private final static String propsSplitterPosition = "traceSplitterPosition";
 	private final static String propsResolveHostname = "traceResolveHostnames";
-	private final static String propsReplyTimeout = "traceReplyTimeout";
+	private final static String propsPingTimeout = "tracePingTimeout";
 	public final static int googleMapWidth = 300;
 	public final static int googleMapHeight= 255;
 	private final static String baseUrl = "https://maps.googleapis.com/maps/api/staticmap?key=" + GoogleStaticMapsAPIKey.key + "&size=" + googleMapWidth + "x" + googleMapHeight + "&scale=2&maptype=roadmap";
@@ -93,6 +93,9 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	private final static int googleMaxZoomLevel = 20;
 	private final static int googleDefaultZoomLevel = 6;
 	private final static int googleZoomLevelStep = 1;
+	private final static String loadingLabelText = "Loading...";
+	private final static String noHopsSelectedLabelText = "No hops selected";
+	private final static String styleForLoadingLabel = "-fx-background-color : #f4f4f4; -fx-border-color: black; -fx-border-width: 3";
 	
 	private VisualTraceController controller;
 	private SplitPane splitPane;
@@ -100,7 +103,6 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	private CheckBox chkResolveHostnames;
 	private NumberTextField numFieldReplyTimeout;
 	private Button btnTrace;
-	private Pane rightPane;
 	private Label labelUnderMap;
 	private ImageView imgView;
 	private ToggleGroup zoomToggleGroup = new ToggleGroup();
@@ -123,7 +125,6 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		initControls();
 		guiController.registerForSettingsHandler(this);
 		
-		placeLabelUnderMap();
 		initImgService();
 		showOwnLocationOnMap();
 
@@ -144,6 +145,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		});
 
 		setSpecialColumns();
+		labelUnderMap.styleProperty().bind(Bindings.when(labelUnderMap.textProperty().isEqualTo(loadingLabelText)).then(styleForLoadingLabel).otherwise(""));
 	}
 	
 	public void setAddressAndStartTrace(String address)
@@ -160,7 +162,6 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		numFieldReplyTimeout = controller.getNumFieldPingTimeout();
 		btnTrace = controller.getBtnTrace();
 		imgView = controller.getImgView();
-		rightPane = controller.getRightPane();
 		imgView = controller.getImgView();
 		labelUnderMap = controller.getLoadingLabel();
 		tableTrace = controller.getTableTrace();
@@ -340,8 +341,8 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	private void placeLabelUnderMap()
 	{
 		labelUnderMap.autosize();
-		labelUnderMap.setLayoutX(rightPane.getWidth() / 2 - labelUnderMap.getWidth() / 2);
-		labelUnderMap.setLayoutY(rightPane.getHeight() / 2 - labelUnderMap.getHeight() / 2);
+		labelUnderMap.setLayoutX(imgView.getFitWidth() / 2 - labelUnderMap.getWidth() / 2);
+		labelUnderMap.setLayoutY(imgView.getFitHeight() / 2 - labelUnderMap.getHeight() / 2);
 	}
 
 	private void initImgService()
@@ -355,7 +356,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 
 			if (img == null)
 			{
-				labelUnderMap.setText("No hops selected");
+				labelUnderMap.setText(noHopsSelectedLabelText);
 				placeLabelUnderMap();
 				labelUnderMap.setVisible(true);
 			}
@@ -507,8 +508,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	{
 		Platform.runLater(() ->
 		{
-			imgView.setImage(null);
-			labelUnderMap.setText("Loading...");
+			labelUnderMap.setText(loadingLabelText);
 			labelUnderMap.setVisible(true);
 			imgService.restart();
 		});
@@ -662,14 +662,14 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	{
 		props.put(propsSplitterPosition, String.valueOf(splitPane.getDividerPositions()[0]));
 		props.put(propsResolveHostname, String.valueOf(chkResolveHostnames.isSelected()));
-		props.put(propsReplyTimeout, numFieldReplyTimeout.getText());
+		props.put(propsPingTimeout, numFieldReplyTimeout.getText());
 	}
 	
 	public void loadLastRunConfig(Properties props)
 	{
 		splitPane.setDividerPosition(0, PropertiesByType.getDoubleProperty(props, propsSplitterPosition, 0.49));
 		chkResolveHostnames.setSelected(PropertiesByType.getBoolProperty(props, propsResolveHostname, false));
-		numFieldReplyTimeout.setText(PropertiesByType.getStringProperty(props, propsReplyTimeout, ""));
+		numFieldReplyTimeout.setText(PropertiesByType.getStringProperty(props, propsPingTimeout, ""));
 	}
 	
 	
