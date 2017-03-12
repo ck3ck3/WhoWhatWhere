@@ -18,32 +18,47 @@
  ******************************************************************************/
 package whowhatwhere.model.geoipresolver;
 
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class GeoIPResolver
 {
-	private final static String secondaryGeoIpPrefix = "https://www.iplocation.net/?query=";
-	private static final String serviceBaseURI = "http://ip-api.com/xml/";
-	private static final String failMsg = "fail";
 	private static final Logger logger = Logger.getLogger(GeoIPResolver.class.getPackage().getName());
+	
+	private static final String secondaryGeoIpPrefix = "https://www.iplocation.net/?query=";
+	private static final String serviceBaseURI = "http://ip-api.com/json/";
+	private static final String serviceBaseURIForBatch = "http://ip-api.com/batch/";
+	private static final String onlyBasicFields = "?fields=country,region,regionName,city,org,query,status,message";
+	private static final String failMsg = "fail";
 	private static final int maxQueriesPerMin = 120;
-	private static final int connectionTimeout = 3000;//1500;
-	private static final int readTimeout = 1500;
+	private static final int maxItemsPerBatchRequest = 100;
+	private static final int connectionTimeout = 3000;
+	private static final int readTimeout = 3000;
+	
 	private static int queryCounter = 0;
 
-	public static GeoIPInfo getIPInfo(String ip)
+	/**
+	 * @param ip - ip to query
+	 * @param extended - if true, will return an instance of GeoIPInfoExtended. Otherwise, will return an instance of GeoIPInfo.
+	 * @return
+	 */
+	public static GeoIPInfo getIPInfo(String ip, boolean extended)
 	{
 
 		if (queryCounter == maxQueriesPerMin)
@@ -51,26 +66,92 @@ public class GeoIPResolver
 		else
 			addToCounter();
 
-		Document doc;
-
+		RequestConfig timeouts = RequestConfig.custom().setConnectTimeout(connectionTimeout).setSocketTimeout(readTimeout).build();
+		CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(timeouts).build();
+		
+		HttpGet getRequest = new HttpGet(serviceBaseURI + ip + (extended ? "" : onlyBasicFields));
+		
 		try
 		{
-			URLConnection serviceURL = new URL(serviceBaseURI + ip).openConnection();
-			serviceURL.setConnectTimeout(connectionTimeout);
-			serviceURL.setReadTimeout(readTimeout);
+			CloseableHttpResponse response = httpClient.execute(getRequest);
+			String responseText = IOUtils.toString(response.getEntity().getContent());
+			httpClient.close();
 			
-			InputStream serviceInputStream = serviceURL.getInputStream();
-			DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-			doc = docBuilder.parse(serviceInputStream);
-			serviceInputStream.close();
+			return parseResponse(new JSONObject(responseText), extended);
 		}
-		catch (Exception e)
+		catch (IOException ioe)
 		{
-			logger.log(Level.WARNING, "Unable to get GeoIP info for IP " + ip, e);
-			return parseResponse(null);
+			logger.log(Level.WARNING, "Unable to get GeoIP info for IP " + ip, ioe);
+			return parseResponse(null, false);
 		}
 
-		return parseResponse(doc);
+	}
+	
+	public static List<GeoIPInfo> getBatchGeoIPInfo(List<String> ips, boolean extended)
+	{
+		if (ips.size() == 0)
+			return new ArrayList<GeoIPInfo>();
+		
+		RequestConfig timeouts = RequestConfig.custom().setConnectTimeout(connectionTimeout).setSocketTimeout(readTimeout).build();
+		CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(timeouts).build();
+		
+	    HttpPost request = new HttpPost(serviceBaseURIForBatch + (extended ? "" : onlyBasicFields));
+	    try
+	    {
+	    	int listSize = ips.size();
+	    	int itemsLeft = listSize;
+	    	int firstIndex = 0;
+	    	List<GeoIPInfo> resultList = new ArrayList<>();
+	    	
+	    	while (itemsLeft > 0)
+	    	{
+	    		int itemsInThisIteration = Math.min(itemsLeft, maxItemsPerBatchRequest);
+	    		int lastIndex = firstIndex + itemsInThisIteration;
+	    		List<String> subList = ips.subList(firstIndex, lastIndex);
+	    		
+		    	String jsonArrayInput = buildJSONArrayFromListOfIPs(subList);
+		    	request.setEntity(new StringEntity(jsonArrayInput));
+		    	CloseableHttpResponse response = httpClient.execute(request);
+		    	
+		    	String responseText = IOUtils.toString(response.getEntity().getContent());
+		    	response.close();
+		    	resultList.addAll(buildListOfGeoIPInfoFromJSONArray(new JSONArray(responseText), extended));
+		    	
+		    	itemsLeft -= itemsInThisIteration;
+		    	firstIndex = lastIndex;
+	    	}
+	    	
+	    	httpClient.close();
+	    	
+	    	return resultList;
+	    }
+	    catch(IOException ioe)
+	    {
+	    	logger.log(Level.WARNING, "Unable to get batch GeoIP info. ", ioe);
+	    	return null;
+	    }
+	}
+	
+	private static String buildJSONArrayFromListOfIPs(List<String> ips)
+	{
+		StringBuilder builder = new StringBuilder("[");
+		
+		for(String ip : ips)
+			builder.append("{\"query\": \"" + ip + "\"}, ");
+		
+		int length = builder.length();
+		builder.replace(length - 2, length, "]"); //replace the last ", " with "]"
+		
+		return builder.toString();
+	}
+	
+	private static List<GeoIPInfo> buildListOfGeoIPInfoFromJSONArray(JSONArray jsonArray, boolean extended)
+	{
+		List<GeoIPInfo> list = new ArrayList<>();
+		
+		jsonArray.forEach(item -> list.add(parseResponse((JSONObject) item, extended)));
+		
+		return list;
 	}
 
 	private static void addToCounter()
@@ -90,53 +171,54 @@ public class GeoIPResolver
 
 	private static GeoIPInfo generateQuotaReachedInfo()
 	{
-		GeoIPInfo ipInfo = new GeoIPInfo();
+		GeoIPInfo ipInfo = new GeoIPInfoExtended();
 
 		ipInfo.setSuccess(false);
 		ipInfo.setMessage("Fail: Reached quota of queries per minute (" + maxQueriesPerMin + "). Wait a minute and try again");
 		return ipInfo;
 	}
 
-	private static GeoIPInfo parseResponse(Document doc)
+	private static GeoIPInfo parseResponse(JSONObject jsonObj, boolean extended)
 	{
-		GeoIPInfo ipInfo = new GeoIPInfo();
+		GeoIPInfo ipInfo = extended ? new GeoIPInfoExtended() : new GeoIPInfo();
 
-		NodeList elements;
-		String text;
 		
-		if (doc == null) //geoIP connection timed out
+		if (jsonObj == null) //geoIP connection timed out
 		{
 			ipInfo.setSuccess(false);
 			ipInfo.setMessage("Fail: Connection to GeoIP service timed out");
 			return ipInfo;			
 		}
 
-		elements = doc.getElementsByTagName("status");
-		text = elements.item(0).getTextContent();
-		ipInfo.setStatus(text);
+		String status = (String) jsonObj.get("status");
+		ipInfo.setStatus(status);
 
-		if (text.equals(failMsg))
+		if (status.equals(failMsg))
 		{
 			ipInfo.setSuccess(false);
-			ipInfo.setMessage("Fail: " + doc.getElementsByTagName("message").item(0).getTextContent());
+			ipInfo.setMessage("Fail: " + (String) jsonObj.get("message"));
 			return ipInfo;
 		}
 
 		ipInfo.setSuccess(true);
-		ipInfo.setStatus(doc.getElementsByTagName("status").item(0).getTextContent());
-		ipInfo.setCountry(doc.getElementsByTagName("country").item(0).getTextContent());
-		ipInfo.setCountryCode(doc.getElementsByTagName("countryCode").item(0).getTextContent());
-		ipInfo.setRegion(doc.getElementsByTagName("region").item(0).getTextContent());
-		ipInfo.setRegionName(doc.getElementsByTagName("regionName").item(0).getTextContent());
-		ipInfo.setCity(doc.getElementsByTagName("city").item(0).getTextContent());
-		ipInfo.setZip(doc.getElementsByTagName("zip").item(0).getTextContent());
-		ipInfo.setLat(doc.getElementsByTagName("lat").item(0).getTextContent());
-		ipInfo.setLon(doc.getElementsByTagName("lon").item(0).getTextContent());
-		ipInfo.setTimezone(doc.getElementsByTagName("timezone").item(0).getTextContent());
-		ipInfo.setIsp(doc.getElementsByTagName("isp").item(0).getTextContent());
-		ipInfo.setOrg(doc.getElementsByTagName("org").item(0).getTextContent());
-		ipInfo.setAs(doc.getElementsByTagName("as").item(0).getTextContent());
-		ipInfo.setQuery(doc.getElementsByTagName("query").item(0).getTextContent());
+		ipInfo.setCountry((String) jsonObj.get("country"));
+		ipInfo.setRegion((String) jsonObj.get("region"));
+		ipInfo.setRegionName((String) jsonObj.get("regionName"));
+		ipInfo.setCity((String) jsonObj.get("city"));
+		ipInfo.setOrg((String) jsonObj.get("org"));
+		ipInfo.setQuery((String) jsonObj.get("query"));
+		
+		if (extended)
+		{
+			
+			((GeoIPInfoExtended)ipInfo).setCountryCode((String) jsonObj.get("countryCode"));
+			((GeoIPInfoExtended)ipInfo).setZip((String) jsonObj.get("zip"));
+			((GeoIPInfoExtended)ipInfo).setLat(((Double) jsonObj.get("lat")).toString());
+			((GeoIPInfoExtended)ipInfo).setLon(((Double) jsonObj.get("lon")).toString());
+			((GeoIPInfoExtended)ipInfo).setTimezone((String) jsonObj.get("timezone"));
+			((GeoIPInfoExtended)ipInfo).setIsp((String) jsonObj.get("isp"));
+			((GeoIPInfoExtended)ipInfo).setAs((String) jsonObj.get("as"));
+		}
 
 		return ipInfo;
 	}

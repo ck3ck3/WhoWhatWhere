@@ -294,7 +294,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 			
 			if (ip != null)
 			{
-				GeoIPInfo ipInfo = GeoIPResolver.getIPInfo(ip);
+				GeoIPInfo ipInfo = GeoIPResolver.getIPInfo(ip, false);
 				
 				if (ipInfo.getSuccess())
 				{
@@ -368,7 +368,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		for (String line : tracertOutput)
 		{
 			String ip = TraceCommandScreen.extractIPFromLine(line);
-			GeoIPInfo ipInfo = GeoIPResolver.getIPInfo(ip);
+			GeoIPInfo ipInfo = GeoIPResolver.getIPInfo(ip, false);
 
 			if (ipInfo != null)
 				geoIPResults.put(ip, ipInfo);

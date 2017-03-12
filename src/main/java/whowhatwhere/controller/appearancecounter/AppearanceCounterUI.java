@@ -783,7 +783,19 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		ObservableList<IPInfoRowModel> data = FXCollections.observableArrayList();
 		IPInfoRowModel row;
 		int i = 1;
-
+		boolean getLocationInfo = chkboxGetLocation.isSelected();
+		List<GeoIPInfo> batchGeoIPInfo = null;
+		
+		if (getLocationInfo)
+		{
+			List<String> listOfIPs = new ArrayList<>();
+			
+			for (IpAppearancesCounter ipCounter : ips)
+				listOfIPs.add(ipCounter.getIp());
+			
+			batchGeoIPInfo = GeoIPResolver.getBatchGeoIPInfo(listOfIPs, false);
+		}
+		
 		for (IpAppearancesCounter ipCounter : ips)
 		{
 			Integer id = i++;
@@ -796,19 +808,24 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 			String region = "";
 			String city = "";
 
-			if (chkboxGetLocation.isSelected())
+			if (getLocationInfo)
 			{
-				GeoIPInfo ipInfo = GeoIPResolver.getIPInfo(ip);
+				GeoIPInfo ipInfo = batchGeoIPInfo != null ? batchGeoIPInfo.get(id - 1) : null;
 
-				if (ipInfo.getSuccess())
+				if (ipInfo != null)
 				{
-					owner = ipInfo.getIsp();
-					country = ipInfo.getCountry();
-					region = ipInfo.getRegionName();
-					city = ipInfo.getCity();
+					if (ipInfo.getSuccess())
+					{
+						owner = ipInfo.getOrg();
+						country = ipInfo.getCountry();
+						region = ipInfo.getRegionName();
+						city = ipInfo.getCity();
+					}
+					else
+						owner = ipInfo.getMessage();
 				}
 				else
-					owner = ipInfo.getMessage();
+					owner = "Fail: Connection to GeoIP service timed out";
 			}
 
 			if (chkboxPing.isSelected())

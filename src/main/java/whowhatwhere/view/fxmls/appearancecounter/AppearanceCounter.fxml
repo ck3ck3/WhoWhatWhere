@@ -108,9 +108,9 @@
                   <TableColumn fx:id="columnNotes" prefWidth="146.0" text="IP note [set from code]" />
                   <TableColumn fx:id="columnOwner" editable="false" minWidth="1.0" prefWidth="201.0" text="Organization" />
                   <TableColumn fx:id="columnPing" prefWidth="128.0" text="Ping" />
-                  <TableColumn fx:id="columnCountry" editable="false" minWidth="0.0" prefWidth="166.0" text="Country" />
-                  <TableColumn fx:id="columnRegion" editable="false" minWidth="0.0" prefWidth="143.0" text="Region" />
-                  <TableColumn fx:id="columnCity" editable="false" prefWidth="142.0" text="City" />
+                  <TableColumn fx:id="columnCountry" editable="false" minWidth="0.0" prefWidth="148.0" text="Country" />
+                  <TableColumn fx:id="columnRegion" editable="false" minWidth="0.0" prefWidth="142.0" text="Region" />
+                  <TableColumn fx:id="columnCity" editable="false" prefWidth="145.0" text="City" />
                </columns>
             </TableView>
             <Button fx:id="btnExportTableToCSV" disable="true" layoutX="981.0" layoutY="582.0" mnemonicParsing="false" text="Export table contents to CSV file" AnchorPane.bottomAnchor="19.0" AnchorPane.rightAnchor="18.0" />
