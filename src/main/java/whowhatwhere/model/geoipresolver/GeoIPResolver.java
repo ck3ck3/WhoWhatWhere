@@ -74,7 +74,7 @@ public class GeoIPResolver
 		try
 		{
 			CloseableHttpResponse response = httpClient.execute(getRequest);
-			String responseText = IOUtils.toString(response.getEntity().getContent());
+			String responseText = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
 			httpClient.close();
 			
 			return parseResponse(new JSONObject(responseText), extended);
@@ -113,7 +113,7 @@ public class GeoIPResolver
 		    	request.setEntity(new StringEntity(jsonArrayInput));
 		    	CloseableHttpResponse response = httpClient.execute(request);
 		    	
-		    	String responseText = IOUtils.toString(response.getEntity().getContent());
+		    	String responseText = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
 		    	response.close();
 		    	resultList.addAll(buildListOfGeoIPInfoFromJSONArray(new JSONArray(responseText), extended));
 		    	
