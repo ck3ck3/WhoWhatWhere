@@ -513,8 +513,6 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	@Override
 	public void traceFinished()
 	{
-		isTraceInProgress.set(false);
-		
 		if (isAtLeastOneCheckboxSelected())
 		{
 			imgView.imageProperty().addListener(new ChangeListener<Image>() //perform post-trace stuff only after the last image of the trace is shown 
@@ -533,6 +531,8 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		}
 		else
 			informUserTraceFinishedByAbortOrError(wasTraceAborted ? FinishStatus.ABORT : FinishStatus.SUCCESS);
+		
+		isTraceInProgress.set(false);
 	}
 	
 	private void informUserTraceFinishedByAbortOrError(FinishStatus status)
