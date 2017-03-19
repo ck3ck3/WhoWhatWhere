@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -17,29 +18,38 @@
    <items>
       <Pane fx:id="leftPane">
          <children>
-            <TextField fx:id="textTrace" layoutX="144.0" layoutY="90.0" prefHeight="29.0" prefWidth="237.0" />
-            <Button fx:id="btnTrace" layoutX="397.0" layoutY="90.0" mnemonicParsing="false" prefHeight="29.0" text="Trace" />
-            <CheckBox fx:id="chkResolveHostnames" layoutX="233.0" layoutY="53.0" mnemonicParsing="false" text="Resolve hostnames" />
-            <Label layoutX="14.0" layoutY="96.0" text="IP or hostname:" />
-            <NumberTextField fx:id="numFieldPingTimeout" allowEmpty="true" layoutX="144.0" layoutY="52.0" maxValue="3000" minValue="1" prefHeight="25.0" prefWidth="55.0" />
-            <Label layoutX="14.0" layoutY="140.0" text="Trace results:" />
-            <TableView fx:id="tableTrace" editable="true" fixedCellSize="24.0" layoutX="14.0" layoutY="169.0" maxHeight="384.0" minHeight="100.0" prefHeight="100.0" stylesheets="/whowhatwhere/view/fxmls/visualtrace/tableTrace.css">
+            <Pane fx:id="paneSettings" layoutX="14.0" layoutY="50.0">
+               <children>
+                  <TextField fx:id="textTrace" layoutX="130.0" prefHeight="29.0" prefWidth="237.0" />
+                  <CheckBox fx:id="chkResolveHostnames" layoutX="219.0" layoutY="44.0" mnemonicParsing="false" text="Resolve hostnames" />
+                  <Label layoutY="6.0" text="IP or hostname" />
+                  <NumberTextField fx:id="numFieldPingTimeout" layoutX="130.0" layoutY="42.0" maxValue="3000" minValue="1" prefHeight="25.0" prefWidth="55.0" />
+                  <Label fx:id="labelPingTimeout" layoutY="43.0" text="Ping timeout (ms)" />
+                  <Label layoutY="84.0" text="Stop tracing if" />
+                  <NumberTextField fx:id="numFieldStopTracingAfter" layoutX="82.0" layoutY="80.0" maxValue="30" minValue="1" prefHeight="25.0" prefWidth="33.0" />
+                  <Label fx:id="labelConsecutiveTimeouts" layoutX="121.0" layoutY="84.0" text="consecutive hops haven't responded" />
+               </children>
+            </Pane>
+            <Button fx:id="btnTrace" layoutX="14.0" layoutY="172.0" mnemonicParsing="false" prefHeight="29.0" text="Trace" />
+            <TableView fx:id="tableTrace" editable="true" fixedCellSize="24.0" layoutX="15.0" layoutY="230.0" maxHeight="384.0" minHeight="100.0" prefHeight="100.0" stylesheets="/whowhatwhere/view/fxmls/visualtrace/tableTrace.css">
               <columns>
                   <TableColumn fx:id="columnMapPin" prefWidth="84.0" sortable="false" text="Map pin(?)" />
-                <TableColumn fx:id="columnHop" editable="false" prefWidth="40.0" sortable="false" text="Hop" />
-                  <TableColumn fx:id="columnPing" editable="false" prefWidth="84.0" sortable="false" text="Ping results" />
-                  <TableColumn fx:id="columnHostname" editable="false" prefWidth="71.0" sortable="false" text="Hostname" />
-                  <TableColumn fx:id="columnIPAddress" editable="false" prefWidth="87.0" sortable="false" text="IP address" />
+                <TableColumn fx:id="columnHop" editable="false" prefWidth="56.0" sortable="false" text="Hop(?)" />
+                  <TableColumn fx:id="columnPing" editable="false" sortable="false" text="Ping results" />
+                  <TableColumn fx:id="columnHostname" editable="false" prefWidth="70.0" sortable="false" text="Hostname" />
+                  <TableColumn fx:id="columnIPAddress" editable="false" prefWidth="76.0" sortable="false" text="IP address" />
                   <TableColumn fx:id="columnLocation" editable="false" prefWidth="78.0" sortable="false" text="Location(?)" />
                   <TableColumn fx:id="columnZoomButton" editable="false" prefWidth="83.0" sortable="false" text="Zoom in(?)" />
               </columns>
             </TableView>
-            <Label fx:id="labelPingTimeout" layoutX="14.0" layoutY="53.0" text="Ping timeout (ms)" />
             <Label fx:id="labelVisualTrace" layoutX="14.0" layoutY="14.0" text="Visual Trace">
                <font>
                   <Font name="System Bold" size="16.0" />
                </font>
             </Label>
+            <Button fx:id="btnAbort" disable="true" layoutX="90.0" layoutY="172.0" mnemonicParsing="false" prefHeight="29.0" text="Abort" />
+            <Label fx:id="labelStatus" layoutX="203.0" layoutY="178.0" text="Starting trace..." />
+            <ProgressIndicator fx:id="progressIndicator" layoutX="175.0" layoutY="177.0" prefHeight="20.0" prefWidth="20.0" />
          </children>
       </Pane>
       <Pane fx:id="rightPane">

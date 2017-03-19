@@ -22,11 +22,8 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import whowhatwhere.controller.commands.ping.PingCommandScreen;
-import whowhatwhere.controller.commands.trace.TraceCommandScreen;
-import whowhatwhere.controller.visualtrace.TraceOutputReceiver;
 
 public class Commands
 {
@@ -52,30 +49,5 @@ public class Commands
 
 		cmdScreen.showScreenOnNewStage("Pinging " + ip, null, cmdScreen.getCloseButton());
 		cmdScreen.runCommand();
-	}
-
-	/**
-	 * @param ip - ip to ping
-	 * @param stage - stage to return to after this screen is closed
-	 */
-	public static TraceCommandScreen traceCommand(Stage stage, String ip, boolean resolveHostnames, Integer pingTimeout, TraceOutputReceiver outputReceiver)
-	{
-		TraceCommandScreen cmdScreen;
-
-		try
-		{
-			cmdScreen = new TraceCommandScreen(stage, stage.getScene(), ip, resolveHostnames, pingTimeout, outputReceiver);
-		}
-		catch (IOException e)
-		{
-			logger.log(Level.SEVERE, "Unable to load Trace (command) screen", e);
-			return null;
-		}
-
-		Stage newStage = cmdScreen.showScreenOnNewStage("Tracing " + ip, Modality.APPLICATION_MODAL, cmdScreen.getCloseButton());
-		cmdScreen.setOnCloseRequestBehavior(newStage);
-		cmdScreen.runCommand();
-		
-		return cmdScreen;
 	}
 }

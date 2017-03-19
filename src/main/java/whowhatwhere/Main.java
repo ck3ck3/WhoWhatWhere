@@ -115,6 +115,7 @@ public class Main extends Application
 		CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 		
 		HttpGet getRequest = new HttpGet(urlForLatestRelease);
+		getRequest.addHeader("User-Agent", appTitle);
 	    try
 		{
 	    	CloseableHttpResponse getResponse = httpClient.execute(getRequest);

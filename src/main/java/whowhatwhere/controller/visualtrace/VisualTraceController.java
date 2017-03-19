@@ -23,12 +23,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import com.sun.javafx.scene.control.skin.TableViewSkin;
-
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -39,6 +37,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableColumn;
@@ -52,18 +51,18 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
-import javafx.scene.text.Font;
 import javafx.stage.PopupWindow.AnchorLocation;
-import javafx.util.Callback;
 import numbertextfield.NumberTextField;
 import whowhatwhere.Main;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.ToolTipUtilities;
 import whowhatwhere.model.geoipresolver.GeoIPResolver;
 
+
 public class VisualTraceController implements Initializable
 {
 	private final static String traceIconLocation = "/buttonGraphics/Globe-Earth.png";
+	public final static String infinitySymbol = "\u221E";
 	
 	@FXML
 	private SplitPane splitPane;
@@ -103,33 +102,25 @@ public class VisualTraceController implements Initializable
 	private TableColumn<TraceLineInfo, String> columnZoomButton;
 	@FXML
 	private Label labelVisualTrace;
+	@FXML
+	private NumberTextField numFieldStopTracingAfter;
+	@FXML
+	private Button btnAbort;
+	@FXML
+	private Label labelStatus;
+	@FXML
+	private Pane paneSettings;
+	@FXML
+	private ProgressIndicator progressIndicator;
+	@FXML
+	private Label labelConsecutiveTimeouts;
 
-	/**
-	 * Exposes an originally protected method to auto-resize columns to fit to
-	 * width.<br>
-	 * Will not be needed once this is solved:
-	 * {@link https://bugs.openjdk.java.net/browse/JDK-8092235}
-	 */
-	private class TableViewSkinWithAutoFitColumns extends TableViewSkin<TraceLineInfo>
-	{
-		public TableViewSkinWithAutoFitColumns(TableView<TraceLineInfo> tableView)
-		{
-			super(tableView);
-		}
-
-		@Override
-		public void resizeColumnToFitContent(TableColumn<TraceLineInfo, ?> tc, int maxRows)
-		{
-			super.resizeColumnToFitContent(tc, maxRows);
-		}
-	}
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
 		initColumns();
-		initWdithAndHeightConstraints();
-		setTableToAutoFitColumns();
+		initWidthAndHeightConstraints();
 		setGraphics();
 		setTableContextMenu();
 		setMapContextMenu();
@@ -139,50 +130,39 @@ public class VisualTraceController implements Initializable
 			if (keyEvent.getCode() == KeyCode.ENTER)
 				btnTrace.fire();
 		});
+		
+		labelStatus.visibleProperty().bind(btnTrace.disabledProperty());
+		progressIndicator.visibleProperty().bind(labelStatus.visibleProperty());
 	}
 	
 	private void initColumns()
 	{
-		setColumnHeadersTooltips();
-		
 		columnHop.setCellValueFactory(new PropertyValueFactory<>(TraceLineInfo.Columns.HOP.getColumnName()));
 		columnPing.setCellValueFactory(new PropertyValueFactory<>(TraceLineInfo.Columns.PINGS.getColumnName()));
 		columnHostname.setCellValueFactory(new PropertyValueFactory<>(TraceLineInfo.Columns.HOSTNAME.getColumnName()));
 		columnIPAddress.setCellValueFactory(new PropertyValueFactory<>(TraceLineInfo.Columns.IP.getColumnName()));
 		columnLocation.setCellValueFactory(new PropertyValueFactory<>(TraceLineInfo.Columns.LOCATION.getColumnName()));
+		columnZoomButton.setCellValueFactory(new PropertyValueFactory<>(TraceLineInfo.Columns.IP.getColumnName())); //ip is required to create zoom control
+		
+		setColumnHeaderTooltip(columnMapPin, "Map pin", "Show/hide hops on the map");
+		setColumnHeaderTooltip(columnHop, "Hop", "Hops which don't respond to trace requests aren't shown in the table, which may result in hop numbers that aren't sequential. Moreover, when the final destination doesn't respond, or when the trace ends before reaching the destination, the destination is added to the table and marked as " + infinitySymbol + ".");		
+		setColumnHeaderTooltip(columnLocation, "Location", "GeoIP isn't always accurate. Right click on any row to see more GeoIP results in your browser");
+		setColumnHeaderTooltip(columnZoomButton, "Zoom in", "Toggle the buton to zoom in on the location. Untoggle to see the full route again. Note that this does not give extra accuracy to the location of the IP, it just zooms in to the center of the city.");
 	}
 	
-	private void setColumnHeadersTooltips()
+	private void setColumnHeaderTooltip(TableColumn<TraceLineInfo, ?> column, String headerText, String tooltipText)
 	{
-		Label labelForMapPin = new Label("Map pin");
-		GUIController.setCommonGraphicOnLabeled(labelForMapPin, GUIController.CommonGraphicImages.TOOLTIP);
-		Tooltip tooltipForMapPin = new Tooltip("Show/hide hops on the map");
-		tooltipForMapPin.setFont(new Font(12));
-		labelForMapPin.setTooltip(tooltipForMapPin);
-		labelForMapPin.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
-		columnMapPin.setGraphic(labelForMapPin);
-		columnMapPin.setText("");
-		
-		Label labelForLocation = new Label("Location");
-		GUIController.setCommonGraphicOnLabeled(labelForLocation, GUIController.CommonGraphicImages.TOOLTIP);
-		Tooltip tooltipForLocation = new Tooltip("GeoIP isn't always accurate. Right click on any row to see more GeoIP results in your browser");
-		ToolTipUtilities.setTooltipProperties(tooltipForLocation, true, 400.0, 12.0, AnchorLocation.CONTENT_TOP_LEFT);
-		labelForLocation.setTooltip(tooltipForLocation);
-		labelForLocation.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
-		columnLocation.setGraphic(labelForLocation);
-		columnLocation.setText("");
-		
-		Label labelForZoom = new Label("Zoom in");
-		GUIController.setCommonGraphicOnLabeled(labelForZoom, GUIController.CommonGraphicImages.TOOLTIP);
-		Tooltip tooltipForZoom = new Tooltip("Toggle the buton to zoom in on the location. Untoggle to see the full route again. Note that this does not give extra accuracy to the location of the IP, it just zooms in to the center of the city.");
-		ToolTipUtilities.setTooltipProperties(tooltipForZoom, true, 400.0, 12.0, AnchorLocation.CONTENT_TOP_LEFT);
-		labelForZoom.setTooltip(tooltipForZoom);
-		labelForZoom.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
-		columnZoomButton.setGraphic(labelForZoom);
-		columnZoomButton.setText("");
+		Label label = new Label(headerText);
+		GUIController.setCommonGraphicOnLabeled(label, GUIController.CommonGraphicImages.TOOLTIP);
+		Tooltip tooltip = new Tooltip(tooltipText);
+		ToolTipUtilities.setTooltipProperties(tooltip, true, 330.0, 12.0, AnchorLocation.CONTENT_TOP_LEFT);
+		label.setTooltip(tooltip);
+		label.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
+		column.setGraphic(label);
+		column.setText("");
 	}
 
-	private void initWdithAndHeightConstraints()
+	private void initWidthAndHeightConstraints()
 	{
 		imgView.fitWidthProperty().bind(rightPane.widthProperty().subtract(10));
 		
@@ -206,41 +186,80 @@ public class VisualTraceController implements Initializable
 			if (btnTrace.getScene() == null) //the stage isn't initialized yet, we don't have real sizes at this point
 				return;
 			
-			double endOfTraceBtn = btnTrace.getLayoutX() + btnTrace.getWidth();
-			double minX = endOfTraceBtn / splitPane.getWidth();
+			double endOfTraceTextfield = paneSettings.getLayoutX() + textTrace.getLayoutX() + textTrace.getWidth() + 10;
+			double minX = endOfTraceTextfield / splitPane.getWidth();
 			
-			if (newValue.doubleValue() * splitPane.getWidth() < endOfTraceBtn) //don't let the splitter go past the end of the trace button
+			if (newValue.doubleValue() * splitPane.getWidth() < endOfTraceTextfield) //don't let the splitter go past the end of the trace button
 				splitPane.setDividerPosition(0, minX);
 		});
 
 		DoubleBinding maxTableWidth = columnMapPin.widthProperty().add(columnHop.widthProperty().add(columnPing.widthProperty().add(columnIPAddress.widthProperty().
 										add(Bindings.when(columnHostname.visibleProperty()).then(columnHostname.widthProperty()).otherwise(0).add(columnLocation.widthProperty().
-												add(columnZoomButton.widthProperty().add(10)))))));
-		DoubleBinding splitterLocation = leftPane.widthProperty().subtract(14);
+												add(columnZoomButton.widthProperty().add(15)))))));
+		DoubleBinding splitterLocation = leftPane.widthProperty().subtract(30);
 		tableTrace.prefWidthProperty().bind(Bindings.min(maxTableWidth, splitterLocation));
+
+		refreshTableWhenNewColumnBecomesVisible();		
 		
-		DoubleBinding tableHeightAccordingToPaneHeight = leftPane.heightProperty().subtract(tableTrace.layoutYProperty());
-		DoubleBinding tableHeightAccordingToAmountOfRows = tableTrace.fixedCellSizeProperty().multiply(Bindings.size(tableTrace.getItems()).add(3));
+		DoubleBinding tableHeightAccordingToPaneHeight = leftPane.heightProperty().subtract(tableTrace.layoutYProperty()).subtract(10);
+		DoubleBinding tableHeightAccordingToAmountOfRows = tableTrace.fixedCellSizeProperty().multiply(Bindings.size(tableTrace.getItems()).add(2.6));
 		tableTrace.prefHeightProperty().bind(Bindings.min(tableHeightAccordingToPaneHeight, tableHeightAccordingToAmountOfRows));
 	}
-	
-	private void setTableToAutoFitColumns()
-	{
-		tableTrace.setSkin(new TableViewSkinWithAutoFitColumns(tableTrace));
-		tableTrace.getItems().addListener((ListChangeListener<TraceLineInfo>) c ->
-		{
-			TableViewSkinWithAutoFitColumns skin = (TableViewSkinWithAutoFitColumns) tableTrace.getSkin();
 
-			for (TableColumn<TraceLineInfo, ?> column : tableTrace.getColumns())
-				if (column.isVisible())
-					skin.resizeColumnToFitContent(column, -1);
+	
+	/**
+	 * This hack is needed because when the splitter is dragged to the right, more of the table becomes visible but the table doesn't get automatically redrawn.
+	 * As a result, the columns in the newly-visible cells remain empty (not drawn) even though they have content.
+	 */
+	private void refreshTableWhenNewColumnBecomesVisible()
+	{
+		SimpleDoubleProperty[] columnsStartX = new SimpleDoubleProperty[tableTrace.getColumns().size()];
+		ObservableList<TableColumn<TraceLineInfo, ?>> columns = tableTrace.getColumns();
+		
+		columnsStartX[0] = new SimpleDoubleProperty(0);
+		
+		for (int i = 1; i < columns.size(); i++)
+		{
+			columnsStartX[i] = new SimpleDoubleProperty();
+			TableColumn<TraceLineInfo, ?> previousColumn = columns.get(i - 1);
+			SimpleDoubleProperty previousColumnStartX = columnsStartX[i - 1];
+			
+			columnsStartX[i].bind(Bindings.when(previousColumn.visibleProperty()).then(previousColumnStartX.add(previousColumn.widthProperty())).otherwise(previousColumnStartX));
+		}
+	
+		tableTrace.prefWidthProperty().addListener((ChangeListener<Number>) (observable, oldValue, newValue) ->
+		{
+			//if the width is increasing and a new column is now visible
+			if (newValue.doubleValue() > oldValue.doubleValue() && isAnyColumnBecameVisible(oldValue.doubleValue(), newValue.doubleValue(), columnsStartX))
+				tableTrace.refresh(); //TODO only works well when scroller is at 0 position, otherwise refreshes too late
 		});		
+	}
+	
+	private boolean isAnyColumnBecameVisible(double oldWidth, double newWidth, SimpleDoubleProperty[] columnsStartX)
+	{
+		for (int i = 0; i < columnsStartX.length; i++)
+			if (oldWidth <= columnsStartX[i].get() && newWidth >= columnsStartX[i].get()) //if a column starts between the old width and new width (ie it just became visible)
+				return true;
+		
+		return false;
+	}
+
+	public void setInitialTableColumnsWidth()
+	{
+		columnMapPin.setPrefWidth(84);		columnHop.setPrefWidth(55);
+		columnPing.setPrefWidth(140);
+		columnHostname.setPrefWidth(200);
+		columnIPAddress.setPrefWidth(100);
+		columnLocation.setPrefWidth(200);
+		columnZoomButton.setPrefWidth(100);	
 	}
 	
 	private void setGraphics()
 	{
+		GUIController.setNumberTextFieldValidationUI(numFieldPingTimeout, numFieldStopTracingAfter);
+		
 		GUIController.setGraphicForLabeledControl(btnTrace, traceIconLocation, ContentDisplay.LEFT);
-		GUIController.setNumberTextFieldValidationUI(numFieldPingTimeout);
+		GUIController.setCommonGraphicOnLabeled(btnAbort, GUIController.CommonGraphicImages.CANCEL);
 		
 		GUIController.setCommonGraphicOnLabeled(labelVisualTrace, GUIController.CommonGraphicImages.TOOLTIP);
 		Tooltip visualTraceTooltip = new Tooltip("Trace the route from your computer to another host on the internet and see it visually on a map.");
@@ -253,95 +272,105 @@ public class VisualTraceController implements Initializable
 		labelPingTimeout.setTooltip(pingTimeoutTooltip);
 		
 		GUIController.setCommonGraphicOnLabeled(chkResolveHostnames, GUIController.CommonGraphicImages.TOOLTIP);
-		Tooltip resolveHostnamesTooltip = new Tooltip("Tries to resolve each IP's hostname, but might take longer for the trace to finish or to be canceled.");
+		Tooltip resolveHostnamesTooltip = new Tooltip("Try to resolve each IP's hostname. This might slow down the trace as well as the time it takes to abort it.");
 		ToolTipUtilities.setTooltipProperties(resolveHostnamesTooltip, true, 400.0, 12.0, AnchorLocation.WINDOW_TOP_LEFT); 
 		chkResolveHostnames.setTooltip(resolveHostnamesTooltip);
+		
+		GUIController.setCommonGraphicOnLabeled(labelConsecutiveTimeouts, GUIController.CommonGraphicImages.TOOLTIP);
+		Tooltip timeouts = new Tooltip("A few time-outs in a row usually mean that the final destination was reached but it ignores trace requests. In order to avoid excessive waiting when this happens, it's recommended to set this value to about 5.");
+		ToolTipUtilities.setTooltipProperties(timeouts, true, 320.0, 12.0, AnchorLocation.WINDOW_TOP_LEFT); 
+		labelConsecutiveTimeouts.setTooltip(timeouts);
 	}
 	
 	private void setTableContextMenu()
 	{
-		tableTrace.setRowFactory(new Callback<TableView<TraceLineInfo>, TableRow<TraceLineInfo>>()
+		tableTrace.setRowFactory(param ->
 		{
-			@Override
-			public TableRow<TraceLineInfo> call(TableView<TraceLineInfo> param)
-			{
-				TableRow<TraceLineInfo> row = new TableRow<TraceLineInfo>();
-				Clipboard clipboard = Clipboard.getSystemClipboard();
-				ClipboardContent content = new ClipboardContent();
-				
-				MenuItem copyMapImage = new MenuItem("  Map image");
-				copyMapImage.setOnAction(event ->
-				{
-					content.putImage(imgView.getImage());
-					clipboard.setContent(content);
-				});
-				
-				MenuItem copyWholeTable = new MenuItem("  Whole table");
-				copyWholeTable.setOnAction(event ->
-				{
-					StringBuilder result = new StringBuilder();
-					
-					for (TraceLineInfo line : tableTrace.getItems())
-						result.append(line.toString() + "\n");
-					
-					content.putString(result.toString().trim());
-					clipboard.setContent(content);
-				});
-				
-				MenuItem copyRow = new MenuItem("  Whole row");
-				copyRow.setOnAction(event ->
-				{
-					content.putString(row.getItem().toString().trim());
-					clipboard.setContent(content);
-				});
-				
-				MenuItem copyPingResults = new MenuItem("  Ping results");
-				copyPingResults.setOnAction(event ->
-				{
-					content.putString(row.getItem().pingResultsProperty().get().trim());
-					clipboard.setContent(content);
-				});
-				
-				MenuItem copyHostname = new MenuItem("  Hostname");
-				copyHostname.setOnAction(event ->
-				{
-					content.putString(row.getItem().hostnameProperty().get().trim());
-					clipboard.setContent(content);
-				});
-				
-				MenuItem copyIPAddress = new MenuItem("  IP address");
-				copyIPAddress.setOnAction(event ->
-				{
-					content.putString(row.getItem().ipAddressProperty().get().trim());
-					clipboard.setContent(content);
-				});
-				
-				MenuItem copyLocation = new MenuItem("  Location");
-				copyLocation.setOnAction(event ->
-				{
-					content.putString(row.getItem().locationProperty().get().trim());
-					clipboard.setContent(content);
-				});				
-				
-				List<MenuItem> copyMenuItems = Arrays.asList(copyPingResults, copyIPAddress, copyLocation, new SeparatorMenuItem(), copyRow, copyWholeTable, copyMapImage);
-				
-				Menu copyMenu = new Menu("  Copy", null, (MenuItem[]) copyMenuItems.toArray());
-				copyMenu.setOnShowing(event ->
-				{
-					ObservableList<MenuItem> items = copyMenu.getItems();
-					if (row.getItem().hostnameProperty().isNotEmpty().get() && !items.contains(copyHostname))
-						items.add(1, copyHostname);
-				});
+			TableRow<TraceLineInfo> row = new TableRow<TraceLineInfo>();
 
-				MenuItem moreGeoIPInfo = new MenuItem("  Show GeoIP results from multiple sources");
-				moreGeoIPInfo.setOnAction(event -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + row.getItem().ipAddressProperty().get()));
-				
-				ContextMenu rowMenu = new ContextMenu(moreGeoIPInfo, copyMenu);
-				
-				row.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(row.itemProperty())).then(rowMenu).otherwise((ContextMenu) null));
-				
-				return row;
-			}});
+			MenuItem moreGeoIPInfo = new MenuItem("  Show GeoIP results from multiple sources");
+			moreGeoIPInfo.setOnAction(event9 -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + row.getItem().ipAddressProperty().get()));
+			
+			Menu copyMenu = generateCopyMenu(row);
+			
+			ContextMenu rowMenu = new ContextMenu(moreGeoIPInfo, copyMenu);
+			
+			row.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(row.itemProperty())).then(rowMenu).otherwise((ContextMenu) null));
+			
+			return row;
+		});
+	}
+	
+	private Menu generateCopyMenu(TableRow<TraceLineInfo> row)
+	{
+		Clipboard clipboard = Clipboard.getSystemClipboard();
+		ClipboardContent content = new ClipboardContent();
+		
+		MenuItem copyMapImage = new MenuItem("  Map image");
+		copyMapImage.setOnAction(event1 ->
+		{
+			content.putImage(imgView.getImage());
+			clipboard.setContent(content);
+		});
+		
+		MenuItem copyWholeTable = new MenuItem("  Whole table");
+		copyWholeTable.setOnAction(event2 ->
+		{
+			StringBuilder result = new StringBuilder();
+			
+			for (TraceLineInfo line : tableTrace.getItems())
+				result.append(line.toString() + "\n");
+			
+			content.putString(result.toString().trim());
+			clipboard.setContent(content);
+		});
+		
+		MenuItem copyRow = new MenuItem("  Whole row");
+		copyRow.setOnAction(event3 ->
+		{
+			content.putString(row.getItem().toString().trim());
+			clipboard.setContent(content);
+		});
+		
+		MenuItem copyPingResults = new MenuItem("  Ping results");
+		copyPingResults.setOnAction(event4 ->
+		{
+			content.putString(row.getItem().pingResultsProperty().get().trim());
+			clipboard.setContent(content);
+		});
+		
+		MenuItem copyHostname = new MenuItem("  Hostname");
+		copyHostname.setOnAction(event5 ->
+		{
+			content.putString(row.getItem().hostnameProperty().get().trim());
+			clipboard.setContent(content);
+		});
+		
+		MenuItem copyIPAddress = new MenuItem("  IP address");
+		copyIPAddress.setOnAction(event6 ->
+		{
+			content.putString(row.getItem().ipAddressProperty().get().trim());
+			clipboard.setContent(content);
+		});
+		
+		MenuItem copyLocation = new MenuItem("  Location");
+		copyLocation.setOnAction(event7 ->
+		{
+			content.putString(row.getItem().locationProperty().get().trim());
+			clipboard.setContent(content);
+		});				
+		
+		List<MenuItem> copyMenuItems = Arrays.asList(copyPingResults, copyIPAddress, copyLocation, new SeparatorMenuItem(), copyRow, copyWholeTable, copyMapImage);
+		
+		Menu copyMenu = new Menu("  Copy", null, (MenuItem[]) copyMenuItems.toArray());
+		copyMenu.setOnShowing(event8 ->
+		{
+			ObservableList<MenuItem> items = copyMenu.getItems();
+			if (row.getItem().hostnameProperty().isNotEmpty().get() && !items.contains(copyHostname))
+				items.add(1, copyHostname);
+		});
+		
+		return copyMenu;
 	}
 	
 	private void setMapContextMenu()
@@ -437,5 +466,25 @@ public class VisualTraceController implements Initializable
 	public TableColumn<TraceLineInfo, String> getColumnZoom()
 	{
 		return columnZoomButton;
+	}
+
+	public NumberTextField getNumFieldStopTracingAfter()
+	{
+		return numFieldStopTracingAfter;
+	}
+
+	public Pane getPaneSettings()
+	{
+		return paneSettings;
+	}
+	
+	public Label getLabelStatus()
+	{
+		return labelStatus;
+	}
+
+	public Button getBtnAbort()
+	{
+		return btnAbort;
 	}
 }

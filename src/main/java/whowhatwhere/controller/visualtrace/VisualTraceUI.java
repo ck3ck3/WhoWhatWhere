@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,11 +38,15 @@ import org.apache.commons.io.IOUtils;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
@@ -66,25 +71,33 @@ import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import numbertextfield.NumberTextField;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.LoadAndSaveSettings;
-import whowhatwhere.controller.commands.Commands;
-import whowhatwhere.controller.commands.trace.TraceCommandScreen;
 import whowhatwhere.model.PropertiesByType;
+import whowhatwhere.model.command.CommmandLiveOutput;
+import whowhatwhere.model.command.trace.TraceLiveOutputListener;
+import whowhatwhere.model.command.trace.TraceOutputReceiver;
 import whowhatwhere.model.geoipresolver.GeoIPInfo;
 import whowhatwhere.model.geoipresolver.GeoIPResolver;
+import whowhatwhere.model.networksniffer.NetworkSniffer;
 
 public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 {
 	private final static Logger logger = Logger.getLogger(VisualTraceUI.class.getPackage().getName());
 	
+	private enum FinishStatus {SUCCESS, ABORT, FAIL}
+	
 	private final static String propsSplitterPosition = "traceSplitterPosition";
 	private final static String propsResolveHostname = "traceResolveHostnames";
 	private final static String propsPingTimeout = "tracePingTimeout";
+	private final static String propsStopTraceAfterXTimeouts = "stopTraceAfterXTimeouts";
+	
 	public final static int googleMapWidth = 300;
 	public final static int googleMapHeight= 255;
 	private final static String baseUrl = "https://maps.googleapis.com/maps/api/staticmap?key=" + GoogleStaticMapsAPIKey.key + "&size=" + googleMapWidth + "x" + googleMapHeight + "&scale=2&maptype=roadmap";
@@ -102,6 +115,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	private TextField textTrace;
 	private CheckBox chkResolveHostnames;
 	private NumberTextField numFieldReplyTimeout;
+	private NumberTextField numFieldStopTracingAfter;
 	private Button btnTrace;
 	private Label labelUnderMap;
 	private ImageView imgView;
@@ -110,14 +124,27 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	private TableColumn<TraceLineInfo, TraceLineInfo> columnMapPin;
 	private TableColumn<TraceLineInfo, String> columnZoomButton;
 	private TableColumn<TraceLineInfo, String> columnHostname;
+	private Pane paneSettings;
+	private Label labelStatus;
+	private Button btnAbort;
 
-	private List<String> tracertOutput;
 	private Map<String, GeoIPInfo> geoIPResults = new HashMap<>();
 	private GenerateImageFromURLService imgService;
 	private Map<TraceLineInfo, SimpleBooleanProperty> mapRowToSelectedStatus = new HashMap<>();
 	private List<TraceLineInfo> listOfRows = new ArrayList<>();
 	private boolean noTraceDoneYet = true;
 
+	private ObservableList<String> observableListOfLines = FXCollections.observableArrayList();
+	private char label ='A';
+	private Semaphore semaphore = new Semaphore(1);
+	private SimpleBooleanProperty isTraceInProgress = new SimpleBooleanProperty(false);
+	private String ipBeingTraced = null;
+	private String hostnameBeingTraced = null;
+	private int consecutiveRequestTimeOuts = 0;
+	private SimpleIntegerProperty hopCounter = new SimpleIntegerProperty(0);
+	private CommmandLiveOutput traceCommand;
+	private String abortReason;
+	private boolean wasTraceAborted = false;
 
 	public VisualTraceUI(GUIController guiController)
 	{
@@ -127,11 +154,43 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		
 		initImgService();
 		showOwnLocationOnMap();
-
+		
+		setBindingsAndListeners();
+		setButtonHandlers(guiController);
+		setSpecialColumns();
+	}
+	
+	private void setBindingsAndListeners()
+	{
+		paneSettings.disableProperty().bind(isTraceInProgress);
+		labelStatus.visibleProperty().bind(isTraceInProgress);
+		hopCounter.addListener((ChangeListener<Number>) (observable, oldValue, newValue) -> Platform.runLater(() -> 
+		{
+			if (isTraceInProgress.get() && newValue.intValue() > 0) //to avoid situation where user presses abort, but then a new hop overrides the 'aborting now' label. Or when hop was reset.
+				labelStatus.setText("Trace in progress, current hop: " + newValue.intValue());	
+		}));
+		labelUnderMap.styleProperty().bind(Bindings.when(labelUnderMap.textProperty().isEqualTo(loadingLabelText)).then(styleForLoadingLabel).otherwise(""));
+		
+		observableListOfLines.addListener((ListChangeListener<String>) c ->
+		{
+			c.next();
+			
+			if (c.wasAdded())
+			{
+				String newLine = c.getAddedSubList().get(0);
+				
+				addSingleGeoIPInfoFromLine(newLine);
+				addRowToTableAndShowImage(newLine);
+			}
+		});
+	}
+	
+	private void setButtonHandlers(GUIController guiController)
+	{
 		btnTrace.setOnAction(actionEvent ->
 		{
 			String addressToTrace = textTrace.getText();
-			
+							
 			if (addressToTrace.isEmpty())
 			{
 				new Alert(AlertType.ERROR, "Please enter an IP or hostname to trace").showAndWait();
@@ -140,12 +199,56 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 			
 			noTraceDoneYet = false;
 			resetScreen();
+			btnTrace.setDisable(true);
+			btnAbort.setDisable(false);
 			
-			Commands.traceCommand(guiController.getStage(), textTrace.getText(), chkResolveHostnames.isSelected(), numFieldReplyTimeout.getValue(), this);
+			traceCommand = new CommmandLiveOutput(generateCommandString(), new TraceLiveOutputListener(this));
+			traceCommand.runCommand();
 		});
+		
+		btnAbort.setOnAction(actionEVent ->
+		{
+			Platform.runLater(() ->
+			{
+				wasTraceAborted = true;
+				btnAbort.setDisable(true);
+				labelStatus.setText("Aborting trace, this might take a moment...");
+				if (abortReason == null)
+					abortReason = "User request";
+				
+				traceCommand.stopCommand();
+			});
+		});		
+	}
+	
+	private String generateCommandString()
+	{
+		Integer pingTimeout = numFieldReplyTimeout.getValue();
+		
+		return "tracert " + (chkResolveHostnames.isSelected() ? "" : "-d ") + (pingTimeout == null ? "" : "-w " + pingTimeout + " ") + textTrace.getText();
+	}
+	
+	public synchronized void addRowToTableAndShowImage(String newLine)
+	{
+		try
+		{
+			semaphore.acquire();
+		}
+		catch (InterruptedException ie)
+		{
+			return;
+		}
 
-		setSpecialColumns();
-		labelUnderMap.styleProperty().bind(Bindings.when(labelUnderMap.textProperty().isEqualTo(loadingLabelText)).then(styleForLoadingLabel).otherwise(""));
+		Platform.runLater(() ->
+		{
+			singleGenerateTraceInfoGUI(newLine);				
+			generateAndShowImage();
+		});
+	}
+	
+	public boolean isTraceInProgress()
+	{
+		return isTraceInProgress.get();
 	}
 	
 	public void setAddressAndStartTrace(String address)
@@ -160,24 +263,43 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		textTrace = controller.getTextTrace();
 		chkResolveHostnames = controller.getChkResolveHostnames();
 		numFieldReplyTimeout = controller.getNumFieldPingTimeout();
+		numFieldStopTracingAfter = controller.getNumFieldStopTracingAfter();
 		btnTrace = controller.getBtnTrace();
-		imgView = controller.getImgView();
 		imgView = controller.getImgView();
 		labelUnderMap = controller.getLoadingLabel();
 		tableTrace = controller.getTableTrace();
 		columnMapPin = controller.getColumnMapPin();
 		columnHostname = controller.getColumnHostname();
 		columnZoomButton = controller.getColumnZoom();		
+		paneSettings = controller.getPaneSettings();
+		labelStatus = controller.getLabelStatus();
+		btnAbort = controller.getBtnAbort();
 	}
 	
 	private void resetScreen()
 	{
 		tableTrace.getItems().clear();
+		tableTrace.refresh();
 		listOfRows.clear();
 		mapRowToSelectedStatus.clear();
 		
 		imgView.setImage(null);
 		columnHostname.setVisible(chkResolveHostnames.isSelected());
+		
+		controller.setInitialTableColumnsWidth();
+		observableListOfLines.clear();
+		label = 'A';
+		isTraceInProgress.set(true);
+		consecutiveRequestTimeOuts = 0;
+		hopCounter.set(0);
+		wasTraceAborted = false;
+		abortReason = null;
+		ipBeingTraced = null;
+		hostnameBeingTraced = null;
+		labelStatus.setText("Starting trace...");
+		
+		if (semaphore.availablePermits() == 0) //in case we were interrupted earlier while the single permit was acquired
+			semaphore.release();
 	}
 	
 	private void setSpecialColumns()
@@ -208,7 +330,13 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 			checkBoxTableCell.itemProperty().addListener((ChangeListener<TraceLineInfo>) (observable, oldValue, newValue) ->
 			{
 				if (newValue != null)
-					checkBoxTableCell.visibleProperty().bind(newValue.locationProperty().isEmpty().not());
+				{
+					checkBoxTableCell.disableProperty().bind(newValue.locationProperty().isEmpty().or(isTraceInProgress));
+					
+					//setting the cell as disabled and 0 opacity instead of invisible, since binding visibleProperty() caused setVisible() to be automatically called on that cell later on (which threw an exception)
+					DoubleBinding opacityForTempOrPermDisable = Bindings.when(newValue.locationProperty().isEmpty()).then(0).otherwise(0.4);
+					checkBoxTableCell.opacityProperty().bind(Bindings.when(checkBoxTableCell.disableProperty()).then(opacityForTempOrPermDisable).otherwise(1.0));
+				}
 			});
 			
 			return checkBoxTableCell;
@@ -221,48 +349,17 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 			{
 				super.updateItem(item, empty);
 			
-				if (empty)
+				if (item == null || empty)
 				{
 					setGraphic(null);
 					setText(null);
 				}
 				else
 				{
-					TraceLineInfo info = getTableView().getItems().get(getIndex());
-					String ip = info.ipAddressProperty().get();
-					
-					ToggleButton btnZoom = new ToggleButton();
-					btnZoom.setToggleGroup(zoomToggleGroup);
-					GUIController.setGraphicForLabeledControl(btnZoom, zoomInIconLocation, ContentDisplay.CENTER);
-					Tooltip zoomTooltip = new Tooltip("Zoom in on this location (into the center of the city)");
-					btnZoom.setFont(new Font(12));
-					btnZoom.setTooltip(zoomTooltip);
-					btnZoom.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
-					{
-						HBox hbox = (HBox) btnZoom.getParent();
-						Spinner<Integer> spinnerZoom = (Spinner<Integer>) hbox.getChildren().get(1);
-						spinnerZoom.setDisable(!newValue);
+					String ip = item;
 
-						if (newValue) //selected
-							imgService.setCenterOnIP(ip, spinnerZoom.getValue());
-
-						generateAndShowImage();
-					});
-
-					Spinner<Integer> spinnerZoom = new Spinner<>(googleMinZoomLevel, googleMaxZoomLevel, googleDefaultZoomLevel, googleZoomLevelStep);
-					spinnerZoom.setPrefWidth(55);
-					spinnerZoom.setPrefHeight(btnZoom.getHeight());
-					spinnerZoom.valueProperty().addListener((ChangeListener<Integer>) (observable, oldValue, newValue) ->
-					{
-						imgService.setCenterOnIP(ip, newValue);
-						generateAndShowImage();
-					});
-					Tooltip spinnerTooltip = new Tooltip("Set zoom level (1-20)");
-					spinnerTooltip.setFont(new Font(12));
-					spinnerZoom.setTooltip(spinnerTooltip);
-					spinnerZoom.getEditor().setTooltip(spinnerTooltip);
-					spinnerZoom.setEditable(false);
-					spinnerZoom.setDisable(true);
+					ToggleButton btnZoom = createZoomButton(ip);
+					Spinner<Integer> spinnerZoom = createZoomSpinner(btnZoom, ip);
 					
 					HBox zoomControls = new HBox(btnZoom, spinnerZoom);
 					zoomControls.setStyle("-fx-alignment: center;");
@@ -270,7 +367,57 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 					setGraphic(zoomControls);
 					setText(null);
 				}
-			}			
+			}
+			
+			private ToggleButton createZoomButton(String ip)
+			{
+				ToggleButton btnZoom = new ToggleButton();
+				btnZoom.setToggleGroup(zoomToggleGroup);
+				GUIController.setGraphicForLabeledControl(btnZoom, zoomInIconLocation, ContentDisplay.CENTER);
+				Tooltip zoomTooltip = new Tooltip("Zoom in on this location (into the center of the city)");
+				btnZoom.setFont(new Font(12));
+				btnZoom.setTooltip(zoomTooltip);
+				btnZoom.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
+				{
+					HBox hbox = (HBox) btnZoom.getParent();
+					Spinner<Integer> spinnerZoom = (Spinner<Integer>) hbox.getChildren().get(1);
+					spinnerZoom.setDisable(!newValue);
+
+					if (newValue) //selected
+						imgService.setCenterOnIP(ip, spinnerZoom.getValue());
+
+					labelUnderMap.setVisible(true);
+					generateAndShowImage();
+				});
+				
+				GeoIPInfo geoIPInfo = geoIPResults.get(ip);
+				boolean hasGeoIPInfo = geoIPInfo != null && geoIPInfo.getSuccess();
+				
+				btnZoom.disableProperty().bind(isTraceInProgress.or(new SimpleBooleanProperty(hasGeoIPInfo).not()));
+				
+				return btnZoom;
+			}
+			
+			private Spinner<Integer> createZoomSpinner(ToggleButton btnZoom, String ip)
+			{
+				Spinner<Integer> spinnerZoom = new Spinner<>(googleMinZoomLevel, googleMaxZoomLevel, googleDefaultZoomLevel, googleZoomLevelStep);
+				spinnerZoom.setPrefWidth(55);
+				spinnerZoom.setPrefHeight(btnZoom.getHeight());
+				spinnerZoom.valueProperty().addListener((ChangeListener<Integer>) (observable, oldValue, newValue) ->
+				{
+					imgService.setCenterOnIP(ip, newValue);
+					labelUnderMap.setVisible(true);
+					generateAndShowImage();
+				});
+				Tooltip spinnerTooltip = new Tooltip("Set zoom level (1-20)");
+				spinnerTooltip.setFont(new Font(12));
+				spinnerZoom.setTooltip(spinnerTooltip);
+				spinnerZoom.getEditor().setTooltip(spinnerTooltip);
+				spinnerZoom.setEditable(false);
+				spinnerZoom.setDisable(true);
+				
+				return spinnerZoom;
+			}
 		});
 	}
 	
@@ -322,22 +469,153 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		
 		return ip;
 	}
-
+	
 	@Override
-	public void traceFinished(List<String> listOfOutputLines)
+	public void traceError(String errorMessage)
 	{
-		tracertOutput = listOfOutputLines;
-
-		Platform.runLater(() -> init());
-	}
-
-	private void init()
-	{
-		populateGeoIPResults();
-		generateTraceInfoGUI();
-		generateAndShowImage();
+		abortReason = errorMessage;
+		isTraceInProgress.set(false);
+		informUserTraceFinishedByAbortOrError(FinishStatus.FAIL, errorMessage);
 	}
 	
+	@Override
+	public void setIPBeingTraced(String ip)
+	{
+		ipBeingTraced = ip;
+	}
+	
+	@Override
+	public void setHostnameBeingTraced(String hostname)
+	{
+		hostnameBeingTraced = hostname;
+	}
+	
+	@Override
+	public void lineAvailable(String line)
+	{
+		consecutiveRequestTimeOuts = 0;
+		observableListOfLines.add(line);
+		hopCounter.set(hopCounter.get() + 1);
+	}
+	
+	@Override
+	public void requestTimedOut()
+	{
+		hopCounter.set(hopCounter.get() + 1);
+		
+		if (++consecutiveRequestTimeOuts == numFieldStopTracingAfter.getValue())
+		{
+			abortReason = consecutiveRequestTimeOuts + " consecutive hops haven't responded";
+			btnAbort.fire();
+		}
+	}
+
+	@Override
+	public void traceFinished()
+	{
+		isTraceInProgress.set(false);
+		
+		if (isAtLeastOneCheckboxSelected())
+		{
+			imgView.imageProperty().addListener(new ChangeListener<Image>() //perform post-trace stuff only after the last image of the trace is shown 
+			{
+				@Override
+				public void changed(ObservableValue<? extends Image> observable, Image oldValue, Image newValue)
+				{
+					informUserTraceFinishedByAbortOrError(wasTraceAborted ? FinishStatus.ABORT : FinishStatus.SUCCESS);
+					
+					imgView.imageProperty().removeListener(this);
+				}
+			});
+			
+			ensureLastHopIsTheDestination();
+			generateAndShowImage();
+		}
+		else
+			informUserTraceFinishedByAbortOrError(wasTraceAborted ? FinishStatus.ABORT : FinishStatus.SUCCESS);
+	}
+	
+	private void informUserTraceFinishedByAbortOrError(FinishStatus status)
+	{
+		informUserTraceFinishedByAbortOrError(status, null);
+	}
+	
+	private void informUserTraceFinishedByAbortOrError(FinishStatus status, String failMessage)
+	{
+		Platform.runLater(() ->
+		{
+			btnTrace.setDisable(false);
+			btnAbort.setDisable(true);
+			
+			Alert alert = null;
+			
+			switch (status)
+			{
+				case SUCCESS:
+								alert = new Alert(AlertType.INFORMATION, "Trace completed successfully");
+								alert.setHeaderText("Trace finished");
+								break;
+				case ABORT:
+								alert = new Alert(AlertType.WARNING, "Trace aborted: " + abortReason);
+								alert.setHeaderText("Trace aborted");
+								break;
+				case FAIL:
+								alert = new Alert(AlertType.ERROR, "Trace failed: " + failMessage);
+								alert.setHeaderText("Trace failed");
+								break;
+			}
+			
+			Stage stage = (Stage) btnTrace.getScene().getWindow();
+			alert.initOwner(stage);
+			alert.setTitle("Visual trace");
+			alert.getDialogPane().setPrefWidth(360);
+			
+			alert.showAndWait();
+		});
+	}
+	
+	private boolean isAtLeastOneCheckboxSelected()
+	{
+		for (SimpleBooleanProperty selectedStatus : mapRowToSelectedStatus.values())
+			if (selectedStatus.get())
+				return true;
+		
+		return false;
+	}
+	
+	/**
+	 *Checks if last row has the IP that is being traced. If not, manually creates a line and adds it 
+	 */
+	private void ensureLastHopIsTheDestination()
+	{
+		ObservableList<TraceLineInfo> items = tableTrace.getItems();
+		if (items.size() == 0)
+			return;
+		
+		int lastLineIndex = items.size() - 1;
+		String lastIPFromTraceResults = items.get(lastLineIndex).ipAddressProperty().get();
+		if (!lastIPFromTraceResults.equals(ipBeingTraced))
+		{
+			String[] pingReply = new String[3];
+			for (int i = 0; i < 3 ; i++)
+			{
+				String tempResult = NetworkSniffer.pingAsString(ipBeingTraced, numFieldReplyTimeout.getValue());
+				
+				pingReply[i] = tempResult.contains("milliseconds") ? tempResult.replace("milliseconds", "ms") : "*   "; 
+			}
+			
+			addSingleGeoIPInfoFromLine(ipBeingTraced);
+			
+			String manualLine;
+			if (hostnameBeingTraced != null)
+				manualLine = String.format("%3s  %7s  %7s  %7s  %s [%s]", VisualTraceController.infinitySymbol, pingReply[0], pingReply[1], pingReply[2], hostnameBeingTraced != null ? hostnameBeingTraced : "", ipBeingTraced);
+			else
+				manualLine = String.format("%3s  %7s  %7s  %7s  %s", VisualTraceController.infinitySymbol, pingReply[0], pingReply[1], pingReply[2], ipBeingTraced);
+			
+			singleGenerateTraceInfoGUI(manualLine);
+		}		
+	}
+
 	private void placeLabelUnderMap()
 	{
 		labelUnderMap.autosize();
@@ -348,83 +626,69 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	private void initImgService()
 	{
 		imgService = new GenerateImageFromURLService(this);
-		imgService.setOnSucceeded(event ->
-		{
-			labelUnderMap.setVisible(false);
-			Image img = imgService.getValue();
-			imgView.setImage(img);
-
-			if (img == null)
-			{
-				labelUnderMap.setText(noHopsSelectedLabelText);
-				placeLabelUnderMap();
-				labelUnderMap.setVisible(true);
-			}
-		});
+		imgService.setOnSucceeded(event -> showImage());
 	}
-
-	private void populateGeoIPResults()
+	
+	private void showImage()
 	{
-		for (String line : tracertOutput)
+		labelUnderMap.setVisible(false);
+		Image img = imgService.getValue();
+		imgView.setImage(img);
+			
+		if (img == null && !isTraceInProgress.get())
 		{
-			String ip = TraceCommandScreen.extractIPFromLine(line);
-			GeoIPInfo ipInfo = GeoIPResolver.getIPInfo(ip, false);
-
-			if (ipInfo != null)
-				geoIPResults.put(ip, ipInfo);
+			labelUnderMap.setText(noHopsSelectedLabelText);
+			placeLabelUnderMap();
+			labelUnderMap.setVisible(true);
 		}
+		
+		if (semaphore.availablePermits() == 0)
+			semaphore.release();
 	}
 
-	private void generateTraceInfoGUI()
+	private void addSingleGeoIPInfoFromLine(String line)
 	{
-		char label = 'A';
-		for (String line : tracertOutput)
+		String ip = TraceLiveOutputListener.extractIPFromLine(line);
+		GeoIPInfo ipInfo = GeoIPResolver.getIPInfo(ip, false);
+
+		if (ipInfo != null)
+			geoIPResults.put(ip, ipInfo);		
+	}
+	
+	private void singleGenerateTraceInfoGUI(String line)
+	{
+		Map<TraceLineInfo.Columns, String> valueMap = getMapOfValues(line);
+		String ip = valueMap.get(TraceLineInfo.Columns.IP);
+		GeoIPInfo geoIPInfo = geoIPResults.get(ip);
+		boolean hasLocation = geoIPInfo.getSuccess();
+
+		valueMap.put(TraceLineInfo.Columns.LABEL, hasLocation ? String.valueOf(label) : "");
+		
+		TraceLineInfo currentRow = new TraceLineInfo();
+		populateTraceResults(valueMap, currentRow);
+		
+		SimpleBooleanProperty checkboxValue = new SimpleBooleanProperty(hasLocation);
+		checkboxValue.addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
 		{
-			Map<TraceLineInfo.Columns, String> valueMap = getMapOfValues(line);
-			valueMap.put(TraceLineInfo.Columns.LABEL, String.valueOf(label));
-			String ip = valueMap.get(TraceLineInfo.Columns.IP);
-			GeoIPInfo geoIPInfo = geoIPResults.get(ip);
-			boolean hasLocation = geoIPInfo.getSuccess();
+			Toggle selectedZoomBtn = zoomToggleGroup.getSelectedToggle();
+			if (selectedZoomBtn != null)
+				selectedZoomBtn.setSelected(false);
+			
+			labelUnderMap.setVisible(true);
+			generateAndShowImage();
+		});
+		
+		listOfRows.add(currentRow);
+		mapRowToSelectedStatus.put(currentRow, checkboxValue);
 
-			TraceLineInfo currentRow = new TraceLineInfo();
-			populateTraceResults(valueMap, currentRow);
-			
-			
-			
-//			if (ip.contains("109"))
-//			{
-//				hasLocation = false;
-//				currentRow.setLocation("");
-//			}
-			
-			
+		tableTrace.getItems().add(currentRow);
 
-			SimpleBooleanProperty checkboxValue = new SimpleBooleanProperty(hasLocation);
-			checkboxValue.addListener(new ChangeListener<Boolean>()
-			{
-				@Override
-				public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-				{
-					Toggle selectedZoomBtn = zoomToggleGroup.getSelectedToggle();
-					if (selectedZoomBtn != null)
-						selectedZoomBtn.setSelected(false);
-
-					generateAndShowImage();
-				}
-			});
-			
-			listOfRows.add(currentRow);
-			mapRowToSelectedStatus.put(currentRow, checkboxValue);
-
-			tableTrace.getItems().add(currentRow);
-
-			if (hasLocation) //otherwise the label won't be used, so don't advance it
-			{
-				if (label != 'Z')
-					label++; //trace is limited to 30 hops, so no need to worry about '9'
-				else
-					label = '0';
-			}
+		if (hasLocation) //otherwise the label won't be used, so don't advance it
+		{
+			if (label != 'Z')
+				label++; //trace is limited to 30 hops, so no need to worry about '9'
+			else
+				label = '0';
 		}
 	}
 	
@@ -509,7 +773,6 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		Platform.runLater(() ->
 		{
 			labelUnderMap.setText(loadingLabelText);
-			labelUnderMap.setVisible(true);
 			imgService.restart();
 		});
 	}
@@ -526,20 +789,24 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	private String generateMarkers()
 	{
 		String markers = "";
-		int markersLeftToTurnRed = 2; // the first two markers are the first and last markers
 
-		List<TraceLineInfo> reorderedListOfCheckBoxes = getReorderedListOfCheckboxes();
+		List<TraceLineInfo> uniqueHops = removeOverlappingHops();
 
-		for (TraceLineInfo row : reorderedListOfCheckBoxes)
+		for (TraceLineInfo row : uniqueHops)
 		{
-			if (mapRowToSelectedStatus.get(row).get())
+			if (mapRowToSelectedStatus.get(row).get()) //if the row is selected
 			{
 				char label = row.getLabel().charAt(0);
 
 				String ip = row.ipAddressProperty().get();
 				GeoIPInfo ipInfo = geoIPResults.get(ip);
 
-				String currentMarker = "&markers=color:" + (markersLeftToTurnRed-- > 0 ? "red" : "blue") + "%7Clabel:" + label;
+				int indexOfRow = uniqueHops.indexOf(row);
+				boolean isFirstOrLastHop = indexOfRow == 0 || (!isTraceInProgress.get() && indexOfRow == uniqueHops.size() - 1); 
+				String currentMarker = "&markers=color:" + (isFirstOrLastHop ? "red" : "blue") + "%7Clabel:" + label;
+				
+				if (!isFirstOrLastHop) //only the first and last hop are slightly bigger than the other hops, to stick out in the image. 
+					currentMarker += "%7Csize:mid";
 
 				String location = getLocationString(ipInfo);
 				markers += currentMarker + "%7C" + location;
@@ -581,15 +848,8 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		if (centerOnIP != null)
 		{
 			GeoIPInfo ipInfo = geoIPResults.get(centerOnIP);
-			String location = ipInfo.getCountry() + "," + ipInfo.getCity();
-			try
-			{
-				location = URLEncoder.encode(location, "UTF-8");
-			}
-			catch (UnsupportedEncodingException e)
-			{
-				logger.log(Level.SEVERE, "Unable to encode this URL: " + location, e);
-			}
+			String location = getLocationString(ipInfo);
+			
 			result = "&center=" + location + "&zoom=" + zoom;
 		}
 
@@ -597,55 +857,56 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	}
 
 	/**
-	 * If two markers are set on the same spot in Google static maps, it will
-	 * show the first marker set. In order to show the first and last markers in
-	 * the route we need them to be set before other markers. The rest of the
-	 * markers should come in reverse order so that the last marker set is
-	 * visible (style choice).
-	 * 
-	 * @return returns a list based on listOfChkBoxes but in a different order:
-	 *         first, last, {reverse order of first+1 to last-1}
+	 * @return returns a list based on tableTrace.getItems() but without duplicate locations.
+	 * The first hop is guaranteed to be included, then for every location, only the last hop from that location will be included.
 	 */
-	private List<TraceLineInfo> getReorderedListOfCheckboxes()
+	private List<TraceLineInfo> removeOverlappingHops()
 	{
-		List<TraceLineInfo> reorderedListOfCheckBoxes = new ArrayList<>();
+		List<TraceLineInfo> hopsToShow = new ArrayList<>();
 		ObservableList<TraceLineInfo> rows = tableTrace.getItems();
-
-		TraceLineInfo row;
-		int firstSelectedBox = 0;
-		int lastSelectedBox = rows.size() - 1;
-
-		do
+		Map<String, String> mapLocationToLastHopFromIt = new HashMap<>();
+		boolean isFirstCheckedRow = true;
+		String firstLocation = null;
+		
+		for(TraceLineInfo hop : rows)
 		{
-			row = rows.get(firstSelectedBox++);
-		} while (!mapRowToSelectedStatus.get(row).get() && firstSelectedBox < rows.size());
-
-		reorderedListOfCheckBoxes.add(row);
-
-		do
-		{
-			row = rows.get(lastSelectedBox--);
-		} while (!mapRowToSelectedStatus.get(row).get() && lastSelectedBox >= 0);
-
-		if (!reorderedListOfCheckBoxes.contains(row))
-			reorderedListOfCheckBoxes.add(row);
-		else
-			return reorderedListOfCheckBoxes; //if there's just one box to add, don't add it twice.
-
-		for (int i = lastSelectedBox; i >= firstSelectedBox; i--)
-		{
-			row = rows.get(i);
-			if (mapRowToSelectedStatus.get(row).get())
-				reorderedListOfCheckBoxes.add(row);
+			if (mapRowToSelectedStatus.get(hop).get()) //if row is checked
+			{
+				String locationString = hop.locationProperty().get();
+				
+				if (isFirstCheckedRow)
+				{
+					isFirstCheckedRow = false;
+					firstLocation = locationString;
+				}
+				else
+					if (locationString.equals(firstLocation)) //don't overwrite the first hop
+						continue;
+				
+				mapLocationToLastHopFromIt.put(locationString, hop.hopNumberProperty().get());
+			}
 		}
-
-		return reorderedListOfCheckBoxes;
+		
+		for(TraceLineInfo hop : rows)
+		{
+			if (mapRowToSelectedStatus.get(hop).get()) //if row is checked
+			{
+				String currentHopNumber = hop.hopNumberProperty().get();
+				String locationString = hop.locationProperty().get();
+				String lastHopFromLocation = mapLocationToLastHopFromIt.get(locationString);
+				
+				if (currentHopNumber.equals(lastHopFromLocation))
+					hopsToShow.add(hop);
+			}
+		}
+		
+		return hopsToShow;
 	}
 
 	private String getLocationString(GeoIPInfo ipInfo)
 	{
 		String region = ipInfo.getRegion();
-		String location = ipInfo.getCountry() + "," + (region.isEmpty() ? "" : ipInfo.getRegionName() + ",") + ipInfo.getCity();
+		String location = ipInfo.getCity() + "," + (region.isEmpty() ? "" : ipInfo.getRegionName() + ",") + ipInfo.getCountry();
 		try
 		{
 			location = URLEncoder.encode(location, "UTF-8");
@@ -663,13 +924,15 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		props.put(propsSplitterPosition, String.valueOf(splitPane.getDividerPositions()[0]));
 		props.put(propsResolveHostname, String.valueOf(chkResolveHostnames.isSelected()));
 		props.put(propsPingTimeout, numFieldReplyTimeout.getText());
+		props.put(propsStopTraceAfterXTimeouts, numFieldStopTracingAfter.getText());
 	}
 	
 	public void loadLastRunConfig(Properties props)
 	{
 		splitPane.setDividerPosition(0, PropertiesByType.getDoubleProperty(props, propsSplitterPosition, 0.49));
 		chkResolveHostnames.setSelected(PropertiesByType.getBoolProperty(props, propsResolveHostname, false));
-		numFieldReplyTimeout.setText(PropertiesByType.getStringProperty(props, propsPingTimeout, ""));
+		numFieldReplyTimeout.setText(PropertiesByType.getStringProperty(props, propsPingTimeout, "3000"));
+		numFieldStopTracingAfter.setText(PropertiesByType.getStringProperty(props, propsStopTraceAfterXTimeouts, "5"));
 	}
 	
 	

@@ -16,11 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package whowhatwhere.controller.visualtrace;
-
-import java.util.List;
+package whowhatwhere.model.command.trace;
 
 public interface TraceOutputReceiver
 {
-	public void traceFinished(List<String> listOfOutputLines);
+	public void traceError(String errorMessage);
+	public void setIPBeingTraced(String ip);
+	public void setHostnameBeingTraced(String hostname);
+	public void lineAvailable(String line);
+	public void requestTimedOut();
+	public void traceFinished();
 }

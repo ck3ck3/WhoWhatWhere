@@ -16,17 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package whowhatwhere.model.cmd;
+package whowhatwhere.model.command;
 
 public interface LiveOutputListener
 {
 	/**
-	 * This method is called every time a CmdLiveOutput line is ready to be read
+	 * This method is called every time a CommmandLiveOutput line is ready to be read
 	 */
 	public void lineReady(String line);
 
 	/**
-	 * This method is called when the output for a CmdLiveOutput is finished.
+	 * This method is called when the output for a CommmandLiveOutput is finished.
 	 */
 	public void endOfOutput();
 

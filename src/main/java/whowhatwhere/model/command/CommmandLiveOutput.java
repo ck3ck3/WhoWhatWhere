@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package whowhatwhere.model.cmd;
+package whowhatwhere.model.command;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,23 +24,17 @@ import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class CmdLiveOutput
+public class CommmandLiveOutput
 {
+	private static final Logger logger = Logger.getLogger(CommmandLiveOutput.class.getPackage().getName());
+	
 	private String command;
 	private LiveOutputListener outputListener;
 	private Thread commandThread;
-	private static final Logger logger = Logger.getLogger(CmdLiveOutput.class.getPackage().getName());
+	private boolean stopRequested = false;
 
-	public CmdLiveOutput()
-	{
-	}
 
-	public CmdLiveOutput(String command)
-	{
-		this(command, null);
-	}
-
-	public CmdLiveOutput(String command, LiveOutputListener listener)
+	public CommmandLiveOutput(String command, LiveOutputListener listener)
 	{
 		this.command = command;
 		outputListener = listener;
@@ -60,7 +54,7 @@ public class CmdLiveOutput
 				BufferedReader inputStream = new BufferedReader(new InputStreamReader(process.getInputStream()));
 				String line;
 
-				while ((line = inputStream.readLine()) != null && !commandThread.isInterrupted())
+				while ((line = inputStream.readLine()) != null && !commandThread.isInterrupted() && !stopRequested)
 					if (outputListener != null)
 						outputListener.lineReady(line);
 			}
@@ -82,6 +76,7 @@ public class CmdLiveOutput
 	public void stopCommand()
 	{
 		commandThread.interrupt();
+		stopRequested = true;
 	}
 
 	public LiveOutputListener getOutputListener()
@@ -103,5 +98,4 @@ public class CmdLiveOutput
 	{
 		this.command = command;
 	}
-
 }

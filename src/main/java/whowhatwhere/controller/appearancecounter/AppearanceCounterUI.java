@@ -75,6 +75,7 @@ import whowhatwhere.controller.HotkeyRegistry;
 import whowhatwhere.controller.IPNotes;
 import whowhatwhere.controller.LoadAndSaveSettings;
 import whowhatwhere.controller.commands.Commands;
+import whowhatwhere.controller.visualtrace.VisualTraceUI;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.geoipresolver.GeoIPInfo;
 import whowhatwhere.model.geoipresolver.GeoIPResolver;
@@ -484,8 +485,15 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 			MenuItem traceIP = new MenuItem("Visual trace this IP");
 			traceIP.setOnAction(event -> 
 			{
-				tabPane.getSelectionModel().select(guiController.getVisualTraceTab());
-				guiController.getVisualTraceUI().setAddressAndStartTrace(row.getItem().ipAddressProperty().getValue());
+				VisualTraceUI visualTraceUI = guiController.getVisualTraceUI();
+				
+				if (!visualTraceUI.isTraceInProgress())
+				{
+					tabPane.getSelectionModel().select(guiController.getVisualTraceTab());
+					visualTraceUI.setAddressAndStartTrace(row.getItem().ipAddressProperty().getValue());
+				}
+				else
+					new Alert(AlertType.ERROR, "A trace is already in progress, please wait for it to finish and try again.").showAndWait();
 			});
 
 			ContextMenu rowMenu = new ContextMenu(copyMenu, getGeoIPinfo, sendIPToQuickPing, pingIP, traceIP);

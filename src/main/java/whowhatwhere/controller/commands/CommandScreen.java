@@ -27,8 +27,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import whowhatwhere.model.cmd.CmdLiveOutput;
-import whowhatwhere.model.cmd.LiveOutputListener;
+import whowhatwhere.model.command.CommmandLiveOutput;
+import whowhatwhere.model.command.LiveOutputListener;
 import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen;
 
 public abstract class CommandScreen extends SecondaryFXMLScreen implements LiveOutputListener
@@ -39,7 +39,7 @@ public abstract class CommandScreen extends SecondaryFXMLScreen implements LiveO
 	private String commandStr;
 
 	private CmdGUIController cmdController;
-	private CmdLiveOutput cmdLiveOutput;
+	private CommmandLiveOutput cmdLiveOutput;
 
 	private StringBuilder output = new StringBuilder();
 	private boolean outputReady = false;
@@ -59,7 +59,7 @@ public abstract class CommandScreen extends SecondaryFXMLScreen implements LiveO
 
 	public void runCommand()
 	{
-		cmdLiveOutput = new CmdLiveOutput(commandStr, this);
+		cmdLiveOutput = new CommmandLiveOutput(commandStr, this);
 		cmdLiveOutput.runCommand();
 	}
 	
