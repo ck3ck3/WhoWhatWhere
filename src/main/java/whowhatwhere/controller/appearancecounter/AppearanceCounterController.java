@@ -136,7 +136,7 @@ public class AppearanceCounterController implements Initializable
 		
 		Tooltip tip = new Tooltip("The hotkey can be activated even while " + Main.getAppName() + " isn't visible on the screen. "
 				+ "The table contents will be read out to you so you don't have to look at the screen. The text to speech voice can be configured from the Options menu.");
-		ToolTipUtilities.setTooltipProperties(tip, true, 400.0, 12.0, AnchorLocation.WINDOW_TOP_RIGHT); 
+		ToolTipUtilities.setTooltipProperties(tip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, AnchorLocation.WINDOW_TOP_RIGHT); 
 		chkboxUseTTS.setTooltip(tip);
 		GUIController.setCommonGraphicOnLabeled(chkboxUseTTS, GUIController.CommonGraphicImages.TOOLTIP);
 		
@@ -154,7 +154,7 @@ public class AppearanceCounterController implements Initializable
 	{
 		GUIController.setCommonGraphicOnLabeled(labelWWW, GUIController.CommonGraphicImages.TOOLTIP);
 		Tooltip tooltip = new Tooltip("Who What Where listens to network traffic and analyzes IP packets. Analysis includes geographical location, latency and total amount of packets sent and received from each address.");
-		ToolTipUtilities.setTooltipProperties(tooltip, true, 400.0, 12.0, null);
+		ToolTipUtilities.setTooltipProperties(tooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
 		labelWWW.setTooltip(tooltip);
 	}
 	

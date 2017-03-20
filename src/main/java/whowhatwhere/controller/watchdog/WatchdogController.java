@@ -162,18 +162,18 @@ public class WatchdogController implements Initializable
 	{
 		GUIController.setCommonGraphicOnLabeled(labelTableHeader, GUIController.CommonGraphicImages.TOOLTIP);
 		Tooltip headerTooltip = new Tooltip("Watchdog inspects network traffic and issues a user-customized notification when a packet matches the conditions specified in a rule.");
-		ToolTipUtilities.setTooltipProperties(headerTooltip, true, 420.0, 12.0, null);
+		ToolTipUtilities.setTooltipProperties(headerTooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
 		labelTableHeader.setTooltip(headerTooltip);
 		
 		GUIController.setCommonGraphicOnLabeled(labelRuleList, GUIController.CommonGraphicImages.TOOLTIP);
 		Tooltip ruleListTooltip = new Tooltip("The rules are checked in the order that they appear. If a packet matches a rule, the remaining rules will not be checked.");
-		ToolTipUtilities.setTooltipProperties(ruleListTooltip, true, 400.0, 12.0, null);
+		ToolTipUtilities.setTooltipProperties(ruleListTooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
 		labelRuleList.setTooltip(ruleListTooltip);
 		
 		GUIController.setCommonGraphicOnLabeled(labelCooldownSeconds, GUIController.CommonGraphicImages.TOOLTIP);
 		Tooltip cooldownTooltip = new Tooltip("In order to avoid getting flooded with messages, matches that occur during a cooldown period will be ignored and not issue a notification.\nMinimal cooldown period is "
 				+ WatchdogUI.minCooldownValue + " seconds.");
-		ToolTipUtilities.setTooltipProperties(cooldownTooltip, true, 350.0, 12.0, AnchorLocation.WINDOW_TOP_RIGHT);
+		ToolTipUtilities.setTooltipProperties(cooldownTooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, AnchorLocation.WINDOW_TOP_RIGHT);
 		labelCooldownSeconds.setTooltip(cooldownTooltip);
 		
 		GUIController.setCommonGraphicOnLabeled(btnAddRow, GUIController.CommonGraphicImages.ADD);

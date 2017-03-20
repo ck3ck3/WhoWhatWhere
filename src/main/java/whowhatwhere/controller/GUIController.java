@@ -103,6 +103,9 @@ public class GUIController
 	private final static String backgroundColorForValidText = "white";
 	private final static String textColorForInvalidText = "#b94a48";
 	private final static String backgroundColorForInvalidText = "#f2dede";
+	
+	public final static double defaultTooltipMaxWidth = 320.0;
+	public final static double defaultFontSize = 12.0;
 	public final static String defaultTTSVoiceName = TTSVoice.cmu_bdl_hsmm.getVoiceName();
 	
 	@FXML

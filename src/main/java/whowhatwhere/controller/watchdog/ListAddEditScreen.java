@@ -364,7 +364,7 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 		GUIController.setCommonGraphicOnLabeled(control, GUIController.CommonGraphicImages.TOOLTIP);
 
 		Tooltip tooltip = new Tooltip(tooltipMsg);
-		ToolTipUtilities.setTooltipProperties(tooltip, true, 400.0, 12.0, null);
+		ToolTipUtilities.setTooltipProperties(tooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
 		control.setTooltip(tooltip);
 	}
 

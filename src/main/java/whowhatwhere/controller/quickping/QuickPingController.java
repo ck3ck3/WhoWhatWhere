@@ -31,7 +31,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.text.Font;
 import whowhatwhere.Main;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.ToolTipUtilities;
@@ -66,14 +65,14 @@ public class QuickPingController implements Initializable
 		GUIController.setCommonGraphicOnLabeled(labelQuickPing, GUIController.CommonGraphicImages.TOOLTIP);
 		Tooltip quickPingTooltip = new Tooltip("Quick Ping allows you to press a hotkey to ping a pre-defined IP or hostname and have the result read out to you or shown in a pop-up message. " 
 												+ Main.getAppName() + " doesn't have to be visible on the screen, so it's ideal while playing online games.");
-		ToolTipUtilities.setTooltipProperties(quickPingTooltip, true, 450.0, 12.0, null);
+		ToolTipUtilities.setTooltipProperties(quickPingTooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
 		labelQuickPing.setTooltip(quickPingTooltip);
 		
 		comboOutputMethod.setItems(FXCollections.observableArrayList(OutputMethod.values()));
 		
 		GUIController.setCommonGraphicOnLabeled(labelTTSTooltip, GUIController.CommonGraphicImages.TOOLTIP);
 		Tooltip ttsTooltip = new Tooltip("Voice and language can be configured from the Options menu.");
-		ttsTooltip.setFont(new Font(12));
+		ToolTipUtilities.setTooltipProperties(ttsTooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
 		labelTTSTooltip.setTooltip(ttsTooltip);
 		
 		comboOutputMethod.valueProperty().addListener((ChangeListener<OutputMethod>) (observable, oldValue, newValue) -> labelTTSTooltip.setVisible(newValue == OutputMethod.TTS || newValue == OutputMethod.TTS_AND_POPUP));

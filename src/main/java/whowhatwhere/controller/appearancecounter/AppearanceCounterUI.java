@@ -64,7 +64,6 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
@@ -74,6 +73,7 @@ import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
 import whowhatwhere.controller.IPNotes;
 import whowhatwhere.controller.LoadAndSaveSettings;
+import whowhatwhere.controller.ToolTipUtilities;
 import whowhatwhere.controller.commands.Commands;
 import whowhatwhere.controller.visualtrace.VisualTraceUI;
 import whowhatwhere.model.PropertiesByType;
@@ -351,8 +351,8 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	{
 		Label labelForIPNote = new Label("IP Notes");
 		GUIController.setCommonGraphicOnLabeled(labelForIPNote, GUIController.CommonGraphicImages.TOOLTIP);
-		Tooltip tooltip = new Tooltip("Add your own note to describe this IP address and easily recognize it in the future");
-		tooltip.setFont(new Font(12));
+		Tooltip tooltip = new Tooltip("Add your own note to describe this IP address and easily recognize it in the future.");
+		ToolTipUtilities.setTooltipProperties(tooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
 		labelForIPNote.setTooltip(tooltip);
 		labelForIPNote.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
 		columnNotes.setGraphic(labelForIPNote);

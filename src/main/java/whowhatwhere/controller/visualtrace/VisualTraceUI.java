@@ -72,13 +72,13 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import numbertextfield.NumberTextField;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.LoadAndSaveSettings;
+import whowhatwhere.controller.ToolTipUtilities;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.command.CommmandLiveOutput;
 import whowhatwhere.model.command.trace.TraceLiveOutputListener;
@@ -375,7 +375,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 				btnZoom.setToggleGroup(zoomToggleGroup);
 				GUIController.setGraphicForLabeledControl(btnZoom, zoomInIconLocation, ContentDisplay.CENTER);
 				Tooltip zoomTooltip = new Tooltip("Zoom in on this location (into the center of the city)");
-				btnZoom.setFont(new Font(12));
+				ToolTipUtilities.setTooltipProperties(zoomTooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
 				btnZoom.setTooltip(zoomTooltip);
 				btnZoom.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
 				{
@@ -410,7 +410,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 					generateAndShowImage();
 				});
 				Tooltip spinnerTooltip = new Tooltip("Set zoom level (1-20)");
-				spinnerTooltip.setFont(new Font(12));
+				ToolTipUtilities.setTooltipProperties(spinnerTooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
 				spinnerZoom.setTooltip(spinnerTooltip);
 				spinnerZoom.getEditor().setTooltip(spinnerTooltip);
 				spinnerZoom.setEditable(false);

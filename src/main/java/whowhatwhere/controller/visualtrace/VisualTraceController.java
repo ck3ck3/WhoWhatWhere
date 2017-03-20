@@ -155,7 +155,7 @@ public class VisualTraceController implements Initializable
 		Label label = new Label(headerText);
 		GUIController.setCommonGraphicOnLabeled(label, GUIController.CommonGraphicImages.TOOLTIP);
 		Tooltip tooltip = new Tooltip(tooltipText);
-		ToolTipUtilities.setTooltipProperties(tooltip, true, 330.0, 12.0, AnchorLocation.CONTENT_TOP_LEFT);
+		ToolTipUtilities.setTooltipProperties(tooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, AnchorLocation.CONTENT_TOP_LEFT);
 		label.setTooltip(tooltip);
 		label.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
 		column.setGraphic(label);
@@ -263,22 +263,22 @@ public class VisualTraceController implements Initializable
 		
 		GUIController.setCommonGraphicOnLabeled(labelVisualTrace, GUIController.CommonGraphicImages.TOOLTIP);
 		Tooltip visualTraceTooltip = new Tooltip("Trace the route from your computer to another host on the internet and see it visually on a map.");
-		ToolTipUtilities.setTooltipProperties(visualTraceTooltip, true, 470.0, 12.0, null);
+		ToolTipUtilities.setTooltipProperties(visualTraceTooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
 		labelVisualTrace.setTooltip(visualTraceTooltip);
 		
 		GUIController.setCommonGraphicOnLabeled(labelPingTimeout, GUIController.CommonGraphicImages.TOOLTIP);
-		Tooltip pingTimeoutTooltip = new Tooltip("The ping timeout (in milliseconds) for each of the 3 pings for every hop.\nDefault value is 3000.");
-		ToolTipUtilities.setTooltipProperties(pingTimeoutTooltip, true, 400.0, 12.0, AnchorLocation.WINDOW_TOP_LEFT); 
+		Tooltip pingTimeoutTooltip = new Tooltip("The ping timeout (in milliseconds) for each of the 3 pings for every hop. Default value is 3000.");
+		ToolTipUtilities.setTooltipProperties(pingTimeoutTooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, AnchorLocation.WINDOW_TOP_LEFT); 
 		labelPingTimeout.setTooltip(pingTimeoutTooltip);
 		
 		GUIController.setCommonGraphicOnLabeled(chkResolveHostnames, GUIController.CommonGraphicImages.TOOLTIP);
 		Tooltip resolveHostnamesTooltip = new Tooltip("Try to resolve each IP's hostname. This might slow down the trace as well as the time it takes to abort it.");
-		ToolTipUtilities.setTooltipProperties(resolveHostnamesTooltip, true, 400.0, 12.0, AnchorLocation.WINDOW_TOP_LEFT); 
+		ToolTipUtilities.setTooltipProperties(resolveHostnamesTooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, AnchorLocation.WINDOW_TOP_LEFT); 
 		chkResolveHostnames.setTooltip(resolveHostnamesTooltip);
 		
 		GUIController.setCommonGraphicOnLabeled(labelConsecutiveTimeouts, GUIController.CommonGraphicImages.TOOLTIP);
 		Tooltip timeouts = new Tooltip("A few time-outs in a row usually mean that the final destination was reached but it ignores trace requests. In order to avoid excessive waiting when this happens, it's recommended to set this value to about 5.");
-		ToolTipUtilities.setTooltipProperties(timeouts, true, 320.0, 12.0, AnchorLocation.WINDOW_TOP_LEFT); 
+		ToolTipUtilities.setTooltipProperties(timeouts, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, AnchorLocation.WINDOW_TOP_LEFT); 
 		labelConsecutiveTimeouts.setTooltip(timeouts);
 	}
 	

@@ -21,6 +21,7 @@ package whowhatwhere.controller.watchdog;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -105,6 +106,8 @@ public class ListAddEditController implements Initializable
 	private Label labelNoteCount;
 	@FXML
 	private Button btnConfigTTS;
+	@FXML
+	private Label labelBytes;
 	
 	
 	@Override
@@ -141,6 +144,14 @@ public class ListAddEditController implements Initializable
 		
 		labelPacketSizeRight.setVisible(false);
 		numFieldPacketSizeRight.setVisible(false);
+		
+		labelPacketSizeRight.visibleProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
+		{
+			if (newValue) //it is now visible
+				labelBytes.setLayoutX(440);
+			else
+				labelBytes.setLayoutX(343);
+		});
 		
 		btnPreview.setVisible(false);
 		GUIController.setCommonGraphicOnLabeled(btnConfigTTS, GUIController.CommonGraphicImages.VOICE_CONFIG);

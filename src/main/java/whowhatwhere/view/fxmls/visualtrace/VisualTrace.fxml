@@ -27,7 +27,7 @@
                   <Label fx:id="labelPingTimeout" layoutY="43.0" text="Ping timeout (ms)" />
                   <Label layoutY="84.0" text="Stop tracing if" />
                   <NumberTextField fx:id="numFieldStopTracingAfter" layoutX="82.0" layoutY="80.0" maxValue="30" minValue="1" prefHeight="25.0" prefWidth="33.0" />
-                  <Label fx:id="labelConsecutiveTimeouts" layoutX="121.0" layoutY="84.0" text="consecutive hops haven't responded" />
+                  <Label fx:id="labelConsecutiveTimeouts" layoutX="121.0" layoutY="82.0" text="consecutive hops haven't responded" />
                </children>
             </Pane>
             <Button fx:id="btnTrace" layoutX="14.0" layoutY="172.0" mnemonicParsing="false" prefHeight="29.0" text="Trace" />
