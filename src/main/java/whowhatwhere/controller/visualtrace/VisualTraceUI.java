@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Phaser;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -136,7 +137,8 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 
 	private ObservableList<String> observableListOfLines = FXCollections.observableArrayList();
 	private char label ='A';
-	private Semaphore semaphore = new Semaphore(1);
+	private Semaphore syncMapImageAndTraceTableSemaphore = new Semaphore(1); //will have either 1 or 0 permits. 1 means that a row was added to the table and we're waiting for a map image to appear, which will then set it back to 0.
+	private Phaser pendingLinesPhaser = new Phaser(0); //counts the amount of lines that are pending to be shown on the map. will be used to to inform the UI that the trace has finished only after the final trace line was shown on the map.
 	private SimpleBooleanProperty isTraceInProgress = new SimpleBooleanProperty(false);
 	private String ipBeingTraced = null;
 	private String hostnameBeingTraced = null;
@@ -156,7 +158,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		showOwnLocationOnMap();
 		
 		setBindingsAndListeners();
-		setButtonHandlers(guiController);
+		setButtonHandlers();
 		setSpecialColumns();
 	}
 	
@@ -185,7 +187,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		});
 	}
 	
-	private void setButtonHandlers(GUIController guiController)
+	private void setButtonHandlers()
 	{
 		btnTrace.setOnAction(actionEvent ->
 		{
@@ -228,11 +230,11 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		return "tracert " + (chkResolveHostnames.isSelected() ? "" : "-d ") + (pingTimeout == null ? "" : "-w " + pingTimeout + " ") + textTrace.getText();
 	}
 	
-	public synchronized void addRowToTableAndShowImage(String newLine)
+	public void addRowToTableAndShowImage(String newLine)
 	{
 		try
 		{
-			semaphore.acquire();
+			syncMapImageAndTraceTableSemaphore.acquire(); //a trace line is pending to be shown on the map
 		}
 		catch (InterruptedException ie)
 		{
@@ -298,8 +300,8 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		hostnameBeingTraced = null;
 		labelStatus.setText("Starting trace...");
 		
-		if (semaphore.availablePermits() == 0) //in case we were interrupted earlier while the single permit was acquired
-			semaphore.release();
+		syncMapImageAndTraceTableSemaphore = new Semaphore(1); //reset back to 1
+		pendingLinesPhaser = new Phaser(0); //reset to 0
 	}
 	
 	private void setSpecialColumns()
@@ -493,6 +495,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	@Override
 	public void lineAvailable(String line)
 	{
+		pendingLinesPhaser.register(); //a line is now pending to be shown on the map
 		consecutiveRequestTimeOuts = 0;
 		observableListOfLines.add(line);
 		hopCounter.set(hopCounter.get() + 1);
@@ -515,6 +518,11 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	{
 		if (isAtLeastOneCheckboxSelected())
 		{
+			pendingLinesPhaser.register(); //required for next line
+			pendingLinesPhaser.arriveAndAwaitAdvance(); //waint until all lines have been drawn on the map
+			
+			ensureLastHopIsTheDestination();
+			
 			imgView.imageProperty().addListener(new ChangeListener<Image>() //perform post-trace stuff only after the last image of the trace is shown 
 			{
 				@Override
@@ -526,7 +534,6 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 				}
 			});
 			
-			ensureLastHopIsTheDestination();
 			generateAndShowImage();
 		}
 		else
@@ -642,8 +649,11 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 			labelUnderMap.setVisible(true);
 		}
 		
-		if (semaphore.availablePermits() == 0)
-			semaphore.release();
+		if (syncMapImageAndTraceTableSemaphore.availablePermits() == 0)
+			syncMapImageAndTraceTableSemaphore.release(); //if we were waiting for a line to appear on the map, it's done
+		
+		if (pendingLinesPhaser.getRegisteredParties() > 0)
+			pendingLinesPhaser.arriveAndDeregister(); //if we were waiting for a line to appear on the map, it's done
 	}
 
 	private void addSingleGeoIPInfoFromLine(String line)
