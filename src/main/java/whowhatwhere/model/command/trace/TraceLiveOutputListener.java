@@ -90,7 +90,7 @@ public class TraceLiveOutputListener implements LiveOutputListener
 			return false;
 		}
 		
-		if (line.startsWith("  1 ") && !ipPattern.matcher(line).find()) //if the first trace hop doesn't contain an IP, an error occurred
+		if (line.startsWith("  1 ") && !ipPattern.matcher(line).find() && !line.contains("*")) //if the first trace hop doesn't contain an IP and it wasn't a timeout, an error occurred
 		{
 			outputReceiver.traceError(line.substring(5));
 			traceFailed = true;

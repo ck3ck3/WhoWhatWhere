@@ -869,7 +869,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 				GeoIPInfo ipInfo = geoIPResults.get(ip);
 
 				int indexOfRow = uniqueHops.indexOf(row);
-				boolean isFirstOrLastHop = indexOfRow == 0 || (/*!isTraceInProgress.get()*/row.ipAddressProperty().get().equals(ipBeingTraced) && indexOfRow == uniqueHops.size() - 1); 
+				boolean isFirstOrLastHop = indexOfRow == 0 || row.ipAddressProperty().get().equals(ipBeingTraced); 
 				String currentMarker = "&markers=color:" + (isFirstOrLastHop ? "red" : "blue") + "%7Clabel:" + label;
 				
 				if (!isFirstOrLastHop) //only the first and last hop are slightly bigger than the other hops, to stick out in the image. 
