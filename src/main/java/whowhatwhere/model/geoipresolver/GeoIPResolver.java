@@ -50,17 +50,36 @@ public class GeoIPResolver
 	private static final int maxItemsPerBatchRequest = 100;
 	private static final int connectionTimeout = 3000;
 	private static final int readTimeout = 3000;
+	private static final int defaultRetries = 2;
 	
 	private static int queryCounter = 0;
-
-	/**
+	
+	
+	/**Gets the GeoIPInfo of the {@code ip}. Performs default amount of retries.
 	 * @param ip - ip to query
 	 * @param extended - if true, will return an instance of GeoIPInfoExtended. Otherwise, will return an instance of GeoIPInfo.
-	 * @return
+	 * @return The GeoIPInfo of the requested IP address
 	 */
 	public static GeoIPInfo getIPInfo(String ip, boolean extended)
 	{
+		return getIPInfo(ip, extended, defaultRetries);
+	}
 
+	/**Gets the GeoIPInfo of the {@code ip}. Performs {@code numOfRetries} amount of retries.
+	 * @param ip - ip to query
+	 * @param extended - if true, will return an instance of GeoIPInfoExtended. Otherwise, will return an instance of GeoIPInfo.
+	 * @param numOfRetries - the amount of times to retry if the connection times out.
+	 * @return The GeoIPInfo of the requested IP address
+	 * @throws IllegalArgumentException if numOfRetries < 0
+	 */
+	
+	public static GeoIPInfo getIPInfo(String ip, boolean extended, int numOfRetries)
+	{
+		if (numOfRetries < 0)
+			throw new IllegalArgumentException("numOfRetries must be a non-negative integer.");
+		
+		int attempt = 0;
+		
 		if (queryCounter == maxQueriesPerMin)
 			return generateQuotaReachedInfo();
 		else
@@ -71,65 +90,94 @@ public class GeoIPResolver
 		
 		HttpGet getRequest = new HttpGet(serviceBaseURI + ip + (extended ? "" : onlyBasicFields));
 		
-		try
+		while (++attempt <= numOfRetries)
 		{
-			CloseableHttpResponse response = httpClient.execute(getRequest);
-			String responseText = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-			httpClient.close();
-			
-			return parseResponse(new JSONObject(responseText), extended);
+			try
+			{
+				CloseableHttpResponse response = httpClient.execute(getRequest);
+				String responseText = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+				httpClient.close();
+				
+				return parseResponse(new JSONObject(responseText), extended);
+			}
+			catch (IOException ioe)
+			{
+				logger.log(Level.WARNING, "Unable to get GeoIP info for IP " + ip + " (attempt #" + attempt + ")", ioe);
+			}
 		}
-		catch (IOException ioe)
-		{
-			logger.log(Level.WARNING, "Unable to get GeoIP info for IP " + ip, ioe);
-			return parseResponse(null, false);
-		}
-
+		
+		return parseResponse(null, false);
 	}
 	
+	/**Gets the GeoIPInfo of the {@code ips}. Performs default amount of retries.
+	 * @param ips - a list of IPs to query for GeoIPInfo
+	 * @param extended - if true, will return instances of GeoIPInfoExtended. Otherwise, will return instances of GeoIPInfo.
+	 * @return a list of GeoIPInfo objects that contain the query results for the IPs from {@code ips}
+	 */
 	public static List<GeoIPInfo> getBatchGeoIPInfo(List<String> ips, boolean extended)
 	{
+		return getBatchGeoIPInfo(ips, extended, defaultRetries);
+	}
+	
+	/**Gets the GeoIPInfo of the {@code ips}. Performs {@code numOfRetries} amount of retries. 
+	 * @param ips - a list of IPs to query for GeoIPInfo
+	 * @param extended - if true, will return instances of GeoIPInfoExtended. Otherwise, will return instances of GeoIPInfo.
+	 * @param numOfRetries - the amount of times to retry if the connection times out.
+	 * @return a list of GeoIPInfo objects that contain the query results for the IPs from {@code ips}
+	 * @throws IllegalArgumentException if numOfRetries < 0
+	 */
+	public static List<GeoIPInfo> getBatchGeoIPInfo(List<String> ips, boolean extended, int numOfRetries)
+	{
+		if (numOfRetries < 0)
+			throw new IllegalArgumentException("numOfRetries must be a non-negative integer.");
+		
 		if (ips.size() == 0)
 			return new ArrayList<GeoIPInfo>();
+		
+		int attempt = 0;
 		
 		RequestConfig timeouts = RequestConfig.custom().setConnectTimeout(connectionTimeout).setSocketTimeout(readTimeout).build();
 		CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(timeouts).build();
 		
 	    HttpPost request = new HttpPost(serviceBaseURIForBatch + (extended ? "" : onlyBasicFields));
-	    try
+	    while (++attempt <= numOfRetries)
 	    {
-	    	int listSize = ips.size();
-	    	int itemsLeft = listSize;
-	    	int firstIndex = 0;
-	    	List<GeoIPInfo> resultList = new ArrayList<>();
-	    	
-	    	while (itemsLeft > 0)
-	    	{
-	    		int itemsInThisIteration = Math.min(itemsLeft, maxItemsPerBatchRequest);
-	    		int lastIndex = firstIndex + itemsInThisIteration;
-	    		List<String> subList = ips.subList(firstIndex, lastIndex);
-	    		
-		    	String jsonArrayInput = buildJSONArrayFromListOfIPs(subList);
-		    	request.setEntity(new StringEntity(jsonArrayInput));
-		    	CloseableHttpResponse response = httpClient.execute(request);
+		    try
+		    {
+		    	int listSize = ips.size();
+		    	int itemsLeft = listSize;
+		    	int firstIndex = 0;
+		    	List<GeoIPInfo> resultList = new ArrayList<>();
 		    	
-		    	String responseText = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-		    	response.close();
-		    	resultList.addAll(buildListOfGeoIPInfoFromJSONArray(new JSONArray(responseText), extended));
+		    	while (itemsLeft > 0)
+		    	{
+		    		int itemsInThisIteration = Math.min(itemsLeft, maxItemsPerBatchRequest);
+		    		int lastIndex = firstIndex + itemsInThisIteration;
+		    		List<String> subList = ips.subList(firstIndex, lastIndex);
+		    		
+			    	String jsonArrayInput = buildJSONArrayFromListOfIPs(subList);
+			    	request.setEntity(new StringEntity(jsonArrayInput));
+			    	CloseableHttpResponse response = httpClient.execute(request);
+			    	
+			    	String responseText = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+			    	response.close();
+			    	resultList.addAll(buildListOfGeoIPInfoFromJSONArray(new JSONArray(responseText), extended));
+			    	
+			    	itemsLeft -= itemsInThisIteration;
+			    	firstIndex = lastIndex;
+		    	}
 		    	
-		    	itemsLeft -= itemsInThisIteration;
-		    	firstIndex = lastIndex;
-	    	}
-	    	
-	    	httpClient.close();
-	    	
-	    	return resultList;
+		    	httpClient.close();
+		    	
+		    	return resultList;
+		    }
+		    catch(IOException ioe)
+		    {
+		    	logger.log(Level.WARNING, "Unable to get batch GeoIP info (attempt #" + attempt + ").", ioe);
+		    }
 	    }
-	    catch(IOException ioe)
-	    {
-	    	logger.log(Level.WARNING, "Unable to get batch GeoIP info. ", ioe);
-	    	return null;
-	    }
+	    
+	    return null;
 	}
 	
 	private static String buildJSONArrayFromListOfIPs(List<String> ips)
@@ -210,7 +258,6 @@ public class GeoIPResolver
 		
 		if (extended)
 		{
-			
 			((GeoIPInfoExtended)ipInfo).setCountryCode((String) jsonObj.get("countryCode"));
 			((GeoIPInfoExtended)ipInfo).setZip((String) jsonObj.get("zip"));
 			((GeoIPInfoExtended)ipInfo).setLat(((Double) jsonObj.get("lat")).toString());
