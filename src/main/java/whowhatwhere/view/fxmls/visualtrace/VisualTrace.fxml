@@ -20,7 +20,7 @@
          <children>
             <Pane fx:id="paneSettings" layoutX="14.0" layoutY="50.0">
                <children>
-                  <TextField fx:id="textTrace" layoutX="130.0" prefHeight="29.0" prefWidth="237.0" />
+                  <TextField fx:id="textTrace" layoutX="130.0" layoutY="2.0" prefWidth="237.0" />
                   <CheckBox fx:id="chkResolveHostnames" layoutX="219.0" layoutY="44.0" mnemonicParsing="false" text="Resolve hostnames" />
                   <Label layoutY="6.0" text="IP or hostname" />
                   <NumberTextField fx:id="numFieldPingTimeout" layoutX="130.0" layoutY="42.0" maxValue="3000" minValue="1" prefHeight="25.0" prefWidth="55.0" />

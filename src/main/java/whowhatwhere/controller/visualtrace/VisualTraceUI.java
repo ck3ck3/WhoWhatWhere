@@ -27,6 +27,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -138,7 +139,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	private ObservableList<String> observableListOfLines = FXCollections.observableArrayList();
 	private char label ='A';
 	private Semaphore syncMapImageAndTraceTableSemaphore = new Semaphore(1); //will have either 1 or 0 permits. 1 means that a row was added to the table and we're waiting for a map image to appear, which will then set it back to 0.
-	private Phaser pendingLinesPhaser = new Phaser(0); //counts the amount of lines that are pending to be shown on the map. will be used to to inform the UI that the trace has finished only after the final trace line was shown on the map.
+	private Phaser pendingLinesPhaser = new Phaser(1); //counts the amount of lines that are pending to be shown on the map. will be used to to inform the UI that the trace has finished only after the final trace line was shown on the map.
 	private SimpleBooleanProperty isTraceInProgress = new SimpleBooleanProperty(false);
 	private String ipBeingTraced = null;
 	private String hostnameBeingTraced = null;
@@ -147,6 +148,8 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	private CommmandLiveOutput traceCommand;
 	private String abortReason;
 	private boolean wasTraceAborted = false;
+	private LinkedList<TraceLineInfo> queueOfLinesToAddToTable = new LinkedList<>();
+	private Map<String, HBox> mapIPToZoomControls = new HashMap<>();
 
 	public VisualTraceUI(GUIController guiController)
 	{
@@ -234,13 +237,13 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	{
 		try
 		{
-			syncMapImageAndTraceTableSemaphore.acquire(); //a trace line is pending to be shown on the map
+			syncMapImageAndTraceTableSemaphore.acquire(); //wait here until the previous image is shown
 		}
 		catch (InterruptedException ie)
 		{
 			return;
 		}
-
+		
 		Platform.runLater(() ->
 		{
 			singleGenerateTraceInfoGUI(newLine);				
@@ -283,7 +286,9 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		tableTrace.getItems().clear();
 		tableTrace.refresh();
 		listOfRows.clear();
+		queueOfLinesToAddToTable.clear();
 		mapRowToSelectedStatus.clear();
+		mapIPToZoomControls.clear();
 		
 		imgView.setImage(null);
 		columnHostname.setVisible(chkResolveHostnames.isSelected());
@@ -301,7 +306,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		labelStatus.setText("Starting trace...");
 		
 		syncMapImageAndTraceTableSemaphore = new Semaphore(1); //reset back to 1
-		pendingLinesPhaser = new Phaser(0); //reset to 0
+		pendingLinesPhaser = new Phaser(1); //reset to 1
 	}
 	
 	private void setSpecialColumns()
@@ -360,11 +365,17 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 				{
 					String ip = item;
 
-					ToggleButton btnZoom = createZoomButton(ip);
-					Spinner<Integer> spinnerZoom = createZoomSpinner(btnZoom, ip);
-					
-					HBox zoomControls = new HBox(btnZoom, spinnerZoom);
-					zoomControls.setStyle("-fx-alignment: center;");
+					HBox zoomControls = mapIPToZoomControls.get(ip); //"cache" is required so we won't lose the zoomControl's state when tableTrace.refresh() is called (while dragging splitter)
+					if (zoomControls == null)
+					{
+						ToggleButton btnZoom = createZoomButton(ip);
+						Spinner<Integer> spinnerZoom = createZoomSpinner(btnZoom, ip);
+						
+						zoomControls = new HBox(btnZoom, spinnerZoom);
+						zoomControls.setStyle("-fx-alignment: center;");
+						
+						mapIPToZoomControls.put(ip, zoomControls);
+					}
 
 					setGraphic(zoomControls);
 					setText(null);
@@ -516,30 +527,13 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	@Override
 	public void traceFinished()
 	{
-		if (isAtLeastOneCheckboxSelected())
-		{
-			pendingLinesPhaser.register(); //required for next line
-			pendingLinesPhaser.arriveAndAwaitAdvance(); //waint until all lines have been drawn on the map
-			
-			ensureLastHopIsTheDestination();
-			
-			imgView.imageProperty().addListener(new ChangeListener<Image>() //perform post-trace stuff only after the last image of the trace is shown 
-			{
-				@Override
-				public void changed(ObservableValue<? extends Image> observable, Image oldValue, Image newValue)
-				{
-					informUserTraceFinishedByAbortOrError(wasTraceAborted ? FinishStatus.ABORT : FinishStatus.SUCCESS);
-					
-					imgView.imageProperty().removeListener(this);
-				}
-			});
-			
-			generateAndShowImage();
-		}
-		else
-			informUserTraceFinishedByAbortOrError(wasTraceAborted ? FinishStatus.ABORT : FinishStatus.SUCCESS);
+		pendingLinesPhaser.arriveAndAwaitAdvance(); //wait until all lines have been drawn on the map
 		
-		isTraceInProgress.set(false);
+		if (!ensureLastHopIsTheDestination()) //if we don't need to manually add the 'infinity' hop (if we do add, then content of the if block will be done in ensureLastHopIsTheDestination()
+		{
+			informUserTraceFinishedByAbortOrError(wasTraceAborted ? FinishStatus.ABORT : FinishStatus.SUCCESS);
+			isTraceInProgress.set(false);
+		}
 	}
 	
 	private void informUserTraceFinishedByAbortOrError(FinishStatus status)
@@ -593,11 +587,11 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	/**
 	 *Checks if last row has the IP that is being traced. If not, manually creates a line and adds it 
 	 */
-	private void ensureLastHopIsTheDestination()
+	private boolean ensureLastHopIsTheDestination()
 	{
-		ObservableList<TraceLineInfo> items = tableTrace.getItems();
+		List<TraceLineInfo> items = listOfRows;//tableTrace.getItems();
 		if (items.size() == 0)
-			return;
+			return false;
 		
 		int lastLineIndex = items.size() - 1;
 		String lastIPFromTraceResults = items.get(lastLineIndex).ipAddressProperty().get();
@@ -620,7 +614,38 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 				manualLine = String.format("%3s  %7s  %7s  %7s  %s", VisualTraceController.infinitySymbol, pingReply[0], pingReply[1], pingReply[2], ipBeingTraced);
 			
 			singleGenerateTraceInfoGUI(manualLine);
-		}		
+			
+			if (isAtLeastOneCheckboxSelected())
+			{
+				setSingleRunListenerOnImageView();
+				generateAndShowImage();
+			}
+			else
+			{
+				addLatestLineFromQueue();
+				informUserTraceFinishedByAbortOrError(wasTraceAborted ? FinishStatus.ABORT : FinishStatus.SUCCESS);
+				isTraceInProgress.set(false);				
+			}
+						
+			return true;
+		}
+		
+		return false;
+	}
+	
+	private void setSingleRunListenerOnImageView()
+	{
+		imgView.imageProperty().addListener(new ChangeListener<Image>() //perform post-trace stuff only after the last image of the trace is shown 
+		{
+			@Override
+			public void changed(ObservableValue<? extends Image> observable, Image oldValue, Image newValue)
+			{
+				informUserTraceFinishedByAbortOrError(wasTraceAborted ? FinishStatus.ABORT : FinishStatus.SUCCESS);
+				isTraceInProgress.set(false);
+				
+				imgView.imageProperty().removeListener(this);
+			}
+		});		
 	}
 
 	private void placeLabelUnderMap()
@@ -649,11 +674,22 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 			labelUnderMap.setVisible(true);
 		}
 		
-		if (syncMapImageAndTraceTableSemaphore.availablePermits() == 0)
-			syncMapImageAndTraceTableSemaphore.release(); //if we were waiting for a line to appear on the map, it's done
+		addLatestLineFromQueue();
+	}
+	
+	private void addLatestLineFromQueue()
+	{
+		if (!queueOfLinesToAddToTable.isEmpty())
+		{
+			TraceLineInfo lineToAdd = queueOfLinesToAddToTable.removeFirst();
+			tableTrace.getItems().add(lineToAdd);
+		}
 		
-		if (pendingLinesPhaser.getRegisteredParties() > 0)
-			pendingLinesPhaser.arriveAndDeregister(); //if we were waiting for a line to appear on the map, it's done
+		if (syncMapImageAndTraceTableSemaphore.availablePermits() == 0) //if we're holding a permit
+			syncMapImageAndTraceTableSemaphore.release(); //release the permit, since the image has been shown.
+		
+		if (isTraceInProgress.get() && pendingLinesPhaser.getRegisteredParties() > 0)
+			pendingLinesPhaser.arrive(); //if we were waiting for a line to appear on the map, it's done
 	}
 
 	private void addSingleGeoIPInfoFromLine(String line)
@@ -691,7 +727,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		listOfRows.add(currentRow);
 		mapRowToSelectedStatus.put(currentRow, checkboxValue);
 
-		tableTrace.getItems().add(currentRow);
+		queueOfLinesToAddToTable.add(currentRow);
 
 		if (hasLocation) //otherwise the label won't be used, so don't advance it
 		{
@@ -830,7 +866,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	{
 		String pathInit = "&path=";
 		String path = "";
-		ObservableList<TraceLineInfo> rows = tableTrace.getItems();
+		List<TraceLineInfo> rows = listOfRows;
 
 		for (int i = 0; i < rows.size(); i++)
 		{
@@ -873,7 +909,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	private List<TraceLineInfo> removeOverlappingHops()
 	{
 		List<TraceLineInfo> hopsToShow = new ArrayList<>();
-		ObservableList<TraceLineInfo> rows = tableTrace.getItems();
+		List<TraceLineInfo> rows = listOfRows;
 		Map<String, String> mapLocationToLastHopFromIt = new HashMap<>();
 		boolean isFirstCheckedRow = true;
 		String firstLocation = null;
