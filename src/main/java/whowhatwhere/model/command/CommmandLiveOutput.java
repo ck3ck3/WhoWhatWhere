@@ -32,6 +32,7 @@ public class CommmandLiveOutput
 	private LiveOutputListener outputListener;
 	private Thread commandThread;
 	private boolean stopRequested = false;
+	private boolean informAboutEndOfOutput = true;
 
 
 	public CommmandLiveOutput(String command, LiveOutputListener listener)
@@ -64,7 +65,7 @@ public class CommmandLiveOutput
 			}
 			finally
 			{
-				if (outputListener != null)
+				if (outputListener != null && informAboutEndOfOutput)
 					outputListener.endOfOutput();
 			}
 
@@ -97,5 +98,15 @@ public class CommmandLiveOutput
 	public void setCommand(String command)
 	{
 		this.command = command;
+	}
+
+	public boolean isInformAboutEndOfOutput()
+	{
+		return informAboutEndOfOutput;
+	}
+
+	public void setInformAboutEndOfOutput(boolean informAboutEndOfOutput)
+	{
+		this.informAboutEndOfOutput = informAboutEndOfOutput;
 	}
 }

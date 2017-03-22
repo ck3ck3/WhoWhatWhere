@@ -202,7 +202,7 @@ public class VisualTraceController implements Initializable
 		refreshTableWhenNewColumnBecomesVisible();		
 		
 		DoubleBinding tableHeightAccordingToPaneHeight = leftPane.heightProperty().subtract(tableTrace.layoutYProperty()).subtract(10);
-		DoubleBinding tableHeightAccordingToAmountOfRows = tableTrace.fixedCellSizeProperty().multiply(Bindings.size(tableTrace.getItems()).add(2.6));
+		DoubleBinding tableHeightAccordingToAmountOfRows = tableTrace.fixedCellSizeProperty().multiply(Bindings.size(tableTrace.getItems()).add(2.7));
 		tableTrace.prefHeightProperty().bind(Bindings.min(tableHeightAccordingToPaneHeight, tableHeightAccordingToAmountOfRows));
 	}
 
@@ -272,7 +272,7 @@ public class VisualTraceController implements Initializable
 		labelPingTimeout.setTooltip(pingTimeoutTooltip);
 		
 		GUIController.setCommonGraphicOnLabeled(chkResolveHostnames, GUIController.CommonGraphicImages.TOOLTIP);
-		Tooltip resolveHostnamesTooltip = new Tooltip("Try to resolve each IP's hostname. This might slow down the trace as well as the time it takes to abort it.");
+		Tooltip resolveHostnamesTooltip = new Tooltip("Try to resolve each IP's hostname. This might slow down the trace.");
 		ToolTipUtilities.setTooltipProperties(resolveHostnamesTooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, AnchorLocation.WINDOW_TOP_LEFT); 
 		chkResolveHostnames.setTooltip(resolveHostnamesTooltip);
 		

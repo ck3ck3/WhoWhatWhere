@@ -221,7 +221,11 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 				if (abortReason == null)
 					abortReason = "User request";
 				
+				traceCommand.setInformAboutEndOfOutput(false);
 				traceCommand.stopCommand();
+				
+				pendingLinesPhaser.forceTermination();
+				traceFinished();
 			});
 		});		
 	}
@@ -618,7 +622,8 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 			if (isAtLeastOneCheckboxSelected())
 			{
 				setSingleRunListenerOnImageView();
-				generateAndShowImage();
+				if (!addAllLinesFromQueueAndRefreshMapIfNeeded()) //if lines were added, generateAndShowImage() will be called already. otherwise, call it here
+					generateAndShowImage();
 			}
 			else
 			{
@@ -690,6 +695,22 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		
 		if (isTraceInProgress.get() && pendingLinesPhaser.getRegisteredParties() > 0)
 			pendingLinesPhaser.arrive(); //if we were waiting for a line to appear on the map, it's done
+	}
+	
+	private boolean addAllLinesFromQueueAndRefreshMapIfNeeded()
+	{
+		boolean linesWereAdded = !queueOfLinesToAddToTable.isEmpty();
+		
+		while(!queueOfLinesToAddToTable.isEmpty())
+		{
+			TraceLineInfo lineToAdd = queueOfLinesToAddToTable.removeFirst();
+			tableTrace.getItems().add(lineToAdd);
+		}
+		
+		if (linesWereAdded)
+			generateAndShowImage();
+		
+		return linesWereAdded;
 	}
 
 	private void addSingleGeoIPInfoFromLine(String line)
