@@ -32,7 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Phaser;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -150,6 +153,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	private boolean wasTraceAborted = false;
 	private LinkedList<TraceLineInfo> queueOfLinesToAddToTable = new LinkedList<>();
 	private Map<String, HBox> mapIPToZoomControls = new HashMap<>();
+	private boolean lastImageForThisTrace = false;
 
 	public VisualTraceUI(GUIController guiController)
 	{
@@ -304,6 +308,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		consecutiveRequestTimeOuts = 0;
 		hopCounter.set(0);
 		wasTraceAborted = false;
+		lastImageForThisTrace = false;
 		abortReason = null;
 		ipBeingTraced = null;
 		hostnameBeingTraced = null;
@@ -491,8 +496,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	public void traceError(String errorMessage)
 	{
 		abortReason = errorMessage;
-		isTraceInProgress.set(false);
-		informUserTraceFinishedByAbortOrError(FinishStatus.FAIL, errorMessage);
+		terminiateTrace();
 	}
 	
 	@Override
@@ -513,13 +517,15 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		pendingLinesPhaser.register(); //a line is now pending to be shown on the map
 		consecutiveRequestTimeOuts = 0;
 		observableListOfLines.add(line);
-		hopCounter.set(hopCounter.get() + 1);
+		if (!wasTraceAborted) //so we don't overwrite the 'abort in progress...'
+			hopCounter.set(hopCounter.get() + 1);
 	}
 	
 	@Override
 	public void requestTimedOut()
 	{
-		hopCounter.set(hopCounter.get() + 1);
+		if (!wasTraceAborted)  //so we don't overwrite the 'abort in progress...'
+			hopCounter.set(hopCounter.get() + 1);
 		
 		if (++consecutiveRequestTimeOuts == numFieldStopTracingAfter.getValue())
 		{
@@ -533,11 +539,8 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	{
 		pendingLinesPhaser.arriveAndAwaitAdvance(); //wait until all lines have been drawn on the map
 		
-		if (!ensureLastHopIsTheDestination()) //if we don't need to manually add the 'infinity' hop (if we do add, then content of the if block will be done in ensureLastHopIsTheDestination()
-		{
-			informUserTraceFinishedByAbortOrError(wasTraceAborted ? FinishStatus.ABORT : FinishStatus.SUCCESS);
-			isTraceInProgress.set(false);
-		}
+		if (!ensureLastHopIsTheDestination()) //if we don't need to manually add the 'infinity' hop. (if we do add it, then content of the if block will be done in ensureLastHopIsTheDestination()
+			terminiateTrace();
 	}
 	
 	private void informUserTraceFinishedByAbortOrError(FinishStatus status)
@@ -588,12 +591,12 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		return false;
 	}
 	
-	/**
-	 *Checks if last row has the IP that is being traced. If not, manually creates a line and adds it 
+	/**Checks if last row has the IP that is being traced. If not, manually creates a line and adds it
+	 * @return true if the 'infinity' hop was added, false otherwise.
 	 */
 	private boolean ensureLastHopIsTheDestination()
 	{
-		List<TraceLineInfo> items = listOfRows;//tableTrace.getItems();
+		List<TraceLineInfo> items = listOfRows;
 		if (items.size() == 0)
 			return false;
 		
@@ -601,36 +604,12 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		String lastIPFromTraceResults = items.get(lastLineIndex).ipAddressProperty().get();
 		if (!lastIPFromTraceResults.equals(ipBeingTraced))
 		{
-			String[] pingReply = new String[3];
-			for (int i = 0; i < 3 ; i++)
-			{
-				String tempResult = NetworkSniffer.pingAsString(ipBeingTraced, numFieldReplyTimeout.getValue());
-				
-				pingReply[i] = tempResult.contains("milliseconds") ? tempResult.replace("milliseconds", "ms") : "*   "; 
-			}
-			
-			addSingleGeoIPInfoFromLine(ipBeingTraced);
-			
-			String manualLine;
-			if (hostnameBeingTraced != null)
-				manualLine = String.format("%3s  %7s  %7s  %7s  %s [%s]", VisualTraceController.infinitySymbol, pingReply[0], pingReply[1], pingReply[2], hostnameBeingTraced != null ? hostnameBeingTraced : "", ipBeingTraced);
-			else
-				manualLine = String.format("%3s  %7s  %7s  %7s  %s", VisualTraceController.infinitySymbol, pingReply[0], pingReply[1], pingReply[2], ipBeingTraced);
-			
+			String manualLine = generateManualFinalTraceLine();
 			singleGenerateTraceInfoGUI(manualLine);
 			
-			if (isAtLeastOneCheckboxSelected())
-			{
-				setSingleRunListenerOnImageView();
-				if (!addAllLinesFromQueueAndRefreshMapIfNeeded()) //if lines were added, generateAndShowImage() will be called already. otherwise, call it here
-					generateAndShowImage();
-			}
-			else
-			{
-				addLatestLineFromQueue();
-				informUserTraceFinishedByAbortOrError(wasTraceAborted ? FinishStatus.ABORT : FinishStatus.SUCCESS);
-				isTraceInProgress.set(false);				
-			}
+			lastImageForThisTrace = true; //when the imgService.OnSuccess() will be called, this will make it terminate the trace 
+			if (!addAllLinesFromQueueAndRefreshMapIfNeeded()) //if lines were added, generateAndShowImage() will be called already. otherwise, call it here
+				generateAndShowImage();
 						
 			return true;
 		}
@@ -638,21 +617,30 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		return false;
 	}
 	
-	private void setSingleRunListenerOnImageView()
+	private void terminiateTrace()
 	{
-		imgView.imageProperty().addListener(new ChangeListener<Image>() //perform post-trace stuff only after the last image of the trace is shown 
-		{
-			@Override
-			public void changed(ObservableValue<? extends Image> observable, Image oldValue, Image newValue)
-			{
-				informUserTraceFinishedByAbortOrError(wasTraceAborted ? FinishStatus.ABORT : FinishStatus.SUCCESS);
-				isTraceInProgress.set(false);
-				
-				imgView.imageProperty().removeListener(this);
-			}
-		});		
+		informUserTraceFinishedByAbortOrError(wasTraceAborted ? FinishStatus.ABORT : FinishStatus.SUCCESS);
+		isTraceInProgress.set(false);
 	}
-
+	
+	private String generateManualFinalTraceLine()
+	{
+		String[] pingReply = new String[3];
+		for (int i = 0; i < 3 ; i++)
+		{
+			String tempResult = NetworkSniffer.pingAsString(ipBeingTraced, numFieldReplyTimeout.getValue());
+			
+			pingReply[i] = tempResult.contains("milliseconds") ? tempResult.replace("milliseconds", "ms") : "*   "; 
+		}
+		
+		addSingleGeoIPInfoFromLine(ipBeingTraced);
+		
+		if (hostnameBeingTraced != null)
+			return String.format("%3s  %7s  %7s  %7s  %s [%s]", VisualTraceController.infinitySymbol, pingReply[0], pingReply[1], pingReply[2], hostnameBeingTraced != null ? hostnameBeingTraced : "", ipBeingTraced);
+		else
+			return String.format("%3s  %7s  %7s  %7s  %s", VisualTraceController.infinitySymbol, pingReply[0], pingReply[1], pingReply[2], ipBeingTraced);
+	}
+	
 	private void placeLabelUnderMap()
 	{
 		labelUnderMap.autosize();
@@ -672,14 +660,30 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		Image img = imgService.getValue();
 		imgView.setImage(img);
 			
-		if (img == null && !isTraceInProgress.get())
+		if (img == null)
 		{
-			labelUnderMap.setText(noHopsSelectedLabelText);
-			placeLabelUnderMap();
-			labelUnderMap.setVisible(true);
+			if (!isAtLeastOneCheckboxSelected() && !isTraceInProgress.get()) //not during active trace, and no hop selected
+			{
+				labelUnderMap.setText(noHopsSelectedLabelText);
+				placeLabelUnderMap();
+				labelUnderMap.setVisible(true);
+			}
+			else
+				if (isAtLeastOneCheckboxSelected()) //during or after trace, as long as at least one hop is marked but no image to show
+				{
+					labelUnderMap.setText("Failed to get map");
+					placeLabelUnderMap();
+					labelUnderMap.setVisible(true);
+				}
 		}
 		
 		addLatestLineFromQueue();
+		
+		if (isTraceInProgress.get() && lastImageForThisTrace) //trace is getting aborted
+		{
+			addAllLinesFromQueueAndRefreshMapIfNeeded();
+			terminiateTrace();
+		}
 	}
 	
 	private void addLatestLineFromQueue()
@@ -697,6 +701,9 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 			pendingLinesPhaser.arrive(); //if we were waiting for a line to appear on the map, it's done
 	}
 	
+	/**
+	 * @return true if any line was added
+	 */
 	private boolean addAllLinesFromQueueAndRefreshMapIfNeeded()
 	{
 		boolean linesWereAdded = !queueOfLinesToAddToTable.isEmpty();
@@ -727,7 +734,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		Map<TraceLineInfo.Columns, String> valueMap = getMapOfValues(line);
 		String ip = valueMap.get(TraceLineInfo.Columns.IP);
 		GeoIPInfo geoIPInfo = geoIPResults.get(ip);
-		boolean hasLocation = geoIPInfo.getSuccess();
+		boolean hasLocation = geoIPInfo != null && geoIPInfo.getSuccess();
 
 		valueMap.put(TraceLineInfo.Columns.LABEL, hasLocation ? String.valueOf(label) : "");
 		
@@ -821,7 +828,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		
 		GeoIPInfo geoIPInfo = geoIPResults.get(ip);
 		String location;
-		if (geoIPInfo.getSuccess())
+		if (geoIPInfo != null && geoIPInfo.getSuccess())
 		{
 			String region = geoIPInfo.getRegion();
 			location = geoIPInfo.getSuccess() ? geoIPInfo.getCity() + (region.isEmpty() ? "" : ", " + region) + ", " + geoIPInfo.getCountry() : "";
@@ -839,7 +846,9 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	{
 		Platform.runLater(() ->
 		{
-			labelUnderMap.setText(loadingLabelText);
+			if (!isTraceInProgress.get())
+				labelUnderMap.setText(loadingLabelText);
+			
 			imgService.restart();
 		});
 	}
@@ -1013,6 +1022,10 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		private Map<String, Image> urlToImageCache = new HashMap<>();
 		private int zoom;
 		private String existingURL;
+		private ScheduledThreadPoolExecutor loadTimer = new ScheduledThreadPoolExecutor(1);
+		
+		private final static int defaultLoadTimeoutInSec = 3;
+				
 
 		public GenerateImageFromURLService(VisualTraceUI traceScreen)
 		{
@@ -1050,7 +1063,9 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 
 					if (img == null)
 					{
-						img = new Image(url);
+						img = loadImageWithTimeout(url);
+						if (img.getException() != null) //unable to load the image before the timeout
+							return null;
 						img = cropTransparency(img); //in some cases the image comes with transparent top/bottom
 						urlToImageCache.put(url, img);
 					}
@@ -1058,6 +1073,37 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 					return img;
 				}
 			};
+		}
+		
+		private Image loadImageWithTimeout(String url)
+		{
+			Semaphore waitForImageToLoad = new Semaphore(0);
+			Image img = new Image(url, true);
+
+			ScheduledFuture<?> task = loadTimer.schedule(() ->
+			{
+				img.exceptionProperty().addListener((ChangeListener<Exception>) (observable1, oldValue1, newValue1) -> waitForImageToLoad.release()); //return from the load method only after the exception is set
+				img.cancel();
+			}, defaultLoadTimeoutInSec, TimeUnit.SECONDS);
+			
+			img.progressProperty().addListener((ChangeListener<Number>) (observable, oldValue, newValue) ->
+			{
+				if (newValue.doubleValue() == 1.0) //load complete
+				{
+					task.cancel(false);
+					waitForImageToLoad.release();
+				}
+			});
+			
+			try
+			{
+				waitForImageToLoad.acquire();
+			}
+			catch (InterruptedException e)
+			{
+			}
+			
+			return img;
 		}
 
 		public void setCenterOnIP(String centerOnIP, int zoom)
@@ -1084,6 +1130,9 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		//only checking first pixel in each line, since the entire line would be either transparent or not
 		private static BufferedImage trimImage(BufferedImage image)
 		{
+			if (image == null)
+				return null;
+			
 			WritableRaster raster = image.getAlphaRaster();
 
 			if (raster == null) //no transparency in this image
