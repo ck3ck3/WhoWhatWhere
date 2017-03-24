@@ -575,7 +575,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 			
 			Stage stage = (Stage) btnTrace.getScene().getWindow();
 			alert.initOwner(stage);
-			alert.setTitle("Visual trace");
+			alert.setTitle("Visual Trace");
 			alert.getDialogPane().setPrefWidth(360);
 			
 			alert.showAndWait();

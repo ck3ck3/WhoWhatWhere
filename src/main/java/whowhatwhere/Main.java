@@ -54,6 +54,8 @@ public class Main extends Application
 	private final static String urlForLatestRelease = "http://bit.ly/WhoWhatWhereUpdate";
 
 	private static final String website = "http://ck3ck3.github.io/WhoWhatWhere";
+	private static final String copyrightNotice = "Copyright (C) 2017  ck3ck3 ";
+	private static final String email = "WhoWhatWhereInfo@gmail.com";
 
 	public final static String iconResource16 = "/appIcons/www16.jpg";
 	public final static String iconResource32 = "/appIcons/www32.jpg";
@@ -183,5 +185,15 @@ public class Main extends Application
 	public static String getExecutablefilename()
 	{
 		return executableFilename;
+	}
+	
+	public static String getEmail()
+	{
+		return email;
+	}
+	
+	public static String getCopyrightNotice()
+	{
+		return copyrightNotice;
 	}
 }

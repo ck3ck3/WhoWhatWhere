@@ -24,7 +24,7 @@
          <children>
             <HBox fillHeight="false" layoutX="10.0" layoutY="50.0" spacing="15.0">
                <children>
-                  <TitledPane collapsible="false" prefHeight="234.0" prefWidth="515.0" text="Monitoring settings">
+                  <TitledPane collapsible="false" prefHeight="234.0" prefWidth="515.0" text="Monitoring Settings">
                      <content>
                         <AnchorPane fx:id="paneCaptureOptions" prefHeight="190.0" prefWidth="427.0">
                            <children>
@@ -48,7 +48,7 @@
                         </AnchorPane>
                      </content>
                   </TitledPane>
-                  <TitledPane collapsible="false" prefHeight="234.0" prefWidth="628.0" text="Hotkey and text to speech settings">
+                  <TitledPane collapsible="false" prefHeight="234.0" prefWidth="628.0" text="Hotkey and Text to Speech Settings">
                      <content>
                         <AnchorPane prefWidth="697.0">
                            <children>

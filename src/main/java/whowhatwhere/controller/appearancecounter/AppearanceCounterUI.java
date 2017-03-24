@@ -303,7 +303,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 				csvData.append(String.join(",", row.getFullRowDataAsOrderedList()) + "\n");
 			
 			FileChooser fileChooser = new FileChooser();
-			fileChooser.setTitle("Save table contents in CSV format");
+			fileChooser.setTitle("Save Table Contents in CSV Format");
 			fileChooser.setInitialDirectory(new File(suggestedPathForCSVFile));
 			fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("CSV Files", "*.csv"), new FileChooser.ExtensionFilter("Text Files", "*.txt"));
 			
@@ -343,21 +343,26 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		columnRegion.setCellValueFactory(new PropertyValueFactory<>("region"));
 		columnCity.setCellValueFactory(new PropertyValueFactory<>("city"));
 
+		setTooltipForColumnHeader(columnNotes, "IP Note", "Add your own note to describe this IP address and easily recognize it in the future.");
+		
 		setIPNotesColumnBehavior();
 		generatePopupMenus();
 	}
 	
+	private void setTooltipForColumnHeader(TableColumn<IPInfoRowModel, ?> column, String headerText, String tooltipText)
+	{
+		Label label = new Label(headerText);
+		GUIController.setCommonGraphicOnLabeled(label, GUIController.CommonGraphicImages.TOOLTIP);
+		Tooltip tooltip = new Tooltip(tooltipText);
+		ToolTipUtilities.setTooltipProperties(tooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
+		label.setTooltip(tooltip);
+		label.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
+		column.setGraphic(label);
+		column.setText("");		
+	}
+	
 	private void setIPNotesColumnBehavior()
 	{
-		Label labelForIPNote = new Label("IP Notes");
-		GUIController.setCommonGraphicOnLabeled(labelForIPNote, GUIController.CommonGraphicImages.TOOLTIP);
-		Tooltip tooltip = new Tooltip("Add your own note to describe this IP address and easily recognize it in the future.");
-		ToolTipUtilities.setTooltipProperties(tooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
-		labelForIPNote.setTooltip(tooltip);
-		labelForIPNote.setMaxWidth(Double.MAX_VALUE); //so the entire header width gives the tooltip
-		columnNotes.setGraphic(labelForIPNote);
-		columnNotes.setText("");
-		
 		columnNotes.setCellFactory(TextFieldTableCell.forTableColumn()); //make Notes column editable
 		columnNotes.setOnEditStart(rowModel ->
 		{
@@ -469,7 +474,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 				copyMenuItems.add(itemForcolumn);
 			}
 
-			MenuItem getGeoIPinfo = new MenuItem("See more GeoIP results for this IP in browser");
+			MenuItem getGeoIPinfo = new MenuItem("See more GeoIP results for this IP in the browser");
 			getGeoIPinfo.setOnAction(event -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + row.getItem().ipAddressProperty().getValue()));
 
 			MenuItem sendIPToQuickPing = new MenuItem("Set this IP in Ping-to-Speech (in Utilities tab)");

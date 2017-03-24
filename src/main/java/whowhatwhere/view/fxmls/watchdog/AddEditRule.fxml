@@ -15,19 +15,19 @@
    <content>
       <AnchorPane fx:id="paneWholeForm" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="749.0" prefWidth="653.0">
          <children>
-            <TitledPane collapsible="false" focusTraversable="false" layoutX="14.0" layoutY="14.0" prefHeight="535.0" prefWidth="620.0" text="Watch for these conditions">
+            <TitledPane collapsible="false" focusTraversable="false" layoutX="14.0" layoutY="14.0" prefHeight="535.0" prefWidth="620.0" text="Watch for These Conditions">
                <content>
                   <AnchorPane prefWidth="565.0">
                      <children>
                         <Label fx:id="labelPacketSizeRight" focusTraversable="false" layoutX="343.0" layoutY="459.0" text="and" />
                         <Label fx:id="labelSrcPortRight" focusTraversable="false" layoutX="343.0" layoutY="347.0" text="and" />
                         <Label fx:id="labelDstPortRight" focusTraversable="false" layoutX="343.0" layoutY="386.0" text="and" />
-                        <Label focusTraversable="false" layoutX="14.0" layoutY="64.0" text="IP address">
+                        <Label focusTraversable="false" layoutX="14.0" layoutY="64.0" text="IP Address">
                            <font>
                               <Font name="System Bold" size="14.0" />
                            </font>
                         </Label>
-                        <Label focusTraversable="false" layoutX="14.0" layoutY="276.0" text="Protocol and ports">
+                        <Label focusTraversable="false" layoutX="14.0" layoutY="276.0" text="Protocol and Ports">
                            <font>
                               <Font name="System Bold" size="14.0" />
                            </font>
@@ -37,17 +37,17 @@
                               <Font size="14.0" />
                            </font>
                         </Label>
-                        <Label focusTraversable="false" layoutX="14.0" layoutY="204.0" text="Packet direction">
+                        <Label focusTraversable="false" layoutX="14.0" layoutY="204.0" text="Packet Direction">
                            <font>
                               <Font name="System Bold" size="14.0" />
                            </font>
                         </Label>
-                        <Label focusTraversable="false" layoutX="14.0" layoutY="428.0" text="Packet size">
+                        <Label focusTraversable="false" layoutX="14.0" layoutY="428.0" text="Packet Size">
                            <font>
                               <Font name="System Bold" size="14.0" />
                            </font>
                         </Label>
-                        <CheckBox fx:id="chkboxIPAddress" layoutX="22.0" layoutY="94.0" mnemonicParsing="false" text="IP Address" />
+                        <CheckBox fx:id="chkboxIPAddress" layoutX="22.0" layoutY="94.0" mnemonicParsing="false" text="IP address" />
                         <TextField fx:id="textIPAddress" disable="true" layoutX="149.0" layoutY="92.0" prefHeight="27.0" prefWidth="111.0" />
                         <CheckBox fx:id="chkboxNetmask" disable="true" layoutX="47.0" layoutY="129.0" mnemonicParsing="false" text="Netmask" />
                         <TextField fx:id="textNetmask" disable="true" layoutX="149.0" layoutY="127.0" prefHeight="27.0" prefWidth="111.0" />
@@ -79,7 +79,7 @@
                   <Font size="14.0" />
                </font>
             </TitledPane>
-            <TitledPane collapsible="false" focusTraversable="false" layoutX="14.0" layoutY="565.0" prefHeight="125.0" prefWidth="620.0" text="When a match is found">
+            <TitledPane collapsible="false" focusTraversable="false" layoutX="14.0" layoutY="565.0" prefHeight="125.0" prefWidth="620.0" text="When a Match is Found">
                <content>
                   <AnchorPane>
                      <children>

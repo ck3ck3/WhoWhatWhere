@@ -147,7 +147,7 @@ public class QuickPingUI implements LoadAndSaveSettings, ConfigurableTTS
 			boolean isPingResult = message.contains(" milliseconds");
 			
 			Alert popup = new Alert(AlertType.INFORMATION, isPingResult ? message : bundle.getString(message));
-			popup.setTitle("Quick ping result");
+			popup.setTitle("Quick Ping Result");
 			popup.setHeaderText("Ping result for " + pingAddress);
 			popup.show();
 		}

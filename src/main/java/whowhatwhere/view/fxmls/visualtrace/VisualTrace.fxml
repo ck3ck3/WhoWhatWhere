@@ -35,9 +35,9 @@
               <columns>
                   <TableColumn fx:id="columnMapPin" prefWidth="84.0" sortable="false" text="Map pin(?)" />
                 <TableColumn fx:id="columnHop" editable="false" prefWidth="56.0" sortable="false" text="Hop(?)" />
-                  <TableColumn fx:id="columnPing" editable="false" sortable="false" text="Ping results" />
+                  <TableColumn fx:id="columnPing" editable="false" sortable="false" text="Ping Results" />
                   <TableColumn fx:id="columnHostname" editable="false" prefWidth="70.0" sortable="false" text="Hostname" />
-                  <TableColumn fx:id="columnIPAddress" editable="false" prefWidth="76.0" sortable="false" text="IP address" />
+                  <TableColumn fx:id="columnIPAddress" editable="false" prefWidth="76.0" sortable="false" text="IP Address" />
                   <TableColumn fx:id="columnLocation" editable="false" prefWidth="78.0" sortable="false" text="Location(?)" />
                   <TableColumn fx:id="columnZoomButton" editable="false" prefWidth="83.0" sortable="false" text="Zoom in(?)" />
               </columns>

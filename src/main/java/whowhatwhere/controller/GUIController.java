@@ -189,7 +189,7 @@ public class GUIController
 			{
 				Alert alert = new Alert(AlertType.ERROR, "Application cannot be started");
 				alert.setHeaderText("WinPcap is not installed!"); 
-				alert.getDialogPane().contentProperty().set(generateLabelAndLinkPane("Please download and install WinPcap from", "http://www.winpcap.org/install/default.htm", Font.getDefault().getSize()));
+				alert.getDialogPane().setContent(generateLabelAndLinkPane("Please download and install WinPcap from", "http://www.winpcap.org/install/default.htm", Font.getDefault().getSize()));
 				alert.showAndWait();
 			}
 			else
@@ -299,6 +299,8 @@ public class GUIController
 		String appName = Main.getAppName();
 		String version = Main.getReleaseVersion();
 		String website = Main.getWebsite();
+		String email = Main.getEmail();
+		String copyrightNotice = Main.getCopyrightNotice();
 
 		Alert about = new Alert(AlertType.INFORMATION, "About " + appName);
 		about.initOwner(getStage());
@@ -308,14 +310,14 @@ public class GUIController
 		FlowPane infoPane = generateLabelAndLinkPane("For more information visit", website, Font.getDefault().getSize() + 2);
 		infoPane.setPadding(new Insets(0, 0, 15, 0));
 		
-		FlowPane copyright = generateLabelAndLinkPane("Copyright (C) 2017  ck3ck3 ", "mailto:WhoWhatWhereInfo@gmail.com", Font.getDefault().getSize());
+		FlowPane copyright = generateLabelAndLinkPane(copyrightNotice, "mailto:" + email, Font.getDefault().getSize());
 		Hyperlink mailLink = (Hyperlink) copyright.getChildren().get(1);
-		mailLink.setText("WhoWhatWhereInfo@gmail.com");
+		mailLink.setText(email);
 		copyright.setPadding(new Insets(0, 0, 15, 0));
 		
 		VBox aboutVBox = new VBox();
 		aboutVBox.getChildren().addAll(infoPane, copyright, getAttributionLinksForAboutDialog());
-		about.getDialogPane().contentProperty().set(aboutVBox);
+		about.getDialogPane().setContent(aboutVBox);
 		about.getDialogPane().setPrefWidth(440);
 		
 		about.showAndWait();
@@ -354,15 +356,15 @@ public class GUIController
 			if (!silent || updateAvailable)
 			{
 				Alert alert = new Alert(AlertType.INFORMATION);
-				alert.setTitle("Check for updates");
+				alert.setTitle("Check for Updates");
 				alert.initOwner(getStage());
 				
 				if (updateAvailable)
 				{
 					alert.setHeaderText("New version available!");
-					alert.getDialogPane().contentProperty().set(generateLabelAndLinkPane("Download the latest version (" + result.getNewVersion() + ") at", Main.getWebsite(), Font.getDefault().getSize() + 2));
-					FlowPane flowPane = (FlowPane) alert.getDialogPane().getContent();
+					FlowPane flowPane = generateLabelAndLinkPane("Download the latest version (" + result.getNewVersion() + ") at", Main.getWebsite(), Font.getDefault().getSize() + 2);
 					flowPane.getChildren().add(new Label("\nLatest release notes:\n\n" + result.getReleaseNotes()));
+					alert.getDialogPane().setContent(flowPane);
 				}
 				else
 				{
@@ -398,12 +400,12 @@ public class GUIController
 		labelToAdd.setGraphic(new ImageView(new Image(applicationIcon16Location)));
 		labelToAdd.setContentDisplay(ContentDisplay.LEFT);
 		labelToAdd.setGraphicTextGap(2);
-		iconsAttributionPane.getChildren().add(1, labelToAdd);
+		iconsAttributionPane.getChildren().add(1, labelToAdd); //add the label in the middle of the message
 		
 		FlowPane softwareAttributionPane = generateLabelAndLinkPane("Click", getClass().getResource(Main.attributionHTMLLocation).toString(), Font.getDefault().getSize());
 		Hyperlink tempLink = (Hyperlink) softwareAttributionPane.getChildren().get(1);
 		tempLink.setText("here");
-		softwareAttributionPane.getChildren().add(new Label("to see which software libraries used in Who What Where."));
+		softwareAttributionPane.getChildren().add(new Label("to see which software libraries are used in Who What Where."));
 		
 		VBox vbox = new VBox();
 		vbox.getChildren().addAll(iconsAttributionPane, softwareAttributionPane);
@@ -491,7 +493,7 @@ public class GUIController
 			shutdownApp();
 		}
 
-		Stage newStage = selectionScreen.showScreenOnNewStage("Choose a network adapter", Modality.APPLICATION_MODAL, selectionScreen.getCloseButton());
+		Stage newStage = selectionScreen.showScreenOnNewStage("Choose a Network Adapter", Modality.APPLICATION_MODAL, selectionScreen.getCloseButton());
 
 		newStage.setOnCloseRequest(windowEvent ->
 		{
@@ -518,7 +520,7 @@ public class GUIController
 			logger.log(Level.SEVERE, "Unable to load voice screen", e);
 		}
 		
-		selectionScreen.showScreenOnNewStage("Choose text to speech voices", Modality.APPLICATION_MODAL, selectionScreen.getCloseButton());
+		selectionScreen.showScreenOnNewStage("Choose Text to Speech Voices", Modality.APPLICATION_MODAL, selectionScreen.getCloseButton());
 	}
 	
 	public void setXBtnBehavior(boolean minimize)

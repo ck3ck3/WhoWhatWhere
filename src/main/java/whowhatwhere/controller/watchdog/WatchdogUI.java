@@ -288,7 +288,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 			
 			String ruleOrRules = selectedItems.size() > 1 ? "s" : ""; 
 			Alert removalConfirmation = new Alert(AlertType.CONFIRMATION, "Are you sure you want to remove the selected rule" + ruleOrRules + "?");
-			removalConfirmation.setTitle("Rule removal confirmation");
+			removalConfirmation.setTitle("Rule Removal Confirmation");
 			removalConfirmation.setHeaderText("Remove rule" + ruleOrRules);
 			ButtonType btnYes = new ButtonType("Yes", ButtonData.OK_DONE);
 			ButtonType btnNo = new ButtonType("No", ButtonData.CANCEL_CLOSE);
@@ -346,7 +346,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 					return;
 				}
 
-				Stage newStage = watchdogListAddEditScreen.showScreenOnNewStage((isEdit ? "Edit" : "Add") + " a rule", Modality.APPLICATION_MODAL, watchdogListAddEditScreen.getBtnDone(), watchdogListAddEditScreen.getBtnCancel());
+				Stage newStage = watchdogListAddEditScreen.showScreenOnNewStage((isEdit ? "Edit" : "Add") + " a Rule", Modality.APPLICATION_MODAL, watchdogListAddEditScreen.getBtnDone(), watchdogListAddEditScreen.getBtnCancel());
 				
 				newStage.setOnCloseRequest(windowEvent ->
 				{
@@ -362,7 +362,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 		controller.getBtnSaveRuleList().setOnAction(event ->
 		{
 			TextInputDialog dialog = new TextInputDialog();
-			dialog.setTitle("Save rule list");
+			dialog.setTitle("Save Rule List");
 			dialog.setHeaderText("Save this rule list for future use");
 			dialog.setContentText("Please enter rule list name:");
 

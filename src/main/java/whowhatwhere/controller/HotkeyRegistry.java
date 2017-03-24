@@ -175,7 +175,7 @@ public class HotkeyRegistry
 	{
 		alertChangeHotkey = new Alert(AlertType.NONE);
 
-		alertChangeHotkey.setTitle("Change hotkey");
+		alertChangeHotkey.setTitle("Change Hotkey");
 		alertChangeHotkey.setHeaderText("Choose a new hotkey");
 		alertChangeHotkey.setContentText("Press the new hotkey");
 		alertChangeHotkey.getButtonTypes().add(new ButtonType("Cancel"));

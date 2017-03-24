@@ -24,20 +24,20 @@
                <children>
                   <TableView fx:id="table" prefHeight="192.0" stylesheets="/whowhatwhere/view/fxmls/watchdog/watchdogTable.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="12.0">
                      <columns>
-                        <TableColumn fx:id="columnIP" minWidth="180.0" prefWidth="230.0" text="IP address/note" />
-                        <TableColumn fx:id="columnPacketDirection" prefWidth="120.0" text="Packet direction" />
+                        <TableColumn fx:id="columnIP" minWidth="180.0" prefWidth="230.0" text="IP Address/Note" />
+                        <TableColumn fx:id="columnPacketDirection" prefWidth="120.0" text="Packet Direction" />
                         <TableColumn fx:id="columnProtocol" prefWidth="100.0" text="Protocol" />
                         <TableColumn prefWidth="75.0" text="Ports">
                            <columns>
-                              <TableColumn fx:id="columnSrcPort" prefWidth="115.0" text="Source port" />
-                              <TableColumn fx:id="columnDstPort" prefWidth="115.0" text="Destination port" />
+                              <TableColumn fx:id="columnSrcPort" prefWidth="115.0" text="Source Port" />
+                              <TableColumn fx:id="columnDstPort" prefWidth="115.0" text="Destination Port" />
                            </columns>
                         </TableColumn>
-                        <TableColumn fx:id="columnPacketSize" prefWidth="125.0" text="Total packet size" />
-                        <TableColumn prefWidth="322.0" text="When a match is found">
+                        <TableColumn fx:id="columnPacketSize" prefWidth="125.0" text="Total Packet Size" />
+                        <TableColumn prefWidth="322.0" text="When a Match is Found">
                            <columns>
-                              <TableColumn fx:id="columnMsgOutputMethod" prefWidth="162.0" text="Notification type" />
-                              <TableColumn fx:id="columnMsgText" prefWidth="180.0" text="Notification text" />
+                              <TableColumn fx:id="columnMsgOutputMethod" prefWidth="162.0" text="Notification Type" />
+                              <TableColumn fx:id="columnMsgText" prefWidth="180.0" text="Notification Text" />
                            </columns>
                         </TableColumn>
                      </columns>
@@ -88,7 +88,7 @@
                   </AnchorPane>
                </content>
             </TitledPane>
-            <TitledPane collapsible="false" layoutX="14.0" layoutY="48.0" prefHeight="140.0" prefWidth="619.0" text="Start / stop">
+            <TitledPane collapsible="false" layoutX="14.0" layoutY="48.0" prefHeight="140.0" prefWidth="619.0" text="Start / Stop">
                <content>
                   <AnchorPane>
                      <children>
@@ -114,7 +114,7 @@
                   <Font name="System Bold" size="16.0" />
                </font>
             </Label>
-            <Label fx:id="labelRuleList" layoutX="14.0" layoutY="206.0" text="Rule list:" />
+            <Label fx:id="labelRuleList" layoutX="14.0" layoutY="206.0" text="Rule List" />
          </children>
       </AnchorPane>
    </content>

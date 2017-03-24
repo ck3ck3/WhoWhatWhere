@@ -132,30 +132,35 @@ public class AppearanceCounterController implements Initializable
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
-		setWWWLabel();
-		
-		Tooltip tip = new Tooltip("The hotkey can be activated even while " + Main.getAppName() + " isn't visible on the screen. "
-				+ "The table contents will be read out to you so you don't have to look at the screen. The text to speech voice can be configured from the Options menu.");
-		ToolTipUtilities.setTooltipProperties(tip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, AnchorLocation.WINDOW_TOP_RIGHT); 
-		chkboxUseTTS.setTooltip(tip);
-		GUIController.setCommonGraphicOnLabeled(chkboxUseTTS, GUIController.CommonGraphicImages.TOOLTIP);
-		
-		GUIController.setCommonGraphicOnLabeled(btnConfigCaptureHotkey, GUIController.CommonGraphicImages.HOTKEY);
-		GUIController.setGraphicForLabeledControl(btnStart, startWWWImageLocation, ContentDisplay.LEFT);
-		GUIController.setCommonGraphicOnLabeled(btnStop, GUIController.CommonGraphicImages.STOP);
-		GUIController.setGraphicForLabeledControl(btnExportTableToCSV, exportToCSVImageLocation, ContentDisplay.LEFT);
+		setTooltipsAndGraphics();
 		
 		//show scrollbars only when needed. When not needed, allow to stretch GUI (AnchorPane behavior)
 		scrollPane.fitToWidthProperty().bind(scrollPane.widthProperty().greaterThan(scrollPane.getPrefWidth()));
 		scrollPane.fitToHeightProperty().bind(scrollPane.heightProperty().greaterThan(scrollPane.getPrefHeight()));
 	}
 	
-	private void setWWWLabel()
+	private void setTooltipsAndGraphics()
 	{
+		Tooltip wwwTooltip = new Tooltip("Who What Where listens to network traffic and analyzes IP packets. Analysis includes geographical location, latency and total amount of packets sent and received from each address.");
+		ToolTipUtilities.setTooltipProperties(wwwTooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
+		labelWWW.setTooltip(wwwTooltip);
 		GUIController.setCommonGraphicOnLabeled(labelWWW, GUIController.CommonGraphicImages.TOOLTIP);
-		Tooltip tooltip = new Tooltip("Who What Where listens to network traffic and analyzes IP packets. Analysis includes geographical location, latency and total amount of packets sent and received from each address.");
-		ToolTipUtilities.setTooltipProperties(tooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
-		labelWWW.setTooltip(tooltip);
+		
+		Tooltip hotkeyTooltip = new Tooltip("The hotkey can be activated even while " + Main.getAppName() + " isn't visible on the screen. "
+				+ "The table contents will be read out to you so you don't have to look at the screen. The text to speech voice can be configured from the Options menu.");
+		ToolTipUtilities.setTooltipProperties(hotkeyTooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, AnchorLocation.WINDOW_TOP_RIGHT); 
+		chkboxUseTTS.setTooltip(hotkeyTooltip);
+		GUIController.setCommonGraphicOnLabeled(chkboxUseTTS, GUIController.CommonGraphicImages.TOOLTIP);
+		
+		Tooltip geoIPTooltip = new Tooltip("For each IP address, gets the name of the organization that owns it and its location (country, region and city). GeoIP info isn't always accurate. Right click on any row to see more GeoIP results in the browser.");
+		ToolTipUtilities.setTooltipProperties(geoIPTooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
+		chkboxGetLocation.setTooltip(geoIPTooltip);		
+		GUIController.setCommonGraphicOnLabeled(chkboxGetLocation, GUIController.CommonGraphicImages.TOOLTIP);
+		
+		GUIController.setCommonGraphicOnLabeled(btnConfigCaptureHotkey, GUIController.CommonGraphicImages.HOTKEY);
+		GUIController.setGraphicForLabeledControl(btnStart, startWWWImageLocation, ContentDisplay.LEFT);
+		GUIController.setCommonGraphicOnLabeled(btnStop, GUIController.CommonGraphicImages.STOP);
+		GUIController.setGraphicForLabeledControl(btnExportTableToCSV, exportToCSVImageLocation, ContentDisplay.LEFT);		
 	}
 	
 	public AnchorPane getPaneCaptureOptions()
