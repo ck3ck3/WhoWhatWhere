@@ -918,7 +918,15 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 
 		String comboValue = PropertiesByType.getStringProperty(props, propsComboColumnsSelection, "");
 		if (!comboValue.isEmpty())
-			comboColumns.setValue(comboValue);
+		{
+			if (comboColumns.getItems().contains(comboValue))
+				comboColumns.setValue(comboValue);
+			else
+			{
+				logger.log(Level.SEVERE, "Tried to set non-existing column in the TTS filter combo: " + comboValue);
+				chkboxFilterResults.setSelected(false);
+			}
+		}
 
 		for (CheckBox box : chkboxListColumns)
 			box.setSelected(PropertiesByType.getBoolProperty(props, propsTTSCheckBox + box.getText(), false));
