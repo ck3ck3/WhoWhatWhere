@@ -248,7 +248,6 @@ public class ListAddEditScreen extends SecondaryFXMLScreen
 				
 				PacketTypeToMatch newItem = new PacketTypeToMatch(ip, netmask, ipNotes, ipsFromipNotes, packetDirection, protocol, srcPort, dstPort, packetSize, textMessage.getText(), comboOutputMethod.getValue());
 				
-				
 				if (isEdit)
 				{
 					int selectedIndex = table.getSelectionModel().getSelectedIndex();

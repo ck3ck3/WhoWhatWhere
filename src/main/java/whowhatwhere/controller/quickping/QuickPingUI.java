@@ -66,8 +66,6 @@ public class QuickPingUI implements LoadAndSaveSettings, ConfigurableTTS
 	private GUIController guiController;
 	private QuickPingController controller;
 
-	private int hotkeyKeyCode;
-	private int hotkeyModifiers;
 	private MaryTTS tts;
 	private HotkeyRegistry hotkeyRegistry;
 
@@ -97,13 +95,15 @@ public class QuickPingUI implements LoadAndSaveSettings, ConfigurableTTS
 
 			String ping = NetworkSniffer.pingAsString(address, NetworkSniffer.defaultPingTimeout);
 
-			if (ping.equals(NetworkSniffer.pingTimeout))
-				outputMessage(MessagesI18n.pingTimeout, address);
-			else
-				if (ping.equals(NetworkSniffer.pingError))
-					outputMessage(MessagesI18n.pingFailed, address);
-				else
-					outputMessage(ping, address);
+			String message;
+			switch(ping)
+			{
+				case NetworkSniffer.pingTimeout:	message = MessagesI18n.pingTimeout;	break;
+				case NetworkSniffer.pingError:		message = MessagesI18n.pingFailed;	break;
+				default:							message = ping;						break;
+			}
+			
+			outputMessage(message, address);
 		}
 
 		private void outputMessage(String message, String pingAddress)
@@ -229,8 +229,8 @@ public class QuickPingUI implements LoadAndSaveSettings, ConfigurableTTS
 
 	private void setHotkey(Properties props)
 	{
-		hotkeyModifiers = PropertiesByType.getIntProperty(props, propsHotkeyModifiers);
-		hotkeyKeyCode = PropertiesByType.getIntProperty(props, propsHotkeyKeycode);
+		int hotkeyModifiers = PropertiesByType.getIntProperty(props, propsHotkeyModifiers);
+		int hotkeyKeyCode = PropertiesByType.getIntProperty(props, propsHotkeyKeycode);
 
 		ChangeListener<Boolean> generatedListener = hotkeyRegistry.generateChangeListenerForHotkeyCheckbox(hotkeyID, hotkeyModifiers, hotkeyKeyCode, chkboxHotkey, labelCurrentHotkey, paneHotkey,
 				hotkeyPressed);

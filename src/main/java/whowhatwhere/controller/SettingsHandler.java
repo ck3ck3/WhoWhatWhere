@@ -157,7 +157,7 @@ public class SettingsHandler
 	public void loadLastRunConfig(List<LoadAndSaveSettings> instancesWithSettingsToHandle)
 	{
 		Properties props = loadProperties();
-		List<Runnable> needsToRunAfterStageIsShown = new ArrayList<Runnable>();
+		List<Runnable> needsToRunAfterStageIsShown = new ArrayList<>();
 		
 		needsToRunAfterStageIsShown.add(() -> loadLastRunDimensions(props));
 

@@ -60,8 +60,6 @@ public class WatchdogController implements Initializable
 	@FXML
 	private Button btnRemoveRow;
 	@FXML
-	private Button btnClose;
-	@FXML
 	private MenuButton menubtnLoadRuleList;
 	@FXML
 	private Button btnSaveRuleList;
@@ -83,8 +81,6 @@ public class WatchdogController implements Initializable
 	private TableColumn<PacketTypeToMatch, String> columnSrcPort;
 	@FXML
 	private TableColumn<PacketTypeToMatch, String> columnDstPort;
-	@FXML
-	private AnchorPane paneRoot;
 	@FXML
 	private Button btnMoveUp;
 	@FXML
@@ -235,11 +231,6 @@ public class WatchdogController implements Initializable
 	public Button getBtnRemoveRow()
 	{
 		return btnRemoveRow;
-	}
-
-	public Button getCloseButton()
-	{
-		return btnClose;
 	}
 
 	public MenuButton getMenuBtnLoadRuleList()

@@ -31,7 +31,7 @@ public class StartWithWindowsRegistryUtils
 	
 	/**
 	 * @param add - if true, we want to add the key. If false - delete the key.
-	 * @param isForAllUsers - if true, set this for all users. If false - only for this user
+	 * @param forAllUsers - if true, set this for all users. If false - only for this user
 	 * @throws IOException if there was a problem modifying the registry
 	 */
 	public static void setRegistryToStartWithWindows(boolean add, boolean forAllUsers) throws IOException

@@ -286,7 +286,7 @@ public class VisualTraceController implements Initializable
 	{
 		tableTrace.setRowFactory(param ->
 		{
-			TableRow<TraceLineInfo> row = new TableRow<TraceLineInfo>();
+			TableRow<TraceLineInfo> row = new TableRow<>();
 
 			MenuItem moreGeoIPInfo = new MenuItem("  Show GeoIP results from multiple sources");
 			moreGeoIPInfo.setOnAction(event9 -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + row.getItem().ipAddressProperty().get()));

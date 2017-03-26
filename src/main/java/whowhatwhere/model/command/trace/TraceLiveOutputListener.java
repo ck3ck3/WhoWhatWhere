@@ -49,10 +49,7 @@ public class TraceLiveOutputListener implements LiveOutputListener
 		char lastChar = ip.charAt(ip.length() - 1);
 		
 		if (lastChar != ']' && !Character.isDigit(lastChar)) //this means this line is a "request timed out" since it doesn't end with an ip or a hostname
-		{
 			outputReceiver.requestTimedOut();
-			return;
-		}
 		else
 			outputReceiver.lineAvailable(line);
 	}
@@ -112,7 +109,7 @@ public class TraceLiveOutputListener implements LiveOutputListener
 	
 	public static String extractIPFromLine(String line)
 	{
-		String spaceSeparated[] = line.split(" ");
+		String[] spaceSeparated = line.split(" ");
 		String tempIP = spaceSeparated[spaceSeparated.length - 1];
 		
 		if (tempIP.startsWith("[")) //then we have a hostname, not just an ip

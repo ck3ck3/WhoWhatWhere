@@ -177,8 +177,6 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private boolean isAHotkeyResult = false;
 	private int protocolBoxesChecked = 0;
 	private NetworkSniffer sniffer = new NetworkSniffer();
-	private int captureHotkeyKeyCode;
-	private int captureHotkeyModifiers;
 	private MaryTTS tts;
 	private String suggestedPathForCSVFile;
 	private IPNotes ipNotes;
@@ -632,6 +630,8 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 					if (colNameToSay.contains("IP"))
 						colNameToSay = colNameToSay.replace("IP", "I P");
 					
+					colValue.replace("milliseconds", "milliiseconds"); //for better pronunciation in TTS
+					
 					lines[i].append(colNameToSay + ": " + colValue + ". ");
 				}
 			}
@@ -903,8 +903,8 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 
 	private void setCaptureHotkeyAndPane(Properties props)
 	{
-		captureHotkeyModifiers = PropertiesByType.getIntProperty(props, propsCaptureHotkeyModifiers);
-		captureHotkeyKeyCode = PropertiesByType.getIntProperty(props, propsCaptureHotkeyKeycode);
+		int captureHotkeyKeyCode = PropertiesByType.getIntProperty(props, propsCaptureHotkeyKeycode);
+		int captureHotkeyModifiers = PropertiesByType.getIntProperty(props, propsCaptureHotkeyModifiers);
 		
 		chkboxUseCaptureHotkey.selectedProperty().addListener(hotkeyRegistry.generateChangeListenerForHotkeyCheckbox(captureHotkeyID, captureHotkeyModifiers, captureHotkeyKeyCode,
 				chkboxUseCaptureHotkey, labelCurrCaptureHotkey, paneEnableCaptureHotkey, captureHotkeyPressed));

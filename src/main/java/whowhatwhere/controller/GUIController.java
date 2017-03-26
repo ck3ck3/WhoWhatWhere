@@ -388,9 +388,7 @@ public class GUIController
 		link.setFont(font);
 		link.setOnAction(event -> Main.openInBrowser(url));
 
-		FlowPane flowPane = new FlowPane(label, link);
-
-		return flowPane;
+		return new FlowPane(label, link);
 	}
 	
 	private VBox getAttributionLinksForAboutDialog()
@@ -518,6 +516,7 @@ public class GUIController
 		{
 			new Alert(AlertType.ERROR, "Unable to load voice selection screen.").showAndWait();
 			logger.log(Level.SEVERE, "Unable to load voice screen", e);
+			return;
 		}
 		
 		selectionScreen.showScreenOnNewStage("Choose Text to Speech Voices", Modality.APPLICATION_MODAL, selectionScreen.getCloseButton());

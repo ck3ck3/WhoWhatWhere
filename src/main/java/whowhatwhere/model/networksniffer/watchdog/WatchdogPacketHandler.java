@@ -58,7 +58,7 @@ public class WatchdogPacketHandler implements PcapPacketHandler<Void>
 	private byte[] ownMACAddress;
 	
 	private List<Criteria<PcapPacket, Boolean>> criteriaList;
-	private Map<Criteria<PcapPacket, Boolean>, WatchdogMessage> criteriaToMsgMap = new HashMap<Criteria<PcapPacket, Boolean>, WatchdogMessage>();
+	private Map<Criteria<PcapPacket, Boolean>, WatchdogMessage> criteriaToMsgMap = new HashMap<>();
 
 	public WatchdogPacketHandler(List<PacketTypeToMatch> packetTypeList, boolean isRepeated, Integer cooldownInSecs, WatchdogListener listener, NetworkSniffer sniffer, byte[] ownMACAddress)
 			throws IllegalArgumentException, UnknownHostException
@@ -93,10 +93,7 @@ public class WatchdogPacketHandler implements PcapPacketHandler<Void>
 					{
 						isCooldownPeriod = true;
 
-						timer.schedule(() ->
-						{
-							isCooldownPeriod = false;
-						}, cooldownInSecs, TimeUnit.SECONDS);
+						timer.schedule(() -> isCooldownPeriod = false, cooldownInSecs, TimeUnit.SECONDS);
 					}
 					else
 						sniffer.stopCapture();
@@ -109,7 +106,7 @@ public class WatchdogPacketHandler implements PcapPacketHandler<Void>
 
 	private List<Criteria<PcapPacket, Boolean>> convertPacketTypeToMatchListToCriteria(List<PacketTypeToMatch> packetTypeList)
 	{
-		List<Criteria<PcapPacket, Boolean>> criterias = new ArrayList<Criteria<PcapPacket, Boolean>>();
+		List<Criteria<PcapPacket, Boolean>> criterias = new ArrayList<>();
 
 		for (PacketTypeToMatch item : packetTypeList)
 		{
@@ -134,7 +131,7 @@ public class WatchdogPacketHandler implements PcapPacketHandler<Void>
 
 	private List<Criteria<PcapPacket, Boolean>> generateCriteriasToAND(PacketTypeToMatch item)
 	{
-		List<Criteria<PcapPacket, Boolean>> criteriasToAND = new ArrayList<Criteria<PcapPacket, Boolean>>();
+		List<Criteria<PcapPacket, Boolean>> criteriasToAND = new ArrayList<>();
 
 		if (item.getPacketDirectionValue() != null)
 			criteriasToAND.add(new CriteriaPacketDirection(item.getPacketDirectionValue(), ownMACAddress));
@@ -157,8 +154,7 @@ public class WatchdogPacketHandler implements PcapPacketHandler<Void>
 			{
 				PacketDirection packetDirectionValue = item.getPacketDirectionValue();
 				
-				CriteriaIP criteriaIP = new CriteriaIP(ipsFromIPNotes.get(0), "255.255.255.255", packetDirectionValue);
-				Criteria<PcapPacket, Boolean> orBetweenIPs = criteriaIP;
+				Criteria<PcapPacket, Boolean> orBetweenIPs = new CriteriaIP(ipsFromIPNotes.get(0), "255.255.255.255", packetDirectionValue);
 
 				for (int i = 1; i < ipsToAdd; i++)
 					orBetweenIPs = new OrCriteria<PcapPacket>(orBetweenIPs, new CriteriaIP(ipsFromIPNotes.get(i), "255.255.255.255", packetDirectionValue));

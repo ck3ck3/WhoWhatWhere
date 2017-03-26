@@ -55,12 +55,11 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 	private Button btnDone;
 	private Pane detecting;
 	private final NICInfo nicInfoToCopyResultInto;
-	NetworkSniffer sniffer = new NetworkSniffer();
+	private NetworkSniffer sniffer = new NetworkSniffer();
 	private List<NICInfo> listOfDevices = sniffer.getListOfDevicesWithIP();
 
 	private Process pingProcess;
 	private boolean isAutoDetectRunning = false;
-	private boolean isFirstRun;
 	private boolean autoDetectSuccess;
 	private ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
 	private ScheduledFuture<?> task;
@@ -76,8 +75,6 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 	 * @param scene
 	 *            {@link whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen#SecondaryFXMLScreen(String fxmlLocation, Stage stage, Scene scene)
 	 *            see description in super}
-	 * @param nodeToEnableOnClose
-	 *            - Node to enable when this screen is closed. Can be null.
 	 * @param nicInfoToCopyResultInto
 	 *            - a NICInfo object that its contents need to be updated with
 	 *            the selected NIC details when this screen closes.
@@ -97,21 +94,18 @@ public class NICSelectionScreen extends SecondaryFXMLScreen implements WatchdogL
 
 		comboNIC.setItems(FXCollections.observableList(listOfDevices));
 
-		isFirstRun = nicInfoToCopyResultInto.getDescription() == null;
-		if (!isFirstRun)
+		boolean isANICAlreadySet = nicInfoToCopyResultInto.getDescription() == null;
+		if (!isANICAlreadySet)
 			comboNIC.getSelectionModel().select(nicInfoToCopyResultInto);
 
-		controller.getLabelFirstRun().setVisible(isFirstRun);
+		controller.getLabelFirstRun().setVisible(isANICAlreadySet);
 
 		setButtonHandlers();
 	}
 
 	private void setButtonHandlers()
 	{
-		btnAutoDetect.setOnAction(actionEvent ->
-		{
-			new Thread(() -> autoDetect()).start();
-		});
+		btnAutoDetect.setOnAction(actionEvent -> new Thread(() -> autoDetect()).start());
 
 		btnDone.setOnAction(actionEvent ->
 		{

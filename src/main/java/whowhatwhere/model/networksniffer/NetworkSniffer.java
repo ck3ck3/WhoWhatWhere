@@ -56,7 +56,7 @@ public class NetworkSniffer
 	public final static String pingTimeout = "Request timed out";
 	
 	private static boolean initSuccessful;
-	private static List<String> errorList = new ArrayList<String>();
+	private static List<String> errorList = new ArrayList<>();
 
 	static
 	{

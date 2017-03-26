@@ -90,7 +90,7 @@ public abstract class SecondaryFXMLWithEditableCRUDTableScreen<T> extends Second
 	/**
 	 * This method sets the initial items in the table.<br>
 	 * If the table should be empty on startup, this method should return an empty {@code ObservableList<T>}, for example {@code FXCollections.observableArrayList();}
-	 * @return An ObservableList<T> that contains the items that should be displayed in the table when the screen loads
+	 * @return An {@code ObservableList<T>} that contains the items that should be displayed in the table when the screen loads
 	 */
 	protected abstract ObservableList<T> getInitialTableItems();
 	
@@ -140,7 +140,7 @@ public abstract class SecondaryFXMLWithEditableCRUDTableScreen<T> extends Second
 	 */
 	protected void initGUI()
 	{
-		ArrayList<TableColumn<T, ?>> sortOrder = new ArrayList<TableColumn<T, ?>>(table.getSortOrder());
+		ArrayList<TableColumn<T, ?>> sortOrder = new ArrayList<>(table.getSortOrder());
 		
 		table.setItems(getInitialTableItems());
 		table.getSortOrder().addAll(sortOrder); //restore the sort order, if existed (setItems removes that property)

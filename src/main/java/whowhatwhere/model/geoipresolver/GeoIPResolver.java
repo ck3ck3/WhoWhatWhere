@@ -144,8 +144,7 @@ public class GeoIPResolver
 	    {
 		    try
 		    {
-		    	int listSize = ips.size();
-		    	int itemsLeft = listSize;
+		    	int itemsLeft = ips.size();
 		    	int firstIndex = 0;
 		    	List<GeoIPInfo> resultList = new ArrayList<>();
 		    	

@@ -39,7 +39,7 @@ public class AppearanceCounterPacketHandler implements PcapPacketHandler<Void>
 	private int ownIpInt;
 	private List<Integer> protocolsToCount = new ArrayList<>();
 	private boolean isFirstPacket = true;
-	CaptureStartListener captureStartListener;
+	private CaptureStartListener captureStartListener;
 
 	public AppearanceCounterPacketHandler(int ownIpInt, List<Integer> listOfProtocls)
 	{

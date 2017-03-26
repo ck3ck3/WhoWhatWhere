@@ -41,7 +41,7 @@ public class IPInfoRowModel
 
 	public IPInfoRowModel(Integer rowID, Integer packetCount, String ipAddress, String notes, String owner, String ping, String country, String region, String city)
 	{
-		this.rowID = new Integer(rowID);
+		this.rowID = rowID;
 		
 		this.packetCount = new SimpleIntegerProperty(packetCount);
 		this.ipAddress = new SimpleStringProperty(ipAddress);

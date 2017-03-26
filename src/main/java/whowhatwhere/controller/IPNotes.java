@@ -144,7 +144,7 @@ public class IPNotes
 	 */
 	public Map<String, List<String>> getIPNotesReverseMap()
 	{
-		Map<String, List<String>> reverseMap = new HashMap<String, List<String>>();
+		Map<String, List<String>> reverseMap = new HashMap<>();
 		
 		for (Object ipObj : ipNotes.keySet())
 		{

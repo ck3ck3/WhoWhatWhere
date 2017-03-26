@@ -933,7 +933,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	}
 
 	/**
-	 * @return returns a list based on tableTrace.getItems() but without duplicate locations.
+	 * @return a list based on tableTrace.getItems() but without duplicate locations.
 	 * The first hop is guaranteed to be included, then for every location, only the last hop from that location will be included.
 	 */
 	private List<TraceLineInfo> removeOverlappingHops()

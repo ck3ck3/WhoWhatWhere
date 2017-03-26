@@ -115,8 +115,6 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 	private TableView<PacketTypeToMatch> table;
 	private AnchorPane paneTableAndControls;
 
-	private int hotkeyKeyCode;
-	private int hotkeyModifiers;
 	private ObservableList<PacketTypeToMatch> ruleList;
 	private MaryTTS tts;
 	private NetworkSniffer sniffer = new NetworkSniffer();
@@ -248,7 +246,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 		{
 			ObservableList<PacketTypeToMatch> items = table.getItems();
 			TableViewSelectionModel<PacketTypeToMatch> selectionModel = table.getSelectionModel();
-			List<Integer> modifiableIndices = new ArrayList<Integer>(selectionModel.getSelectedIndices());
+			List<Integer> modifiableIndices = new ArrayList<>(selectionModel.getSelectedIndices());
 			int[] reSelectRows = new int[modifiableIndices.size()];
 			int i = 0;
 			
@@ -418,7 +416,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 
 		File dir = new File(System.getProperty("user.dir"));
 		FileFilter fileFilter = new WildcardFileFilter("*" + WatchdogUI.ruleListExtension);
-		List<File> files = new ArrayList<File>(Arrays.asList(dir.listFiles(fileFilter))); //ArrayList because asList() returns an immutable list
+		List<File> files = new ArrayList<>(Arrays.asList(dir.listFiles(fileFilter))); //ArrayList because asList() returns an immutable list
 
 		if (files.removeIf(file -> file.getName().equals(WatchdogUI.lastRunFilename))) //if lastRun exists, remove it from the list and put it on top of the button's list
 			items.add(createMenuItem(WatchdogUI.lastRunFilename.replace(WatchdogUI.ruleListExtension, "")));
@@ -538,8 +536,8 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 
 	private void setWatchdogHotkey(Properties props)
 	{
-		hotkeyModifiers = PropertiesByType.getIntProperty(props, propsHotkeyModifiers);
-		hotkeyKeyCode = PropertiesByType.getIntProperty(props, propsHotkeyKeycode);
+		int hotkeyModifiers = PropertiesByType.getIntProperty(props, propsHotkeyModifiers);
+		int hotkeyKeyCode = PropertiesByType.getIntProperty(props, propsHotkeyKeycode);
 		chkboxHotkey.selectedProperty()
 				.addListener(hotkeyRegistry.generateChangeListenerForHotkeyCheckbox(hotkeyID, hotkeyModifiers, hotkeyKeyCode, chkboxHotkey, labelCurrHotkey, paneHotkeyConfig, hotkeyPressed));
 

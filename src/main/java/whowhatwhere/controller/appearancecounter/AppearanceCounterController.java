@@ -347,9 +347,4 @@ public class AppearanceCounterController implements Initializable
 	{
 		return btnExportTableToCSV;
 	}
-
-	public Label getLabelWWW()
-	{
-		return labelWWW;
-	}
 }

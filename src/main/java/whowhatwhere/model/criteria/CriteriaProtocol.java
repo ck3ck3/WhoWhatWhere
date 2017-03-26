@@ -24,7 +24,7 @@ import whowhatwhere.model.networksniffer.SupportedProtocols;
 
 public class CriteriaProtocol implements Criteria<PcapPacket, Boolean>
 {
-	SupportedProtocols protocol;
+	private SupportedProtocols protocol;
 
 	public CriteriaProtocol(SupportedProtocols protocol)
 	{

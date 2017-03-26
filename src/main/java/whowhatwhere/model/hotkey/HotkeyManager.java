@@ -32,8 +32,8 @@ import org.jnativehook.keyboard.NativeKeyListener;
 
 public class HotkeyManager implements NativeKeyListener
 {
-	Map<String, HotkeyConfiguration> hotkeyMap = new HashMap<>();
-	Map<String, String> hotkeyToID = new HashMap<>();
+	private Map<String, HotkeyConfiguration> hotkeyMap = new HashMap<>();
+	private Map<String, String> hotkeyToID = new HashMap<>();
 
 	private boolean isKeySelection = false;
 	private String hotkeySelectionID; //value only matters when isKeySelection is true
