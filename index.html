@@ -132,10 +132,13 @@
 		<br>Watchdog can be started by clicking the "Start Watchdog" button or pressing the hotkey. The default hotkey (Ctrl+NumPad Del) requires the numlock on your keyboard to be on.
 		</p>
 	    <h3>Visual Trace</h3> <p>Enter any IP or hostname, and set the settings to your preferred values.
-		<br>Ping timeout sets the timeout for each of the 3 pings that are perfromed per hop.
-		<br>Checking the "Resolve hostnames" checkbox will try to get the hostname of each hop, keep in mind this might slow the trace down. 
-		<br>The setting "Stop tracing if X consecutive hops haven't responded" allows you to automatically stop the trace once it's not likely that another hop will be discovered, instead of waiting for the trace to end by reaching its maximum of 30 hops.
-		<br>Once you're ready, click "Trace" to start, and watch the route get plotted as the trace advances. When the trace ends (either by reaching the destination hop or due to the user aborting the trace) you can show/hide any map pin on the route by the checking/unchecking the checkbox on the trace results table. You can also click the magnifying glass icon ("Zoom in") to see the exact location of the hop and zoom further in with the spinner's arrows. By right clicking any row in the table you can see more GeoIP Info from another GeoIP source on your default browser.
+		<ul>
+			<li>Ping timeout sets the timeout for each of the 3 pings that are perfromed per hop.</li>
+			<li>Checking the "Resolve hostnames" checkbox will try to get the hostname of each hop, keep in mind this might slow the trace down. </li>
+			<li>The setting "Stop tracing if X consecutive hops haven't responded" allows you to automatically stop the trace once it's not likely that another hop will be discovered, instead of waiting for the trace to end by reaching its maximum of 30 hops.</li>
+		</ul>
+		Once you're ready, click "Trace" to start, and watch the route get plotted as the trace advances. When the trace ends (either by reaching the destination hop or due to the user aborting the trace) you can show/hide any map pin on the route by the checking/unchecking the checkbox on the trace results table. You can also click the magnifying glass icon ("Zoom in") to see the exact location of the hop and zoom further in with the spinner's arrows.
+		<br>By right clicking any row in the table you can see more GeoIP Info from another GeoIP source on your default browser.
 
 	    <a name="GeoIPLimitations"></a>
 	    <h3><i>Note about GeoIP Limitations:</i></h3> <p>Geographical IP services aren't always accurate. The address is based on what the company that owns the address reported when the address was bought. Sometimes an international company might list all their IPs are located in one area (where the main
