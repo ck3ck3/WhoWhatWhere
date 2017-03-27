@@ -76,7 +76,8 @@ public class MaryTTS
 	
 	public void speak(String text)
 	{
-		new Thread(() -> speakBlocking(text)).start();
+		if (text != null && !text.isEmpty())
+			new Thread(() -> speakBlocking(text)).start();
 	}
 
 	private synchronized void speakBlocking(String text) //synchronized so that together with the call to join(), calls to this method will wait until previous calls are finished

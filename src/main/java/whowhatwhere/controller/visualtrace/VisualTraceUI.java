@@ -858,7 +858,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		String markersSegment = generateMarkers();
 		String pathSegment = generatePath();
 		String zoomSegment = generateZoom(centerOnIP, zoom);
-
+System.out.println(baseUrl + markersSegment + pathSegment + zoomSegment);
 		return baseUrl + markersSegment + pathSegment + zoomSegment;
 	}
 
