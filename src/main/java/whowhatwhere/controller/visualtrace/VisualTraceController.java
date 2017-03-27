@@ -277,7 +277,7 @@ public class VisualTraceController implements Initializable
 		chkResolveHostnames.setTooltip(resolveHostnamesTooltip);
 		
 		GUIController.setCommonGraphicOnLabeled(labelConsecutiveTimeouts, GUIController.CommonGraphicImages.TOOLTIP);
-		Tooltip timeouts = new Tooltip("A few time-outs in a row usually mean that the final destination was reached but it ignores trace requests. In order to avoid excessive waiting when this happens, it's recommended to set this value to about 5.");
+		Tooltip timeouts = new Tooltip("A few timeouts in a row usually mean that the final destination was reached but it ignores trace requests. In order to avoid excessive waiting when this happens, it's recommended to set this value to about 5.");
 		ToolTipUtilities.setTooltipProperties(timeouts, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, AnchorLocation.WINDOW_TOP_LEFT); 
 		labelConsecutiveTimeouts.setTooltip(timeouts);
 	}

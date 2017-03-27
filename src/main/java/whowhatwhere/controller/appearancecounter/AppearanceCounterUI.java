@@ -475,7 +475,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 			MenuItem getGeoIPinfo = new MenuItem("See more GeoIP results for this IP in the browser");
 			getGeoIPinfo.setOnAction(event -> Main.openInBrowser(GeoIPResolver.getSecondaryGeoIpPrefix() + row.getItem().ipAddressProperty().getValue()));
 
-			MenuItem sendIPToQuickPing = new MenuItem("Set this IP in Ping-to-Speech (in Utilities tab)");
+			MenuItem sendIPToQuickPing = new MenuItem("Set this IP for Quick Ping");
 			sendIPToQuickPing.setOnAction(event ->
 			{
 				guiController.getQuickPingController().getComboToPing().getEditor().setText(row.getItem().ipAddressProperty().getValue());

@@ -25,7 +25,7 @@
 						<Menu mnemonicParsing="false" text="Options">
 							<items>
 								<MenuItem fx:id="menuItemSelectNIC" mnemonicParsing="false" text="Select network adapter" />
-                  <MenuItem fx:id="menuItemTTSSelection" mnemonicParsing="false" text="Configure text to speech voices" />
+                  <MenuItem fx:id="menuItemTTSSelection" mnemonicParsing="false" text="Configure text to speech voice" />
 								<CheckMenuItem fx:id="menuItemChkCheckUpdateStartup" mnemonicParsing="false" text="Check for updates on startup" />
                   <CheckMenuItem fx:id="menuItemChkMinimizeOnXBtn" mnemonicParsing="false" text="Minimize to system tray on close" />
 								<CheckMenuItem fx:id="menuItemChkDisplayBalloon" mnemonicParsing="false" text="Display info balloon after minimizing" />
