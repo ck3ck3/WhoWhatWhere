@@ -86,35 +86,43 @@
 	    <h3>Pick your network adapter: </h3>
 		<p>If your PC has more than one active network adapter, a <a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/NicSelection.png">choice dialog</a> will be displayed on the first run of the program. You can use the "Auto-detect" button or choose your network adapter from a list. You can always get to this dialog manually if needed, by using the menu "Options" -> "Select network adapter".
 		</p>
+		
+		<h3>Choose a text to speech voice and language</h3>
+		<p>Use the menu "Options" -> "Configure text to speech voice" to <a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/VoiceSelection.png">choose a voice and language</a> for the various features. Who What Where can only use the English voices, but Quick Ping and Watchdog can also use German, French, and Italian voices. You can preview each voice by clicking on the "Preview" button, and you can also customize the preview text.
+		</p>
 
 	    <h3>Who What Where</h3> 
 	    <p>Who What Where monitors your internet traffic and shows you which IP addresses your PC communicates with, as well as some additional information such as ping result and geographical location of the IP address. Set your preferred settings, start monitoring, and the results will be shown in the table once the monitoring stops. The results can also be read out to you so that Who What Where doesn't have to be visible on the screen.
 		<br><br>
-	    <a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/CaptureOptions.png">Capture Options:</a>
+	    Monitoring Settings:
 	    <ul>
-	      <li><p>Protocol selection: If no protocol is selected, then all protocols will be counted. Otherwise, only packets of the selected protocols will be counted.</p></li>
-	      <li><p>Automatically/manually stop capture: Choose if you'd like to stop the capture yourself, or let it stop automatically after a certain amount of time.</p></li>
-	      <li><p>Extra information:
+	      <li><p>Automatically stop monitoring: If enabled, monitoring will stop automatically after a certain amount of time. If disabled, monitoring will stop when the user clicks the "Stop monitoring" button (or uses the hotkey).</p></li>
+		  <li><p>Extra information:
 
-	        <br><i>Get location info for each IP address</i> - If checked, every IP address entry will also show its geographical location information (see <a href="#GeoIPLimitations">limitations</a>). If unchecked, the results will be displayed a bit quicker.
+	        <br><i>Get location info for each IP address</i> - If checked, every IP address entry will also show its owning organization name and geographical location information (see <a href="#GeoIPLimitations">limitations</a>). If unchecked, the results will be displayed a bit quicker.
 
 	        <br><i>Ping each IP address</i> - If checked, each IP address entry will also show the ping result to that IP. There is also a configurable timeout. If unchecked, the results will be displayed a bit quicker.</p>
 	      </li>
+		  <li><p>Protocol selection: If no protocol is selected, then all protocols will be counted. Otherwise, only packets of the selected protocols will be counted.</p></li>
 	    </ul>
 
-	    <a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/TableRightClick.png">Right-clicking on a result in the table opens a pop-up menu</a> with several options: "See more GeoIP results in the browser" loads a GeoIP service
+		Hotkey and Text To Speech Settings:
+		<br><br>Instead of manually pressing the start/stop buttons, you can use a hotkey. The hotkey is active globally, meaning
+	    you can press it while using any other application and even when Who What Where is minimized to the system tray. If a monitoring session is currently in progress, the hotkey will stop it. Otherwise, it will start a new monitoring session. If the text to speech feature is enabled and
+	    the hotkey is used to start or stop monitoring, the results will be read out ot you - so that you don't have the look at the application screen. This is useful when you already know what you're looking for. You can also filter out what is read to you,
+	    the first X rows or only rows that contain a certain value in a certain column. You can also select which column values to read out.
+		
+		<br><br>
+	    Right-clicking on a result in the table opens a pop-up menu with several options, including "See more GeoIP results for this IP in the browser" which loads a GeoIP service
 	    results in the default web-browser. This site might have more (or different) results than what's shown in the table. See <a href="#GeoIPLimitations">GeoIP Limitations</a>.
 		<br><br>
-		<a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/UserNotesWWW.png">User notes:</a> Allows users to associate notes with IP addresses. Either add a note from the results table by clicking the user notes cell on a row, or manage all of the user notes from the menu "File" -> "Manage user notes". 
-		<br>User notes can help remember what's the IP address used for, and can also be used as a filter in Watchdog.
+		<a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/IPNotes.png">IP notes:</a> Allows you to associate notes with IP addresses. Either add a note from the results table by clicking the IP notes cell on a row, or manage all of the IP notes from the menu "File" -> "Manage IP notes". 
+		<br>IP notes can help remember what's the IP address used for, and can also be used in a rule in Watchdog.
 		<br><br>
-	    <a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/HotkeyOptions.png">Hotkey and Text-To-Speech Options:</a> Instead of manually pressing the start/stop buttons, you can use a hotkey. The hotkey is active globally, meaning
-	    you can press it while using any other application and even when Who What Where is minimized to the system tray. If a capture is running, the hotkey will stop it. Otherwise, it will start a new capture. If the text-to-speech feature is enabled and
-	    you use the hotkey to start or stop the capture, the results will be read out ot you - so you don't have the look at the application screen. This is useful when you already know what you're looking for. You can also filter out what is read to you,
-	    the first X rows or only rows that contain a certain value in a certain column. You can also select which column values to read out.
+	    
 		</p>
 
-	    <h3>Quick Ping</h3> <p>Enter any IP or hostname, and press the hotkey. The ping result will be read out or shown in a pop-up message. If you choose to have the result read out loud, you can select several voices and languages (English, German, French, Italian) through the menu "Options" -> "Configure text to speech voices". The hotkey is configurable, and the default one (Ctrl+NumPad 0) requires the numlock on your keyboard to be on.
+	    <h3>Quick Ping</h3> <p>Enter any IP or hostname, and press the hotkey. The ping result will be read out or shown in a pop-up message. If you choose to have the result read out loud, you can select from several voices and languages (English, German, French, Italian) through the menu "Options" -> "Configure text to speech voice". The hotkey is configurable, and the default one (Ctrl+NumPad 0) requires the numlock on your keyboard to be on.
 
 
 	    <h3>Watchdog</h3> <p>Watchdog listens to your network traffic and informs you when a packet matches a certain rule that you set. You can set rules based on IP address or ranges (subnets), IP notes, packet direction (incoming/outgoing), protocol, source/destination ports and packet size.
