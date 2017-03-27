@@ -28,6 +28,8 @@ public class TraceLiveOutputListener implements LiveOutputListener
 	private TraceOutputReceiver outputReceiver;
 	private int lineCount = 0;
 	private boolean traceFailed = false;
+	private boolean traceFinished = false;
+	private String ipBeingTraced = null;
 	private final static Pattern ipPattern = Pattern.compile("(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])"); //doesn't completely validate iPv4 correctness, but the inputs will contain either a valid address or nothing similar to an IP address.	
 	
 	
@@ -39,7 +41,7 @@ public class TraceLiveOutputListener implements LiveOutputListener
 	@Override
 	public void lineReady(String line)
 	{
-		if (traceFailed)
+		if (traceFailed || traceFinished)
 			return;
 
 		if (!lineValidation(line))
@@ -51,7 +53,15 @@ public class TraceLiveOutputListener implements LiveOutputListener
 		if (lastChar != ']' && !Character.isDigit(lastChar)) //this means this line is a "request timed out" since it doesn't end with an ip or a hostname
 			outputReceiver.requestTimedOut();
 		else
+		{
 			outputReceiver.lineAvailable(line);
+			
+			if (ip.equals(ipBeingTraced))
+			{
+				traceFinished = true;
+				outputReceiver.traceFinished();
+			}
+		}
 	}
 	
 	private boolean lineValidation(String line)
@@ -69,8 +79,8 @@ public class TraceLiveOutputListener implements LiveOutputListener
 		{
 			if (line.endsWith("]")) //has ip and hostname
 			{
-				String ip = extractIPFromLine(line);
-				outputReceiver.setIPBeingTraced(ip);
+				ipBeingTraced = extractIPFromLine(line);
+				outputReceiver.setIPBeingTraced(ipBeingTraced);
 				
 				String hostname = extractHostnameFromIntroLine(line);
 				outputReceiver.setHostnameBeingTraced(hostname);
@@ -79,9 +89,9 @@ public class TraceLiveOutputListener implements LiveOutputListener
 			{
 				Matcher matcher = ipPattern.matcher(line);
 				matcher.find();
-				String ip = matcher.group();
+				ipBeingTraced = matcher.group();
 				
-				outputReceiver.setIPBeingTraced(ip);				
+				outputReceiver.setIPBeingTraced(ipBeingTraced);				
 			}
 			
 			return false;
@@ -103,7 +113,7 @@ public class TraceLiveOutputListener implements LiveOutputListener
 	@Override
 	public void endOfOutput()
 	{
-		if (!traceFailed && outputReceiver != null)
+		if (!traceFailed && !traceFinished && outputReceiver != null)
 			outputReceiver.traceFinished();
 	}
 	
