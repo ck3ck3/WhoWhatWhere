@@ -147,7 +147,7 @@ public class VisualTraceController implements Initializable
 		setColumnHeaderTooltip(columnMapPin, "Map Pin", "Show/hide hops on the map.");
 		setColumnHeaderTooltip(columnHop, "Hop", "Hops which don't respond to trace requests aren't shown in the table, which may result in hop numbers that aren't sequential. Moreover, when the final destination doesn't respond, or when the trace ends before reaching the destination, the destination is added to the table and marked as " + infinitySymbol + ".");		
 		setColumnHeaderTooltip(columnLocation, "Location", "GeoIP isn't always accurate. Right click on any row to see more GeoIP results in the browser.");
-		setColumnHeaderTooltip(columnZoomButton, "Zoom In", "Toggle the buton to zoom in on the location. Untoggle to see the full route again. Note that this does not give extra accuracy to the location of the IP, it just zooms in to the center of the city.");
+		setColumnHeaderTooltip(columnZoomButton, "Zoom In", "Toggle the buton to zoom in on the location. Untoggle to see the full route again.");
 	}
 	
 	private void setColumnHeaderTooltip(TableColumn<TraceLineInfo, ?> column, String headerText, String tooltipText)

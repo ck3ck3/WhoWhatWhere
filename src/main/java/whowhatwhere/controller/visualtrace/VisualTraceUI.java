@@ -396,7 +396,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 				ToggleButton btnZoom = new ToggleButton();
 				btnZoom.setToggleGroup(zoomToggleGroup);
 				GUIController.setGraphicForLabeledControl(btnZoom, zoomInIconLocation, ContentDisplay.CENTER);
-				Tooltip zoomTooltip = new Tooltip("Zoom in on this location (into the center of the city)");
+				Tooltip zoomTooltip = new Tooltip("Zoom in on this location");
 				ToolTipUtilities.setTooltipProperties(zoomTooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
 				btnZoom.setTooltip(zoomTooltip);
 				btnZoom.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
@@ -467,7 +467,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 				
 				if (ipInfo.getSuccess())
 				{
-					String encodedLocation = getLocationString(ipInfo);
+					String encodedLocation = getLocationString(ipInfo, true);
 					url.set(baseUrl + "&center=" + encodedLocation + "&zoom=12");
 				}
 			}
@@ -858,7 +858,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		String markersSegment = generateMarkers();
 		String pathSegment = generatePath();
 		String zoomSegment = generateZoom(centerOnIP, zoom);
-System.out.println(baseUrl + markersSegment + pathSegment + zoomSegment);
+
 		return baseUrl + markersSegment + pathSegment + zoomSegment;
 	}
 
@@ -884,7 +884,7 @@ System.out.println(baseUrl + markersSegment + pathSegment + zoomSegment);
 				if (!isFirstOrLastHop) //only the first and last hop are slightly bigger than the other hops, to stick out in the image. 
 					currentMarker += "%7Csize:mid";
 
-				String location = getLocationString(ipInfo);
+				String location = getLocationString(ipInfo, true);
 				markers += currentMarker + "%7C" + location;
 			}
 		}
@@ -906,7 +906,7 @@ System.out.println(baseUrl + markersSegment + pathSegment + zoomSegment);
 				continue;
 
 			String ipForPath = row.ipAddressProperty().get();
-			String locationForPath = getLocationString(geoIPResults.get(ipForPath));
+			String locationForPath = getLocationString(geoIPResults.get(ipForPath), true);
 
 			if (!path.isEmpty()) //if it's not the first part of the path
 				locationForPath = "%7C" + locationForPath;
@@ -924,7 +924,7 @@ System.out.println(baseUrl + markersSegment + pathSegment + zoomSegment);
 		if (centerOnIP != null)
 		{
 			GeoIPInfo ipInfo = geoIPResults.get(centerOnIP);
-			String location = getLocationString(ipInfo);
+			String location = getLocationString(ipInfo, true);
 			
 			result = "&center=" + location + "&zoom=" + zoom;
 		}
@@ -948,7 +948,8 @@ System.out.println(baseUrl + markersSegment + pathSegment + zoomSegment);
 		{
 			if (mapRowToSelectedStatus.get(hop).get()) //if row is checked
 			{
-				String locationString = hop.locationProperty().get();
+				GeoIPInfo ipInfo = geoIPResults.get(hop.ipAddressProperty().get());
+				String locationString = getLocationString(ipInfo, true);//hop.locationProperty().get();
 				
 				if (isFirstCheckedRow)
 				{
@@ -968,7 +969,8 @@ System.out.println(baseUrl + markersSegment + pathSegment + zoomSegment);
 			if (mapRowToSelectedStatus.get(hop).get()) //if row is checked
 			{
 				String currentHopNumber = hop.hopNumberProperty().get();
-				String locationString = hop.locationProperty().get();
+				GeoIPInfo ipInfo = geoIPResults.get(hop.ipAddressProperty().get());
+				String locationString = getLocationString(ipInfo, true);//hop.locationProperty().get();
 				String lastHopFromLocation = mapLocationToLastHopFromIt.get(locationString);
 				
 				if (currentHopNumber.equals(lastHopFromLocation))
@@ -979,17 +981,31 @@ System.out.println(baseUrl + markersSegment + pathSegment + zoomSegment);
 		return hopsToShow;
 	}
 
-	private String getLocationString(GeoIPInfo ipInfo)
+	/**
+	 * @param ipInfo - the GeoIPInfo of the location string to get
+	 * @param latLon - if true, returns the location in latitude,longitude format. Otherwise returns a human readable string of the location 
+	 * @return a String representing the location
+	 */
+	private String getLocationString(GeoIPInfo ipInfo, boolean latLon)
 	{
-		String region = ipInfo.getRegion();
-		String location = ipInfo.getCity() + "," + (region.isEmpty() ? "" : ipInfo.getRegionName() + ",") + ipInfo.getCountry();
-		try
+		String location;
+		
+		if (latLon)
 		{
-			location = URLEncoder.encode(location, "UTF-8");
+			location = ipInfo.getLat() + "," + ipInfo.getLon();
 		}
-		catch (UnsupportedEncodingException e)
+		else
 		{
-			logger.log(Level.SEVERE, "Unable to encode this URL: " + location, e);
+			String region = ipInfo.getRegion();
+			location = ipInfo.getCity() + "," + (region.isEmpty() ? "" : ipInfo.getRegionName() + ",") + ipInfo.getCountry();
+			try
+			{
+				location = URLEncoder.encode(location, "UTF-8");
+			}
+			catch (UnsupportedEncodingException e)
+			{
+				logger.log(Level.SEVERE, "Unable to encode this URL: " + location, e);
+			}
 		}
 
 		return location;

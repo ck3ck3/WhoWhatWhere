@@ -22,8 +22,6 @@ public class GeoIPInfoExtended extends GeoIPInfo
 {
 	private String countryCode;
 	private String zip;
-	private String lat;
-	private String lon;
 	private String timezone;
 	private String isp;
 	private String as;
@@ -47,26 +45,6 @@ public class GeoIPInfoExtended extends GeoIPInfo
 	public void setZip(String zip)
 	{
 		this.zip = zip;
-	}
-
-	public String getLat()
-	{
-		return lat;
-	}
-
-	public void setLat(String lat)
-	{
-		this.lat = lat;
-	}
-
-	public String getLon()
-	{
-		return lon;
-	}
-
-	public void setLon(String lon)
-	{
-		this.lon = lon;
 	}
 
 	public String getTimezone()

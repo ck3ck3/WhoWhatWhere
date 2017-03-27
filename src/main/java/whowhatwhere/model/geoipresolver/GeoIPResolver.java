@@ -44,7 +44,7 @@ public class GeoIPResolver
 	private static final String secondaryGeoIpPrefix = "https://www.iplocation.net/?query=";
 	private static final String serviceBaseURI = "http://ip-api.com/json/";
 	private static final String serviceBaseURIForBatch = "http://ip-api.com/batch/";
-	private static final String onlyBasicFields = "?fields=country,region,regionName,city,org,query,status,message";
+	private static final String onlyBasicFields = "?fields=country,region,regionName,city,org,lon,lat,query,status,message";
 	private static final String failMsg = "fail";
 	private static final int maxQueriesPerMin = 120;
 	private static final int maxItemsPerBatchRequest = 100;
@@ -253,14 +253,14 @@ public class GeoIPResolver
 		ipInfo.setRegionName((String) jsonObj.get("regionName"));
 		ipInfo.setCity((String) jsonObj.get("city"));
 		ipInfo.setOrg((String) jsonObj.get("org"));
+		ipInfo.setLat(((Double) jsonObj.get("lat")).toString());
+		ipInfo.setLon(((Double) jsonObj.get("lon")).toString());
 		ipInfo.setQuery((String) jsonObj.get("query"));
 		
 		if (extended)
 		{
 			((GeoIPInfoExtended)ipInfo).setCountryCode((String) jsonObj.get("countryCode"));
 			((GeoIPInfoExtended)ipInfo).setZip((String) jsonObj.get("zip"));
-			((GeoIPInfoExtended)ipInfo).setLat(((Double) jsonObj.get("lat")).toString());
-			((GeoIPInfoExtended)ipInfo).setLon(((Double) jsonObj.get("lon")).toString());
 			((GeoIPInfoExtended)ipInfo).setTimezone((String) jsonObj.get("timezone"));
 			((GeoIPInfoExtended)ipInfo).setIsp((String) jsonObj.get("isp"));
 			((GeoIPInfoExtended)ipInfo).setAs((String) jsonObj.get("as"));
