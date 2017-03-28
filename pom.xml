@@ -100,34 +100,35 @@
 				<version>1.5.0</version>
 				<executions>
 					<execution>
-						<id>Delete old rar</id>
+						<id>Delete old installer</id>
 						<phase>clean</phase>
 						<goals>
 							<goal>exec</goal>
 						</goals>
 						<configuration>
 							<executable>cmd</executable>
-							<workingDirectory>dist</workingDirectory>
+							<workingDirectory>dist/Installer</workingDirectory>
 							<arguments>
 								<argument>/c</argument>
 								<argument>del</argument>
-								<argument>WhoWhatWhere.rar</argument>
+								<argument>WhoWhatWhere-installer.exe</argument>
 							</arguments>
 						</configuration>
 					</execution>
 					<execution>
-						<id>Create empty WhoWhatWhere dir for exe output</id>
+						<id>Delete previous WhoWhatWhere.exe</id>
 						<phase>clean</phase>
 						<goals>
 							<goal>exec</goal>
 						</goals>
 						<configuration>
 							<executable>cmd</executable>
-							<workingDirectory>dist/RarGenerator</workingDirectory>
+							<workingDirectory>dist/exe</workingDirectory>
 							<arguments>
+								<argument>cmd</argument>
 								<argument>/c</argument>
-								<argument>mkdir</argument>
-								<argument>WhoWhatWhere</argument>
+								<argument>del</argument>
+								<argument>WhoWhatWhere.exe</argument>
 							</arguments>
 						</configuration>
 					</execution>
@@ -139,44 +140,23 @@
 						</goals>
 						<configuration>
 							<executable>launch4jc</executable>
-							<workingDirectory>dist/RarGenerator</workingDirectory>
+							<workingDirectory>dist</workingDirectory>
 							<arguments>
 								<argument>WhoWhatWhere-launch4j.xml</argument>
 							</arguments>
 						</configuration>
 					</execution>
-					<execution>
-						<id>Create rar file</id>
+ 					<execution>
+						<id>Create installer</id>
 						<phase>package</phase>
 						<goals>
 							<goal>exec</goal>
 						</goals>
 						<configuration>
-							<executable>rar</executable>
-							<workingDirectory>dist/RarGenerator</workingDirectory>
+							<executable>iscc</executable>
+							<workingDirectory>dist</workingDirectory>
 							<arguments>
-								<argument>a</argument>
-								<argument>../WhoWhatWhere.rar</argument>
-								<argument>WhoWhatWhere</argument>
-							</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>Delete temp WhoWhatWhere dir</id>
-						<phase>package</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>cmd</executable>
-							<workingDirectory>dist/RarGenerator</workingDirectory>
-							<arguments>
-								<argument>cmd</argument>
-								<argument>/c</argument>
-								<argument>rmdir</argument>
-								<argument>/s</argument>
-								<argument>/q</argument>
-								<argument>WhoWhatWhere</argument>
+								<argument>installer-script.iss</argument>
 							</arguments>
 						</configuration>
 					</execution>

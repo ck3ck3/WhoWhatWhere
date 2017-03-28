@@ -3,7 +3,7 @@
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
   <jar>E:\githome\git\WhoWhatWhere\target\WhoWhatWhere-0.0.1-SNAPSHOT.jar</jar>
-  <outfile>WhoWhatWhere\WhoWhatWhere.exe</outfile>
+  <outfile>exe\WhoWhatWhere.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
@@ -25,7 +25,7 @@
     <opt>-Dglass.win.minHiDPI=1</opt>
   </jre>
   <splash>
-    <file>E:\githome\git\WhoWhatWhere\dist\RarGenerator\splash.bmp</file>
+    <file>E:\githome\git\WhoWhatWhere\dist\splash.bmp</file>
     <waitForWindow>true</waitForWindow>
     <timeout>120</timeout>
     <timeoutErr>false</timeoutErr>

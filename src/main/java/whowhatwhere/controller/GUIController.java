@@ -400,7 +400,7 @@ public class GUIController
 		labelToAdd.setGraphicTextGap(2);
 		iconsAttributionPane.getChildren().add(1, labelToAdd); //add the label in the middle of the message
 		
-		FlowPane softwareAttributionPane = generateLabelAndLinkPane("Click", getClass().getResource(Main.attributionHTMLLocation).toString(), Font.getDefault().getSize());
+		FlowPane softwareAttributionPane = generateLabelAndLinkPane("Click", Main.attributionHTMLLocation, Font.getDefault().getSize());
 		Hyperlink tempLink = (Hyperlink) softwareAttributionPane.getChildren().get(1);
 		tempLink.setText("here");
 		softwareAttributionPane.getChildren().add(new Label("to see which software libraries are used in Who What Where."));

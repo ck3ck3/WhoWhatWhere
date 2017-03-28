@@ -64,7 +64,7 @@ public class Main extends Application
 	public final static List<Image> appIconList = Arrays.asList(new Image(Main.class.getResourceAsStream(iconResource16)), new Image(Main.class.getResourceAsStream(iconResource32)),
 			new Image(Main.class.getResourceAsStream(iconResource48)), new Image(Main.class.getResourceAsStream(iconResource256)));
 	
-	public final static String attributionHTMLLocation = "/attribution.html";
+	public final static String attributionHTMLLocation = website + "/attribution.html";
 	public final static String jnetpcapDLLx86Location = "/native/windows/x86/jnetpcap.dll";
 	public final static String jnetpcapDLLx64Location = "/native/windows/x86_64/jnetpcap.dll";
 
