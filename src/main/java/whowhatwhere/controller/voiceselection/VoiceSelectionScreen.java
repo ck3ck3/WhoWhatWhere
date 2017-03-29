@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package whowhatwhere.controller;
+package whowhatwhere.controller.voiceselection;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -33,6 +33,9 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
+import whowhatwhere.controller.ConfigurableTTS;
+import whowhatwhere.controller.GUIController;
+import whowhatwhere.controller.MessagesI18n;
 import whowhatwhere.model.tts.MaryTTS;
 import whowhatwhere.model.tts.TTSVoice;
 import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen;

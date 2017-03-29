@@ -10,7 +10,7 @@
 <?import numbertextfield.NumberTextField?>
 
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="269.0" prefWidth="883.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.VoiceSelectionController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="269.0" prefWidth="883.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="whowhatwhere.controller.voiceselection.VoiceSelectionController">
    <children>
       <AnchorPane fx:id="paneSettings" layoutX="14.0" layoutY="10.0">
          <children>

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package whowhatwhere.controller;
+package whowhatwhere.controller.ipnotes;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,6 +36,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import whowhatwhere.controller.SettingsHandler;
 
 public class IPNotes
 {

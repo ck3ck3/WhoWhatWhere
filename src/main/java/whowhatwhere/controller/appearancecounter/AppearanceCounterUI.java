@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -71,10 +73,10 @@ import whowhatwhere.Main;
 import whowhatwhere.controller.ConfigurableTTS;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
-import whowhatwhere.controller.IPNotes;
 import whowhatwhere.controller.LoadAndSaveSettings;
 import whowhatwhere.controller.ToolTipUtilities;
 import whowhatwhere.controller.commands.Commands;
+import whowhatwhere.controller.ipnotes.IPNotes;
 import whowhatwhere.controller.visualtrace.VisualTraceUI;
 import whowhatwhere.model.PropertiesByType;
 import whowhatwhere.model.geoipresolver.GeoIPInfo;
@@ -184,6 +186,8 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private boolean editedNotedWasEmpty;
 	private Duration captureTimerExpiresIn;
 	private ScheduledThreadPoolExecutor displayTimer;
+	private PingConsumer pingConsumer = null;
+	private Thread pingConsumerThread = null;
 
 	private Runnable captureHotkeyPressed = () ->
 	{
@@ -514,6 +518,9 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		NICInfo device = guiController.getSelectedNIC();
 		final CaptureStartListener thisObj = this;
 
+		if (pingConsumerThread != null && pingConsumerThread.isAlive())
+			pingConsumerThread.interrupt(); //if a previous session is still pinging results, stop it
+		
 		changeGuiTemplate(true);
 
 		Task<Void> workerThreadTask = new Task<Void>()
@@ -536,7 +543,24 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 
 				if (isAHotkeyResult && chkboxUseTTS.isSelected())
 				{
-					readResults();
+					if (pingConsumer != null && isPingSelectedForTTS())
+					{
+						new Thread(() -> 
+						{
+							try
+							{
+								tts.speakBlocking("Generating ping results, please wait"); //calling the non-blocking version could result in the results being read before this line
+								pingConsumer.getRunningSemaphore().acquire(); //wait until all the pings are set
+								readResults();
+							}
+							catch (InterruptedException e)
+							{
+							}
+						}).start();
+					}
+					else
+						readResults();
+					
 					isAHotkeyResult = false;
 				}
 
@@ -578,6 +602,23 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 
 		new Thread(workerThreadTask).start();
 	}
+	
+	private boolean isPingSelectedForTTS()
+	{
+		for (Node node : gridPaneColumnNames.getChildren())
+		{
+			CheckBox chkbox = (CheckBox) node;
+
+			if (chkbox.isSelected())
+			{
+				String colName = chkbox.getText();
+				if (colName.equals(getColumnHeaderText(columnPing)))
+					return true;
+			}
+		}
+		
+		return false;
+	}
 
 	private void readResults()
 	{
@@ -587,7 +628,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		if (isNoColumnChecked() || items == null)
 			return;
 
-		filteredList = (chkboxFilterResults.isSelected() ? filterItemsByColValue(items, comboColumns.getValue(), textColumnContains.getText()) : new ArrayList<>(items));
+		filteredList = chkboxFilterResults.isSelected() ? filterItemsByColValue(items, comboColumns.getValue(), textColumnContains.getText()) : items;
 
 		int linesToReadInput = numFieldRowsToRead.getValue();
 		int totalLines = filteredList.size();
@@ -610,7 +651,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 			if (chkbox.isSelected())
 			{
 				String colName = chkbox.getText();
-
+				
 				for (int i = 0; i < rowsToRead; i++)
 				{
 					Integer rowID = filteredList.get(i).getRowID();
@@ -630,7 +671,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 					if (colNameToSay.contains("IP"))
 						colNameToSay = colNameToSay.replace("IP", "I P");
 					
-					colValue.replace("milliseconds", "milliiseconds"); //for better pronunciation in TTS
+					colValue = colValue.replace("milliseconds", "milliiseconds"); //for better pronunciation in TTS
 					
 					lines[i].append(colNameToSay + ": " + colValue + ". ");
 				}
@@ -798,7 +839,8 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		int i = 1;
 		boolean getLocationInfo = chkboxGetLocation.isSelected();
 		List<GeoIPInfo> batchGeoIPInfo = null;
-		
+		BlockingQueue<IPInfoRowModel> pingQueue = null;
+
 		if (getLocationInfo)
 		{
 			List<String> listOfIPs = new ArrayList<>();
@@ -809,6 +851,16 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 			batchGeoIPInfo = GeoIPResolver.getBatchGeoIPInfo(listOfIPs, false);
 		}
 		
+		boolean performPings = chkboxPing.isSelected();
+		if (performPings)
+		{
+			pingQueue = new LinkedBlockingQueue<>();
+			pingConsumer = new PingConsumer(pingQueue, numFieldPingTimeout.getValue(), ips.size());
+			
+			pingConsumerThread = new Thread(pingConsumer);
+			pingConsumerThread.start();
+		}
+
 		for (IpAppearancesCounter ipCounter : ips)
 		{
 			Integer id = i++;
@@ -816,7 +868,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 			String ip = ipCounter.getIp();
 			String notes = emptyNotesString;
 			String owner = "";
-			String ping = "";
+			String ping = performPings ? "Pending result..." : "";
 			String country = "";
 			String region = "";
 			String city = "";
@@ -841,12 +893,13 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 					owner = "Fail: Connection to GeoIP service timed out";
 			}
 
-			if (chkboxPing.isSelected())
-				ping = NetworkSniffer.pingAsString(ip, numFieldPingTimeout.getValue());
-			
 			notes = ipNotes.getIPNote(ip, emptyNotesString);
 
 			row = new IPInfoRowModel(id, amountOfAppearances, ip, notes, owner, ping, country, region, city);
+
+			if (performPings)
+				pingQueue.add(row);
+			
 			data.add(row);
 		}
 

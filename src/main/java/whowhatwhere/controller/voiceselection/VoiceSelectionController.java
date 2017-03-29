@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package whowhatwhere.controller;
+package whowhatwhere.controller.voiceselection;
 
 import java.net.URL;
 import java.util.Arrays;
@@ -38,6 +38,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
 import numbertextfield.NumberTextField;
+import whowhatwhere.controller.GUIController;
+import whowhatwhere.controller.MessagesI18n;
 import whowhatwhere.model.tts.TTSVoice;
 
 public class VoiceSelectionController implements Initializable

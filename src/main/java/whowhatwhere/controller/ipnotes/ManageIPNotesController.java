@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package whowhatwhere.controller;
+package whowhatwhere.controller.ipnotes;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -28,7 +28,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import whowhatwhere.controller.appearancecounter.IPNotesRowModel;
+import whowhatwhere.controller.GUIController;
+import whowhatwhere.controller.SecondaryFXMLWithEditableCRUDTableController;
 
 public class ManageIPNotesController extends SecondaryFXMLWithEditableCRUDTableController<IPNotesRowModel>
 {

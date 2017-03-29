@@ -80,22 +80,25 @@ public class MaryTTS
 			new Thread(() -> speakBlocking(text)).start();
 	}
 
-	private synchronized void speakBlocking(String text) //synchronized so that together with the call to join(), calls to this method will wait until previous calls are finished
+	public synchronized void speakBlocking(String text) //synchronized so that together with the call to join(), calls to this method will wait until previous calls are finished
 	{
-		try
+		if (text != null && !text.isEmpty())
 		{
-			AudioPlayer ap = new AudioPlayer();
-			ap.setAudio(maryTTS.generateAudio(text));
-			ap.start();
-			ap.join();
-		}
-		catch (SynthesisException se)
-		{
-			logger.log(Level.SEVERE, "MaryTTS failed to generate audio for text \"" + text + "\"", se);
-		}
-		catch (InterruptedException ie)
-		{
-			logger.log(Level.SEVERE, "MaryTTS AudioPlayer thread was interrupted.", ie);
+			try
+			{
+				AudioPlayer ap = new AudioPlayer();
+				ap.setAudio(maryTTS.generateAudio(text));
+				ap.start();
+				ap.join();
+			}
+			catch (SynthesisException se)
+			{
+				logger.log(Level.SEVERE, "MaryTTS failed to generate audio for text \"" + text + "\"", se);
+			}
+			catch (InterruptedException ie)
+			{
+				logger.log(Level.SEVERE, "MaryTTS AudioPlayer thread was interrupted.", ie);
+			}
 		}
 	}
 }

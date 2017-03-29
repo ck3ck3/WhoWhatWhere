@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package whowhatwhere.controller;
+package whowhatwhere.controller.nicselection;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -28,6 +28,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
+import whowhatwhere.controller.GUIController;
 import whowhatwhere.model.networksniffer.NICInfo;
 
 public class NICSelectionController implements Initializable
