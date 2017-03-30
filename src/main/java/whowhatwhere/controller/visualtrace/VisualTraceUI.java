@@ -254,7 +254,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 		
 		Platform.runLater(() ->
 		{
-			singleGenerateTraceInfoGUI(newLine);				
+			singleGenerateTraceInfoGUI(newLine);
 			generateAndShowImage();
 		});
 	}
@@ -291,8 +291,10 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 	
 	private void resetScreen()
 	{
-		tableTrace.getItems().clear();
 		tableTrace.refresh();
+		zoomToggleGroup = new ToggleGroup();
+		
+		tableTrace.getItems().clear();
 		listOfRows.clear();
 		queueOfLinesToAddToTable.clear();
 		mapRowToSelectedStatus.clear();
@@ -399,17 +401,27 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 				Tooltip zoomTooltip = new Tooltip("Zoom in on this location");
 				ToolTipUtilities.setTooltipProperties(zoomTooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
 				btnZoom.setTooltip(zoomTooltip);
+				
+				//when the button is pressed (both toggle/untoggle)
+				btnZoom.setOnAction(event -> 
+				{
+					ToggleButton tglBtn = (ToggleButton) event.getSource();
+					HBox hbox = (HBox) btnZoom.getParent();
+					Spinner<Integer> spinnerZoom = (Spinner<Integer>) hbox.getChildren().get(1);
+					
+					if (tglBtn.isSelected())
+						imgService.setCenterOnIP(ip, spinnerZoom.getValue());
+					
+					labelUnderMap.setVisible(true);
+					generateAndShowImage();
+				});
+				
+				//when the button's selected state changes (either by user click or programmatically by a different ToggleButton or a row's CheckBox 
 				btnZoom.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) ->
 				{
 					HBox hbox = (HBox) btnZoom.getParent();
 					Spinner<Integer> spinnerZoom = (Spinner<Integer>) hbox.getChildren().get(1);
 					spinnerZoom.setDisable(!newValue);
-
-					if (newValue) //selected
-						imgService.setCenterOnIP(ip, spinnerZoom.getValue());
-
-					labelUnderMap.setVisible(true);
-					generateAndShowImage();
 				});
 				
 				GeoIPInfo geoIPInfo = geoIPResults.get(ip);
@@ -429,6 +441,7 @@ public class VisualTraceUI implements TraceOutputReceiver, LoadAndSaveSettings
 				{
 					imgService.setCenterOnIP(ip, newValue);
 					labelUnderMap.setVisible(true);
+
 					generateAndShowImage();
 				});
 				Tooltip spinnerTooltip = new Tooltip("Set zoom level (1-20)");
