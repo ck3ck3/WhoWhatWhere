@@ -6,6 +6,8 @@
 #define MyAppPublisher "ck3ck3"
 #define MyAppURL "http://ck3ck3.github.io/WhoWhatWhere"
 #define MyAppExeName "WhoWhatWhere.exe"
+#define WinPcapInstallerFilename "WinPcap_4_1_3.exe"
+#define JRE_DIRNAME "jre1.8.0_121"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -22,10 +24,10 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
-LicenseFile=E:\githome\git\WhoWhatWhere\licenses\LICENSE-WhoWhatWhere
-OutputDir=E:\githome\git\WhoWhatWhere\dist\Installer
+LicenseFile=..\licenses\LICENSE-WhoWhatWhere
+OutputDir=Installer
 OutputBaseFilename=WhoWhatWhere-installer
-SetupIconFile=E:\githome\git\WhoWhatWhere\dist\www256.ico
+SetupIconFile=www256.ico
 Compression=lzma
 SolidCompression=yes
 
@@ -33,11 +35,13 @@ SolidCompression=yes
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Files]
-Source: "E:\githome\git\WhoWhatWhere\dist\exe\WhoWhatWhere.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "E:\githome\git\WhoWhatWhere\licenses\*"; DestDir: "{app}\licenses"; Flags: ignoreversion
+Source: {#WinPcapInstallerFilename}; DestDir: "{app}"; Flags: dontcopy
+Source: "exe\WhoWhatWhere.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#JRE_DIRNAME}\*"; DestDir: "{app}\{#JRE_DIRNAME}"; Flags: ignoreversion recursesubdirs
+Source: "..\licenses\*"; DestDir: "{app}\licenses"; Flags: ignoreversion recursesubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -46,6 +50,63 @@ Name: "{group}\{cm:ProgramOnTheWeb,{#MyAppName}}"; Filename: "{#MyAppURL}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
-[Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+[Code]
+var
+  prereqInstalled : Boolean;
+  prereqPage: TOutputMsgWizardPage;
+  progressBarPage: TOutputProgressWizardPage;
+  
+function IsWinPcapInstalled(): Boolean;
+begin
+  Result := FileExists(ExpandConstant('{sys}\wpcap.dll'));
+end;
 
+procedure InitializeWizard();
+var
+  wpcapExists : Boolean;
+begin
+  wpcapExists := IsWinPcapInstalled;
+  prereqInstalled := wpcapExists;
+  if (not wpcapExists) then
+  begin
+    prereqPage := CreateOutputMsgPage(wpLicense, 'Required Prerequisites', 'WinPcap must be installed', 'WinPcap must be installed in order to run {#MyAppName}.'#13#10'Please click "Next" to install WinPcap (no reboot required).');
+    progressBarPage := CreateOutputProgressPage('Installing Prerequisites', 'Installing WinPcap');
+  end
+end;
+
+function NextButtonClick(CurPageID: Integer): Boolean;
+var
+  execSuccess, installSuccess : Boolean;
+  resultCode : Integer;
+begin
+  if (not prereqInstalled and (CurPageID = prereqPage.ID)) then
+  begin
+    progressBarPage.setText('Installing WinPcap', '');
+    progressBarPage.ProgressBar.Style := npbstMarquee;
+    progressBarPage.Show;
+    progressBarPage.SetProgress(1, 2);
+    try
+      ExtractTemporaryFile('{#WinPcapInstallerFilename}');
+      execSuccess := Exec(ExpandConstant('{tmp}\{#WinPcapInstallerFilename}'), '', '', SW_SHOW, ewWaitUntilTerminated, resultCode);
+    finally
+      progressBarPage.Hide;
+    end;
+    installSuccess := execSuccess and (resultCode = 0);
+    if (not installSuccess) then
+    begin
+      MsgBox('Installation of WinPcap failed.'#13#10'You can try installing it again by clicking "Next" on the installer, or exit the installer and try to install WinPcap manually by visiting http://www.winpcap.org/', mbError, MB_OK);
+    end
+    Result := installSuccess;
+  end
+  else //any other page
+  begin
+    Result := True;
+  end
+end;
+
+[Run]
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runascurrentuser
+
+[Registry]
+Root: HKLM; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueName: {#MyAppName}; Flags: uninsdeletevalue
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueName: {#MyAppName}; Flags: uninsdeletevalue

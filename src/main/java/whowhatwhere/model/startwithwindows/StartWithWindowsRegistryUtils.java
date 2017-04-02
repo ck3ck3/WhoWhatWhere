@@ -37,7 +37,7 @@ public class StartWithWindowsRegistryUtils
 	public static void setRegistryToStartWithWindows(boolean add, boolean forAllUsers) throws IOException
 	{
 		String currentRunLocation = System.getProperty("user.dir") + "\\" + Main.getExecutablefilename();		
-		String command = "reg " + (add ? "add " : "delete ") + (forAllUsers ? "HKLM" : "HKCU") +  registrySubKey + " /v \"" + registryValue + "\"" + (add ? (" /d " + currentRunLocation) : "") + " /f";
+		String command = "reg " + (add ? "add " : "delete ") + (forAllUsers ? "HKLM" : "HKCU") +  registrySubKey + " /v \"" + registryValue + "\"" + (add ? (" /d \"" + currentRunLocation + "\"") : "") + " /f";
 		
 		Runtime.getRuntime().exec(command);
 		
@@ -57,7 +57,7 @@ public class StartWithWindowsRegistryUtils
 		if (!result.contains(registryValue))
 			return null;
 		
-		return result.substring(result.trim().lastIndexOf(' ')).trim();
+		return result.split("REG_SZ")[1].trim();
 	}
 	
 	/**

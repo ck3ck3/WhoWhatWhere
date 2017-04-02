@@ -2,7 +2,7 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>E:\githome\git\WhoWhatWhere\target\WhoWhatWhere-0.0.1-SNAPSHOT.jar</jar>
+  <jar>..\target\WhoWhatWhere-0.0.1-SNAPSHOT.jar</jar>
   <outfile>exe\WhoWhatWhere.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
@@ -15,7 +15,7 @@
   <manifest>UAC.manifest</manifest>
   <icon>www256.ico</icon>
   <jre>
-    <path></path>
+    <path>./jre1.8.0_121</path>
     <bundledJre64Bit>false</bundledJre64Bit>
     <bundledJreAsFallback>false</bundledJreAsFallback>
     <minVersion>1.8.0_60</minVersion>
@@ -25,7 +25,7 @@
     <opt>-Dglass.win.minHiDPI=1</opt>
   </jre>
   <splash>
-    <file>E:\githome\git\WhoWhatWhere\dist\splash.bmp</file>
+    <file>splash.bmp</file>
     <waitForWindow>true</waitForWindow>
     <timeout>120</timeout>
     <timeoutErr>false</timeoutErr>
