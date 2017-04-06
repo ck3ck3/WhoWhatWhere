@@ -8,6 +8,10 @@
 #define MyAppExeName "WhoWhatWhere.exe"
 #define WinPcapInstallerFilename "WinPcap_4_1_3.exe"
 #define JRE_DIRNAME "jre1.8.0_121"
+#define schtask_xml "www-task.xml"
+#define schtask_name "Who What Where launcher"
+#define schtask_updater "TaskXMLUpdater.jar"
+#define command_placeholder "command_placeholder"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -16,7 +20,7 @@
 AppId={{11D41849-86CD-4964-80A2-A8271D4A3F44}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-;AppVerName={#MyAppName} {#MyAppVersion}
+AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
@@ -26,10 +30,10 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 LicenseFile=..\licenses\LICENSE-WhoWhatWhere
 OutputDir=Installer
-OutputBaseFilename=WhoWhatWhere-installer
-SetupIconFile=www256.ico
+OutputBaseFilename=WhoWhatWhere-{#MyAppVersion}-installer
 Compression=lzma
 SolidCompression=yes
+UninstallDisplayIcon={app}\{#MyAppExeName}
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -38,6 +42,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Files]
+Source: {#schtask_xml}; DestDir: "{app}"; Flags: dontcopy
+Source: {#schtask_updater}; DestDir: "{app}"; Flags: dontcopy
 Source: {#WinPcapInstallerFilename}; DestDir: "{app}"; Flags: dontcopy
 Source: "exe\WhoWhatWhere.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#JRE_DIRNAME}\*"; DestDir: "{app}\{#JRE_DIRNAME}"; Flags: ignoreversion recursesubdirs
@@ -45,10 +51,10 @@ Source: "..\licenses\*"; DestDir: "{app}\licenses"; Flags: ignoreversion recurse
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
+Name: "{group}\{#MyAppName}"; Filename: "{sys}\schtasks.exe"; Parameters: "/run /tn ""{#schtask_name}"""; IconFilename: "{app}\{#MyAppExeName}"; Flags: runminimized
 Name: "{group}\{cm:ProgramOnTheWeb,{#MyAppName}}"; Filename: "{#MyAppURL}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{commondesktop}\{#MyAppName}"; Filename: "{sys}\schtasks.exe"; Parameters: "/run /tn ""{#schtask_name}"""; IconFilename: "{app}\{#MyAppExeName}"; Flags: runminimized; Tasks: desktopicon
 
 [Code]
 var
@@ -95,7 +101,7 @@ begin
     if (not installSuccess) then
     begin
       MsgBox('Installation of WinPcap failed.'#13#10'You can try installing it again by clicking "Next" on the installer, or exit the installer and try to install WinPcap manually by visiting http://www.winpcap.org/', mbError, MB_OK);
-    end
+    end;
     Result := installSuccess;
   end
   else //any other page
@@ -104,8 +110,32 @@ begin
   end
 end;
 
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  resultCode : Integer;
+  command, params: String;
+begin
+  if (CurStep = ssPostInstall) then
+  begin
+    ExtractTemporaryFile('{#schtask_xml}');
+    ExtractTemporaryFile('{#schtask_updater}');
+    
+    command := ExpandConstant('{app}\{#JRE_DIRNAME}\bin\java.exe');
+    params := ExpandConstant('-jar "{tmp}\{#schtask_updater}" "{tmp}\{#schtask_xml}" {#command_placeholder} "\"{app}\{#MyAppExeName}\"" "{tmp}\updated_{#schtask_xml}"');
+    Exec(command, params, '', SW_HIDE, ewWaitUntilTerminated, resultCode);
+    
+    command := ExpandConstant('{sys}\schtasks.exe');
+    params := ExpandConstant('/create /tn "{#schtask_name}" /xml "{tmp}\updated_{#schtask_xml}"');
+    Exec(command, params, '', SW_HIDE, ewWaitUntilTerminated, resultCode);
+
+  end;
+end;
+
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runascurrentuser
+
+[UninstallRun]
+Filename: "{sys}\schtasks.exe"; Parameters: "/delete /tn ""{#schtask_name}"" /f"
 
 [Registry]
 Root: HKLM; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueName: {#MyAppName}; Flags: uninsdeletevalue

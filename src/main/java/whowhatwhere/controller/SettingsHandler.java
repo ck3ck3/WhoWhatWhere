@@ -103,9 +103,9 @@ public class SettingsHandler
 		{
 			savePropertiesSafely(props, "Last run configuration", propsFileLocation);
 		}
-		catch (IOException e)
+		catch (IOException ioe)
 		{
-			logger.log(Level.SEVERE, "Unable to save properties file " + propsFileLocation, e);
+			logger.log(Level.SEVERE, "Unable to save properties file " + propsFileLocation, ioe);
 		}
 	}
 
@@ -146,9 +146,9 @@ public class SettingsHandler
 			props.load(in);
 			in.close();
 		}
-		catch (IOException e)
+		catch (IOException ioe)
 		{
-			logger.log(Level.SEVERE, "Unable to load properties file: " + e.getMessage(), e);
+			logger.log(Level.SEVERE, "Unable to load properties file: " + ioe.getMessage(), ioe);
 		}
 
 		return props;
@@ -245,23 +245,10 @@ public class SettingsHandler
 			String allUsers = StartWithWindowsRegistryUtils.getExecutableLocationToStartWithWindows(true);
 			String currentUser = StartWithWindowsRegistryUtils.getExecutableLocationToStartWithWindows(false);
 
-			if (allUsers != null || currentUser != null) //only one or none of these are supposed to be set. Never both.
-			{
-				String locationToStartFrom = (allUsers == null ? currentUser : allUsers);
-				String currentRunLocation = System.getProperty("user.dir") + "\\" + Main.getExecutablefilename();
-
-				if (!ignoreRunPathDiff && !currentRunLocation.equalsIgnoreCase(locationToStartFrom))
-				{
-					boolean forAllUsers = allUsers != null;
-					String message = Main.getAppName() + " is set to run when Windows starts, but you are currently running it from a different path than the one Windows is set to run it from.\n"
-							+ "Current path: " + currentRunLocation + "\nWindows is set to run it from: " + locationToStartFrom + "\n\nPlease choose how to proceed:";
-
-					boolean userChoseDelete = showStartupPathConflictDialog(forAllUsers, message);
-
-					if (userChoseDelete)
-						return; //don't setSelected
-				}
-			}
+			boolean userChoseDelete = checkRunPathVsStartWithWindowsPath(allUsers, currentUser);
+			
+			if (userChoseDelete)
+				return; //don't setSelected on either CheckmenuItem
 
 			guiController.getMenuItemChkAllUsers().setSelected(allUsers != null);
 			guiController.getMenuItemChkThisUserOnly().setSelected(currentUser != null);
@@ -271,22 +258,53 @@ public class SettingsHandler
 			logger.log(Level.SEVERE, "Failed querying the registry for StartWithWindows values", ioe);
 		}
 	}
+	
+	private boolean checkRunPathVsStartWithWindowsPath(String allUsers, String currentUser) throws IOException
+	{
+		if (allUsers != null || currentUser != null) //only one or none of these are supposed to be set. Never both.
+		{
+			String locationToStartFrom = (allUsers == null ? currentUser : allUsers);
+			String currentRunLocation = System.getProperty("user.dir") + "\\" + Main.getExecutableFilename();
+
+			if (!ignoreRunPathDiff && !currentRunLocation.equalsIgnoreCase(locationToStartFrom))
+			{
+				boolean forAllUsers = allUsers != null;
+				String message = Main.getAppName() + " is set to run when Windows starts, but you are currently running it from a different path than the one Windows is set to run it from.\n"
+						+ "Current path: " + currentRunLocation + "\nWindows is set to run it from: " + locationToStartFrom + "\n\nPlease choose how to proceed:";
+
+				boolean userChoseDelete = showStartupPathConflictDialog(forAllUsers, message);
+
+				if (userChoseDelete)
+					return true;
+			}
+		}
+		
+		return false;
+	}
 
 	public EventHandler<ActionEvent> handleStartWithWindowsClick(boolean allUsers, CheckMenuItem otherItem)
 	{
 		return ae ->
 		{
+			boolean add = ((CheckMenuItem) ae.getSource()).isSelected();
+			
 			try
 			{
-				StartWithWindowsRegistryUtils.setRegistryToStartWithWindows(((CheckMenuItem) ae.getSource()).isSelected(), allUsers);
+				StartWithWindowsRegistryUtils.setRegistryToStartWithWindows(add, allUsers);
 			}
 			catch (IOException ioe)
 			{
 				logger.log(Level.SEVERE, "Unable to modify the registry for the \"start with Windows\" setting", ioe);
 				new Alert(AlertType.ERROR, "Unable to modify the registry for the \"start with Windows\" setting").showAndWait();
+				return;
 			}
 
-			otherItem.setSelected(false); //if one is selected, the other one has to be unselected. if the click is to de-select, the other one was already unselected as well anyway.	
+			otherItem.setSelected(false); //if one is selected, the other one has to be unselected. if the click is to de-select, the other one was already unselected as well anyway.
+			
+			Alert success = new Alert(AlertType.INFORMATION, Main.getAppName() + (add ? " is now set to " : " will not ") + "start with Windows for " + (allUsers ? "all users" : "this user"));
+			success.setTitle("Start with Windows");
+			success.setHeaderText("Setting changed");
+			success.showAndWait();
 		};
 	}
 

@@ -36,8 +36,8 @@ public class StartWithWindowsRegistryUtils
 	 */
 	public static void setRegistryToStartWithWindows(boolean add, boolean forAllUsers) throws IOException
 	{
-		String currentRunLocation = System.getProperty("user.dir") + "\\" + Main.getExecutablefilename();		
-		String command = "reg " + (add ? "add " : "delete ") + (forAllUsers ? "HKLM" : "HKCU") +  registrySubKey + " /v \"" + registryValue + "\"" + (add ? (" /d \"" + currentRunLocation + "\"") : "") + " /f";
+		String scheduledTaskCommand = "schtasks /run /tn \\\"" +  Main.getScheduledTaskName() + "\\\"";
+		String command = "reg " + (add ? "add " : "delete ") + (forAllUsers ? "HKLM" : "HKCU") +  registrySubKey + " /v \"" + registryValue + "\"" + (add ? (" /d \"" + scheduledTaskCommand + "\"") : "") + " /f";
 		
 		Runtime.getRuntime().exec(command);
 		
@@ -52,14 +52,20 @@ public class StartWithWindowsRegistryUtils
 	 */
 	public static String getExecutableLocationToStartWithWindows(boolean forAllUsers) throws IOException
 	{
-		String result = IOUtils.toString(Runtime.getRuntime().exec("reg query " + (forAllUsers ? "HKLM" : "HKCU") + registrySubKey + " /v \"" + registryValue + "\"").getInputStream(), (String)null);
+		String regQueryOutput = IOUtils.toString(Runtime.getRuntime().exec("reg query " + (forAllUsers ? "HKLM" : "HKCU") + registrySubKey + " /v \"" + registryValue + "\"").getInputStream(), (String)null);
 		
-		if (!result.contains(registryValue))
+		if (!regQueryOutput.contains(registryValue)) //value doesn't exist
 			return null;
 		
-		return result.split("REG_SZ")[1].trim();
-	}
-	
+		String taskQueryOutput = IOUtils.toString(Runtime.getRuntime().exec("schtasks /query /xml /tn \"" + Main.getScheduledTaskName() + "\"").getInputStream());
+		
+		String getValueAfter = "<Command>\"";
+		String valueEndsWith = "\"</Command>";
+		int start = taskQueryOutput.indexOf(getValueAfter) + getValueAfter.length();
+		int end = taskQueryOutput.indexOf(valueEndsWith);
+		
+		return taskQueryOutput.substring(start, end);
+	}	
 	/**
 	 * @param forAllUsers - if true, checks for all users (HKLM), if false checks for current user (HKCU)
 	 * @return true if set to start with Windows (for all users or just current one, depending on {@code forAllUsers}) 

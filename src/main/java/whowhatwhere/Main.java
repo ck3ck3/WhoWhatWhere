@@ -70,6 +70,7 @@ public class Main extends Application
 
 	private final static String appTitle = "Who What Where";
 	private final static String executableFilename = "WhoWhatWhere.exe";
+	private final static String scheduledTaskName = "Who What Where launcher";
 	private final static String mainFormLocation = "/whowhatwhere/view/fxmls/maingui/MainForm.fxml";
 	
 	private final static int tooltipOpenDelay = 250;
@@ -182,9 +183,14 @@ public class Main extends Application
 		return website;
 	}
 
-	public static String getExecutablefilename()
+	public static String getExecutableFilename()
 	{
 		return executableFilename;
+	}
+	
+	public static String getScheduledTaskName()
+	{
+		return scheduledTaskName;
 	}
 	
 	public static String getEmail()
