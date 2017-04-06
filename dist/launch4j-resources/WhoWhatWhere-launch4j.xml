@@ -2,8 +2,8 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>..\target\WhoWhatWhere-0.0.1-SNAPSHOT.jar</jar>
-  <outfile>exe\WhoWhatWhere.exe</outfile>
+  <jar>..\..\target\WhoWhatWhere-0.0.1-SNAPSHOT.jar</jar>
+  <outfile>..\exe\WhoWhatWhere.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
@@ -18,7 +18,7 @@
     <path>./jre1.8.0_121</path>
     <bundledJre64Bit>false</bundledJre64Bit>
     <bundledJreAsFallback>false</bundledJreAsFallback>
-    <minVersion>1.8.0_60</minVersion>
+    <minVersion>1.8.0_121</minVersion>
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
     <runtimeBits>64/32</runtimeBits>

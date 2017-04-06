@@ -28,8 +28,8 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
-LicenseFile=..\licenses\LICENSE-WhoWhatWhere
-OutputDir=Installer
+LicenseFile=..\..\licenses\LICENSE-WhoWhatWhere
+OutputDir=..\Installer
 OutputBaseFilename=WhoWhatWhere-{#MyAppVersion}-installer
 Compression=lzma
 SolidCompression=yes
@@ -45,9 +45,9 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: {#schtask_xml}; DestDir: "{app}"; Flags: dontcopy
 Source: {#schtask_updater}; DestDir: "{app}"; Flags: dontcopy
 Source: {#WinPcapInstallerFilename}; DestDir: "{app}"; Flags: dontcopy
-Source: "exe\WhoWhatWhere.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\exe\WhoWhatWhere.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#JRE_DIRNAME}\*"; DestDir: "{app}\{#JRE_DIRNAME}"; Flags: ignoreversion recursesubdirs
-Source: "..\licenses\*"; DestDir: "{app}\licenses"; Flags: ignoreversion recursesubdirs
+Source: "..\..\licenses\*"; DestDir: "{app}\licenses"; Flags: ignoreversion recursesubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

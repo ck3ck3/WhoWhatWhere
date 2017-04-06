@@ -9,5 +9,5 @@ Who What Where.log*
 /target/
 /dist/exe/
 /dist/Installer/
-/dist/jre1.8.0_121/
-/dist/WinPcap_4_1_3.exe
+/dist/installer-resources/jre1.8.0_121/
+/dist/installer-resources/WinPcap_4_1_3.exe
