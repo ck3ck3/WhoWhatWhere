@@ -6,6 +6,8 @@
 #define MyAppPublisher "ck3ck3"
 #define MyAppURL "http://ck3ck3.github.io/WhoWhatWhere"
 #define MyAppExeName "WhoWhatWhere.exe"
+#define JNativeHookDLL "JNativeHook.dll"
+#define JNetPcapDLL "jnetpcap.dll"
 #define WinPcapInstallerFilename "WinPcap_4_1_3.exe"
 #define JRE_DIRNAME "jre1.8.0_121"
 #define schtask_xml "www-task.xml"
@@ -46,6 +48,8 @@ Source: {#schtask_xml}; DestDir: "{app}"; Flags: dontcopy
 Source: {#schtask_updater}; DestDir: "{app}"; Flags: dontcopy
 Source: {#WinPcapInstallerFilename}; DestDir: "{app}"; Flags: dontcopy
 Source: "..\exe\WhoWhatWhere.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: {#JNativeHookDLL}; DestDir: "{app}"; Flags: ignoreversion
+Source: {#JNetPcapDLL}; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#JRE_DIRNAME}\*"; DestDir: "{app}\{#JRE_DIRNAME}"; Flags: ignoreversion recursesubdirs
 Source: "..\..\licenses\*"; DestDir: "{app}\licenses"; Flags: ignoreversion recursesubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files

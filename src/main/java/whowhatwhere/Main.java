@@ -65,8 +65,6 @@ public class Main extends Application
 			new Image(Main.class.getResourceAsStream(iconResource48)), new Image(Main.class.getResourceAsStream(iconResource256)));
 	
 	public final static String attributionHTMLLocation = website + "/attribution.html";
-	public final static String jnetpcapDLLx86Location = "/native/windows/x86/jnetpcap.dll";
-	public final static String jnetpcapDLLx64Location = "/native/windows/x86_64/jnetpcap.dll";
 
 	private final static String appTitle = "Who What Where";
 	private final static String executableFilename = "WhoWhatWhere.exe";

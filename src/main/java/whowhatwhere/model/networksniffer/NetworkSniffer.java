@@ -18,9 +18,7 @@
  ******************************************************************************/
 package whowhatwhere.model.networksniffer;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -40,7 +38,6 @@ import org.jnetpcap.PcapAddr;
 import org.jnetpcap.PcapIf;
 import org.jnetpcap.packet.PcapPacketHandler;
 
-import whowhatwhere.Main;
 import whowhatwhere.model.networksniffer.appearancecounter.AppearanceCounterPacketHandler;
 import whowhatwhere.model.networksniffer.appearancecounter.AppearanceCounterResults;
 import whowhatwhere.model.networksniffer.watchdog.PacketTypeToMatch;
@@ -54,17 +51,6 @@ public class NetworkSniffer
 	public final static int defaultPingTimeout = -1;
 	public final static String pingError = "Error";
 	public final static String pingTimeout = "Request timed out";
-	
-	private static boolean initSuccessful;
-	private static List<String> errorList = new ArrayList<>();
-
-	static
-	{
-		initSuccessful = loadJnetpcapDll(Main.jnetpcapDLLx86Location, Main.jnetpcapDLLx64Location);
-
-		if (!initSuccessful)
-			logger.log(Level.SEVERE, "Unable to load jnetpcap.dll.");
-	}
 
 	private static int snaplen = 64 * 1024; // Capture all packets, no truncation
 	private static int flags = Pcap.MODE_PROMISCUOUS; // capture all packets
@@ -73,7 +59,6 @@ public class NetworkSniffer
 	private static final Pattern ipv4Pattern = Pattern.compile("^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
 
 	private final static String Ipv4Prefix = "INET4:";
-	private final static String DLLName = "jnetpcap";
 
 	private Pcap pcap;
 	private List<NICInfo> ipAndDescList = new ArrayList<>();
@@ -81,76 +66,9 @@ public class NetworkSniffer
 
 	public NetworkSniffer() throws IllegalStateException
 	{
-		if (!initSuccessful)
-			throw new IllegalStateException("Unable to load jnetpcap library. These errors were reported:\n" + String.join("\n", errorList));
-
 		generateListOfDevicesWithIPs();
 	}
 
-	/**
-	 * @return true if successfully loaded, false otherwise
-	 */
-	private static boolean loadJnetpcapDll(String dllX86Location, String dllX64Location)
-	{
-		try
-		{
-			System.loadLibrary(DLLName); //expected to throw exception on first run only
-		}
-		catch (UnsatisfiedLinkError ule)
-		{
-			try
-			{
-				if (!tryLoadingDll(dllX86Location, DLLName, false)) //if loading the x86 version failed, no need to log the error yet. try loading the x64 version
-					return tryLoadingDll(dllX64Location, DLLName, true); //if this fails, write a log entry
-			}
-			catch (IOException ioe)
-			{
-				logger.log(Level.SEVERE, "Unable to copy dll from resources", ioe);
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * @param copyDllFrom
-	 *            - relative path from the resources dir to the dll to be copied
-	 * @param libName
-	 *            - the library's name (without the ".dll")
-	 * @param logULE
-	 *            - if true, caught UnsatisfiedLinkError will be logged.
-	 * @return true if successfully loaded, false otherwise
-	 */
-	private static boolean tryLoadingDll(String copyDllFrom, String libName, boolean logULE) throws IOException
-	{
-		try
-		{
-			String currDir = System.getProperty("user.dir");
-			InputStream dll = NetworkSniffer.class.getResourceAsStream(copyDllFrom);
-
-			if (dll == null)
-				throw new IOException("Unable to find " + copyDllFrom + " in resources");
-
-			FileOutputStream dstFile = new FileOutputStream(currDir + "/" + libName + ".dll");
-
-			IOUtils.copy(dll, dstFile);
-			IOUtils.closeQuietly(dstFile);
-
-			System.loadLibrary(libName);
-		}
-		catch (UnsatisfiedLinkError ule)
-		{
-			errorList.add("Trying to load " + copyDllFrom + " : " + ule.getMessage());
-
-			if (logULE)
-				logger.log(Level.SEVERE, String.join("\n", errorList));
-
-			return false;
-		}
-
-		return true;
-	}
 
 	public List<NICInfo> getListOfDevicesWithIP()
 	{
