@@ -71,6 +71,8 @@ public class Main extends Application
 	private final static String scheduledTaskName = "Who What Where launcher";
 	private final static String mainFormLocation = "/whowhatwhere/view/fxmls/maingui/MainForm.fxml";
 	
+	public final static String appFilesLocation = System.getenv("APPDATA") + "\\" + appTitle + "\\";
+	
 	private final static int tooltipOpenDelay = 250;
 	private final static int tooltipVisibleDuration = 15000;
 	private final static int tooltipCloseDelay = 200;

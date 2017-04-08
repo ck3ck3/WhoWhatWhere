@@ -35,6 +35,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.jnetpcap.packet.PcapPacket;
 
@@ -60,6 +61,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import numbertextfield.NumberTextField;
+import whowhatwhere.Main;
 import whowhatwhere.controller.ConfigurableTTS;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
@@ -81,7 +83,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 	private final static String watchdogListAddEditFormLocation = "/whowhatwhere/view/fxmls/watchdog/AddEditRule.fxml";
 
 	public final static String ruleListExtension = ".watchdogRuleList";
-	public final static String lastRunFilename = "Last run" + ruleListExtension;
+	public final static String lastRunFilename = Main.appFilesLocation + "Last run" + ruleListExtension;
 	public final static int minCooldownValue = 1;
 	public final static int defaultnCooldownValue = 3;
 	public final static int maxCooldownValue = 60 * 60 * 24; //24 hours
@@ -507,7 +509,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 
 	public void saveListToFile(String filename) throws IOException
 	{
-		FileOutputStream fout = new FileOutputStream(filename);
+		FileOutputStream fout = FileUtils.openOutputStream(new File(filename));
 		ObjectOutputStream oos = new ObjectOutputStream(fout);
 
 		oos.writeObject(new ArrayList<>(ruleList));

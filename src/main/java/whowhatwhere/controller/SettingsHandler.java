@@ -30,6 +30,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.io.FileUtils;
+
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -48,7 +50,7 @@ import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen;
 
 public class SettingsHandler
 {
-	private final static String propsFileLocation = Main.getAppName() + ".properties";
+	private final static String propsFileLocation = Main.appFilesLocation + Main.getAppName() + ".properties";
 	private final static String defaultPropsResource = "/defaultLastRun.properties";
 
 	private final static String propsNICDescription = "Selected NIC description";
@@ -125,7 +127,7 @@ public class SettingsHandler
 	public static void savePropertiesSafely(Properties props, String note, String filename) throws IOException
 	{
 		String saveFileAttempt = filename + ".attempt";
-		FileOutputStream out = new FileOutputStream(saveFileAttempt); //in case saving goes wrong, we don't lose the previous save file
+		FileOutputStream out = FileUtils.openOutputStream(new File(saveFileAttempt)); //in case saving goes wrong, we don't lose the previous save file
 		props.store(out, note);
 		out.close();
 

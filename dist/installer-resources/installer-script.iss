@@ -79,7 +79,7 @@ begin
   prereqInstalled := wpcapExists;
   if (not wpcapExists) then
   begin
-    prereqPage := CreateOutputMsgPage(wpLicense, 'Required Prerequisites', 'WinPcap must be installed', 'WinPcap must be installed in order to run {#MyAppName}.'#13#10'Please click "Next" to install WinPcap (no reboot required).');
+    prereqPage := CreateOutputMsgPage(wpLicense, 'Required Prerequisites', 'WinPcap must be installed', 'WinPcap is a tool that enables monitoring network traffic (see http://winpcap.org for more details). It must be installed in order to run {#MyAppName}.'#13#10'Please click "Next" to install WinPcap (no reboot required).');
     progressBarPage := CreateOutputProgressPage('Installing Prerequisites', 'Installing WinPcap');
   end
 end;
@@ -135,11 +135,29 @@ begin
   end;
 end;
 
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  resultCode: String;
+  response: Integer;
+begin
+  if (CurUninstallStep = usPostUninstall) then
+  begin
+    response := MsgBox('Do you want to also delete {#MyAppName}''s user files? These files include configuration files, IP Notes, Watchdog rule lists, Quick Ping history etc.', mbConfirmation, MB_YESNO or MB_DEFBUTTON2);
+    if (response = IDYES) then
+    begin
+      DelTree(ExpandConstant('{userappdata}\{#MyAppName}'), True, True, True);
+    end;
+  end;
+end;
+
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runascurrentuser
 
 [UninstallRun]
 Filename: "{sys}\schtasks.exe"; Parameters: "/delete /tn ""{#schtask_name}"" /f"
+
+[UninstallDelete]
+Type: files; Name: "{app}\{#MyAppName}.log*"
 
 [Registry]
 Root: HKLM; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueName: {#MyAppName}; Flags: uninsdeletevalue

@@ -1,10 +1,7 @@
 bin
 /src/main/java/whowhatwhere/controller/visualtrace/GoogleStaticMapsAPIKey.java
-Who What Where.properties
-ipNotes.properties
-QuickPingHistory
-*.watchdogRuleList
-/jnetpcap.dll
+jnetpcap.dll
+JNativeHook.dll
 Who What Where.log*
 /target/
 /dist/exe/

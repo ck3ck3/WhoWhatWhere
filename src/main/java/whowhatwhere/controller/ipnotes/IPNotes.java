@@ -36,12 +36,13 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import whowhatwhere.Main;
 import whowhatwhere.controller.SettingsHandler;
 
 public class IPNotes
 {
 	private final static String manageIPNotesFormLocation = "/whowhatwhere/view/fxmls/maingui/ManageIPNotes.fxml";
-	private final static String ipNotesFilename = "ipNotes.properties";
+	private final static String ipNotesFilename = Main.appFilesLocation + "ipNotes.properties";
 	
 	private final static Logger logger = Logger.getLogger(IPNotes.class.getPackage().getName());
 	

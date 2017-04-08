@@ -37,6 +37,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
+import whowhatwhere.Main;
 import whowhatwhere.controller.ConfigurableTTS;
 import whowhatwhere.controller.GUIController;
 import whowhatwhere.controller.HotkeyRegistry;
@@ -59,7 +60,7 @@ public class QuickPingUI implements LoadAndSaveSettings, ConfigurableTTS
 	private final static String propsOutputMethod = "QuickPingOutputMethod";
 	private final static String propsTTSVoiceName = "quickPingTTSVoice";
 
-	private final static String historyFile = "QuickPingHistory";
+	private final static String historyFile = Main.appFilesLocation + "QuickPingHistory";
 	private final static String hotkeyID = "QuickPing hotkey";
 	private final static String voiceForTTS = GUIController.defaultTTSVoiceName;
 
@@ -189,13 +190,11 @@ public class QuickPingUI implements LoadAndSaveSettings, ConfigurableTTS
 		props.put(propsOutputMethod, comboOutputMethod.getSelectionModel().getSelectedItem().name());
 		props.put(propsTTSVoiceName, tts.getCurrentVoice().getVoiceName());
 
-		StringBuilder historyBuilder = new StringBuilder();
-		for (String item : comboIPToPing.getItems())
-			historyBuilder.append(item + "\n");
-
+		String history = String.join("\n", comboIPToPing.getItems());
+		
 		try
 		{
-			FileUtils.writeStringToFile(new File(historyFile), historyBuilder.toString(), "UTF-8");
+			FileUtils.writeStringToFile(new File(historyFile), history, "UTF-8");
 		}
 		catch (IOException e)
 		{
