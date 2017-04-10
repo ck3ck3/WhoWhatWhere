@@ -11,7 +11,7 @@
 #define WinPcapInstallerFilename "WinPcap_4_1_3.exe"
 #define JRE_DIRNAME "jre1.8.0_121"
 #define schtask_xml "www-task.xml"
-#define schtask_name "Who What Where launcher"
+#define schtask_name "Who What Where launcher {app}"
 #define schtask_updater "TaskXMLUpdater.jar"
 #define command_placeholder "command_placeholder"
 
@@ -62,7 +62,6 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{sys}\schtasks.exe"; Parameters
 
 [Code]
 var
-  prereqInstalled : Boolean;
   prereqPage: TOutputMsgWizardPage;
   progressBarPage: TOutputProgressWizardPage;
   
@@ -71,15 +70,48 @@ begin
   Result := FileExists(ExpandConstant('{sys}\wpcap.dll'));
 end;
 
-procedure InitializeWizard();
+function GetInstalledVersion: String;
 var
-  wpcapExists : Boolean;
+  RegKey: String;
 begin
-  wpcapExists := IsWinPcapInstalled;
-  prereqInstalled := wpcapExists;
-  if (not wpcapExists) then
+  Result := '';
+  RegKey := ExpandConstant('Software\Microsoft\Windows\CurrentVersion\Uninstall\{#emit SetupSetting("AppId")}_is1');
+  if not RegQueryStringValue(HKEY_LOCAL_MACHINE, RegKey, 'DisplayVersion', Result) then
+    RegQueryStringValue(HKEY_CURRENT_USER, RegKey, 'UninstallString', Result);
+end;
+
+function InitializeSetup: Boolean;
+var
+  installedVersion, msg : String;
+  compareResult, userResponse : Integer;
+begin
+  installedVersion := GetInstalledVersion;
+  if installedVersion <> '' then
   begin
-    prereqPage := CreateOutputMsgPage(wpLicense, 'Required Prerequisites', 'WinPcap must be installed', 'WinPcap is a tool that enables monitoring network traffic (see http://winpcap.org for more details). It must be installed in order to run {#MyAppName}.'#13#10'Please click "Next" to install WinPcap (no reboot required).');
+    compareResult := CompareStr(installedVersion, RemoveQuotes('{#MyAppVersion}'));
+    if (compareResult < 0) then //this version is newer than the installed version, meaning an upgrade
+    begin
+      msg := 'Do you want to upgrade {#MyAppName} version ' + installedVersion + ' to {#MyAppVersion}?';
+    end
+    else
+      if (compareResult = 0) then //repair?
+      begin
+        msg := '{#MyAppName} version {#MyAppVersion} is already installed. Do you want to repair (overwrite) this installation with a new one? Your user files and settings will be safe.';
+      end
+      else //this version is older than the installed version, downgrade?
+        msg := 'This installer will downgrade {#MyAppName}. Version ' + installedVersion + ' is currently installed, and this installer will overwrite it with version {#MyAppVersion}' + #13#10 + 'It is not guaranteed that your user files and settings are compatible with an older version. Proceed with the downgrade anyway?';
+
+    Result := MsgBox(msg, mbConfirmation, MB_YESNO or MB_DEFBUTTON2) = IDYES
+  end
+  else
+    Result := True;
+end;
+
+procedure InitializeWizard();
+begin
+  if (not IsWinPcapInstalled) then
+  begin
+    prereqPage := CreateOutputMsgPage(wpLicense, 'Required Prerequisites', 'WinPcap must be installed', 'WinPcap must be installed in order to run {#MyAppName}. WinPcap is a tool that enables monitoring network traffic (see http://winpcap.org for more details).'#13#10#13#10'Please click "Next" to launch WinPcap''s installer. {#MyAppName}''s installation will resume once WinPcap is installed.');
     progressBarPage := CreateOutputProgressPage('Installing Prerequisites', 'Installing WinPcap');
   end
 end;
@@ -89,7 +121,7 @@ var
   execSuccess, installSuccess : Boolean;
   resultCode : Integer;
 begin
-  if (not prereqInstalled and (CurPageID = prereqPage.ID)) then
+  if (not IsWinPcapInstalled and (CurPageID = prereqPage.ID)) then
   begin
     progressBarPage.setText('Installing WinPcap', '');
     progressBarPage.ProgressBar.Style := npbstMarquee;
@@ -127,17 +159,16 @@ begin
     command := ExpandConstant('{app}\{#JRE_DIRNAME}\bin\java.exe');
     params := ExpandConstant('-jar "{tmp}\{#schtask_updater}" "{tmp}\{#schtask_xml}" {#command_placeholder} "\"{app}\{#MyAppExeName}\"" "{tmp}\updated_{#schtask_xml}"');
     Exec(command, params, '', SW_HIDE, ewWaitUntilTerminated, resultCode);
-    
+log('running ' + command + ' ' + params);
     command := ExpandConstant('{sys}\schtasks.exe');
     params := ExpandConstant('/create /tn "{#schtask_name}" /xml "{tmp}\updated_{#schtask_xml}"');
     Exec(command, params, '', SW_HIDE, ewWaitUntilTerminated, resultCode);
-
+log('running ' + command + ' ' + params);
   end;
 end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 var
-  resultCode: String;
   response: Integer;
 begin
   if (CurUninstallStep = usPostUninstall) then
