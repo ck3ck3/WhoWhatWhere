@@ -88,18 +88,18 @@ begin
   installedVersion := GetInstalledVersion;
   if installedVersion <> '' then
   begin
-    compareResult := CompareStr(installedVersion, RemoveQuotes('{#MyAppVersion}'));
+    compareResult := CompareStr(installedVersion, '{#MyAppVersion}');
     if (compareResult < 0) then //this version is newer than the installed version, meaning an upgrade
     begin
-      msg := 'Do you want to upgrade {#MyAppName} version ' + installedVersion + ' to {#MyAppVersion}?';
+      msg := 'Do you want to upgrade {#MyAppName} from version ' + installedVersion + ' to {#MyAppVersion}?';
     end
     else
       if (compareResult = 0) then //repair?
       begin
-        msg := '{#MyAppName} version {#MyAppVersion} is already installed. Do you want to repair (overwrite) this installation with a new one? Your user files and settings will be safe.';
+        msg := '{#MyAppName} version {#MyAppVersion} is already installed.'#13#10'Do you want to repair (overwrite) this installation with a new one? Your user files and settings will be safe.';
       end
       else //this version is older than the installed version, downgrade?
-        msg := 'This installer will downgrade {#MyAppName}. Version ' + installedVersion + ' is currently installed, and this installer will overwrite it with version {#MyAppVersion}' + #13#10 + 'It is not guaranteed that your user files and settings are compatible with an older version. Proceed with the downgrade anyway?';
+        msg := 'This installer will downgrade {#MyAppName}.'#13#10'Version ' + installedVersion + ' is currently installed, and this installer will overwrite it with version {#MyAppVersion}' + #13#10 + 'It is not guaranteed that your user files and settings are compatible with an older version. Proceed with the downgrade anyway?';
 
     Result := MsgBox(msg, mbConfirmation, MB_YESNO or MB_DEFBUTTON2) = IDYES
   end
