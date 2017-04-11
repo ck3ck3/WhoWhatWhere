@@ -21,14 +21,13 @@ package whowhatwhere.controller.appearancecounter;
 import java.io.File;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -117,6 +116,8 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private final static String propsTTSVoiceName = "wwwTTSVoice";
 
 	private final static int maxPingTimeout = 3000;
+	private final static int numOfPingThreads = 10;
+	private final static long pingCompletionTimeoutSeconds = 30;
 	private final static String statusIdle = "Status: Idle";
 	private final static String statusGettingReady = "Status: Getting ready to start monitoring...";
 	private final static String statusCapturing = "Status: Monitoring...";
@@ -186,9 +187,9 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 	private boolean editedNotedWasEmpty;
 	private Duration captureTimerExpiresIn;
 	private ScheduledThreadPoolExecutor displayTimer;
-	private PingConsumer pingConsumer = null;
-	private Thread pingConsumerThread = null;
-
+	private PingManager pingManager = null;
+		
+	
 	private Runnable captureHotkeyPressed = () ->
 	{
 		String line = activeButton == btnStart ? "Monitoring started" : "Monitoring stopped";
@@ -330,11 +331,29 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 
 		chkboxUseTTS.selectedProperty().addListener((ov, old_val, new_val) -> paneUseTTS.setDisable(!new_val));
 	}
+	
+	private int stringPingResultToInt(String result)
+	{
+		String possibleInt = result.split(" ")[0];
+		int intValue;
+		try
+		{
+			intValue = Integer.parseInt(possibleInt);
+		}
+		catch(NumberFormatException nfe)
+		{
+			return Integer.MAX_VALUE;
+		}
+		
+		return intValue;		
+	}
 
 	private void initTable()
 	{
 		tableResults.setPlaceholder(new Label()); //remove default string on empty table
 		tableResults.getSortOrder().add(columnPacketCount);
+		
+		columnPing.setComparator(Comparator.comparingInt((String value) -> stringPingResultToInt(value)));
 
 		columnPacketCount.setCellValueFactory(new PropertyValueFactory<>("packetCount"));
 		columnIP.setCellValueFactory(new PropertyValueFactory<>("ipAddress"));
@@ -518,8 +537,8 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		NICInfo device = guiController.getSelectedNIC();
 		final CaptureStartListener thisObj = this;
 
-		if (pingConsumerThread != null && pingConsumerThread.isAlive())
-			pingConsumerThread.interrupt(); //if a previous session is still pinging results, stop it
+		if (pingManager != null && pingManager.isOngoing())
+			pingManager.shutdown(); //if a previous session is still pinging results, stop it
 		
 		changeGuiTemplate(true);
 
@@ -543,18 +562,23 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 
 				if (isAHotkeyResult && chkboxUseTTS.isSelected())
 				{
-					if (pingConsumer != null && isPingSelectedForTTS())
+					if (pingManager != null && isPingSelectedForTTS())
 					{
 						new Thread(() -> 
 						{
 							try
 							{
 								tts.speakBlocking("Generating ping results, please wait"); //calling the non-blocking version could result in the results being read before this line
-								pingConsumer.getRunningSemaphore().acquire(); //wait until all the pings are set
-								readResults();
+								boolean timeoutReached = pingManager.awaitTermination(pingCompletionTimeoutSeconds); //wait until all the pings are set, or pingCompletionTimeoutSeconds has passed
+								if (timeoutReached)
+									tts.speakBlocking("Not all ping results are ready, reading results anyway");
 							}
 							catch (InterruptedException e)
 							{
+							}
+							finally
+							{
+								readResults();								
 							}
 						}).start();
 					}
@@ -839,7 +863,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		int i = 1;
 		boolean getLocationInfo = chkboxGetLocation.isSelected();
 		List<GeoIPInfo> batchGeoIPInfo = null;
-		BlockingQueue<IPInfoRowModel> pingQueue = null;
+//		BlockingQueue<IPInfoRowModel> pingQueue = null;
 
 		if (getLocationInfo)
 		{
@@ -853,13 +877,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 		
 		boolean performPings = chkboxPing.isSelected();
 		if (performPings)
-		{
-			pingQueue = new LinkedBlockingQueue<>();
-			pingConsumer = new PingConsumer(pingQueue, numFieldPingTimeout.getValue(), ips.size());
-			
-			pingConsumerThread = new Thread(pingConsumer);
-			pingConsumerThread.start();
-		}
+			pingManager = new PingManager(ips.size(), numFieldPingTimeout.getValue(), numOfPingThreads);
 
 		for (IpAppearancesCounter ipCounter : ips)
 		{
@@ -898,7 +916,7 @@ public class AppearanceCounterUI implements CaptureStartListener, LoadAndSaveSet
 			row = new IPInfoRowModel(id, amountOfAppearances, ip, notes, owner, ping, country, region, city);
 
 			if (performPings)
-				pingQueue.add(row);
+				pingManager.addPingTask(row);
 			
 			data.add(row);
 		}
