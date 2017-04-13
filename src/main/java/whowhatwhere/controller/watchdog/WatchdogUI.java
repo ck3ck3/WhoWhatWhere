@@ -370,7 +370,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 
 			result.ifPresent(filename ->
 			{
-				String fullName = filename + WatchdogUI.ruleListExtension;
+				String fullName = Main.appFilesLocation + filename + WatchdogUI.ruleListExtension;
 				boolean alreadyExists = false;
 
 				if (new File(fullName).exists()) //if filename already exists
@@ -416,7 +416,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 	{
 		ObservableList<MenuItem> items = controller.getMenuBtnLoadRuleList().getItems();
 
-		File dir = new File(System.getProperty("user.dir"));
+		File dir = new File(Main.appFilesLocation);
 		FileFilter fileFilter = new WildcardFileFilter("*" + WatchdogUI.ruleListExtension);
 		List<File> files = new ArrayList<>(Arrays.asList(dir.listFiles(fileFilter))); //ArrayList because asList() returns an immutable list
 
@@ -443,7 +443,7 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 		{
 			try
 			{
-				loadListFromFile(filename + WatchdogUI.ruleListExtension);
+				loadListFromFile(Main.appFilesLocation + filename + WatchdogUI.ruleListExtension);
 			}
 			catch (ClassNotFoundException | IOException e)
 			{

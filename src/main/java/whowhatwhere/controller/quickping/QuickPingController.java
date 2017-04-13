@@ -64,7 +64,7 @@ public class QuickPingController implements Initializable
 	{
 		GUIController.setCommonGraphicOnLabeled(labelQuickPing, GUIController.CommonGraphicImages.TOOLTIP);
 		Tooltip quickPingTooltip = new Tooltip("Quick Ping allows you to press a hotkey to ping a predefined IP or hostname and have the result read out to you or shown in a pop-up message. " 
-												+ Main.getAppName() + " doesn't have to be visible on the screen, so it's ideal while playing online games.");
+												+ Main.appTitle + " doesn't have to be visible on the screen, so it's ideal while playing online games.");
 		ToolTipUtilities.setTooltipProperties(quickPingTooltip, true, GUIController.defaultTooltipMaxWidth, GUIController.defaultFontSize, null);
 		labelQuickPing.setTooltip(quickPingTooltip);
 		

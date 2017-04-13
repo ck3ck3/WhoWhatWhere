@@ -48,9 +48,9 @@ import whowhatwhere.model.networksniffer.NetworkSniffer;
 import whowhatwhere.model.startwithwindows.StartWithWindowsRegistryUtils;
 import whowhatwhere.view.secondaryfxmlscreen.SecondaryFXMLScreen;
 
-public class SettingsHandler
+public class SettingsManager
 {
-	private final static String propsFileLocation = Main.appFilesLocation + Main.getAppName() + ".properties";
+	private final static String propsFileLocation = Main.appFilesLocation + Main.appTitle + ".properties";
 	private final static String defaultPropsResource = "/defaultLastRun.properties";
 
 	private final static String propsNICDescription = "Selected NIC description";
@@ -64,7 +64,7 @@ public class SettingsHandler
 	private final static String propsX = "lastRunX";
 	private final static String propsY = "lastRunY";
 
-	private final static Logger logger = Logger.getLogger(SettingsHandler.class.getPackage().getName());
+	private final static Logger logger = Logger.getLogger(SettingsManager.class.getPackage().getName());
 
 	private boolean showMessageOnMinimize;
 	private boolean ignoreRunPathDiff;
@@ -75,7 +75,7 @@ public class SettingsHandler
 
 	private GUIController guiController;
 
-	public SettingsHandler(GUIController guiController)
+	public SettingsManager(GUIController guiController)
 	{
 		this.guiController = guiController;
 		sniffer = guiController.getSniffer();
@@ -266,12 +266,12 @@ public class SettingsHandler
 		if (allUsers != null || currentUser != null) //only one or none of these are supposed to be set. Never both.
 		{
 			String locationToStartFrom = (allUsers == null ? currentUser : allUsers);
-			String currentRunLocation = System.getProperty("user.dir") + "\\" + Main.getExecutableFilename();
+			String currentRunLocation = System.getProperty("user.dir") + "\\" + Main.executableFilename;
 
 			if (!ignoreRunPathDiff && !currentRunLocation.equalsIgnoreCase(locationToStartFrom))
 			{
 				boolean forAllUsers = allUsers != null;
-				String message = Main.getAppName() + " is set to run when Windows starts, but you are currently running it from a different path than the one Windows is set to run it from.\n"
+				String message = Main.appTitle + " is set to run when Windows starts, but you are currently running it from a different path than the one Windows is set to run it from.\n"
 						+ "Current path: " + currentRunLocation + "\nWindows is set to run it from: " + locationToStartFrom + "\n\nPlease choose how to proceed:";
 
 				boolean userChoseDelete = showStartupPathConflictDialog(forAllUsers, message);
@@ -303,7 +303,7 @@ public class SettingsHandler
 
 			otherItem.setSelected(false); //if one is selected, the other one has to be unselected. if the click is to de-select, the other one was already unselected as well anyway.
 			
-			Alert success = new Alert(AlertType.INFORMATION, Main.getAppName() + (add ? " is now set to " : " will not ") + "start with Windows for " + (allUsers ? "all users" : "this user"));
+			Alert success = new Alert(AlertType.INFORMATION, Main.appTitle + (add ? " is now set to " : " will not ") + "start with Windows for " + (allUsers ? "all users" : "this user"));
 			success.setTitle("Start with Windows");
 			success.setHeaderText("Setting changed");
 			success.showAndWait();

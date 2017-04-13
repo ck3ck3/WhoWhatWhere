@@ -50,12 +50,12 @@ import whowhatwhere.controller.ToolTipUtilities;
 
 public class Main extends Application
 {
-	private final static String releaseVersion = "1.10";
-	private final static String urlForLatestRelease = "http://bit.ly/WhoWhatWhereUpdate";
+	public final static String releaseVersion = "1.00";
+	private final static String urlForLatestRelease = "http://snip.li/WhoWhatWhereUpdate";
 
-	private static final String website = "http://ck3ck3.github.io/WhoWhatWhere";
-	private static final String copyrightNotice = "Copyright (C) 2017  ck3ck3 ";
-	private static final String email = "WhoWhatWhereInfo@gmail.com";
+	public static final String website = "http://ck3ck3.github.io/WhoWhatWhere";
+	public static final String copyrightNotice = "Copyright (C) 2017  ck3ck3 ";
+	public static final String email = "WhoWhatWhereInfo@gmail.com";
 
 	public final static String iconResource16 = "/appIcons/www16.jpg";
 	public final static String iconResource32 = "/appIcons/www32.jpg";
@@ -66,9 +66,9 @@ public class Main extends Application
 	
 	public final static String attributionHTMLLocation = website + "/attribution.html";
 
-	private final static String appTitle = "Who What Where";
-	private final static String executableFilename = "WhoWhatWhere.exe";
-	private final static String scheduledTaskName = "Who What Where launcher";
+	public final static String appTitle = "Who What Where";
+	public final static String executableFilename = "WhoWhatWhere.exe";
+	public final static String scheduledTaskName = "Who What Where launcher";
 	private final static String mainFormLocation = "/whowhatwhere/view/fxmls/maingui/MainForm.fxml";
 	
 	public final static String appFilesLocation = System.getenv("APPDATA") + "\\" + appTitle + "\\";
@@ -108,7 +108,7 @@ public class Main extends Application
 	private void initLogger() throws IOException
 	{
 		logger = Logger.getLogger(this.getClass().getPackage().getName());
-		FileHandler fh = new FileHandler(getAppName() + ".log");
+		FileHandler fh = new FileHandler(appTitle + ".log");
 		fh.setFormatter(new SimpleFormatter());
 		logger.addHandler(fh);
 	}
@@ -166,40 +166,5 @@ public class Main extends Application
 	public static void main(String[] args)
 	{
 		launch(args);
-	}
-
-	public static String getAppName()
-	{
-		return appTitle;
-	}
-
-	public static String getReleaseVersion()
-	{
-		return releaseVersion;
-	}
-
-	public static String getWebsite()
-	{
-		return website;
-	}
-
-	public static String getExecutableFilename()
-	{
-		return executableFilename;
-	}
-	
-	public static String getScheduledTaskName()
-	{
-		return scheduledTaskName;
-	}
-	
-	public static String getEmail()
-	{
-		return email;
-	}
-	
-	public static String getCopyrightNotice()
-	{
-		return copyrightNotice;
 	}
 }

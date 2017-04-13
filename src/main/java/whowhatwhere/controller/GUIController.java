@@ -164,7 +164,7 @@ public class GUIController
 	private NetworkSniffer sniffer;
 	private HotkeyRegistry hotkeyRegistry;
 	private IPNotes ipNotes;
-	private SettingsHandler settings;
+	private SettingsManager settings;
 	private List<LoadAndSaveSettings> instancesWithSettingsToHandle = new ArrayList<>();
 	private Map<Tab, BooleanExpression> tabToBindExpression = new HashMap<>();
 	private NICInfo selectedNIC;
@@ -213,7 +213,7 @@ public class GUIController
 		
 		visualTraceUI = new VisualTraceUI(this);
 		
-		settings = new SettingsHandler(this);
+		settings = new SettingsManager(this);
 		settings.loadLastRunConfig(instancesWithSettingsToHandle);
 		
 		initMenuBar();
@@ -299,11 +299,11 @@ public class GUIController
 
 	private void showAboutWindow()
 	{
-		String appName = Main.getAppName();
-		String version = Main.getReleaseVersion();
-		String website = Main.getWebsite();
-		String email = Main.getEmail();
-		String copyrightNotice = Main.getCopyrightNotice();
+		String appName = Main.appTitle;
+		String version = Main.releaseVersion;
+		String website = Main.website;
+		String email = Main.email;
+		String copyrightNotice = Main.copyrightNotice;
 
 		Alert about = new Alert(AlertType.INFORMATION, "About " + appName);
 		about.initOwner(getStage());
@@ -365,7 +365,7 @@ public class GUIController
 				if (updateAvailable)
 				{
 					alert.setHeaderText("New version available!");
-					FlowPane flowPane = generateLabelAndLinkPane("Download the latest version (" + result.getNewVersion() + ") at", Main.getWebsite(), Font.getDefault().getSize() + 2);
+					FlowPane flowPane = generateLabelAndLinkPane("Download the latest version (" + result.getNewVersion() + ") at", Main.website, Font.getDefault().getSize() + 2);
 					flowPane.getChildren().add(new Label("\nLatest release notes:\n\n" + result.getReleaseNotes()));
 					alert.getDialogPane().setContent(flowPane);
 				}
@@ -552,7 +552,7 @@ public class GUIController
 
 		Platform.setImplicitExit(false); //needed to keep the app running while minimized to tray
 
-		trayIcon = new TrayIcon(image, Main.getAppName());
+		trayIcon = new TrayIcon(image, Main.appTitle);
 
 		Runnable restoreApplication = () ->
 		{
@@ -585,7 +585,7 @@ public class GUIController
 				SystemTray.getSystemTray().add(trayIcon);
 				stage.hide();
 				if (minimizeRequestCameFromXBtn && settings.getShowMessageOnMinimize())
-					trayIcon.displayMessage(Main.getAppName() + " is running in the background", "Double click this icon to restore the window. To exit the program, right click this icon and choose Exit"
+					trayIcon.displayMessage(Main.appTitle + " is running in the background", "Double click this icon to restore the window. To exit the program, right click this icon and choose Exit"
 							+ ", or use the File menu. You can configure the behavior of the X button through the Options menu.", MessageType.INFO);
 				
 				minimizeRequestCameFromXBtn = false;

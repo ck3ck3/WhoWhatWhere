@@ -27,7 +27,7 @@ import whowhatwhere.Main;
 public class StartWithWindowsRegistryUtils
 {
 	private final static String registrySubKey = "\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
-	private final static String registryValue = Main.getAppName(); //IF THIS EVER CHANGES, TAKE CARE OF BACKWARDS COMPATABILITY
+	private final static String registryValue = Main.appTitle; //IF THIS EVER CHANGES, TAKE CARE OF BACKWARDS COMPATABILITY
 	
 	/**
 	 * @param add - if true, we want to add the key. If false - delete the key.
@@ -36,7 +36,7 @@ public class StartWithWindowsRegistryUtils
 	 */
 	public static void setRegistryToStartWithWindows(boolean add, boolean forAllUsers) throws IOException
 	{
-		String scheduledTaskCommand = "schtasks /run /tn \\\"" +  Main.getScheduledTaskName() + "\\\"";
+		String scheduledTaskCommand = "schtasks /run /tn \\\"" +  Main.scheduledTaskName + "\\\"";
 		String command = "reg " + (add ? "add " : "delete ") + (forAllUsers ? "HKLM" : "HKCU") +  registrySubKey + " /v \"" + registryValue + "\"" + (add ? (" /d \"" + scheduledTaskCommand + "\"") : "") + " /f";
 		
 		Runtime.getRuntime().exec(command);
@@ -57,7 +57,7 @@ public class StartWithWindowsRegistryUtils
 		if (!regQueryOutput.contains(registryValue)) //value doesn't exist
 			return null;
 		
-		String taskQueryOutput = IOUtils.toString(Runtime.getRuntime().exec("schtasks /query /xml /tn \"" + Main.getScheduledTaskName() + "\"").getInputStream());
+		String taskQueryOutput = IOUtils.toString(Runtime.getRuntime().exec("schtasks /query /xml /tn \"" + Main.scheduledTaskName + "\"").getInputStream());
 		
 		String getValueAfter = "<Command>\"";
 		String valueEndsWith = "\"</Command>";

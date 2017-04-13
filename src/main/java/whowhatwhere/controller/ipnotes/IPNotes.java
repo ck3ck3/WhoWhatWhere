@@ -37,7 +37,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import whowhatwhere.Main;
-import whowhatwhere.controller.SettingsHandler;
+import whowhatwhere.controller.SettingsManager;
 
 public class IPNotes
 {
@@ -106,7 +106,7 @@ public class IPNotes
 	{
 		try
 		{
-			SettingsHandler.savePropertiesSafely(ipNotes, "IP notes", ipNotesFilename);
+			SettingsManager.savePropertiesSafely(ipNotes, "IP notes", ipNotesFilename);
 		}
 		catch (IOException e)
 		{
