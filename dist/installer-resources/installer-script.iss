@@ -11,7 +11,7 @@
 #define WinPcapInstallerFilename "WinPcap_4_1_3.exe"
 #define JRE_DIRNAME "jre1.8.0_121"
 #define schtask_xml "www-task.xml"
-#define schtask_name "Who What Where launcher {app}"
+#define schtask_name "Who What Where launcher " + MyAppVersion
 #define schtask_updater "TaskXMLUpdater.jar"
 #define command_placeholder "command_placeholder"
 
