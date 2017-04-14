@@ -12,9 +12,24 @@
 	<link rel="stylesheet" href="magnific-popup/magnific-popup.css">
 	<script src="magnific-popup/jquery.magnific-popup.min.js"></script>
 	<script>
-		$(document).ready(function() {
-		  $('.image-link').magnificPopup({type:'image'});
-		});
+
+	$(document).ready(function() {
+	$('.image-link').magnificPopup({
+			  type: 'image',
+			  closeOnContentClick: true,
+			  closeBtnInside: false,
+			  fixedContentPos: true,
+			  mainClass: 'mfp-no-margins mfp-with-zoom', // class to remove default margin from left and right side
+			  image: {
+				verticalFit: true
+			  },
+			  zoom: {
+				enabled: true,
+				duration: 300 // don't foget to change the duration also in CSS
+			  }
+			});
+	});
+
 	</script>
 	<script>
 		$( function() {
@@ -53,7 +68,7 @@
 				<li><a href="#tabs-watchdog">Watchdog</a></li>
 			</ul>
 			<div id="tabs-www">
-				<a href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/WhoWhatWhere.png" class="image-teaser image-link"></a>
+				<a href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/WhoWhatWhere.png" class="image-link"><img class="image-teaser" src="http://ck3ck3.github.io/WhoWhatWhere/screenshots/WhoWhatWhere.png"></a>
 				<p>See the IP addresses that your computer communicates with, sorted by amount of packets transmitted. Shows GeoIP information (organization, country, region, and city) and a ping result for each address. Examples where this might be useful are monitoring suspicious internet connections and determining a game server's IP.</p>
 				<p>Click "Start monitoring" to let Who What Where monitor your network traffic. When monitoring stops (manually by pressing the button or using the hotkey, or when a pre-defined timer expires) the table will get populated with the IP addresses that your computer communicated with during the monitoring, along with some useful statistics. When you use the hotkey to start or stop monitoring you can optionally have the results read out to you, so that you don't need to have Who What Where visible on your screen.</p>
 				<b>Monitoring Settings</b>

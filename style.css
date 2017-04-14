@@ -31,7 +31,6 @@
 .image-teaser {
 	width: 400px;
 	float: right;
-	padding: 10px;
 }
 
 @media screen and (max-width: 640px) {
