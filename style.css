@@ -33,6 +33,13 @@
 	float: right;
 }
 
+@max-width: 640px {
+	.image-teaser {
+		float: none;
+		width: 100%;
+	}
+}
+
 html {
   font-family: sans-serif;
 }
