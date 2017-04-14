@@ -9,7 +9,13 @@
 	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	<link rel="icon" type="image/png" href="www16.png">
-	
+	<link rel="stylesheet" href="magnific-popup/magnific-popup.css">
+	<script src="magnific-popup/jquery.magnific-popup.js"></script>
+	<script>
+		$(document).ready(function() {
+		  $('.image-link').magnificPopup({type:'image'});
+		});
+	</script>
 	<script>
 		$( function() {
 			$( "#tabs" ).tabs();
@@ -47,33 +53,38 @@
 				<li><a href="#tabs-watchdog">Watchdog</a></li>
 			</ul>
 			<div id="tabs-www">
-				<a href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/WhoWhatWhere.png"><img class="image-teaser" src="http://ck3ck3.github.io/WhoWhatWhere/screenshots/WhoWhatWhere.png"></a>
+				<a href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/WhoWhatWhere.png" class="image-teaser image-link"></a>
 				<p>See the IP addresses that your computer communicates with, sorted by amount of packets transmitted. Shows GeoIP information (organization, country, region, and city) and a ping result for each address. Examples where this might be useful are monitoring suspicious internet connections and determining a game server's IP.</p>
 				<p>Click "Start monitoring" to let Who What Where monitor your network traffic. When monitoring stops (manually by pressing the button or using the hotkey, or when a pre-defined timer expires) the table will get populated with the IP addresses that your computer communicated with during the monitoring, along with some useful statistics. When you use the hotkey to start or stop monitoring you can optionally have the results read out to you, so that you don't need to have Who What Where visible on your screen.</p>
 				<b>Monitoring Settings</b>
 				<ul>
-				  <li><p>Automatically stop monitoring: If enabled, monitoring will stop automatically after a certain amount of time. If disabled, monitoring will stop when the user clicks the "Stop monitoring" button (or uses the hotkey).</p></li>
-				  <li><p>Get location info for each IP address - If checked, every IP address entry will also show its owning organization name and geographical location information (see <a href="#GeoIPLimitations">limitations</a>). If unchecked, the results will be displayed a bit quicker.</p></li>
+				  <li><p><i>Automatically stop monitoring:</i> If enabled, monitoring will stop automatically after a certain amount of time. If disabled, monitoring will stop when the user clicks the "Stop monitoring" button (or uses the hotkey).</p></li>
+				  <li><p><i>Get location info for each IP address:</i> If checked, every IP address entry will also show its owning organization name and geographical location information (see <a href="#GeoIPLimitations">limitations</a>). If unchecked, the results will be displayed a bit quicker.</p></li>
 
-					<li><p>Ping each IP address - If checked, each IP address entry will also show the ping result to that IP. The pings are performed after monitoring is stopped and the results get updated in the table as they arrive.</p></li>
+					<li><p><i>Ping each IP address:</i> If checked, each IP address entry will also show the ping result to that IP. The pings are performed after monitoring is stopped and the results get updated in the table as they arrive.</p></li>
 				  
-				  <li><p>Protocol selection: If no protocol is selected, then all protocols will be counted. Otherwise, only packets of the selected protocols will be counted.</p></li>
+				  <li><p><i>Protocol selection:</i> If no protocol is selected, then all protocols will be counted. Otherwise, only packets of the selected protocols will be counted.</p></li>
 				</ul>
-
+				
 				<b>Hotkey and Text To Speech Settings</b>
+				<div class='section'>
 				<p>Instead of manually pressing the start/stop buttons, you can use a hotkey. The hotkey is active globally, meaning
 				you can press it while using any other application and even when Who What Where is minimized to the system tray. If a monitoring session is currently in progress, the hotkey will stop it. Otherwise, it will start a new monitoring session. If the text to speech feature is enabled and
 				the hotkey is used to start or stop monitoring, the results will be read out to you - so that you don't have the look at the application screen. This is useful when you already know what you're looking for. You can also filter out what is read to you,
 				the first X rows or only rows that contain a certain value in a certain column. You can also select which column values to read out.
 				</p>
+				</div>
 				
 				<b>Other features</b>
-				<p>Right-clicking on a result in the table opens a pop-up menu with several options, including "See more GeoIP results for this IP in the browser" which loads a GeoIP service
-				results in the default web-browser. This site might have more (or different) results than what's shown in the table. See <a href="#GeoIPLimitations">GeoIP Limitations</a>.
-				<br><br>
-				<a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/IPNotes.png">IP notes:</a> Allows you to associate notes with IP addresses. Either add a note from the results table by clicking the IP notes cell on a row, or manage all of the IP notes from the menu "File" -> "Manage IP notes". 
-				<br>IP notes can help remember what's the IP address used for, and can also be used in a rule in Watchdog.
-				</p>
+				<ul>
+					<li><p>Right-clicking on a result in the table opens a pop-up menu with several options, including "See more GeoIP results for this IP in the browser" which loads a GeoIP service
+					results in the default web-browser. This site might have more (or different) results than what's shown in the table. See <a href="#GeoIPLimitations">GeoIP Limitations</a>.</li>
+					
+					<li><a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/IPNotes.png">IP notes:</a> Allows you to associate notes with IP addresses. Either add a note from the results table by clicking the IP notes cell on a row, or manage all of the IP notes from the menu "File" -> "Manage IP notes". 
+					<br>IP notes can help remember what's the IP address used for, and can also be used in a rule in Watchdog.
+					</p></li>
+				</ul>
+
 			</div>
 			<div id="tabs-quickPing">
 				<a href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/QuickPing.png"><img class="image-teaser" src="http://ck3ck3.github.io/WhoWhatWhere/screenshots/QuickPing.png"></a>
