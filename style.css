@@ -28,6 +28,11 @@
   display: none;
 }
 
+.image-teaser {
+	width: 400px;
+	float: right;
+}
+
 html {
   font-family: sans-serif;
 }
