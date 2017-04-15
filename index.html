@@ -51,8 +51,8 @@
 		<p><strong>A suite of diagnostic tools for network monitoring. See which IP addresses your computer communicates with and where they're from, use a hotkey to have ping results read out to you, visually trace the route of your packets, and use the Watchdog to get notified in real-time when network packets match rules that you've defined.</strong></p>
 
 		<div class="links">
-			<a href="https://github.com/ck3ck3/WhoWhatWhere/releases/download/1.00/WhoWhatWhere-1.00-installer.exe">Download Here</a>
-			<a href="https://github.com/ck3ck3/WhoWhatWhere">View code on GitHub</a>
+			<a href="https://github.com/ck3ck3/WhoWhatWhere/releases/download/1.00/WhoWhatWhere-1.00-installer.exe">Download</a>
+			<a href="https://github.com/ck3ck3/WhoWhatWhere">View code</a>
 		</div>
 
 		<div class="screenshot"><a href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/WhoWhatWhere.png"><img src="http://ck3ck3.github.io/WhoWhatWhere/screenshots/WhoWhatWhere-medium.png"></a></div>
@@ -82,25 +82,33 @@
 				</ul>
 				
 				<b>Hotkey and Text To Speech Settings</b>
-				<div class='section'>
-				<p>Instead of manually pressing the start/stop buttons, you can use a hotkey. The hotkey is active globally, meaning
-				you can press it while using any other application and even when Who What Where is minimized to the system tray. If a monitoring session is currently in progress, the hotkey will stop it. Otherwise, it will start a new monitoring session. If the text to speech feature is enabled and
+				<!--<div class='section'>-->
+				<!--<p>Instead of manually pressing the start/stop buttons, you can use a hotkey. The hotkey is active globally, meaning
+				you can press it while using any other application and even when Who What Where is minimized to the system tray. Yhe hotkey is used for both starting and stopping the monitoring: If a monitoring session is currently in progress, the hotkey will stop it. Otherwise, it will start a new monitoring session. If the text to speech feature is enabled and
 				the hotkey is used to start or stop monitoring, the results will be read out to you - so that you don't have to look at the application screen. This is useful when you already know what you're looking for. You can also filter out what is read to you,
 				the first X rows or only rows that contain a certain value in a certain column. You can also select which column values to read out.
-				</p>
-				</div>
+				</p>-->
+				<ul>
+					<li><p><i>Enable start/stop monitoring hotkey:</i> Instead of manually pressing the start/stop buttons, you can use a hotkey. The hotkey is active globally, meaning
+				it can be pressed while any other application is used and even when Who What Where is minimized to the system tray. The hotkey is used for both starting and stopping the monitoring.</p></li>
+					<li><p><i>Read results using text to speech if the hotkey was used:</i> If the text to speech feature is enabled and
+				the hotkey is used to start or stop monitoring, the results will be read out to you - so that you don't have to look at the application screen. This is useful when you already know what you're looking for.</p></li>
+					<li><p><i>Filter the results that are read out:</i> You can also filter out what is read to you, the first X rows or only rows that contain a certain value in a certain column.</p></li>
+					<li><p><i>Read values of these columns:</i> You can also select which column values to read out, for example only organization and city.</p></li>
+				</ul>
+				
+				<!--</div>-->
 				
 				<b>Other features</b>
 				<ul>
 
 					
 					<a href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/IPNotes.png" class="image-link"><img class="image-teaser" src="http://ck3ck3.github.io/WhoWhatWhere/screenshots/IPNotes.png"></a>
-					<li><!--<a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/IPNotes.png">-->IP notes:<!--</a>--> Allows you to associate notes with IP addresses. Either add a note from the results table by clicking the IP notes cell on a row, or manage all of the IP notes from the menu "File" -> "Manage IP notes". 
+					<li>IP notes: Allows you to associate notes with IP addresses. Either add a note from the results table by clicking the IP notes cell on a row, or manage all of the IP notes from the menu "File" -> "Manage IP notes". 
 					<br>IP notes can help remember what's the IP address used for, and can also be used in a rule in Watchdog.
 					</p></li>
 					
-					<li><p>Right-clicking on a result in the table opens a pop-up menu with several options, including "See more GeoIP results for this IP in the browser" which loads a GeoIP service
-					results in the default web-browser. This site might have more (or different) results than what's shown in the table. See <a href="#GeoIPLimitations">GeoIP Limitations</a>.</li>
+					<li><p>Right-clicking on a result in the table opens a pop-up menu with some useful options, one of which loads a website with more (or different) GeoIP information for the selected row's IP address. (See also <a href="#GeoIPLimitations">GeoIP Limitations</a>).</li>
 				</ul>
 
 			</div>
@@ -169,14 +177,14 @@
 	    <h3>Pick your network adapter: </h3>
 		<a class="image-link" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/NicSelection.png"><img class="image-teaser" src="http://ck3ck3.github.io/WhoWhatWhere/screenshots/NicSelection.png"></a>
 		<div class='section'>
-		<p>If your PC has more than one active network adapter, a <!--<a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/NicSelection.png">-->choice dialog<!--</a>--> will be displayed on the first run of the program. You can use the "Auto-detect" button or choose your network adapter from a list. You can always get to this dialog manually if needed, by using the menu "Options" -> "Select network adapter".
+		<p>If your PC has more than one active network adapter, a choice dialog will be displayed on the first run of the program. You can use the "Auto-detect" button or choose your network adapter from a list. You can always get to this dialog manually if needed, by using the menu "Options" -> "Select network adapter".
 		</p>
 		</div>
 		<br>
 		<h3>Choose a text to speech voice and language</h3>
 		<a class="image-link" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/VoiceSelection.png"><img class="image-teaser" src="http://ck3ck3.github.io/WhoWhatWhere/screenshots/VoiceSelection.png"></a>
 		<div class='section'>
-		<p>Use the menu "Options" -> "Configure text to speech voice" to <!--<a class="imgLink" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/VoiceSelection.png">-->choose a voice and language<!--</a>--> for the various features. Who What Where can only use the English voices, but Quick Ping and Watchdog can also use German, French, and Italian voices. You can preview each voice by clicking on the "Preview" button, and you can also customize the preview text.
+		<p>Use the menu "Options" -> "Configure text to speech voice" to choose a voice and language for the various features. Who What Where can only use the English voices, but Quick Ping and Watchdog can also use German, French, and Italian voices. You can preview each voice by clicking on the "Preview" button, and you can also customize the preview text.
 		</p>
 		</div>
 		
