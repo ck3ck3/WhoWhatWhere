@@ -56,10 +56,10 @@
 		</div>
 
 		<div class="screenshot"><a href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/WhoWhatWhere.png"><img src="http://ck3ck3.github.io/WhoWhatWhere/screenshots/WhoWhatWhere-medium.png"></a></div>
-		<div class="screenshot"><a href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/VisualTraceAnim.gif"><img src="http://ck3ck3.github.io/WhoWhatWhere/screenshots/VisualTraceAnim.gif" width="850" /></a></div>
+		<div class="screenshot"><a href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/VisualTraceAnim.gif"><img src="http://ck3ck3.github.io/WhoWhatWhere/screenshots/VisualTraceAnim.gif" width="963" /></a></div>
 		<img src="http://2no.co/1ffJ"/>
 
-	    <h1>Features</h1>
+	    <h1>Features and usage</h1>
 		<div id="tabs">
 			<ul>
 				<li><a href="#tabs-www">Who What Where</a></li>
@@ -122,16 +122,18 @@
 				<div class='section'>
 				<p>Enter any IP or hostname, and set the settings to your preferred values. Click "Trace" to start, and watch the route get plotted as the trace advances.</p>
 				</div>
+				<b>Settings</b>
 				<ul>
-					<li><i>Ping timeout:</i> Sets the timeout for each of the 3 pings that are perfromed per hop.</li>
-					<li><i>Resolve hostnames:</i> Try to get the hostname of each hop. Keep in mind this might slow the trace down. </li>
-					<li><i>Stop tracing if X consecutive hops haven't responded:</i> Automatically stop the trace once it's not likely that another hop will be discovered, instead of waiting for the trace to end by reaching its maximum of 30 hops.</li>
+					<li><p><i>Ping timeout:</i> Sets the timeout for each of the 3 pings that are perfromed per hop.</p></li>
+					<li><p><i>Resolve hostnames:</i> Try to get the hostname of each hop. Keep in mind this might slow the trace down.</p></li>
+					<li><p><i>Stop tracing if X consecutive hops haven't responded:</i> Automatically stop the trace once it's not likely that another hop will be discovered, instead of waiting for the trace to end by reaching its maximum of 30 hops.</p></li>
 				</ul>
-				<div class='section'>
-				<p>When the trace ends (either by reaching the destination hop or due to the user aborting the trace) you can show/hide any map pin on the route by checking/unchecking the map pin checkbox on the trace results table. You can also click the magnifying glass icon ("Zoom in") to see the exact location of the hop and zoom further in with the spinner's arrows.
-				<br>By right-clicking any row in the table you can see more GeoIP Info from another GeoIP source on your default browser.
-				</p>
-				</div>
+				<b>Other features</b>
+				<ul>
+					<li><p><i>Show/hide map pins:</i> When the trace ends (either by reaching the destination hop or due to the user aborting the trace) you can show/hide any map pin on the route by checking/unchecking the map pin checkbox on the trace results table.</p></li> 
+					<li><p><i>Zoom in:</i> Click the magnifying glass icon (in the "Zoom in" column) to see the exact location of the hop, and refine the zoom level. Click the magnifying glass icon again to go back to viewing the full route.</p></li> 
+					<li><p><i>Right-click options:</i> Right-clicking on a hop in the table opens a pop-up menu with some useful options, one of which loads a website with more (or different) GeoIP information for the selected row's IP address (see also <a href="#GeoIPLimitations">GeoIP Limitations</a>).</p></li>
+				</ul>
 			</div>
 			<div id="tabs-watchdog">
 				<a class="image-link" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/Watchdog.png"><img class="image-teaser" src="http://ck3ck3.github.io/WhoWhatWhere/screenshots/Watchdog.png"></a>
