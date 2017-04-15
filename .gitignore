@@ -3,6 +3,7 @@ bin
 jnetpcap.dll
 JNativeHook.dll
 Who What Where.log*
+stderr.log
 /target/
 /dist/exe/
 /dist/Installer/

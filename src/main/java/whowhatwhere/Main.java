@@ -19,7 +19,9 @@
 package whowhatwhere;
 
 import java.awt.Desktop;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -68,7 +70,7 @@ public class Main extends Application
 
 	public final static String appTitle = "Who What Where";
 	public final static String executableFilename = "WhoWhatWhere.exe";
-	public final static String scheduledTaskName = "Who What Where launcher";
+	public final static String scheduledTaskName = "Who What Where launcher " + releaseVersion;
 	private final static String mainFormLocation = "/whowhatwhere/view/fxmls/maingui/MainForm.fxml";
 	
 	public final static String appFilesLocation = System.getenv("APPDATA") + "\\" + appTitle + "\\";
@@ -111,6 +113,8 @@ public class Main extends Application
 		FileHandler fh = new FileHandler(appTitle + ".log");
 		fh.setFormatter(new SimpleFormatter());
 		logger.addHandler(fh);
+		
+		System.setErr(new PrintStream(new FileOutputStream("stderr.log")));
 	}
 	
 	public static CheckForUpdateResult checkForUpdate()

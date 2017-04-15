@@ -57,10 +57,10 @@ public class StartWithWindowsRegistryUtils
 		if (!regQueryOutput.contains(registryValue)) //value doesn't exist
 			return null;
 		
-		String taskQueryOutput = IOUtils.toString(Runtime.getRuntime().exec("schtasks /query /xml /tn \"" + Main.scheduledTaskName + "\"").getInputStream());
+		String taskQueryOutput = IOUtils.toString(Runtime.getRuntime().exec("cmd /u /c schtasks /query /xml /tn \"" + Main.scheduledTaskName + "\"").getInputStream()); //using cmd with /u for utf-16 LE
 		
-		String getValueAfter = "<Command>\"";
-		String valueEndsWith = "\"</Command>";
+		String getValueAfter = "process call create \"";
+		String valueEndsWith = "\"</Arguments>";
 		int start = taskQueryOutput.indexOf(getValueAfter) + getValueAfter.length();
 		int end = taskQueryOutput.indexOf(valueEndsWith);
 		

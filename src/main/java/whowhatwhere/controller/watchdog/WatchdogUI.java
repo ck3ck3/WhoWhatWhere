@@ -418,7 +418,9 @@ public class WatchdogUI implements WatchdogListener, LoadAndSaveSettings, Config
 
 		File dir = new File(Main.appFilesLocation);
 		FileFilter fileFilter = new WildcardFileFilter("*" + WatchdogUI.ruleListExtension);
-		List<File> files = new ArrayList<>(Arrays.asList(dir.listFiles(fileFilter))); //ArrayList because asList() returns an immutable list
+		File[] existingRuleLists = dir.listFiles(fileFilter);
+		boolean ruleListsExist = existingRuleLists != null && existingRuleLists.length > 0; 
+		List<File> files = ruleListsExist ? new ArrayList<>(Arrays.asList(existingRuleLists)) : new ArrayList<>(); //ArrayList because asList() returns an immutable list
 
 		if (files.removeIf(file -> file.getName().equals(WatchdogUI.lastRunFilename))) //if lastRun exists, remove it from the list and put it on top of the button's list
 			items.add(createMenuItem(WatchdogUI.lastRunFilename.replace(WatchdogUI.ruleListExtension, "")));

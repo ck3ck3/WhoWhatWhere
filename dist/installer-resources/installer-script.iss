@@ -13,7 +13,7 @@
 #define schtask_xml "www-task.xml"
 #define schtask_name "Who What Where launcher " + MyAppVersion
 #define schtask_updater "TaskXMLUpdater.jar"
-#define command_placeholder "command_placeholder"
+#define arguments_placeholder "arguments_placeholder"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -157,7 +157,7 @@ begin
     ExtractTemporaryFile('{#schtask_updater}');
     
     command := ExpandConstant('{app}\{#JRE_DIRNAME}\bin\java.exe');
-    params := ExpandConstant('-jar "{tmp}\{#schtask_updater}" "{tmp}\{#schtask_xml}" {#command_placeholder} "\"{app}\{#MyAppExeName}\"" "{tmp}\updated_{#schtask_xml}"');
+    params := ExpandConstant('-jar "{tmp}\{#schtask_updater}" "{tmp}\{#schtask_xml}" {#arguments_placeholder} "process call create \"{app}\{#MyAppExeName}\"" "{tmp}\updated_{#schtask_xml}"');
     Exec(command, params, '', SW_HIDE, ewWaitUntilTerminated, resultCode);
 log('running ' + command + ' ' + params);
     command := ExpandConstant('{sys}\schtasks.exe');
@@ -188,7 +188,7 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 Filename: "{sys}\schtasks.exe"; Parameters: "/delete /tn ""{#schtask_name}"" /f"
 
 [UninstallDelete]
-Type: files; Name: "{app}\{#MyAppName}.log*"
+Type: files; Name: "{app}\*.log*"
 
 [Registry]
 Root: HKLM; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueName: {#MyAppName}; Flags: uninsdeletevalue
