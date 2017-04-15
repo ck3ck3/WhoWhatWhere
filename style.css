@@ -31,6 +31,8 @@
 .image-teaser {
 	width: 400px;
 	float: right;
+	cursor: zoom-in;
+	margin: 10px;
 }
 
 @media screen and (max-width: 640px) {
