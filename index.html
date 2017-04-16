@@ -72,7 +72,7 @@
 				<p>See the IP addresses that your computer communicates with, sorted by amount of packets transmitted. Shows GeoIP information (organization, country, region, and city) and a ping result for each address. Examples where this might be useful are monitoring suspicious internet connections and determining a game server's IP.</p>
 				<b>Usage</b>
 				<div class='section'>
-				<p>Click "Start monitoring" to let Who What Where monitor your network traffic. When monitoring stops (manually by pressing the button or using the hotkey, or when a pre-defined timer expires) the table will get populated with the IP addresses that your computer communicated with during the monitoring, along with some useful statistics. When you use the hotkey to start or stop monitoring you can optionally have the results read out to you, so that you don't need to have Who What Where visible on your screen.</p>
+				<p>Click "Start monitoring" to let Who What Where monitor your network traffic. When monitoring stops (manually by pressing the button or using the hotkey, or when a predefined timer expires) the table will get populated with the IP addresses that your computer communicated with during the monitoring, along with some useful statistics. When you use the hotkey to start or stop monitoring you can optionally have the results read out to you, so that you don't need to have Who What Where visible on your screen.</p>
 				</div>
 				<b>Monitoring Settings</b>
 				<ul>
@@ -96,9 +96,7 @@
 				
 				<b>Other features</b>
 				<ul>
-					<li><i>IP notes:</i> Allows you to associate notes with IP addresses. Either add a note from the results table by clicking the IP notes cell on a row, or manage all of the IP notes from the menu "File" -> "Manage IP notes". 
-					<br>IP notes can help remember what's the IP address used for, and can also be used in a rule in Watchdog.
-					</p></li>
+					<li><i>IP notes:</i> <a href="#IPNotes">See here</a></p></li>
 					
 					<li><p><i>Right-click options:</i> Right-clicking on a result in the table opens a pop-up menu with some useful options, one of which loads a website with more (or different) GeoIP information for the selected row's IP address (see also <a href="#GeoIPLimitations">GeoIP Limitations</a>).</li>
 				</ul>
@@ -159,7 +157,7 @@
 						<dt><b>IP Address</b></dt><dd>Choose either <i>IP address</i> or <i>IP note</i>. If <i>packet direction</i> is selected, this condition will refer to the source IP address for incoming packets, and destination IP address for outgoing packets. If <i>packet direction</i> is not set, then this condition will refer to either source or destination IP addresses.
 						<ul>
 							<li><p><i>IP address:</i> Either a single IP address, or a range of addresses if a <i>netmask</i> is specified.</p></li>
-							<li><p><i>IP note:</i> Select an IP note, which can be mapped to more than one IP address. See "IP notes" in Who What Where's "Other features" section.</p></li>
+							<li><p><i>IP note:</i> Select an IP note, which can be mapped to more than one IP address. <a href="#IPNotes">See here</a>.</p></li>
 						</ul></dd>
 						<dt><b>Packet Direction</b></dt><dd>If set, only incoming/outgoing packets will match. If not set, both incoming and outgoing packets will be matched.</dd>
 						<br>
@@ -177,32 +175,12 @@
 			</div>			
 		</div>
 		
-		<h1>Case study</h1>
-		<a href="http://ck3ck3.github.io/WhoWhatWhere/case-study.html">NBA 2K17 case study</a> - how Who What Where can help diagnose network-lag problems in a PC game, and how the Watchdog utility can inform us of a match that is about to start.
+		<!--<h1>Case study</h1>
+		<a href="http://ck3ck3.github.io/WhoWhatWhere/case-study.html">NBA 2K17 case study</a> - how Who What Where can help diagnose network-lag problems in a PC game, and how the Watchdog utility can inform us of a match that is about to start. -->
+		<h1>General Usage</h1>
 
-	    <h1>Installing and running</h1>
-
-	    <h2>Prerequisites</h2>
-
-	    <ul>
-	      <li>
-	        <h3>Java Runtime Environment (JRE) 1.8_60 or newer</h3>
-	        <p><a href="http://java.com/en/">Download JRE here</a>. If you already have JRE installed and want to check the version, open the command line (cmd) and type "java -version".</p>
-	      </li>
-	      <li>
-	        <h3>WinPcap</h3><p><a href="http://www.winpcap.org/install/default.htm">Download WinPcap here</a>. WinPcap is a program that allows capturing network packets on Windows.</p>
-	      </li>
-	    </ul>
-
-
-	    <h2>Running the program</h2> 
-	    <p>Once you've installed Java and WinPcap, download WhoWhatWhere and extract the archive. Run the executable and allow ~10 seconds to load. This program requires administrator rights in order to capture network packets. If you're prompted by Windows,
-	    allow it access.</p>
-
-
-
-	    <h2>How to Use</h2> 
-	    <p>Who What Where can be minimized to the systrem tray by pressing the 'x' (close window) button. In order to exit for the program, use the menu "File" -> "Exit" or right-click the icon in the system-tray and choose "Exit". You can also set Who What Where to exit when clicking on the close window button by unchecking the menu item "Options" -> "Minimize to system tray on close".</p>
+	    <h3>Exit or minimize</h3> 
+	    <p>Who What Where can be minimized to the system tray by pressing the 'x' (close window) button. In order to exit for the program, use the menu "File" -> "Exit" or right-click the icon in the system-tray and choose "Exit". You can also set Who What Where to exit when clicking on the close window button by unchecking the menu item "Options" -> "Minimize to system tray on close".</p>
 
 	    <h3>Pick your network adapter: </h3>
 		<a class="image-link" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/NicSelection.png"><img class="image-teaser" src="http://ck3ck3.github.io/WhoWhatWhere/screenshots/NicSelection.png"></a>
@@ -218,16 +196,16 @@
 		</p>
 		</div>
 		
-		<a href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/IPNotes.png" class="image-link"><img class="image-teaser" src="http://ck3ck3.github.io/WhoWhatWhere/screenshots/IPNotes.png"></a>
-		<div class='section'>
 		
-		<b>IP notes</b>
-		<br>Allows you to associate notes with IP addresses. Either add a note from the results table by clicking the IP notes cell on a row, or manage all of the IP notes from the menu "File" -> "Manage IP notes". 
-					<br>IP notes can help remember what's the IP address used for, and can also be used in a rule in Watchdog.
+		<h3>IP notes</h3>
+		<div class='section'>		
+		<a href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/IPNotes.png" class="image-link" name="IPNotes"><img class="image-teaser" src="http://ck3ck3.github.io/WhoWhatWhere/screenshots/IPNotes.png"></a>
+		Allows you to associate notes with IP addresses. Manage all of the IP notes from the menu "File" -> "Manage IP notes", or from the Who What Where feature by clicking the IP notes cell in a row.
+		<br>IP notes can help remember what's the IP address used for, and can also be used as a condition in a rule in Watchdog.
 		</div>
-		<br>
+		<br><br><br><br><br><br>
 	    <a name="GeoIPLimitations"></a>
-	    <h3><i>Note about GeoIP Limitations:</i></h3> 
+	    <h3><i>Note about GeoIP Limitations</i></h3> 
 		<div class='section'>
 		<p>Geographical IP services aren't always accurate. The address is based on what the company that owns the address reported when the address was bought. Sometimes an international company might list all their IPs are located in one area (where the main
 	    offices are, for example), but some of these IPs may be used in other areas that the company operates. This is why sometimes for one IP address there may be more than one possible location, or an incorrect one.
