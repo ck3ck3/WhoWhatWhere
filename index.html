@@ -141,10 +141,16 @@
 				<br>This feature can be used as a notifier for an incoming connection, for example.
 				</p>
 				<b>Usage</b>
-				<p>Select a radiobutton to indicate if Watchdog should just wait for the first packet of this type and inform you, or keep watching for these packets until you stop it. If you choose to keep looking for matches, specify
-				a cooldown period. A cooldown period is the minimal amount of time between getting Watchdog alerts; its purpose is to avoid flooding you with messages. Minimal cooldown period is 1 second, the default is 3 seconds.
-				<br>Watchdog can be started by clicking the "Start Watchdog" button or pressing the hotkey. The default hotkey (Ctrl+NumPad Del) requires the numlock on your keyboard to be on.
-				</p>
+				<ol>
+					<li><p>Create rules by clicking the 'Add rule' button (see "Adding rules" below). The created rules will appear in the rule list. The order of the rules in the list is important, because the rules are checked in the order they appear in the list; if a packet matches a rule then the rules below it will not be checked for that packet. For example, if rule #1 matches any UDP packet and rule #2 matches packets on port 1234, then UDP packets on port 1234 will match only rule #1. Rules in the list can be moved up/down by clicking the "Move selected rule up/down" buttons.</p></li>
+					<li><p>Choose one of two operation modes that determine what happens after a match is found:
+						<ul style="list-style-type:disc">
+							<li><p><i>Stop Watchdog:</i> Once a match is found, Watchdog stops itself.</p></li>
+							<li><p><i>Keep Watchdog running:</i> atchdog keeps running until you stop it. If you choose this mode you need to specify a cooldown period, which is the minimal amount of time between getting Watchdog notifications; its purpose is to avoid flooding you with messages in case many matches occur one after the other.</p></li>
+						</ul>
+					</p></li>
+					<li><p>Watchdog can be started and stopped either by clicking the start/stop buttons or by using the hotkey. The default hotkey (Ctrl+NumPad Del) requires the numlock on your keyboard to be on.</p></li>
+				</ol>
 			</div>			
 		</div>
 		
