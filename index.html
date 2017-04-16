@@ -156,33 +156,26 @@
 					<a class="image-link" href="http://ck3ck3.github.io/WhoWhatWhere/screenshots/Watchdog-AddEdit.png"><img class="image-teaser" src="http://ck3ck3.github.io/WhoWhatWhere/screenshots/Watchdog-AddEdit.png"></a>
 					<b>Adding rules</b>
 					<br><br>
-					<div class='section'>
-					<b>Conditions</b>
 						<div class='section'>
-						In order for a rule to match a packet, each of the set conditions must be true.
+						 In order for a rule to match a packet, all of the conditions set in this dialog must be fulfilled.
 						<dl>
 						<dt><b>IP Address</b></dt><dd>Choose either <i>IP address</i> or <i>IP note</i>. If <i>packet direction</i> is selected, this condition will refer to the source IP address for incoming packets, and destination IP address for outgoing packets. If <i>packet direction</i> is not set, then this condition will refer to either source or destination IP addresses.
 						<ul>
-							<li><i>IP address:</i> Either a single IP address, or a range of address if a <i>netmask</i> is specified.</li>
-							<li><i>IP note:</i> Select an IP note, which can be mapped to more than one IP address. See "IP notes" in Who What Where's "Other features" section.</li>
+							<li><p><i>IP address:</i> Either a single IP address, or a range of addresses if a <i>netmask</i> is specified.</p></li>
+							<li><p><i>IP note:</i> Select an IP note, which can be mapped to more than one IP address. See "IP notes" in Who What Where's "Other features" section.</p></li>
 						</ul></dd>
 						<dt><b>Packet Direction</b></dt><dd>If set, only incoming/outgoing packets will match. If not set, both incoming and outgoing packets will be matched.</dd>
 						<br>
 						<dt><b>Protocol and Ports</b></dt>
 							<dd>
 								<ul>
-									<li><i>Contains protocol:</i> Only match packets that contain a layer of this protocol. Some protocols are implicit, for example HTTP naturally includes TCP.</li>
-									<li><i>Source/Destination ports:</i> Match packets with these TCP/UDP ports. If no protocol was selected, it will match both TCP and UDP packets that use the specified ports.</li>
+									<li><p><i>Contains protocol:</i> Only match packets that contain a layer of this protocol. Some protocols are implicit, for example HTTP naturally includes TCP.</p></li>
+									<li><p><i>Source/Destination ports:</i> Match packets with these TCP/UDP ports. If no protocol was selected, it will match both TCP and UDP packets that use the specified ports.</p></li>
 								</ul>
 							</dd>
 						<dt><b>Packet Size</b></dt><dd><i>IP packet size:</i> Match packets with an IP layer of the specified size. Note that the size is for the IP layer only (meaning IP layer and its payload which may include higher layers such as TCP and HTTP for example, but not the entire packet size which includes the lower layers like Ethernet etc).</dd>
 						</dl>
 						</div>
-					<b>Notification</b>
-					<div class='section'>
-						Set the notification type and text. If the notification type is "Read out loud", then you can use the "Change voice" button to select a voice and language (English, French, German, Italian).
-					</div>
-					</div>
 				</div>
 			</div>			
 		</div>
