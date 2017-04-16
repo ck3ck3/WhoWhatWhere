@@ -131,7 +131,7 @@
 				<b>Other features</b>
 				<ul>
 					<li><p><i>Show/hide map pins:</i> When the trace ends (either by reaching the destination hop or due to the user aborting the trace) you can show/hide any map pin on the route by checking/unchecking the map pin checkbox on the trace results table.</p></li> 
-					<li><p><i>Zoom in:</i> Click the magnifying glass icon (in the "Zoom in" column) to see the exact location of the hop, and refine the zoom level. Click the magnifying glass icon again to go back to viewing the full route.</p></li> 
+					<li><p><i>Zoom in:</i> Click the magnifying glass icon (in the "Zoom in" column) to see the exact location of the hop. The zoom level can be refined by clicking the arrows. Click the magnifying glass icon again to go back to viewing the full route.</p></li> 
 					<li><p><i>Right-click options:</i> Right-clicking on a hop in the table opens a pop-up menu with some useful options, one of which loads a website with more (or different) GeoIP information for the selected row's IP address (see also <a href="#GeoIPLimitations">GeoIP Limitations</a>).</p></li>
 				</ul>
 			</div>
@@ -140,10 +140,8 @@
 				<p>Inspects network traffic and checks if any packet matches a predefined filter. Filters include IP address or ranges (subnets), packet direction (incoming/outgoing), protocol, source/destination ports, and packet size. Upon finding a match, a predefined message will be displayed in a pop-up message or read out loud in one of several voices and languages (English, French, German, Italian).
 				<br>This feature can be used as a notifier for an incoming connection, for example.
 				</p>
-				<h3>How to use:</h3>
-				<p>Watchdog listens to your network traffic and informs you when a packet matches a certain rule that you set. You can set rules based on IP address or ranges (subnets), IP notes, packet direction (incoming/outgoing), protocol, source/destination ports and packet size.
-				<br>When a match is found, the message you wrote for that rule will be read out by text-to-speech (in a voice and language that you can configure) or displayed as a pop-up on the screen. 
-				<br>Select a radiobutton to indicate if Watchdog should just wait for the first packet of this type and inform you, or keep watching for these packets until you stop it. If you choose to keep looking for matches, specify
+				<b>Usage</b>
+				<p>Select a radiobutton to indicate if Watchdog should just wait for the first packet of this type and inform you, or keep watching for these packets until you stop it. If you choose to keep looking for matches, specify
 				a cooldown period. A cooldown period is the minimal amount of time between getting Watchdog alerts; its purpose is to avoid flooding you with messages. Minimal cooldown period is 1 second, the default is 3 seconds.
 				<br>Watchdog can be started by clicking the "Start Watchdog" button or pressing the hotkey. The default hotkey (Ctrl+NumPad Del) requires the numlock on your keyboard to be on.
 				</p>
