@@ -142,15 +142,47 @@
 				</p>
 				<b>Usage</b>
 				<ol>
-					<li><p>Create rules by clicking the 'Add rule' button (see "Adding rules" below). The created rules will appear in the rule list. The order of the rules in the list is important, because the rules are checked in the order they appear in the list; if a packet matches a rule then the rules below it will not be checked for that packet. For example, if rule #1 matches any UDP packet and rule #2 matches packets on port 1234, then UDP packets on port 1234 will match only rule #1. Rules in the list can be moved up/down by clicking the "Move selected rule up/down" buttons.</p></li>
+					<li><p>Create rules by clicking the 'Add rule' button (see "Adding rules" below). The created rules will appear in the rule list. The order of the rules in the list is important, because the rules are checked in the order they appear in the list; if a packet matches a rule then the rules below it will not be checked for that packet (for example, if rule #1 matches any UDP packet and rule #2 matches packets on port 1234, then UDP packets on port 1234 will match only rule #1). Rules in the list can be moved up/down by clicking the "Move selected rule up/down" buttons.</p></li>
 					<li><p>Choose one of two operation modes that determine what happens after a match is found:
 						<ul style="list-style-type:disc">
 							<li><p><i>Stop Watchdog:</i> Once a match is found, Watchdog stops itself.</p></li>
-							<li><p><i>Keep Watchdog running:</i> atchdog keeps running until you stop it. If you choose this mode you need to specify a cooldown period, which is the minimal amount of time between getting Watchdog notifications; its purpose is to avoid flooding you with messages in case many matches occur one after the other.</p></li>
+							<li><p><i>Keep Watchdog running:</i> Watchdog keeps running until you stop it. If you choose this mode you need to specify a cooldown period, which is the minimal amount of time between getting Watchdog notifications; its purpose is to avoid flooding you with messages in case many matches occur one after the other.</p></li>
 						</ul>
 					</p></li>
-					<li><p>Watchdog can be started and stopped either by clicking the start/stop buttons or by using the hotkey. The default hotkey (Ctrl+NumPad Del) requires the numlock on your keyboard to be on.</p></li>
+					<li><p>Start/stop Watchdog by clicking the start/stop buttons or by using the hotkey. The default hotkey (Ctrl+NumPad Del) requires the numlock on your keyboard to be on.</p></li>
 				</ol>
+				<div class='section'>
+					<br>
+					<b>Adding rules</b>
+					<br><br>
+					<div class='section'>
+					<b>Conditions</b>
+						<div class='section'>
+						In order for a rule to match a packet, each of the set conditions must be true.
+						<dl>
+						<dt><b>IP Address</b></dt><dd>Choose either <i>IP address</i> or <i>IP note</i>. If <i>packet direction</i> is selected, this condition will refer to the source IP address for incoming packets, and destination IP address for outgoing packets. If <i>packet direction</i> is not set, then this condition will refer to either source or destination IP addresses.
+						<ul>
+							<li><i>IP address:</i> Either a single IP address, or a range of address if a <i>netmask</i> is specified.</li>
+							<li><i>IP note:</i> Select an IP note, which can be mapped to more than one IP address. See "IP notes" in Who What Where's "Other features" section.</li>
+						</ul></dd>
+						<dt><b>Packet Direction</b></dt><dd>If set, only incoming/outgoing packets will match. If not set, both incoming and outgoing packets will be matched.</dd>
+						<br>
+						<dt><b>Protocol and Ports</b></dt>
+							<dd>
+								<ul>
+									<li><i>Contains protocol:</i> Only match packets that contain a layer of this protocol. Some protocols are implicit, for example HTTP naturally includes TCP.</li>
+									<li><i>Source/Destination ports:</i> Match packets with these TCP/UDP ports. If no protocol was selected, it will match both TCP and UDP packets that use the specified ports.</li>
+								</ul>
+							</dd>
+						<dt><b>Packet Size</b></dt><dd><i>IP packet size:</i> Match packets with an IP layer of the specified size. Note that the size is for the IP layer only (meaning IP layer and its payload which may include higher layers such as TCP and HTTP for example, but not the entire packet size which includes the lower layers like Ethernet etc).</dd>
+						</dl>
+						</div>
+					<b>Notification</b>
+					<div class='section'>
+						Set the notification type and text. If the notification type is "Read out loud", then you can use the "Change voice" button to select a voice and language (English, French, German, Italian).
+					</div>
+					</div>
+				</div>
 			</div>			
 		</div>
 		
